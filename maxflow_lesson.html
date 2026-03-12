@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Max Flow From Zero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --card: #ffffff;
+    --ink: #1a1410;
+    --muted: #7a6e62;
+    --border: #ddd5c8;
+    --accent: #c0392b;
+    --accent2: #2471a3;
+    --accent3: #1e8449;
+    --accent4: #d68910;
+    --flow: #2471a3;
+    --capacity: #1a1410;
+    --highlight: #fef9c3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle paper texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f5f0e8'/%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23e8e0d0' opacity='0.5'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 50px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 56px;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 32px;
+  }
+  .header .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: clamp(42px, 9vw, 88px);
+    font-weight: 900;
+    line-height: 0.95;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .header h1 span { color: var(--accent); font-style: italic; }
+  .header p {
+    font-size: 17px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 520px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* PROGRESS */
+  .progress-track {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 40px;
+    align-items: center;
+  }
+  .prog-seg {
+    height: 4px;
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.4s;
+    cursor: pointer;
+  }
+  .prog-seg.done { background: var(--accent3); }
+  .prog-seg.active { background: var(--accent); }
+  .prog-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active {
+    display: block;
+    animation: slideIn 0.35s ease forwards;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 0;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .card p {
+    font-size: 16px;
+    color: #3d3530;
+    line-height: 1.75;
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+  .card p:last-child { margin-bottom: 0; }
+  .card strong { font-weight: 700; color: var(--ink); }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fdf3f2;
+    padding: 16px 20px;
+    margin: 18px 0;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #5a1a16;
+  }
+  .callout-blue {
+    border-color: var(--accent2);
+    background: #eaf3fb;
+    color: #154360;
+  }
+  .callout-green {
+    border-color: var(--accent3);
+    background: #eafaf1;
+    color: #145a32;
+  }
+  .callout-yellow {
+    border-color: var(--accent4);
+    background: #fef9e7;
+    color: #6e4c0f;
+  }
+
+  /* GRAPH AREA */
+  .graph-wrap {
+    background: #fafaf8;
+    border: 2px solid var(--ink);
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .graph-wrap svg { width: 100%; display: block; }
+
+  /* STEP CONTROLS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: 2px solid var(--ink);
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+  .btn:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: 2px 2px 0 var(--ink); }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-danger { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .msg-box {
+    flex: 1;
+    background: var(--highlight);
+    border: 2px solid var(--accent4);
+    padding: 10px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #5a3e00;
+    line-height: 1.5;
+    min-width: 200px;
+  }
+
+  /* FLOW TABLE */
+  .flow-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .flow-table th {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .flow-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .flow-table tr:hover td { background: #f5f0e8; }
+  .flow-table .updated td { background: #fef9c3; font-weight: 600; }
+
+  /* GRID LAYOUT */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .info-box {
+    border: 2px solid var(--border);
+    padding: 16px;
+    background: var(--bg);
+  }
+  .info-box .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .info-box .val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* NAV BUTTONS */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 2px solid var(--border);
+    gap: 12px;
+  }
+
+  /* CODE BLOCK */
+  .code {
+    background: var(--ink);
+    color: #d4c9b8;
+    padding: 22px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    margin: 16px 0;
+    border-radius: 0;
+    overflow-x: auto;
+  }
+  .code .kw { color: #f1948a; }
+  .code .fn { color: #7fb3d3; }
+  .code .cm { color: #7a6e62; font-style: italic; }
+  .code .num { color: #a9dfbf; }
+  .code .hl { background: rgba(255,255,100,0.15); padding: 0 3px; }
+
+  /* CHAPTER MARKER */
+  .chapter-mark {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .chapter-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 72px;
+    font-weight: 600;
+    color: var(--border);
+    line-height: 1;
+  }
+  .chapter-title { font-size: 13px; color: var(--muted); font-style: italic; }
+
+  /* PIPE ANIMATION */
+  @keyframes flowPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .flowing { animation: flowPulse 1.2s ease infinite; }
+
+  @media (max-width: 580px) {
+    .two-col { grid-template-columns: 1fr; }
+    .chapter-num { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">CS 6515 — Lecture 2</div>
+    <h1>Max <span>Flow</span><br>From Zero</h1>
+    <p>Networks, pipes, water, and the algorithm that figures out the maximum you can push through.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-track">
+    <span class="prog-label" id="chapLabel">1 / 6</span>
+    <div class="prog-seg active" onclick="goTo(0)"></div>
+    <div class="prog-seg" onclick="goTo(1)"></div>
+    <div class="prog-seg" onclick="goTo(2)"></div>
+    <div class="prog-seg" onclick="goTo(3)"></div>
+    <div class="prog-seg" onclick="goTo(4)"></div>
+    <div class="prog-seg" onclick="goTo(5)"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 0: What is a network? -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section active" id="sec0">
+    <div class="chapter-mark">
+      <div class="chapter-num">01</div>
+      <div>
+        <div class="chapter-title">The Setup</div>
+        <strong style="font-size:18px">What is a Network?</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Real World First</div>
+      <h2>Think of Water Pipes 🚰</h2>
+      <p>Imagine a city's water system. Water flows from a <strong>reservoir (source)</strong> through a bunch of pipes to your <strong>house (sink)</strong>. Each pipe has a max capacity — it can only carry so much water per second.</p>
+      <p>A <strong>network</strong> in your notes is exactly this. It's just a directed graph where:</p>
+
+      <div class="two-col">
+        <div class="info-box">
+          <span class="label">s = Source</span>
+          <div style="font-size:14px;color:#3d3530;line-height:1.6">Where everything <strong>starts</strong>. Water comes out of here. Think: reservoir, power plant, data center.</div>
+        </div>
+        <div class="info-box">
+          <span class="label">t = Sink (target)</span>
+          <div style="font-size:14px;color:#3d3530;line-height:1.6">Where everything <strong>ends up</strong>. Water arrives here. Think: your house, city, end user.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-blue">
+        📐 <strong>Formal definition:</strong> A network is G = (V, E) with a source s ∈ V, a sink t ∈ V, and a capacity c(e) on every edge e. The capacity says how much can flow through that pipe.
+      </div>
+
+      <p>Here's the example from your lecture notes. The numbers on each edge are <strong>flow, capacity</strong> — so "3, 10" means 3 units are currently flowing through a pipe that can handle 10:</p>
+    </div>
+
+    <div class="graph-wrap">
+      <svg viewBox="0 0 520 220" id="introNet">
+        <defs>
+          <marker id="a0" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#1a1410"/>
+          </marker>
+        </defs>
+        <!-- edges -->
+        <line x1="72" y1="105" x2="178" y2="68" stroke="#1a1410" stroke-width="2" marker-end="url(#a0)"/>
+        <line x1="72" y1="115" x2="178" y2="148" stroke="#1a1410" stroke-width="2" marker-end="url(#a0)"/>
+        <line x1="222" y1="60" x2="408" y2="60" stroke="#1a1410" stroke-width="2" marker-end="url(#a0)"/>
+        <line x1="200" y1="80" x2="200" y2="140" stroke="#1a1410" stroke-width="2" marker-end="url(#a0)"/>
+        <line x1="222" y1="155" x2="408" y2="155" stroke="#1a1410" stroke-width="2" marker-end="url(#a0)"/>
+        <!-- edge labels: flow/cap -->
+        <text x="110" y="72" font-family="IBM Plex Mono" font-size="12" fill="#2471a3" font-weight="600">8/8</text>
+        <text x="110" y="148" font-family="IBM Plex Mono" font-size="12" fill="#2471a3" font-weight="600">1/1</text>
+        <text x="295" y="50" font-family="IBM Plex Mono" font-size="12" fill="#2471a3" font-weight="600">5/5</text>
+        <text x="208" y="115" font-family="IBM Plex Mono" font-size="12" fill="#2471a3" font-weight="600">3/10</text>
+        <text x="295" y="145" font-family="IBM Plex Mono" font-size="12" fill="#2471a3" font-weight="600">4/8</text>
+        <!-- nodes -->
+        <circle cx="50" cy="110" r="28" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="50" y="115" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">s</text>
+        <circle cx="200" cy="60" r="24" fill="white" stroke="#1a1410" stroke-width="2"/>
+        <text x="200" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" font-weight="600" fill="#1a1410">A</text>
+        <circle cx="200" cy="160" r="24" fill="white" stroke="#1a1410" stroke-width="2"/>
+        <text x="200" y="166" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" font-weight="600" fill="#1a1410">B</text>
+        <circle cx="430" cy="110" r="28" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="430" y="115" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">t</text>
+        <!-- flow arrows to t -->
+        <line x1="424" y1="84" x2="424" y2="130" stroke="#1a1410" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="440" y="115" font-family="IBM Plex Mono" font-size="11" fill="#7a6e62">total</text>
+        <text x="440" y="128" font-family="IBM Plex Mono" font-size="11" fill="#7a6e62">flow=9</text>
+      </svg>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Reading the graph</div>
+      <p>Edge <strong>s→A</strong> has capacity 8 and carries 8 units of flow — it's full! Edge <strong>A→B</strong> has capacity 10 but only carries 3. Edge <strong>s→B</strong> has capacity 1 and carries 1. Edge <strong>A→t</strong> carries 5/5. Edge <strong>B→t</strong> carries 4/8 — could carry more!</p>
+      <div class="callout callout-green">
+        🎯 <strong>The goal (Flow Problem):</strong> Find the assignment of flows to edges that <strong>maximizes total flow arriving at t</strong>, while respecting capacities and conservation.
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" disabled>← Back</button>
+      <button class="btn btn-primary" onclick="goTo(1)">Flow Rules →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 1: Flow rules -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec1">
+    <div class="chapter-mark">
+      <div class="chapter-num">02</div>
+      <div>
+        <div class="chapter-title">The Constraints</div>
+        <strong style="font-size:18px">Rules a Flow Must Follow</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Two Laws of Flow</div>
+      <h2>You Can't Break Physics 🔬</h2>
+      <p>A "flow" isn't just any assignment of numbers — it has to follow two laws. Think of water in a pipe system:</p>
+    </div>
+
+    <div class="card" style="border-color:var(--accent2);box-shadow:4px 4px 0 var(--accent2)">
+      <div class="card-label" style="color:var(--accent2)">Law #1 — Capacity Constraint</div>
+      <h2 style="font-size:22px">You can't overfill a pipe</h2>
+      <p>For every edge e: <strong>0 ≤ f(e) ≤ c(e)</strong></p>
+      <p>Flow on an edge must be between 0 (nothing flowing) and c(e) (pipe is full). You literally cannot push more water than the pipe can hold.</p>
+      <div class="callout callout-blue">
+        If pipe A→t has capacity 5, you can send 0, 1, 2, 3, 4, or 5 units through it. Not 6. Never 6.
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--accent3);box-shadow:4px 4px 0 var(--accent3)">
+      <div class="card-label" style="color:var(--accent3)">Law #2 — Conservation Constraint</div>
+      <h2 style="font-size:22px">Water doesn't disappear in the middle</h2>
+      <p>For every node v (except s and t): <strong>flow IN = flow OUT</strong></p>
+      <p>Whatever enters a middle node must leave it. Nothing gets created or destroyed in transit. This is like a junction box — all water that comes in must go out.</p>
+      <div class="callout callout-green">
+        If 8 units flow INTO node A, then exactly 8 units must flow OUT of A (split however you want across A's outgoing edges).
+      </div>
+      <p><em>s and t are exceptions</em> — s only produces, t only consumes.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Why these rules matter</div>
+      <p>Together, these two rules define what a <strong>valid flow</strong> is. The max-flow problem asks: among all valid flows, which one makes the total leaving s as large as possible?</p>
+      <div class="callout callout-yellow">
+        💡 <strong>Key insight:</strong> total flow out of s = total flow into t. Because of conservation, everything that leaves s must eventually arrive at t (it can't just vanish at a middle node).
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" onclick="goTo(0)">← Network</button>
+      <button class="btn btn-primary" onclick="goTo(2)">Ford-Fulkerson →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 2: Ford-Fulkerson idea -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec2">
+    <div class="chapter-mark">
+      <div class="chapter-num">03</div>
+      <div>
+        <div class="chapter-title">The Algorithm</div>
+        <strong style="font-size:18px">Ford-Fulkerson</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">The Core Idea</div>
+      <h2>Keep Finding Paths, Push Flow</h2>
+      <p>Ford-Fulkerson is beautifully simple in concept. Here's the plain English version:</p>
+
+      <div class="callout" style="font-size:16px;line-height:1.8">
+        1. Start with zero flow everywhere.<br>
+        2. Find ANY path from s to t that still has leftover capacity.<br>
+        3. Push as much flow as possible through that path.<br>
+        4. Repeat until no such path exists.<br>
+        5. You're done — that's the max flow!
+      </div>
+
+      <p>That path in step 2 is called an <strong>"augmenting path."</strong> It's just a route from source to sink with spare capacity.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">The Algorithm in Code</div>
+      <div class="code">
+<span class="fn">FordFulkerson</span>(G, s, t):<br>
+&nbsp;&nbsp;<span class="cm">// start with 0 flow on all edges</span><br>
+&nbsp;&nbsp;<span class="kw">for</span> each edge e: f(e) = <span class="num">0</span><br>
+<br>
+&nbsp;&nbsp;<span class="kw">while</span> <span class="hl">there exists a path P from s to t in residual graph</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bottleneck = min capacity on path P<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> each edge e in P:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f(e) += bottleneck  <span class="cm">// push flow</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f(reverse of e) -= bottleneck  <span class="cm">// update residual</span><br>
+<br>
+&nbsp;&nbsp;<span class="kw">return</span> total flow out of s
+      </div>
+
+      <div class="callout callout-yellow">
+        ⚠️ What's a "residual graph"? That's the next chapter — it's the key trick that makes this work. Don't worry about it yet.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Bottleneck</div>
+      <h2 style="font-size:22px">The Weakest Link on a Path 🔗</h2>
+      <p>When you find a path s → A → B → t, you can only push flow equal to the <strong>minimum capacity edge</strong> on that path. That smallest edge is the bottleneck.</p>
+      <div class="callout callout-blue">
+        Path has edges with capacities 8, 3, 5? The bottleneck is 3. You can push at most 3 units through this path. The edge with capacity 3 is now full.
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" onclick="goTo(1)">← Flow Rules</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Residual Graph →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 3: Residual Graph interactive -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec3">
+    <div class="chapter-mark">
+      <div class="chapter-num">04</div>
+      <div>
+        <div class="chapter-title">The Key Trick</div>
+        <strong style="font-size:18px">Residual Graph</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Why we need it</div>
+      <h2>What if Your First Choice Was Wrong? 😬</h2>
+      <p>Here's the problem with a naive approach: what if you pick a path early on that blocks a better solution later? You need a way to <strong>undo</strong> mistakes.</p>
+      <p>The <strong>residual graph</strong> solves this. For every edge, it tracks two things:</p>
+    </div>
+
+    <div class="two-col" style="margin:0 0 20px 0">
+      <div class="card" style="margin:0;border-color:var(--accent3);box-shadow:3px 3px 0 var(--accent3)">
+        <div class="card-label" style="color:var(--accent3)">Forward residual</div>
+        <p style="font-size:15px"><strong>c(e) − f(e)</strong><br>Remaining capacity — how much MORE you can push forward.</p>
+        <div class="callout callout-green" style="margin-top:12px">Edge has cap 10, flow 3 → forward residual = 7. You can still push 7 more units forward.</div>
+      </div>
+      <div class="card" style="margin:0;border-color:var(--accent);box-shadow:3px 3px 0 var(--accent)">
+        <div class="card-label" style="color:var(--accent)">Backward residual</div>
+        <p style="font-size:15px"><strong>f(e)</strong><br>Flow already sent — how much you can "take back" (undo).</p>
+        <div class="callout" style="margin-top:12px">Edge carries 3 units → backward residual = 3. You can cancel up to 3 units (redirect them).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Interactive: Build the Residual Graph</div>
+      <h2 style="font-size:20px">Watch it update as flow changes</h2>
+      <p>This is a simple network. Click <strong>Add Flow</strong> to send flow along the highlighted path, and watch how the residual graph updates:</p>
+    </div>
+
+    <div class="graph-wrap">
+      <div class="two-col" style="margin:0 0 12px 0;gap:8px">
+        <div class="info-box">
+          <span class="label">Total Flow Sent</span>
+          <div class="val" id="totalFlow">0</div>
+        </div>
+        <div class="info-box">
+          <span class="label">Current Path</span>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--accent2)" id="pathDisplay">s → A → t</div>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 520 200" id="residSvg">
+        <defs>
+          <marker id="af" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#1a1410"/>
+          </marker>
+          <marker id="af2" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#2471a3"/>
+          </marker>
+          <marker id="ab" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#c0392b"/>
+          </marker>
+        </defs>
+        <!-- Original edges (s->A, A->t, s->B, B->t, A->B) -->
+        <line x1="72" y1="95" x2="218" y2="62" stroke="#ddd5c8" stroke-width="2" marker-end="url(#af)" id="re_sA"/>
+        <line x1="258" y1="62" x2="448" y2="95" stroke="#ddd5c8" stroke-width="2" marker-end="url(#af)" id="re_At"/>
+        <line x1="72" y1="115" x2="218" y2="140" stroke="#ddd5c8" stroke-width="2" marker-end="url(#af)" id="re_sB"/>
+        <line x1="258" y1="140" x2="448" y2="115" stroke="#ddd5c8" stroke-width="2" marker-end="url(#af)" id="re_Bt"/>
+        <line x1="240" y1="78" x2="240" y2="126" stroke="#ddd5c8" stroke-width="2" marker-end="url(#af)" id="re_AB"/>
+        <!-- Backward edges (hidden initially) -->
+        <line x1="215" y1="55" x2="72" y2="88" stroke="transparent" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ab)" id="re_As"/>
+        <line x1="445" y1="88" x2="260" y2="55" stroke="transparent" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ab)" id="re_tA"/>
+        <line x1="215" y1="147" x2="72" y2="122" stroke="transparent" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ab)" id="re_Bs"/>
+        <line x1="445" y1="122" x2="260" y2="147" stroke="transparent" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ab)" id="re_tB"/>
+        <!-- Edge labels -->
+        <text x="130" y="66" font-family="IBM Plex Mono" font-size="11" id="lbl_sA" fill="#1a1410">cap:4</text>
+        <text x="350" y="66" font-family="IBM Plex Mono" font-size="11" id="lbl_At" fill="#1a1410">cap:3</text>
+        <text x="130" y="148" font-family="IBM Plex Mono" font-size="11" id="lbl_sB" fill="#1a1410">cap:5</text>
+        <text x="350" y="148" font-family="IBM Plex Mono" font-size="11" id="lbl_Bt" fill="#1a1410">cap:5</text>
+        <text x="248" y="106" font-family="IBM Plex Mono" font-size="11" id="lbl_AB" fill="#1a1410">cap:2</text>
+        <!-- back labels -->
+        <text x="120" y="98" font-family="IBM Plex Mono" font-size="10" id="lbl_As" fill="#c0392b" opacity="0">back:0</text>
+        <text x="340" y="82" font-family="IBM Plex Mono" font-size="10" id="lbl_tA" fill="#c0392b" opacity="0">back:0</text>
+        <text x="120" y="140" font-family="IBM Plex Mono" font-size="10" id="lbl_Bs" fill="#c0392b" opacity="0">back:0</text>
+        <text x="340" y="138" font-family="IBM Plex Mono" font-size="10" id="lbl_tB" fill="#c0392b" opacity="0">back:0</text>
+        <!-- Nodes -->
+        <circle cx="50" cy="105" r="26" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="50" y="111" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">s</text>
+        <circle cx="240" cy="60" r="22" fill="white" stroke="#1a1410" stroke-width="2" id="rn_A"/>
+        <text x="240" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" font-weight="600">A</text>
+        <circle cx="240" cy="145" r="22" fill="white" stroke="#1a1410" stroke-width="2" id="rn_B"/>
+        <text x="240" y="150" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" font-weight="600">B</text>
+        <circle cx="470" cy="105" r="26" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="470" y="111" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">t</text>
+      </svg>
+
+      <div class="controls">
+        <button class="btn btn-danger" onclick="resetResid()">↺ Reset</button>
+        <button class="btn btn-primary" onclick="stepResid()" id="residBtn">Send Flow →</button>
+        <div class="msg-box" id="residMsg">Network ready. Path s→A→t has bottleneck = min(4,3) = 3. Click to send 3 units.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-label">Edge State Table</div>
+      <table class="flow-table" id="residTable">
+        <thead><tr><th>Edge</th><th>Capacity</th><th>Flow</th><th>Fwd Residual</th><th>Bwd Residual</th></tr></thead>
+        <tbody>
+          <tr id="tr_sA"><td>s → A</td><td>4</td><td id="f_sA">0</td><td id="fr_sA">4</td><td id="br_sA">0</td></tr>
+          <tr id="tr_At"><td>A → t</td><td>3</td><td id="f_At">0</td><td id="fr_At">3</td><td id="br_At">0</td></tr>
+          <tr id="tr_sB"><td>s → B</td><td>5</td><td id="f_sB">0</td><td id="fr_sB">5</td><td id="br_sB">0</td></tr>
+          <tr id="tr_Bt"><td>B → t</td><td>5</td><td id="f_Bt">0</td><td id="fr_Bt">5</td><td id="br_Bt">0</td></tr>
+          <tr id="tr_AB"><td>A → B</td><td>2</td><td id="f_AB">0</td><td id="fr_AB">2</td><td id="br_AB">0</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-blue" style="margin-top:16px">
+        🔴 <strong>Red dashed arrows</strong> = backward edges in the residual graph. They appear when flow &gt; 0 on an edge, letting the algorithm "undo" that flow if needed.
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" onclick="goTo(2)">← Ford-Fulkerson</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Full Example →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 4: Full walkthrough -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec4">
+    <div class="chapter-mark">
+      <div class="chapter-num">05</div>
+      <div>
+        <div class="chapter-title">Putting it together</div>
+        <strong style="font-size:18px">Full Ford-Fulkerson Walkthrough</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">The original lecture graph</div>
+      <h2>Step Through Max-Flow 🎬</h2>
+      <p>Let's run Ford-Fulkerson on the graph from your notes: s→A (cap 8), s→B (cap 1), A→B (cap 10), A→t (cap 5), B→t (cap 8). Click Step to walk through each augmenting path.</p>
+    </div>
+
+    <div class="graph-wrap">
+      <div class="two-col" style="margin-bottom:14px;gap:8px">
+        <div class="info-box">
+          <span class="label">Iteration</span>
+          <div class="val" id="ffIter">0</div>
+        </div>
+        <div class="info-box">
+          <span class="label">Max Flow So Far</span>
+          <div class="val" id="ffFlow">0</div>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 520 220" id="ffSvg">
+        <defs>
+          <marker id="aff" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#1a1410"/>
+          </marker>
+          <marker id="affh" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#2471a3"/>
+          </marker>
+        </defs>
+        <line x1="72" y1="97" x2="178" y2="65" stroke="#ddd5c8" stroke-width="2.5" marker-end="url(#aff)" id="ff_sA"/>
+        <line x1="72" y1="113" x2="178" y2="148" stroke="#ddd5c8" stroke-width="2.5" marker-end="url(#aff)" id="ff_sB"/>
+        <line x1="222" y1="62" x2="408" y2="62" stroke="#ddd5c8" stroke-width="2.5" marker-end="url(#aff)" id="ff_At"/>
+        <line x1="202" y1="78" x2="202" y2="140" stroke="#ddd5c8" stroke-width="2.5" marker-end="url(#aff)" id="ff_AB"/>
+        <line x1="222" y1="155" x2="408" y2="155" stroke="#ddd5c8" stroke-width="2.5" marker-end="url(#aff)" id="ff_Bt"/>
+        <!-- labels -->
+        <text x="105" y="70" font-family="IBM Plex Mono" font-size="11" id="lff_sA" fill="#7a6e62">0/8</text>
+        <text x="105" y="150" font-family="IBM Plex Mono" font-size="11" id="lff_sB" fill="#7a6e62">0/1</text>
+        <text x="295" y="52" font-family="IBM Plex Mono" font-size="11" id="lff_At" fill="#7a6e62">0/5</text>
+        <text x="210" y="113" font-family="IBM Plex Mono" font-size="11" id="lff_AB" fill="#7a6e62">0/10</text>
+        <text x="295" y="145" font-family="IBM Plex Mono" font-size="11" id="lff_Bt" fill="#7a6e62">0/8</text>
+        <!-- nodes -->
+        <circle cx="50" cy="105" r="28" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="50" y="111" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">s</text>
+        <circle cx="200" cy="60" r="24" fill="white" stroke="#1a1410" stroke-width="2" id="ffn_A"/>
+        <text x="200" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" font-weight="600">A</text>
+        <circle cx="200" cy="160" r="24" fill="white" stroke="#1a1410" stroke-width="2" id="ffn_B"/>
+        <text x="200" y="166" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" font-weight="600">B</text>
+        <circle cx="430" cy="108" r="28" fill="white" stroke="#1a1410" stroke-width="2.5"/>
+        <text x="430" y="114" text-anchor="middle" font-family="Fraunces" font-size="18" font-weight="900" fill="#c0392b">t</text>
+      </svg>
+
+      <div class="controls">
+        <button class="btn btn-danger" onclick="resetFF()">↺ Reset</button>
+        <button class="btn btn-primary" onclick="stepFF()" id="ffBtn">Step →</button>
+        <div class="msg-box" id="ffMsg">Ready. Graph has zero flow. Click Step to find first augmenting path.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-label">Flow Log</div>
+      <table class="flow-table">
+        <thead><tr><th>Step</th><th>Path Used</th><th>Bottleneck</th><th>Flow Added</th><th>Total</th></tr></thead>
+        <tbody id="ffLog">
+          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px">Steps will appear here...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" onclick="goTo(3)">← Residual</button>
+      <button class="btn btn-primary" onclick="goTo(5)">Complexity + Summary →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SEC 5: Complexity + Summary -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec5">
+    <div class="chapter-mark">
+      <div class="chapter-num">06</div>
+      <div>
+        <div class="chapter-title">How Fast Is It?</div>
+        <strong style="font-size:18px">Complexity + Wrap-Up</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Two Versions</div>
+      <h2>It Depends How You Find Paths</h2>
+      <p>Ford-Fulkerson's speed depends on HOW you find augmenting paths in step 2. Your notes mention two approaches:</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card" style="margin:0;border-color:var(--accent);box-shadow:3px 3px 0 var(--accent)">
+        <div class="card-label" style="color:var(--accent)">Ford-Fulkerson (DFS)</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--accent);margin-bottom:12px">O(C · E)</div>
+        <p style="font-size:14px">C = max capacity value, E = edges. Uses DFS to find paths.</p>
+        <div class="callout" style="margin-top:12px;font-size:13px">⚠️ If capacities are huge (like C = 1 billion), this can be very slow. It might need a billion iterations.</div>
+      </div>
+      <div class="card" style="margin:0;border-color:var(--accent3);box-shadow:3px 3px 0 var(--accent3)">
+        <div class="card-label" style="color:var(--accent3)">Edmonds-Karp (BFS)</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--accent3);margin-bottom:12px">O(VE²)</div>
+        <p style="font-size:14px">V = vertices, E = edges. Uses BFS to always find the SHORTEST path.</p>
+        <div class="callout callout-green" style="margin-top:12px;font-size:13px">✅ Polynomial time — always fast regardless of capacity values. This is the better algorithm.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-label">Why BFS is better</div>
+      <p>BFS always finds the <strong>shortest augmenting path</strong> (fewest edges). This guarantees the number of iterations is bounded by O(VE), making the total O(VE²). It doesn't matter if capacities are a trillion — it still terminates quickly.</p>
+      <div class="callout callout-blue">
+        🧠 Same idea as in your DFS lecture — switching from DFS to BFS changes the complexity from potentially infinite to guaranteed polynomial.
+      </div>
+    </div>
+
+    <div class="card" style="border: 3px solid var(--ink);background:var(--ink);color:var(--bg)">
+      <div class="card-label" style="color:#7a6e62;border-color:#3d3530">Full Cheat Sheet</div>
+      <table class="flow-table" style="color:var(--bg)">
+        <thead><tr style="background:#2d2820"><th>Concept</th><th>What it means</th><th>Formula/Rule</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#a9dfbf;border-color:#3d3530">Network</td><td style="border-color:#3d3530">Graph with source, sink, capacities</td><td style="border-color:#3d3530">G=(V,E), s, t, c(e)</td></tr>
+          <tr><td style="color:#a9dfbf;border-color:#3d3530">Flow</td><td style="border-color:#3d3530">Valid assignment on edges</td><td style="border-color:#3d3530">0 ≤ f(e) ≤ c(e)</td></tr>
+          <tr><td style="color:#a9dfbf;border-color:#3d3530">Conservation</td><td style="border-color:#3d3530">In = Out at every middle node</td><td style="border-color:#3d3530">∑f(in) = ∑f(out)</td></tr>
+          <tr><td style="color:#f1948a;border-color:#3d3530">Augmenting path</td><td style="border-color:#3d3530">s→t path with spare capacity</td><td style="border-color:#3d3530">Fwd residual &gt; 0</td></tr>
+          <tr><td style="color:#f1948a;border-color:#3d3530">Bottleneck</td><td style="border-color:#3d3530">Weakest edge on path</td><td style="border-color:#3d3530">min c(e) on path</td></tr>
+          <tr><td style="color:#7fb3d3;border-color:#3d3530">Fwd residual</td><td style="border-color:#3d3530">Remaining capacity</td><td style="border-color:#3d3530">c(e) − f(e)</td></tr>
+          <tr><td style="color:#7fb3d3;border-color:#3d3530">Bwd residual</td><td style="border-color:#3d3530">Flow you can undo</td><td style="border-color:#3d3530">f(e)</td></tr>
+          <tr><td style="color:#fdebd0;border-color:#3d3530">Ford-Fulkerson</td><td style="border-color:#3d3530">Max-flow via DFS paths</td><td style="border-color:#3d3530">O(C·E)</td></tr>
+          <tr><td style="color:#fdebd0;border-color:#3d3530">Edmonds-Karp</td><td style="border-color:#3d3530">Max-flow via BFS (shortest paths)</td><td style="border-color:#3d3530">O(VE²)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn" onclick="goTo(4)">← Full Example</button>
+      <button class="btn btn-primary" onclick="goTo(0)" style="background:var(--accent3);border-color:var(--accent3)">↺ Start Over</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── NAV ─────────────────────────────────────────────────
+let cur = 0;
+const N = 6;
+
+function goTo(i) {
+  document.getElementById('sec' + cur).classList.remove('active');
+  cur = i;
+  document.getElementById('sec' + cur).classList.add('active');
+  document.getElementById('chapLabel').textContent = (i+1) + ' / ' + N;
+  const segs = document.querySelectorAll('.prog-seg');
+  segs.forEach((s, idx) => {
+    s.className = 'prog-seg' + (idx < i ? ' done' : idx === i ? ' active' : '');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── RESIDUAL GRAPH SIMULATION ────────────────────────────
+// Network: s->A(4), A->t(3), s->B(5), B->t(5), A->B(2)
+// Flows start at 0
+const residSteps = [
+  {
+    path: 's → A → t', bottleneck: 3,
+    flows: { sA: 3, At: 3, sB: 0, Bt: 0, AB: 0 },
+    total: 3,
+    msg: '✅ Path s→A→t, bottleneck = min(4,3) = 3. Sent 3 units. A→t is now FULL. Backward edges appear!'
+  },
+  {
+    path: 's → A → B → t', bottleneck: 1,
+    flows: { sA: 4, At: 3, sB: 0, Bt: 1, AB: 1 },
+    total: 4,
+    msg: '✅ Path s→A→B→t, bottleneck = min(1 remaining on sA, 2 on AB, 5 on Bt) = 1. Sent 1 more unit. s→A now FULL.'
+  },
+  {
+    path: 's → B → t', bottleneck: 4,
+    flows: { sA: 4, At: 3, sB: 4, Bt: 5, AB: 1 },
+    total: 8,
+    msg: '✅ Path s→B→t, bottleneck = min(5,4 remaining on Bt) = 4. Sent 4 units. B→t now FULL.'
+  },
+  {
+    path: 'No more paths!', bottleneck: 0,
+    flows: { sA: 4, At: 3, sB: 4, Bt: 5, AB: 1 },
+    total: 8,
+    msg: '🏁 No augmenting path exists from s to t in the residual graph. MAX FLOW = 8!'
+  }
+];
+
+let residStep = 0;
+const caps = { sA: 4, At: 3, sB: 5, Bt: 5, AB: 2 };
+
+function updateResidTable(flows) {
+  ['sA','At','sB','Bt','AB'].forEach(e => {
+    const f = flows[e];
+    const c = caps[e];
+    document.getElementById('f_' + e).textContent = f;
+    document.getElementById('fr_' + e).textContent = c - f;
+    document.getElementById('br_' + e).textContent = f;
+  });
+}
+
+function stepResid() {
+  if (residStep >= residSteps.length) return;
+  const s = residSteps[residStep];
+  document.getElementById('totalFlow').textContent = s.total;
+  document.getElementById('pathDisplay').textContent = s.path;
+  document.getElementById('residMsg').textContent = s.msg;
+  updateResidTable(s.flows);
+
+  // Highlight active path edges blue
+  const pathEdges = {
+    's → A → t': ['re_sA','re_At'],
+    's → A → B → t': ['re_sA','re_AB','re_Bt'],
+    's → B → t': ['re_sB','re_Bt'],
+    'No more paths!': []
+  };
+  // Reset all edges
+  ['re_sA','re_At','re_sB','re_Bt','re_AB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke', '#ddd5c8'); el.setAttribute('marker-end', 'url(#af)'); }
+  });
+  (pathEdges[s.path] || []).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke', '#2471a3'); el.setAttribute('marker-end', 'url(#af2)'); }
+  });
+
+  // Show backward edges where flow > 0
+  const bwdMap = { sA: 're_As', At: 're_tA', sB: 're_Bs', Bt: 're_tB' };
+  Object.entries(s.flows).forEach(([e, f]) => {
+    if (bwdMap[e]) {
+      const el = document.getElementById(bwdMap[e]);
+      const lbl = document.getElementById('lbl_' + bwdMap[e].replace('re_',''));
+      if (el) el.setAttribute('stroke', f > 0 ? '#c0392b' : 'transparent');
+      if (lbl) { lbl.setAttribute('opacity', f > 0 ? '1' : '0'); lbl.textContent = 'back:' + f; }
+    }
+  });
+
+  // Update forward labels
+  ['sA','At','sB','Bt','AB'].forEach(e => {
+    const el = document.getElementById('lbl_' + e);
+    if (el) el.textContent = 'cap:' + (caps[e] - s.flows[e]);
+  });
+
+  residStep++;
+  if (residStep >= residSteps.length) document.getElementById('residBtn').disabled = true;
+}
+
+function resetResid() {
+  residStep = 0;
+  document.getElementById('totalFlow').textContent = '0';
+  document.getElementById('pathDisplay').textContent = 's → A → t';
+  document.getElementById('residMsg').textContent = 'Network ready. Path s→A→t has bottleneck = min(4,3) = 3. Click to send 3 units.';
+  document.getElementById('residBtn').disabled = false;
+  updateResidTable({ sA: 0, At: 0, sB: 0, Bt: 0, AB: 0 });
+  ['re_sA','re_At','re_sB','re_Bt','re_AB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke', '#ddd5c8'); el.setAttribute('marker-end', 'url(#af)'); }
+  });
+  ['re_As','re_tA','re_Bs','re_tB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('stroke', 'transparent');
+  });
+  ['lbl_As','lbl_tA','lbl_Bs','lbl_tB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('opacity', '0');
+  });
+  ['sA','At','sB','Bt','AB'].forEach(e => {
+    const el = document.getElementById('lbl_' + e);
+    if (el) el.textContent = 'cap:' + caps[e];
+  });
+}
+
+// ── FORD-FULKERSON FULL WALKTHROUGH ──────────────────────
+// Network from lecture: s->A(8), s->B(1), A->B(10), A->t(5), B->t(8)
+const ffStates = [
+  {
+    iter: 1, path: 's → A → t', bn: 5, total: 5,
+    flows: { sA: 5, sB: 0, At: 5, AB: 0, Bt: 0 },
+    msg: 'Iteration 1: Found path s→A→t. Bottleneck = min(8,5) = 5. A→t is now FULL (5/5).',
+    highlight: ['ff_sA','ff_At']
+  },
+  {
+    iter: 2, path: 's → A → B → t', bn: 3, total: 8,
+    flows: { sA: 8, sB: 0, At: 5, AB: 3, Bt: 3 },
+    msg: 'Iteration 2: A→t is full, but A→B→t still works! Bottleneck = min(3 left on sA, 10, 8) = 3. Sent 3 more.',
+    highlight: ['ff_sA','ff_AB','ff_Bt']
+  },
+  {
+    iter: 3, path: 's → B → t', bn: 1, total: 9,
+    flows: { sA: 8, sB: 1, At: 5, AB: 3, Bt: 4 },
+    msg: 'Iteration 3: s→B→t still available! Bottleneck = min(1,5) = 1. s→B is now FULL (1/1).',
+    highlight: ['ff_sB','ff_Bt']
+  },
+  {
+    iter: '✓', path: 'No more paths', bn: 0, total: 9,
+    flows: { sA: 8, sB: 1, At: 5, AB: 3, Bt: 4 },
+    msg: '🏁 No augmenting path exists anymore. MAX FLOW = 9! (Matches the original lecture example.)',
+    highlight: []
+  }
+];
+let ffStep = 0;
+let ffLogRows = 0;
+
+function highlightFFEdges(ids) {
+  ['ff_sA','ff_sB','ff_At','ff_AB','ff_Bt'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke', '#ddd5c8'); el.setAttribute('stroke-width', '2.5'); el.setAttribute('marker-end','url(#aff)'); }
+  });
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.setAttribute('stroke', '#2471a3'); el.setAttribute('stroke-width', '3.5'); el.setAttribute('marker-end','url(#affh)'); }
+  });
+}
+
+function updateFFLabels(flows) {
+  const caps2 = { sA: 8, sB: 1, At: 5, AB: 10, Bt: 8 };
+  const map = { sA:'lff_sA', sB:'lff_sB', At:'lff_At', AB:'lff_AB', Bt:'lff_Bt' };
+  Object.entries(flows).forEach(([e, f]) => {
+    const el = document.getElementById(map[e]);
+    if (el) {
+      el.textContent = f + '/' + caps2[e];
+      el.setAttribute('fill', f === caps2[e] ? '#c0392b' : f > 0 ? '#2471a3' : '#7a6e62');
+    }
+  });
+}
+
+function stepFF() {
+  if (ffStep >= ffStates.length) return;
+  const s = ffStates[ffStep];
+  document.getElementById('ffIter').textContent = s.iter;
+  document.getElementById('ffFlow').textContent = s.total;
+  document.getElementById('ffMsg').textContent = s.msg;
+  highlightFFEdges(s.highlight);
+  updateFFLabels(s.flows);
+
+  // Add to log
+  const tbody = document.getElementById('ffLog');
+  if (ffStep === 0) tbody.innerHTML = '';
+  if (s.bn > 0) {
+    const row = document.createElement('tr');
+    row.className = 'updated';
+    row.innerHTML = `<td>${s.iter}</td><td>${s.path}</td><td>${s.bn}</td><td>+${s.bn}</td><td>${s.total}</td>`;
+    tbody.appendChild(row);
+    setTimeout(() => row.classList.remove('updated'), 1500);
+  } else {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="4" style="color:var(--accent3);font-weight:600">🏁 Max Flow Reached</td><td style="color:var(--accent);font-weight:700">${s.total}</td>`;
+    tbody.appendChild(row);
+  }
+
+  ffStep++;
+  if (ffStep >= ffStates.length) document.getElementById('ffBtn').disabled = true;
+}
+
+function resetFF() {
+  ffStep = 0;
+  document.getElementById('ffIter').textContent = '0';
+  document.getElementById('ffFlow').textContent = '0';
+  document.getElementById('ffMsg').textContent = 'Ready. Graph has zero flow. Click Step to find first augmenting path.';
+  document.getElementById('ffBtn').disabled = false;
+  document.getElementById('ffLog').innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px">Steps will appear here...</td></tr>';
+  highlightFFEdges([]);
+  updateFFLabels({ sA: 0, sB: 0, At: 0, AB: 0, Bt: 0 });
+}
+</script>
+</body>
+</html>

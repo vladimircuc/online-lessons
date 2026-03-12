@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DFS From Scratch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --border: #1e1e2e;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --tree-edge: #10b981;
+    --back-edge: #ef4444;
+    --cross-edge: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID NOISE BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .header .tag {
+    display: inline-block;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.4);
+    color: #a78bfa;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: clamp(36px, 8vw, 72px);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #e2e8f0 0%, #a78bfa 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* NAV DOTS */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .nav-dot.active { background: var(--accent); transform: scale(1.4); }
+  .nav-dot.done { background: var(--green); }
+
+  /* SECTIONS */
+  .section {
+    display: none;
+    animation: fadeUp 0.4s ease forwards;
+  }
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #f1f5f9;
+  }
+  .card p {
+    color: #94a3b8;
+    line-height: 1.7;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  .highlight {
+    background: rgba(124,58,237,0.15);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    color: #c4b5fd;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .highlight-green {
+    background: rgba(16,185,129,0.1);
+    border-left: 3px solid var(--green);
+    color: #6ee7b7;
+  }
+  .highlight-yellow {
+    background: rgba(245,158,11,0.1);
+    border-left: 3px solid var(--accent3);
+    color: #fcd34d;
+  }
+  .highlight-red {
+    background: rgba(239,68,68,0.1);
+    border-left: 3px solid var(--red);
+    color: #fca5a5;
+  }
+
+  /* GRAPH CANVAS AREA */
+  .graph-area {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+  }
+  .graph-area svg {
+    width: 100%;
+    display: block;
+  }
+
+  /* STEP CONTROLS */
+  .step-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.5);
+    color: #a78bfa;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(124,58,237,0.4); transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .btn-reset {
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.4);
+    color: #fca5a5;
+  }
+  .btn-reset:hover { background: rgba(239,68,68,0.3); }
+
+  .step-info {
+    flex: 1;
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: #67e8f9;
+    min-width: 200px;
+  }
+
+  /* STACK/TIMER DISPLAY */
+  .data-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .data-box {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex: 1;
+    min-width: 140px;
+  }
+  .data-box label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .data-box .value {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  /* TABLE */
+  .pre-post-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .pre-post-table th {
+    background: rgba(124,58,237,0.2);
+    color: #a78bfa;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .pre-post-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #94a3b8;
+    transition: all 0.3s;
+  }
+  .pre-post-table tr.active-row td { background: rgba(124,58,237,0.1); color: #c4b5fd; }
+  .pre-post-table tr.done-row td { color: var(--green); }
+  .pre-post-table .filled { color: var(--text); font-weight: 700; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-line {
+    width: 24px; height: 3px;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+
+  /* NEXT/PREV BUTTONS */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    gap: 12px;
+  }
+  .nav-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: #a78bfa; transform: translateY(-2px); }
+  .nav-btn.primary {
+    background: rgba(124,58,237,0.2);
+    border-color: rgba(124,58,237,0.6);
+    color: #a78bfa;
+  }
+  .nav-btn.primary:hover { background: rgba(124,58,237,0.4); }
+
+  /* SCC SPECIFIC */
+  .scc-group {
+    display: inline-block;
+    background: rgba(124,58,237,0.12);
+    border: 2px dashed rgba(124,58,237,0.4);
+    border-radius: 12px;
+    padding: 6px 14px;
+    margin: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: #c4b5fd;
+    transition: all 0.3s;
+  }
+  .scc-group.highlight-scc {
+    background: rgba(124,58,237,0.3);
+    border-color: var(--accent);
+    color: #e9d5ff;
+  }
+
+  /* CODE BLOCK */
+  .code {
+    background: #060610;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #94a3b8;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  .code .kw { color: #a78bfa; }
+  .code .fn { color: #67e8f9; }
+  .code .cm { color: #475569; font-style: italic; }
+  .code .hl { background: rgba(124,58,237,0.2); border-radius: 3px; padding: 0 4px; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 1px;
+    transition: width 0.4s ease;
+  }
+
+  .emoji-big { font-size: 48px; display: block; margin-bottom: 16px; }
+
+  @media (max-width: 600px) {
+    .data-row { flex-direction: column; }
+    .nav-btn { padding: 12px 18px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="tag">CS 6515 — Algorithms</div>
+    <h1>DFS From Zero</h1>
+    <p>A ground-up walkthrough of Depth-First Search, pre/post timestamps, edge types, and Strongly Connected Components.</p>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:16.6%"></div>
+  </div>
+
+  <div class="nav" id="navDots"></div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 1: What even is a graph? -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section active" id="sec0">
+    <div class="card">
+      <div class="card-title">Chapter 1 of 6</div>
+      <h2>What is a Graph? 🗺️</h2>
+      <p>Before DFS makes sense, you need to understand what a <strong style="color:#e2e8f0">graph</strong> is. Forget math for a second.</p>
+      <p>Think of a graph like a <strong style="color:#a78bfa">map of cities connected by roads</strong>. Each city is a <strong style="color:#67e8f9">vertex (V)</strong> and each road is an <strong style="color:#67e8f9">edge (E)</strong>. That's it. G = (V, E) just means "a graph made of vertices and edges."</p>
+
+      <div class="highlight">
+        🏙️ Cities = Vertices (V) &nbsp;|&nbsp; Roads = Edges (E) &nbsp;|&nbsp; Map = Graph G
+      </div>
+
+      <p>Edges can be <strong style="color:#e2e8f0">directed</strong> (one-way street: A→B means you can go from A to B but NOT B to A) or <strong style="color:#e2e8f0">undirected</strong> (two-way road). Your lecture uses directed graphs.</p>
+
+      <p>Here's a simple directed graph — click a node to see its edges:</p>
+
+      <div class="graph-area">
+        <svg viewBox="0 0 500 220" id="introSvg">
+          <defs>
+            <marker id="arr0" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#4b5563"/>
+            </marker>
+          </defs>
+          <!-- edges -->
+          <line x1="120" y1="80" x2="215" y2="80" stroke="#4b5563" stroke-width="2" marker-end="url(#arr0)"/>
+          <line x1="250" y1="95" x2="250" y2="155" stroke="#4b5563" stroke-width="2" marker-end="url(#arr0)"/>
+          <line x1="235" y1="170" x2="145" y2="170" stroke="#4b5563" stroke-width="2" marker-end="url(#arr0)"/>
+          <line x1="120" y1="155" x2="120" y2="95" stroke="#4b5563" stroke-width="2" marker-end="url(#arr0)"/>
+          <line x1="265" y1="78" x2="355" y2="78" stroke="#4b5563" stroke-width="2" marker-end="url(#arr0)"/>
+          <!-- nodes -->
+          <circle cx="100" cy="80" r="22" fill="#12121a" stroke="#4b5563" stroke-width="2" class="intro-node" data-node="A" style="cursor:pointer"/>
+          <text x="100" y="85" text-anchor="middle" fill="#94a3b8" font-family="Space Mono" font-size="14" font-weight="bold">A</text>
+          <circle cx="250" cy="80" r="22" fill="#12121a" stroke="#4b5563" stroke-width="2" class="intro-node" data-node="B" style="cursor:pointer"/>
+          <text x="250" y="85" text-anchor="middle" fill="#94a3b8" font-family="Space Mono" font-size="14" font-weight="bold">B</text>
+          <circle cx="250" cy="170" r="22" fill="#12121a" stroke="#4b5563" stroke-width="2" class="intro-node" data-node="C" style="cursor:pointer"/>
+          <text x="250" y="175" text-anchor="middle" fill="#94a3b8" font-family="Space Mono" font-size="14" font-weight="bold">C</text>
+          <circle cx="100" cy="170" r="22" fill="#12121a" stroke="#4b5563" stroke-width="2" class="intro-node" data-node="D" style="cursor:pointer"/>
+          <text x="100" y="175" text-anchor="middle" fill="#94a3b8" font-family="Space Mono" font-size="14" font-weight="bold">D</text>
+          <circle cx="380" cy="80" r="22" fill="#12121a" stroke="#4b5563" stroke-width="2" class="intro-node" data-node="E" style="cursor:pointer"/>
+          <text x="380" y="85" text-anchor="middle" fill="#94a3b8" font-family="Space Mono" font-size="14" font-weight="bold">E</text>
+        </svg>
+      </div>
+      <div id="introInfo" class="highlight" style="display:none"></div>
+
+      <p style="margin-top:16px">Notice node <strong style="color:#fcd34d">E</strong> — nothing points TO it from the main loop (A→B→C→D→A), and E is only reachable from B. This matters a LOT later with SCCs.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" disabled>← Back</button>
+      <button class="nav-btn primary" onclick="goTo(1)">What is DFS? →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 2: DFS idea -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec1">
+    <div class="card">
+      <div class="card-title">Chapter 2 of 6</div>
+      <h2>What is DFS? 🔦</h2>
+      <p>Imagine you're exploring a cave with a flashlight. You pick a tunnel, go as <strong style="color:#a78bfa">deep as possible</strong>, hit a dead end, then backtrack and try the next tunnel. That's <strong style="color:#e2e8f0">Depth-First Search</strong>.</p>
+
+      <div class="highlight">
+        DFS rule: <strong>always go deeper</strong> before going sideways. Only backtrack when you're stuck.
+      </div>
+
+      <p>There are two functions your notes show:</p>
+
+      <div class="data-row">
+        <div class="data-box" style="border-color:rgba(124,58,237,0.4)">
+          <label>Explore(G, v)</label>
+          <div style="font-size:13px;color:#c4b5fd;line-height:1.6">Visits <em>everything reachable</em> from one starting vertex v. Goes deep first.</div>
+        </div>
+        <div class="data-box" style="border-color:rgba(6,182,212,0.4)">
+          <label>DFS(G)</label>
+          <div style="font-size:13px;color:#67e8f9;line-height:1.6">Calls Explore on EVERY vertex. Makes sure the whole graph gets visited, even disconnected parts.</div>
+        </div>
+      </div>
+
+      <div class="code">
+<span class="fn">Explore</span>(G, v):<br>
+&nbsp;&nbsp;visited[v] = <span class="kw">True</span><br>
+&nbsp;&nbsp;<span class="hl">pre(v)</span>  <span class="cm">← record ARRIVAL time</span><br>
+&nbsp;&nbsp;<span class="kw">for</span> each neighbor w of v:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if not</span> visited[w]:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">Explore</span>(G, w)<br>
+&nbsp;&nbsp;<span class="hl">post(v)</span>  <span class="cm">← record DEPARTURE time</span><br>
+<br>
+<span class="fn">DFS</span>(G):<br>
+&nbsp;&nbsp;<span class="kw">for</span> v <span class="kw">in</span> V: visited[v] = <span class="kw">False</span><br>
+&nbsp;&nbsp;<span class="kw">for</span> v <span class="kw">in</span> V:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if not</span> visited[v]: <span class="fn">Explore</span>(G, v)
+      </div>
+
+      <p>The key insight — it's <strong style="color:#e2e8f0">recursive</strong>. Explore calls itself on neighbors. It goes deeper and deeper until it can't, then returns (backtracks). Think of a stack of function calls piling up.</p>
+
+      <div class="highlight highlight-green">
+        ⚡ Time complexity: O(|E| + |V|) — you visit every vertex once and check every edge once. Super fast!
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="goTo(0)">← Graphs</button>
+      <button class="nav-btn primary" onclick="goTo(2)">Pre & Post Timestamps →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 3: Pre/Post interactive -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec2">
+    <div class="card">
+      <div class="card-title">Chapter 3 of 6</div>
+      <h2>pre(v) and post(v) — The Timestamps ⏱️</h2>
+      <p>This is where DFS gets powerful. We keep a <strong style="color:#e2e8f0">global clock</strong> (just a counter: 1, 2, 3...) and stamp each vertex twice:</p>
+
+      <div class="data-row">
+        <div class="data-box" style="border-color:rgba(16,185,129,0.4)">
+          <label>pre(v) = ARRIVAL</label>
+          <div style="font-size:13px;color:#6ee7b7;line-height:1.6">Clock value when we <strong>first visit</strong> vertex v. We just arrived!</div>
+        </div>
+        <div class="data-box" style="border-color:rgba(245,158,11,0.4)">
+          <label>post(v) = DEPARTURE</label>
+          <div style="font-size:13px;color:#fcd34d;line-height:1.6">Clock value when we <strong>finish</strong> v and all its descendants. We're done here!</div>
+        </div>
+      </div>
+
+      <p>Step through the DFS below to see the clock tick and timestamps fill in:</p>
+    </div>
+
+    <div class="graph-area" id="dfsGraphArea">
+      <div class="data-row" style="margin-bottom:16px">
+        <div class="data-box">
+          <label>Clock</label>
+          <div class="value" id="clockVal">1</div>
+        </div>
+        <div class="data-box">
+          <label>Current Node</label>
+          <div class="value" id="currentNode">—</div>
+        </div>
+        <div class="data-box">
+          <label>Stack</label>
+          <div class="value" style="font-size:14px" id="stackVal">[ ]</div>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 500 240" id="dfsSvg">
+        <defs>
+          <marker id="arr1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4b5563" id="arrFill1"/>
+          </marker>
+          <marker id="arr1t" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#10b981"/>
+          </marker>
+          <marker id="arr1b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#ef4444"/>
+          </marker>
+        </defs>
+        <!-- Edges: A->B, B->C, C->A(back), B->D, D->E, A->F(separate) -->
+        <line x1="118" y1="80" x2="208" y2="80" stroke="#2d2d3e" stroke-width="2" marker-end="url(#arr1)" id="eAB"/>
+        <line x1="248" y1="97" x2="248" y2="153" stroke="#2d2d3e" stroke-width="2" marker-end="url(#arr1)" id="eBC"/>
+        <path d="M 228,170 Q 100,230 95,100" stroke="#2d2d3e" stroke-width="2" fill="none" marker-end="url(#arr1)" id="eCA"/>
+        <line x1="268" y1="80" x2="358" y2="80" stroke="#2d2d3e" stroke-width="2" marker-end="url(#arr1)" id="eBD"/>
+        <line x1="398" y1="97" x2="398" y2="153" stroke="#2d2d3e" stroke-width="2" marker-end="url(#arr1)" id="eDE"/>
+        <!-- nodes -->
+        <circle cx="95" cy="80" r="26" fill="#0d0d14" stroke="#2d2d3e" stroke-width="2" id="nA"/>
+        <text x="95" y="76" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="preA">—</text>
+        <text x="95" y="87" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" font-weight="bold">A</text>
+        <text x="95" y="98" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="postA">—</text>
+
+        <circle cx="248" cy="80" r="26" fill="#0d0d14" stroke="#2d2d3e" stroke-width="2" id="nB"/>
+        <text x="248" y="76" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="preB">—</text>
+        <text x="248" y="87" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" font-weight="bold">B</text>
+        <text x="248" y="98" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="postB">—</text>
+
+        <circle cx="248" cy="170" r="26" fill="#0d0d14" stroke="#2d2d3e" stroke-width="2" id="nC"/>
+        <text x="248" y="166" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="preC">—</text>
+        <text x="248" y="177" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" font-weight="bold">C</text>
+        <text x="248" y="188" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="postC">—</text>
+
+        <circle cx="398" cy="80" r="26" fill="#0d0d14" stroke="#2d2d3e" stroke-width="2" id="nD"/>
+        <text x="398" y="76" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="preD">—</text>
+        <text x="398" y="87" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" font-weight="bold">D</text>
+        <text x="398" y="98" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="postD">—</text>
+
+        <circle cx="398" cy="170" r="26" fill="#0d0d14" stroke="#2d2d3e" stroke-width="2" id="nE"/>
+        <text x="398" y="166" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="preE">—</text>
+        <text x="398" y="177" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" font-weight="bold">E</text>
+        <text x="398" y="188" text-anchor="middle" fill="#64748b" font-family="Space Mono" font-size="11" id="postE">—</text>
+      </svg>
+
+      <div class="step-controls">
+        <button class="btn btn-reset" onclick="resetDFS()">↺ Reset</button>
+        <button class="btn" onclick="stepDFS()" id="stepBtn">Step →</button>
+        <div class="step-info" id="stepInfo">Click STEP to begin the DFS from node A</div>
+      </div>
+
+      <div class="legend" style="margin-top:16px">
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> Active (being explored)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Done (post recorded)</div>
+        <div class="legend-item"><div class="legend-line" style="background:#10b981"></div> Tree edge</div>
+        <div class="legend-item"><div class="legend-line" style="background:#ef4444"></div> Back edge (→ cycle!)</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">Pre/Post Table</div>
+      <table class="pre-post-table" id="prePostTable">
+        <thead>
+          <tr><th>Node</th><th>pre (arrived)</th><th>post (done)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr id="rowA"><td>A</td><td id="tpreA">—</td><td id="tpostA">—</td><td id="statusA" style="color:#475569">waiting</td></tr>
+          <tr id="rowB"><td>B</td><td id="tpreB">—</td><td id="tpostB">—</td><td id="statusB" style="color:#475569">waiting</td></tr>
+          <tr id="rowC"><td>C</td><td id="tpreC">—</td><td id="tpostC">—</td><td id="statusC" style="color:#475569">waiting</td></tr>
+          <tr id="rowD"><td>D</td><td id="tpreD">—</td><td id="tpostD">—</td><td id="statusD" style="color:#475569">waiting</td></tr>
+          <tr id="rowE"><td>E</td><td id="tpreE">—</td><td id="tpostE">—</td><td id="statusE" style="color:#475569">waiting</td></tr>
+        </tbody>
+      </table>
+      <div class="highlight highlight-yellow" style="margin-top:16px">
+        💡 <strong>The nesting rule:</strong> if u was explored INSIDE v's exploration, then pre(v) &lt; pre(u) &lt; post(u) &lt; post(v). Their intervals are nested like Russian dolls!
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="goTo(1)">← DFS Idea</button>
+      <button class="nav-btn primary" onclick="goTo(3)">Edge Types →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 4: Edge types -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec3">
+    <div class="card">
+      <div class="card-title">Chapter 4 of 6</div>
+      <h2>Edge Types — What DFS Reveals 🔍</h2>
+      <p>When DFS runs, it classifies every edge in the graph into one of these types. This is huge because <strong style="color:#e2e8f0">the types tell you about the structure of the graph</strong>.</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(16,185,129,0.3)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:32px;height:3px;background:var(--green);border-radius:2px"></div>
+        <h2 style="font-size:20px;color:#6ee7b7">Tree Edges</h2>
+      </div>
+      <p>Edges that DFS actually used to travel. They form the "skeleton" of the DFS traversal — literally the paths the algorithm walked.</p>
+      <div class="highlight highlight-green">When we go from u to v via DFS for the first time → that's a tree edge.</div>
+    </div>
+
+    <div class="card" style="border-color:rgba(239,68,68,0.3)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:32px;height:3px;background:var(--red);border-radius:2px"></div>
+        <h2 style="font-size:20px;color:#fca5a5">Back Edges ← CYCLES!</h2>
+      </div>
+      <p>An edge u→v where <strong style="color:#e2e8f0">v is an ancestor of u</strong> in the DFS tree. It literally goes BACK up the tree.</p>
+      <div class="highlight highlight-red">
+        🔥 <strong>Critical fact:</strong> A directed graph has a cycle IF AND ONLY IF DFS finds a back edge. No back edges = no cycles = it's a DAG.
+      </div>
+      <p>In the previous demo, the edge C→A is a back edge. C was discovered through A→B→C, so A is an ancestor of C. Going C→A means going backward = cycle!</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(245,158,11,0.3)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:32px;height:3px;background:var(--accent3);border-radius:2px"></div>
+        <h2 style="font-size:20px;color:#fcd34d">Cross Edges</h2>
+      </div>
+      <p>Edges that connect nodes in <strong style="color:#e2e8f0">different branches</strong> of the DFS tree, where neither is an ancestor of the other.</p>
+      <div class="highlight highlight-yellow">Cross edges only appear in directed graphs. They go from a later-visited branch to an earlier-completed one.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How to identify them using timestamps</div>
+      <p>Given an edge u → v, you can tell what type it is just from pre/post values:</p>
+      <table class="pre-post-table" style="margin-top:12px">
+        <thead><tr><th>Edge u → v</th><th>Condition</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>u → v</td><td style="color:#6ee7b7">v discovered through u</td><td style="color:#6ee7b7">🌲 Tree</td></tr>
+          <tr><td>u → v</td><td style="color:#fca5a5">pre(v) &lt; pre(u) &lt; post(u) &lt; post(v)</td><td style="color:#fca5a5">⬅️ Back (v is ancestor)</td></tr>
+          <tr><td>u → v</td><td style="color:#fcd34d">post(v) &lt; pre(u)</td><td style="color:#fcd34d">✂️ Cross (v already finished)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="goTo(2)">← Timestamps</button>
+      <button class="nav-btn primary" onclick="goTo(4)">SCCs →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 5: SCCs -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec4">
+    <div class="card">
+      <div class="card-title">Chapter 5 of 6</div>
+      <h2>Strongly Connected Components 🔄</h2>
+      <p>This is the big one. A <strong style="color:#a78bfa">Strongly Connected Component (SCC)</strong> is a group of vertices where <strong style="color:#e2e8f0">every vertex can reach every other vertex</strong>.</p>
+
+      <div class="highlight">
+        Think of it like a friend group where everyone can call everyone else. If you can get from A to B AND from B to A (maybe through other people), you're in the same SCC.
+      </div>
+
+      <p>Click each group below to understand it:</p>
+    </div>
+
+    <div class="graph-area">
+      <svg viewBox="0 0 500 280" id="sccSvg">
+        <defs>
+          <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <!-- SCC 1: A,B,C,D cycle -->
+        <ellipse cx="175" cy="140" rx="135" ry="100" fill="rgba(124,58,237,0.07)" stroke="rgba(124,58,237,0.3)" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="60" y="255" fill="rgba(124,58,237,0.6)" font-family="Space Mono" font-size="11">SCC 1</text>
+
+        <!-- SCC 2: E alone -->
+        <ellipse cx="390" cy="100" rx="45" ry="35" fill="rgba(6,182,212,0.07)" stroke="rgba(6,182,212,0.3)" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="356" y="148" fill="rgba(6,182,212,0.6)" font-family="Space Mono" font-size="11">SCC 2</text>
+
+        <!-- SCC 3: F alone -->
+        <ellipse cx="390" cy="200" rx="45" ry="35" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.3)" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="356" y="248" fill="rgba(245,158,11,0.6)" font-family="Space Mono" font-size="11">SCC 3</text>
+
+        <!-- Internal cycle edges -->
+        <line x1="118" y1="110" x2="208" y2="110" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <line x1="228" y1="125" x2="228" y2="155" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <line x1="208" y1="170" x2="120" y2="170" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <line x1="100" y1="155" x2="100" y2="125" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <!-- B->E cross -->
+        <line x1="252" y1="108" x2="348" y2="100" stroke="#4b5563" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+        <!-- C->F cross -->
+        <line x1="252" y1="168" x2="348" y2="200" stroke="#4b5563" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+
+        <!-- Nodes -->
+        <circle cx="100" cy="110" r="22" fill="#0d0d14" stroke="#7c3aed" stroke-width="2" id="sA"/>
+        <text x="100" y="115" text-anchor="middle" fill="#a78bfa" font-family="Space Mono" font-size="14" font-weight="bold">A</text>
+        <circle cx="230" cy="110" r="22" fill="#0d0d14" stroke="#7c3aed" stroke-width="2" id="sB"/>
+        <text x="230" y="115" text-anchor="middle" fill="#a78bfa" font-family="Space Mono" font-size="14" font-weight="bold">B</text>
+        <circle cx="230" cy="170" r="22" fill="#0d0d14" stroke="#7c3aed" stroke-width="2" id="sC"/>
+        <text x="230" y="175" text-anchor="middle" fill="#a78bfa" font-family="Space Mono" font-size="14" font-weight="bold">C</text>
+        <circle cx="100" cy="170" r="22" fill="#0d0d14" stroke="#7c3aed" stroke-width="2" id="sD"/>
+        <text x="100" y="175" text-anchor="middle" fill="#a78bfa" font-family="Space Mono" font-size="14" font-weight="bold">D</text>
+        <circle cx="390" cy="100" r="22" fill="#0d0d14" stroke="#06b6d4" stroke-width="2" id="sE"/>
+        <text x="390" y="105" text-anchor="middle" fill="#67e8f9" font-family="Space Mono" font-size="14" font-weight="bold">E</text>
+        <circle cx="390" cy="200" r="22" fill="#0d0d14" stroke="#f59e0b" stroke-width="2" id="sF"/>
+        <text x="390" y="205" text-anchor="middle" fill="#fcd34d" font-family="Space Mono" font-size="14" font-weight="bold">F</text>
+      </svg>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn" onclick="explainSCC(1)" style="border-color:rgba(124,58,237,0.5);color:#a78bfa">SCC 1: {A,B,C,D}</button>
+        <button class="btn" onclick="explainSCC(2)" style="border-color:rgba(6,182,212,0.5);color:#67e8f9">SCC 2: {E}</button>
+        <button class="btn" onclick="explainSCC(3)" style="border-color:rgba(245,158,11,0.5);color:#fcd34d">SCC 3: {F}</button>
+      </div>
+      <div id="sccExplain" class="highlight" style="margin-top:12px;display:none"></div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">The SCC Algorithm (Kosaraju's)</div>
+      <p>Your notes describe this algorithm to find ALL SCCs. Here's the idea in plain English:</p>
+
+      <div style="counter-reset: steps">
+        <div class="highlight highlight-green" style="margin:10px 0">
+          <strong>Step 1:</strong> Run DFS on the <strong>reversed graph</strong> G<sup>R</sup> (flip all edge directions). Record the post-order finish times.
+        </div>
+        <div class="highlight" style="margin:10px 0">
+          <strong>Step 2:</strong> Process vertices in <strong>decreasing post-order</strong> (highest post number first) on the ORIGINAL graph.
+        </div>
+        <div class="highlight highlight-yellow" style="margin:10px 0">
+          <strong>Step 3:</strong> Each DFS tree in step 2 = one SCC. Done!
+        </div>
+      </div>
+
+      <p style="margin-top:12px"><strong style="color:#e2e8f0">Why reverse the graph?</strong> The vertex with the highest post number in G<sup>R</sup> is guaranteed to be in a "source" SCC — meaning nothing flows INTO it from outside. Running DFS from there on the original G captures exactly that SCC before moving on.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="goTo(3)">← Edge Types</button>
+      <button class="nav-btn primary" onclick="goTo(5)">Topological Sort →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 6: Topo Sort + Summary -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="section" id="sec5">
+    <div class="card">
+      <div class="card-title">Chapter 6 of 6</div>
+      <h2>Topological Sort + Big Picture 🏁</h2>
+      <p>A <strong style="color:#a78bfa">topological sort</strong> orders the vertices of a DAG so that every edge points "forward." Think of it like ordering tasks where some must come before others.</p>
+
+      <div class="highlight highlight-yellow">
+        🎓 Example: To take CS 6515, you need CS 6505 first. CS 6505 needs CS 3510 first. Topological sort gives you a valid order to take these courses.
+      </div>
+
+      <p>The algorithm is shockingly simple:</p>
+      <div class="highlight highlight-green">
+        <strong>Run DFS → output vertices in DECREASING post-order.</strong> That's it.
+      </div>
+
+      <p>Why does this work? Because if there's an edge u→v in a DAG, then post(u) &gt; post(v) — u always finishes AFTER v. So sorting by decreasing post puts u before v. ✅</p>
+
+      <p style="margin-top:12px"><strong style="color:#ef4444">Only works on DAGs!</strong> If there's a cycle (back edge), you can't do a topological sort — you'd need to take a class before its own prerequisite.</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(124,58,237,0.3)">
+      <div class="card-title">🗺️ Everything Connected</div>
+      <h2 style="font-size:20px">The Full Picture</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="data-box" style="border-color:rgba(16,185,129,0.3)">
+          <label>DFS Gives You</label>
+          <div style="font-size:13px;color:#6ee7b7;line-height:1.9">
+            ✓ Visited all nodes<br>
+            ✓ pre(v) / post(v)<br>
+            ✓ Edge classification<br>
+            ✓ Cycle detection
+          </div>
+        </div>
+        <div class="data-box" style="border-color:rgba(6,182,212,0.3)">
+          <label>Which enables</label>
+          <div style="font-size:13px;color:#67e8f9;line-height:1.9">
+            ✓ Topo sort (DAG ordering)<br>
+            ✓ SCC detection<br>
+            ✓ Connectivity check<br>
+            ✓ Graph structure analysis
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight" style="margin-top:16px">
+        🧠 <strong>The whole lecture in one sentence:</strong> DFS is a systematic way to explore a graph, and the timestamps it records are a swiss army knife that unlocks cycle detection, topological ordering, and strongly connected components.
+      </div>
+    </div>
+
+    <div class="card" style="background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.3)">
+      <div class="card-title">Quick Reference Cheat Sheet</div>
+      <table class="pre-post-table">
+        <thead><tr><th>Concept</th><th>What it means</th><th>How to find it</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#6ee7b7">pre(v)</td><td>When DFS first arrived at v</td><td>Clock tick on entry</td></tr>
+          <tr><td style="color:#fcd34d">post(v)</td><td>When DFS finished v + all its subtree</td><td>Clock tick on exit</td></tr>
+          <tr><td style="color:#ef4444">Back edge</td><td>Edge going to an ancestor</td><td>pre(v) &lt; pre(u), still active</td></tr>
+          <tr><td style="color:#ef4444">Cycle</td><td>You can loop back to where you started</td><td>Any back edge exists</td></tr>
+          <tr><td style="color:#10b981">DAG</td><td>Directed graph, zero cycles</td><td>No back edges in DFS</td></tr>
+          <tr><td style="color:#a78bfa">SCC</td><td>Max group where everyone reaches everyone</td><td>Kosaraju: DFS on G^R then G</td></tr>
+          <tr><td style="color:#67e8f9">Topo Sort</td><td>Order nodes so edges go forward</td><td>DFS → sort by decreasing post</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="goTo(4)">← SCCs</button>
+      <button class="nav-btn primary" onclick="goTo(0)" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);color:#6ee7b7">↺ Start Over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── NAVIGATION ──────────────────────────────────────────
+const totalSections = 6;
+let current = 0;
+
+function buildNav() {
+  const nav = document.getElementById('navDots');
+  for (let i = 0; i < totalSections; i++) {
+    const d = document.createElement('button');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    nav.appendChild(d);
+  }
+}
+
+function goTo(idx) {
+  document.getElementById('sec' + current).classList.remove('active');
+  current = idx;
+  document.getElementById('sec' + current).classList.add('active');
+  const dots = document.querySelectorAll('.nav-dot');
+  dots.forEach((d, i) => {
+    d.className = 'nav-dot' + (i < idx ? ' done' : '') + (i === idx ? ' active' : '');
+  });
+  document.getElementById('progressFill').style.width = ((idx + 1) / totalSections * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildNav();
+
+// ── INTRO GRAPH CLICK ────────────────────────────────────
+const nodeInfo = {
+  A: "A has one outgoing edge: A → B. It's part of a cycle (A→B→C→D→A).",
+  B: "B has two outgoing edges: B→C (into the cycle) and B→E (leaves the cycle, one-way!).",
+  C: "C→D. Part of the main cycle. C can reach everyone.",
+  D: "D→A. Completes the cycle back to A.",
+  E: "E is isolated! You can reach E (from B), but you can NEVER get back to A,B,C,D from E. That's why E is its own SCC."
+};
+
+document.querySelectorAll('.intro-node').forEach(n => {
+  n.addEventListener('click', function() {
+    const node = this.dataset.node;
+    const info = document.getElementById('introInfo');
+    info.style.display = 'block';
+    info.textContent = '🔍 Node ' + node + ': ' + nodeInfo[node];
+    document.querySelectorAll('.intro-node').forEach(x => {
+      x.setAttribute('stroke', '#2d2d3e');
+    });
+    this.setAttribute('stroke', '#7c3aed');
+  });
+});
+
+// ── DFS STEP SIMULATION ──────────────────────────────────
+// Graph: A->B, B->C, C->A(back), B->D, D->E
+// DFS from A
+
+const dfsSteps = [
+  { action: 'visit', node: 'A', clock: 1, msg: 'Start at A. Mark pre(A) = 1. Push A onto call stack.', stack: ['A'] },
+  { action: 'move', from: 'A', to: 'B', edge: 'eAB', clock: 2, msg: 'A has neighbor B (unvisited). Move to B. pre(B) = 2.', stack: ['A','B'] },
+  { action: 'move', from: 'B', to: 'C', edge: 'eBC', clock: 3, msg: 'B has neighbor C (unvisited). Move to C. pre(C) = 3.', stack: ['A','B','C'] },
+  { action: 'back', from: 'C', to: 'A', edge: 'eCA', clock: 4, msg: '⚠️ C tries to go to A — but A is already visited AND still active! This is a BACK EDGE → there\'s a cycle!', stack: ['A','B','C'] },
+  { action: 'done', node: 'C', clock: 4, msg: 'C has no more unvisited neighbors. Record post(C) = 4. Backtrack to B.', stack: ['A','B'] },
+  { action: 'move', from: 'B', to: 'D', edge: 'eBD', clock: 5, msg: 'Back at B. Next neighbor is D (unvisited). Move to D. pre(D) = 5.', stack: ['A','B','D'] },
+  { action: 'move', from: 'D', to: 'E', edge: 'eDE', clock: 6, msg: 'D has neighbor E (unvisited). Move to E. pre(E) = 6.', stack: ['A','B','D','E'] },
+  { action: 'done', node: 'E', clock: 7, msg: 'E has no neighbors. Record post(E) = 7. Backtrack to D.', stack: ['A','B','D'] },
+  { action: 'done', node: 'D', clock: 8, msg: 'D is done. Record post(D) = 8. Backtrack to B.', stack: ['A','B'] },
+  { action: 'done', node: 'B', clock: 9, msg: 'B is done. Record post(B) = 9. Backtrack to A.', stack: ['A'] },
+  { action: 'done', node: 'A', clock: 10, msg: '🎉 A is done. Record post(A) = 10. DFS complete!', stack: [] },
+];
+
+const nodePrePost = { A: {}, B: {}, C: {}, D: {}, E: {} };
+let dfsStep = 0;
+
+function colorNode(id, color, strokeColor) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.setAttribute('fill', color);
+    el.setAttribute('stroke', strokeColor);
+  }
+}
+
+function colorEdge(id, color, marker) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.setAttribute('stroke', color);
+    el.setAttribute('stroke-width', '2.5');
+    if (marker) el.setAttribute('marker-end', marker);
+  }
+}
+
+function resetDFS() {
+  dfsStep = 0;
+  document.getElementById('clockVal').textContent = '1';
+  document.getElementById('currentNode').textContent = '—';
+  document.getElementById('stackVal').textContent = '[ ]';
+  document.getElementById('stepInfo').textContent = 'Click STEP to begin the DFS from node A';
+  document.getElementById('stepBtn').disabled = false;
+
+  ['A','B','C','D','E'].forEach(n => {
+    colorNode('n'+n, '#0d0d14', '#2d2d3e');
+    document.getElementById('pre'+n).textContent = '—';
+    document.getElementById('post'+n).textContent = '—';
+    document.getElementById('tpre'+n).textContent = '—';
+    document.getElementById('tpost'+n).textContent = '—';
+    document.getElementById('status'+n).textContent = 'waiting';
+    document.getElementById('status'+n).style.color = '#475569';
+    document.getElementById('row'+n).className = '';
+    nodePrePost[n] = {};
+  });
+
+  ['eAB','eBC','eCA','eBD','eDE'].forEach(e => {
+    colorEdge(e, '#2d2d3e', 'url(#arr1)');
+    const el = document.getElementById(e);
+    if (el) el.setAttribute('stroke-width', '2');
+  });
+}
+
+function stepDFS() {
+  if (dfsStep >= dfsSteps.length) return;
+  const s = dfsSteps[dfsStep];
+  let clock = s.clock;
+
+  document.getElementById('clockVal').textContent = clock;
+  document.getElementById('stackVal').textContent = s.stack.length ? '[ ' + s.stack.join(', ') + ' ]' : '[ ]';
+  document.getElementById('stepInfo').textContent = s.msg;
+
+  if (s.action === 'visit') {
+    colorNode('n'+s.node, 'rgba(124,58,237,0.4)', '#7c3aed');
+    document.getElementById('pre'+s.node).textContent = clock;
+    document.getElementById('tpre'+s.node).textContent = clock;
+    document.getElementById('current'+s.node ? 'currentNode' : '').textContent = s.node;
+    document.getElementById('currentNode').textContent = s.node;
+    document.getElementById('status'+s.node).textContent = 'exploring...';
+    document.getElementById('status'+s.node).style.color = '#a78bfa';
+    document.getElementById('row'+s.node).className = 'active-row';
+  }
+
+  if (s.action === 'move') {
+    colorNode('n'+s.from, 'rgba(124,58,237,0.15)', '#4b3382');
+    colorNode('n'+s.to, 'rgba(124,58,237,0.4)', '#7c3aed');
+    colorEdge(s.edge, '#10b981', 'url(#arr1t)');
+    document.getElementById('pre'+s.to).textContent = clock;
+    document.getElementById('tpre'+s.to).textContent = clock;
+    document.getElementById('currentNode').textContent = s.to;
+    document.getElementById('status'+s.to).textContent = 'exploring...';
+    document.getElementById('status'+s.to).style.color = '#a78bfa';
+    document.getElementById('row'+s.to).className = 'active-row';
+    document.getElementById('row'+s.from).className = '';
+  }
+
+  if (s.action === 'back') {
+    colorEdge(s.edge, '#ef4444', 'url(#arr1b)');
+    const el = document.getElementById(s.edge);
+    if (el) el.setAttribute('stroke-dasharray', '6,3');
+  }
+
+  if (s.action === 'done') {
+    colorNode('n'+s.node, 'rgba(16,185,129,0.2)', '#10b981');
+    document.getElementById('post'+s.node).textContent = clock;
+    document.getElementById('tpost'+s.node).textContent = clock;
+    const newCurrent = s.stack.length ? s.stack[s.stack.length - 1] : '—';
+    document.getElementById('currentNode').textContent = newCurrent;
+    document.getElementById('status'+s.node).textContent = '✓ done';
+    document.getElementById('status'+s.node).style.color = '#10b981';
+    document.getElementById('row'+s.node).className = 'done-row';
+  }
+
+  dfsStep++;
+  if (dfsStep >= dfsSteps.length) {
+    document.getElementById('stepBtn').disabled = true;
+    document.getElementById('stepInfo').textContent = '🎉 DFS complete! All nodes visited. Check the table for the full pre/post values.';
+  }
+}
+
+// ── SCC EXPLANATION ──────────────────────────────────────
+const sccTexts = {
+  1: "SCC 1 = {A, B, C, D}: These 4 form a cycle A→B→C→D→A. From ANY of these nodes you can reach ALL others. A can reach B,C,D. D can reach A,B,C (via the cycle). They're strongly connected!",
+  2: "SCC 2 = {E}: E is alone. You can GET to E (from B), but once you're at E, you can't reach A, B, C, or D. E has no outgoing edges back. So it's its own isolated SCC.",
+  3: "SCC 3 = {F}: Same as E — F is a dead end. Edges come INTO F but nothing goes out. Once you arrive at F, you're stuck. It's its own SCC of size 1."
+};
+
+function explainSCC(n) {
+  const el = document.getElementById('sccExplain');
+  el.style.display = 'block';
+  el.textContent = sccTexts[n];
+  el.className = 'highlight' + (n === 1 ? '' : n === 2 ? ' highlight-green' : ' highlight-yellow');
+}
+</script>
+</body>
+</html>
