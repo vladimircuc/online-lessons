@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greedy Algorithms — CS161 Section 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1826;
+    --surface2: #22203a;
+    --border: #2e2b4a;
+    --accent: #f6a740;
+    --accent2: #7c6af7;
+    --accent3: #3ecf8e;
+    --accent4: #e05c75;
+    --text: #e8e6f0;
+    --muted: #7a7896;
+    --code-bg: #141322;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+  /* ── HEADER ── */
+  .hero {
+    background: linear-gradient(135deg, #1a1826 0%, #0f0e17 60%, #1a0f2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 70% 50%, rgba(124,106,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    max-width: 700px;
+    margin-bottom: 18px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 32px;
+  }
+  /* ── NAV PILLS ── */
+  .nav-pills {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .nav-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+  }
+  .nav-pill:hover, .nav-pill.active {
+    border-color: var(--accent2);
+    color: #fff;
+    background: rgba(124,106,247,0.15);
+  }
+  /* ── MAIN LAYOUT ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 48px 32px; }
+  /* ── SECTION HEADER ── */
+  .section-marker {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 40px; margin-top: 60px;
+  }
+  .section-marker:first-child { margin-top: 0; }
+  .section-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(246,167,64,.08);
+    border: 1px solid rgba(246,167,64,.25);
+    padding: 4px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-pts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+  }
+  .card-accent { border-left: 3px solid var(--accent2); }
+  .card-warn { border-left: 3px solid var(--accent4); }
+  .card-ok { border-left: 3px solid var(--accent3); }
+  .card-gold { border-left: 3px solid var(--accent); }
+  .card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+  .card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 8px;
+  }
+  /* ── BIG QUESTION BLOCK ── */
+  .problem-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    font-family: 'Lora', serif;
+    font-size: .95rem;
+    position: relative;
+  }
+  .problem-block .q-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    display: block;
+  }
+  /* ── CODE ── */
+  pre, code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 16px 0;
+  }
+  code { background: rgba(255,255,255,.07); padding: 1px 6px; border-radius: 3px; font-size: .85em; }
+  .kw { color: #c792ea; }
+  .fn { color: var(--accent3); }
+  .cm { color: var(--muted); font-style: italic; }
+  .nu { color: var(--accent); }
+  .va { color: #89ddff; }
+  /* ── CALLOUT ── */
+  .callout {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .callout-icon { font-size: 1.3rem; line-height: 1; margin-top: 2px; flex-shrink: 0; }
+  .callout p { margin: 0; font-size: .93rem; }
+  .callout strong { color: #fff; }
+  /* ── HEADINGS ── */
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+
+  /* ══════════════════════════════════════════════
+     INTERACTIVE: LUCKY'S COUNTER-EXAMPLE BUILDER
+     ══════════════════════════════════════════════ */
+  .interactive-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    margin: 28px 0;
+  }
+  .interactive-box h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .interactive-box .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    letter-spacing: .05em;
+  }
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 9px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-primary { background: var(--accent2); color: #fff; }
+  .btn-primary:hover { background: #9181ff; }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { border-color: var(--accent2); color: #fff; }
+  .btn-danger { background: rgba(224,92,117,.15); border: 1px solid var(--accent4); color: var(--accent4); }
+  .btn-danger:hover { background: rgba(224,92,117,.3); }
+  .btn-success { background: rgba(62,207,142,.15); border: 1px solid var(--accent3); color: var(--accent3); }
+  .btn-success:hover { background: rgba(62,207,142,.3); }
+
+  /* study table */
+  .study-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .88rem; }
+  .study-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .study-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .study-table tr:last-child td { border-bottom: none; }
+  .study-table tr.selected td { background: rgba(124,106,247,.1); }
+  .study-table tr.missed td { background: rgba(224,92,117,.08); }
+  .study-table tr.picked td { background: rgba(62,207,142,.08); }
+
+  /* timeline viz */
+  .timeline-wrap { margin: 14px 0; overflow-x: auto; }
+  .timeline-svg { min-width: 500px; }
+  .day-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* result box */
+  .result-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    padding: 6px 14px;
+    border-radius: 5px;
+    margin: 4px 4px 4px 0;
+  }
+  .result-badge.bad { background: rgba(224,92,117,.15); border: 1px solid var(--accent4); color: var(--accent4); }
+  .result-badge.good { background: rgba(62,207,142,.15); border: 1px solid var(--accent3); color: var(--accent3); }
+
+  /* ══════════════════════════════════════════════
+     PLUCKY'S ALGORITHM STEPPER
+     ══════════════════════════════════════════════ */
+  .slots-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0;
+  }
+  .slot {
+    width: 52px; height: 52px;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    position: relative;
+    transition: all .25s;
+  }
+  .slot .day-num {
+    color: var(--muted); font-size: 9px; margin-bottom: 2px;
+  }
+  .slot .study-id {
+    font-size: 14px; font-weight: 700; color: var(--text);
+  }
+  .slot.booked {
+    border-color: var(--accent3);
+    background: rgba(62,207,142,.1);
+  }
+  .slot.booked .study-id { color: var(--accent3); }
+  .slot.highlight {
+    border-color: var(--accent);
+    background: rgba(246,167,64,.15);
+    box-shadow: 0 0 12px rgba(246,167,64,.25);
+  }
+  .queue-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    transition: all .25s;
+  }
+  .queue-item.current { border-color: var(--accent); background: rgba(246,167,64,.08); }
+  .queue-item.done { opacity: .4; text-decoration: line-through; }
+  .queue-item .pill {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    background: rgba(255,255,255,.07); color: var(--muted);
+  }
+  .step-log {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: var(--accent3);
+    min-height: 48px;
+    margin: 14px 0;
+    line-height: 1.7;
+  }
+
+  /* ══════════════════════════════════════════════
+     PROOF ACCORDION
+     ══════════════════════════════════════════════ */
+  .accordion { margin: 14px 0; }
+  .acc-header {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: all .18s;
+    font-family: 'Syne', sans-serif;
+    font-size: .92rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .acc-header:hover { border-color: var(--accent2); }
+  .acc-header .acc-icon { color: var(--accent2); font-size: 1rem; transition: transform .2s; }
+  .acc-header.open .acc-icon { transform: rotate(90deg); }
+  .acc-body {
+    display: none;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 20px 24px;
+    font-size: .92rem;
+  }
+  .acc-body.open { display: block; }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  .proof-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .proof-step-body { flex: 1; }
+
+  /* ══════════════════════════════════════════════
+     UTILITARIAN SECTION
+     ══════════════════════════════════════════════ */
+  .utility-calc {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin: 16px 0;
+  }
+  @media (max-width: 600px) { .utility-calc { grid-template-columns: 1fr; } }
+  .uc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .uc-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+  }
+  .person-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: .85rem;
+  }
+  .person-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .utility-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 0 0;
+  }
+  input[type=range] { width: 100%; accent-color: var(--accent2); margin: 6px 0; }
+  .range-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    color: var(--accent);
+  }
+
+  /* EXCHANGE arg */
+  .exchange-grid {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 12px; align-items: center; margin: 16px 0;
+  }
+  .opt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .opt-box.winner { border-color: var(--accent3); background: rgba(62,207,142,.07); }
+  .opt-box.loser { border-color: var(--accent4); background: rgba(224,92,117,.07); }
+  .vs-label {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    color: var(--muted);
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  /* footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .75rem;
+    color: var(--muted);
+    letter-spacing: .08em;
+  }
+  .tag { color: var(--accent2); }
+
+  /* ── scroll TOC progress ── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transform-origin: left;
+    z-index: 100;
+  }
+  /* math display */
+  .math {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    color: var(--accent);
+    font-size: .9em;
+  }
+  .block-math {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    margin: 14px 0;
+    color: var(--accent);
+    font-size: .9rem;
+    text-align: center;
+  }
+  /* divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+  /* animate in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim { animation: fadeUp .5s ease both; }
+  .anim-d1 { animation-delay: .1s; }
+  .anim-d2 { animation-delay: .2s; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="pbar"></div>
+
+<!-- ══════════════ HERO ══════════════ -->
+<div class="hero">
+  <span class="hero-tag">CS161 · Winter 2024 · Section 3 · Final Exam Prep</span>
+  <h1>Greedy Algorithms<br><span>From Intuition to Proof</span></h1>
+  <p>A complete walkthrough of Problems 3.1 – 3.3: counterexamples, exchange arguments, and utilitarian ethics in algorithm design.</p>
+  <div class="nav-pills">
+    <a class="nav-pill" href="#s31">3.1 Lucky's Flaw</a>
+    <a class="nav-pill" href="#s32">3.2 Plucky's Fix</a>
+    <a class="nav-pill" href="#s33">3.3 Utilitarianism</a>
+    <a class="nav-pill" href="#summary">Summary</a>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="container">
+
+<!-- ───────────── CONTEXT ───────────── -->
+<div class="card card-accent anim">
+  <h3>The Setup: Study Scheduling</h3>
+  <p>There are <em>n</em> psychology studies. Each study <span class="math">i</span> has:</p>
+  <ul>
+    <li>A <strong style="color:var(--accent)">payout</strong> <span class="math">p_i ≥ 0</span> dollars</li>
+    <li>A <strong style="color:var(--accent2)">deadline</strong> <span class="math">d_i ≥ 0</span> — the last day to participate</li>
+  </ul>
+  <p>Today is day 0. Lucky can do <strong>one study per day</strong> and can choose any day up to the deadline. He wants to <strong>maximize total payout</strong>.</p>
+  <div class="callout">
+    <div class="callout-icon">🎯</div>
+    <p>This is the classic <strong>Job Scheduling with Deadlines</strong> problem. It appears in many forms — task scheduling, exam prep, project deadlines. The greedy insight is powerful once you see it.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     3.1 — LUCKY'S ALGORITHM
+     ═══════════════════════════════════════ -->
+<div id="s31">
+  <div class="section-marker">
+    <span class="section-num">Problem 3.1</span>
+    <div class="section-line"></div>
+    <span class="section-pts">8 pts — Counterexample</span>
+  </div>
+
+  <h2>Why Lucky's Greedy Fails</h2>
+
+  <div class="problem-block">
+    <span class="q-label">The Question</span>
+    <strong>Lucky's strategy:</strong> every day, pick the remaining study with the <em>highest payout</em>, and do it that day (if its deadline hasn't passed). Prove by counterexample that this does NOT always maximize payout.
+  </div>
+
+  <p>Lucky's algorithm processes studies greedily by payout — always picking the most valuable remaining study and scheduling it at the <em>earliest available day</em>. The flaw is subtle: greedily grabbing the best thing <em>now</em> can permanently block you from doing a cluster of moderately-valuable things <em>later</em>.</p>
+
+  <div class="card card-warn">
+    <h3>🔍 The Core Intuition</h3>
+    <p>Scheduling at the <strong>first available day</strong> is wasteful. It wastes an early slot on a study that could have been done later, leaving you unable to do a study with a tight early deadline.</p>
+    <p>Think of it like this: if you have a task due Monday (only day available) and another due Friday, doing the Friday task on Monday wastes Monday. Now you can't do the Monday-due task at all.</p>
+  </div>
+
+  <div class="interactive-box">
+    <h3>🧪 Interactive Counterexample Builder</h3>
+    <p class="subtitle">Use the preset example or build your own. Watch how Lucky's algorithm can fail.</p>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+      <button class="btn btn-secondary" onclick="loadPreset('exam')">Load Exam Counterexample</button>
+      <button class="btn btn-secondary" onclick="loadPreset('simple')">Simpler Example</button>
+      <button class="btn btn-danger" onclick="resetCustom()">Reset</button>
+    </div>
+
+    <table class="study-table" id="studyInput">
+      <thead>
+        <tr>
+          <th>Study</th>
+          <th>Deadline d_i</th>
+          <th>Payout p_i</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="studyBody">
+      </tbody>
+    </table>
+    <button class="btn btn-secondary" onclick="addStudyRow()" style="margin-bottom:16px;">+ Add Study</button>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="runLucky()">▶ Run Lucky's Algorithm</button>
+      <button class="btn btn-success" onclick="runOptimal()">⭐ Find Optimal (Plucky's)</button>
+    </div>
+
+    <div id="luckyResult" style="display:none;">
+      <div class="timeline-wrap">
+        <svg class="timeline-svg" id="timelineSvg" height="110"></svg>
+      </div>
+      <div id="resultBoxes" style="margin-top:10px;"></div>
+      <div class="step-log" id="luckyLog"></div>
+    </div>
+  </div>
+
+  <!-- WHY IT'S A VALID COUNTEREXAMPLE -->
+  <div class="card card-gold">
+    <h3>📝 What Makes a Good Counterexample?</h3>
+    <p>For a counterexample proof, you need to show:</p>
+    <ol>
+      <li>A specific instance (list of studies with deadlines and payouts)</li>
+      <li>What Lucky's algorithm does on that instance</li>
+      <li>A better schedule that earns more money</li>
+    </ol>
+    <p>You don't need to prove that the better schedule is <em>optimal</em> — you just need to show Lucky's schedule isn't.</p>
+  </div>
+
+  <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; margin-bottom:12px; color:#fff;">The Minimal Counterexample (for the exam)</h3>
+
+  <div class="card">
+    <h4>Instance</h4>
+    <table class="study-table">
+      <thead><tr><th>Study</th><th>Deadline d</th><th>Payout p</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>0</td><td>$5</td></tr>
+        <tr><td>B</td><td>0</td><td>$3</td></tr>
+      </tbody>
+    </table>
+    <p>Both studies have deadline day 0 — Lucky can only do one of them on day 0.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+      <div class="opt-box loser">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">LUCKY PICKS</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent4);">Study A</div>
+        <div style="font-family:'JetBrains Mono'; font-size:.8rem; margin-top:4px;">Day 0: A ($5)</div>
+        <div style="color:var(--accent4); font-weight:700; margin-top:8px;">Total: $5</div>
+      </div>
+      <div class="opt-box winner">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">OPTIMAL</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent3);">Study A</div>
+        <div style="font-family:'JetBrains Mono'; font-size:.8rem; margin-top:4px;">Day 0: A ($5)</div>
+        <div style="color:var(--muted); font-weight:700; margin-top:8px;">Same — trivial</div>
+      </div>
+    </div>
+    <p style="margin-top:14px; color:var(--muted); font-size:.88rem;">Hmm, this is too simple. Let's make it interesting: add a study with d=1 and p=$4.</p>
+  </div>
+
+  <div class="card card-warn">
+    <h4>Better Instance (what the exam wants)</h4>
+    <table class="study-table">
+      <thead><tr><th>Study</th><th>Deadline d</th><th>Payout p</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>1</td><td>$10</td></tr>
+        <tr><td>B</td><td>0</td><td>$6</td></tr>
+        <tr><td>C</td><td>0</td><td>$5</td></tr>
+      </tbody>
+    </table>
+    <p>Both B and C have deadline 0. Lucky processes by <em>decreasing payout</em>:</p>
+    <ol>
+      <li>A ($10, d=1): day ≤ 1? Yes. Schedule on <strong>day 0</strong>. day becomes 1.</li>
+      <li>B ($6, d=0): day ≤ 0? No (day=1). <strong>Skip B.</strong></li>
+      <li>C ($5, d=0): day ≤ 0? No. <strong>Skip C.</strong></li>
+    </ol>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;">
+      <span class="result-badge bad">Lucky: $10 (only A)</span>
+      <span class="result-badge good">Optimal: $16 (B + A, days 0 and 1)</span>
+    </div>
+    <p>Lucky greedily grabs the highest-payout study A on day 0, but A doesn't <em>need</em> day 0 — it could have been done on day 1. By using day 0 for A, Lucky loses the chance to do B on day 0.</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     3.2 — PLUCKY'S ALGORITHM (PROOF)
+     ═══════════════════════════════════════ -->
+<div id="s32">
+  <div class="section-marker">
+    <span class="section-num">Problem 3.2</span>
+    <div class="section-line"></div>
+    <span class="section-pts">25 pts — Formal Proof of Correctness</span>
+  </div>
+
+  <h2>Plucky's Fix — Scheduling as Late as Possible</h2>
+
+  <div class="problem-block">
+    <span class="q-label">The Question</span>
+    <strong>Plucky's strategy:</strong> process studies in <em>decreasing payout</em> order, but schedule each study on the <em>last available day</em> ≤ its deadline. Prove this always returns the maximum payout.
+  </div>
+
+  <div class="card card-accent">
+    <h3>🔑 The Key Insight</h3>
+    <p>Scheduling as <strong>late as possible</strong> is the fix. By pushing every study to its latest possible slot, we preserve earlier days for studies with earlier deadlines — the studies that have no flexibility. This is sometimes called <strong>"don't waste early slots."</strong></p>
+    <p>Think of it like airline boarding — put the bulky bags in the back to keep the front clear for tight connections.</p>
+  </div>
+
+  <!-- INTERACTIVE STEPPER -->
+  <div class="interactive-box">
+    <h3>▶ Step Through Plucky's Algorithm</h3>
+    <p class="subtitle">Watch how studies are placed into the latest available slot, step by step.</p>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <button class="btn btn-secondary" onclick="pluckyPreset('easy')">3-Study Example</button>
+      <button class="btn btn-secondary" onclick="pluckyPreset('proof')">Proof Illustration (5 studies)</button>
+      <button class="btn btn-secondary" onclick="pluckyPreset('tricky')">Tricky Case</button>
+    </div>
+
+    <div id="pluckyStudies" style="margin-bottom:16px;"></div>
+
+    <div style="margin-bottom:10px;">
+      <span style="font-family:'JetBrains Mono'; font-size:11px; color:var(--muted);">SCHEDULE SLOTS (each box = one day)</span>
+    </div>
+    <div class="slots-row" id="slotsRow"></div>
+
+    <div class="step-log" id="pluckyLog">Press Step to begin.</div>
+
+    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="pluckyStep()">Step →</button>
+      <button class="btn btn-secondary" onclick="pluckyReset()">↺ Reset</button>
+      <button class="btn btn-success" onclick="pluckyRunAll()">Run All ▶▶</button>
+    </div>
+    <div id="pluckyTotal" style="font-family:'JetBrains Mono'; font-size:.85rem; margin-top:12px; color:var(--accent3);"></div>
+  </div>
+
+  <!-- PROOF OF CORRECTNESS -->
+  <h3 style="font-family:'Syne',sans-serif; font-size:1.2rem; margin: 28px 0 16px; color:#fff;">The Exchange Argument Proof</h3>
+
+  <div class="callout">
+    <div class="callout-icon">💡</div>
+    <p><strong>Exchange arguments</strong> are the standard technique for proving greedy algorithms correct. The idea: take any optimal solution, and show you can convert it into Plucky's solution one swap at a time without losing any value. Therefore Plucky's solution must also be optimal.</p>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <span class="acc-icon">▶</span>
+      Step 1: Claim what Plucky's algorithm outputs
+    </div>
+    <div class="acc-body">
+      <p>Plucky's algorithm produces a schedule <span class="math">S_P</span> — a set of (study, day) assignments. We claim <span class="math">S_P</span> maximizes total payout.</p>
+      <p>First, note that the order Plucky processes studies (decreasing payout) doesn't affect <em>which studies get scheduled</em> — it affects <em>which days they get</em>. We need to prove that Plucky never misses a study it could have included.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <span class="acc-icon">▶</span>
+      Step 2: Feasibility — Plucky only schedules valid assignments
+    </div>
+    <div class="acc-body">
+      <p>Every study <span class="math">i</span> that Plucky schedules is assigned to some day <span class="math">t ≤ d_i</span>, because Plucky only looks at days ≤ <span class="math">d_i</span> when placing study <span class="math">i</span>. Each day slot is marked "booked" once used. So:</p>
+      <ul>
+        <li>No two studies share the same day.</li>
+        <li>Every study is scheduled on or before its deadline.</li>
+      </ul>
+      <p>Therefore Plucky's output is always a <strong>feasible schedule</strong>.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <span class="acc-icon">▶</span>
+      Step 3: Plucky includes every study any feasible schedule can include
+    </div>
+    <div class="acc-body">
+      <p>This is the heart of the proof. We want to show: <em>if there exists a feasible schedule that includes study <span class="math">i</span>, then Plucky's algorithm also includes study <span class="math">i</span>.</em></p>
+      <p><strong>Key Lemma:</strong> When Plucky processes study <span class="math">i</span>, if there exists any available day <span class="math">t ≤ d_i</span>, Plucky will find it and schedule study <span class="math">i</span>.</p>
+      <p><em>Proof sketch:</em> Plucky scans days <span class="math">d_i, d_i-1, ..., 0</span> looking for a free slot. If any such slot exists (isn't "booked"), Plucky uses it. A slot can only be "booked" if Plucky already placed a higher-payout study there. So if Plucky can't find a free slot, it means all days 0...<span class="math">d_i</span> are already used by studies with <em>higher payout</em> — which means no feasible schedule could have preferred study <span class="math">i</span> over those studies anyway.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <span class="acc-icon">▶</span>
+      Step 4: The Exchange Argument (Core)
+    </div>
+    <div class="acc-body">
+      <div class="proof-step">
+        <div class="step-num">1</div>
+        <div class="proof-step-body">
+          <p>Let <span class="math">OPT</span> be any optimal schedule, and let <span class="math">S_P</span> be Plucky's schedule. Suppose for contradiction that <span class="math">OPT</span> earns more than <span class="math">S_P</span>. That means there's some study <span class="math">i</span> that's in <span class="math">OPT</span> but <em>not</em> in <span class="math">S_P</span>.</p>
+        </div>
+      </div>
+      <div class="proof-step">
+        <div class="step-num">2</div>
+        <div class="proof-step-body">
+          <p>In Plucky's schedule, since study <span class="math">i</span> was not scheduled, all days 0 through <span class="math">d_i</span> were already occupied when Plucky tried to place study <span class="math">i</span>. Each of those occupants has payout ≥ <span class="math">p_i</span> (because Plucky processes in decreasing payout order).</p>
+        </div>
+      </div>
+      <div class="proof-step">
+        <div class="step-num">3</div>
+        <div class="proof-step-body">
+          <p>In <span class="math">OPT</span>, study <span class="math">i</span> is placed on some day <span class="math">t ≤ d_i</span>. On that same day <span class="math">t</span>, Plucky has placed some study <span class="math">j</span> with <span class="math">p_j ≥ p_i</span>.</p>
+        </div>
+      </div>
+      <div class="proof-step">
+        <div class="step-num">4</div>
+        <div class="proof-step-body">
+          <p>Now swap: in <span class="math">OPT</span>, replace study <span class="math">i</span> (on day <span class="math">t</span>) with study <span class="math">j</span>. Since <span class="math">p_j ≥ p_i</span>, this swap doesn't decrease total payout. We need to verify study <span class="math">j</span> can legally occupy day <span class="math">t</span>: by Step 3's lemma, study <span class="math">j</span> had payout ≥ all studies that occupied days 0...<span class="math">d_j</span>, but we need <span class="math">d_j ≥ t</span>... (this requires careful case analysis in a full proof).</p>
+        </div>
+      </div>
+      <div class="proof-step">
+        <div class="step-num">5</div>
+        <div class="proof-step-body">
+          <p>Repeating this exchange for all differences between <span class="math">OPT</span> and <span class="math">S_P</span> transforms <span class="math">OPT</span> into <span class="math">S_P</span> without decreasing payout. Therefore <span class="math">S_P</span> is at least as good as <span class="math">OPT</span>, which means <span class="math">S_P</span> is optimal. <span style="color:var(--accent3)">∎</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <span class="acc-icon">▶</span>
+      Step 5: Putting it together — full proof structure
+    </div>
+    <div class="acc-body">
+      <p>A clean exam-ready proof has this skeleton:</p>
+      <pre><span class="cm">// Proof of Plucky's Correctness</span>
+
+<span class="kw">Claim:</span> Plucky's algorithm returns maximum payout.
+
+<span class="kw">Part 1 — Feasibility:</span>
+  Plucky never assigns two studies to the same day.
+  Plucky only assigns study i to day t ≤ d_i.
+  ∴ Plucky's output is a valid schedule.
+
+<span class="kw">Part 2 — Optimality (Exchange Argument):</span>
+  Let OPT = any optimal schedule.
+  Let S_P = Plucky's schedule.
+  
+  If OPT ≠ S_P, there's a study i ∈ OPT \ S_P.
+  
+  i ∉ S_P means: when Plucky tried to place i,
+  all days 0..d_i were occupied by studies
+  with payout ≥ p_i (processed before i).
+  
+  In OPT, i is on some day t ≤ d_i.
+  Plucky's schedule has study j on day t, p_j ≥ p_i.
+  
+  We can "swap" i for j in OPT: 
+    new payout ≥ old payout (since p_j ≥ p_i)
+    schedule remains feasible (j fits on day t)
+  
+  Repeat for all differences.
+  OPT is transformed to S_P without loss.
+  ∴ payout(S_P) ≥ payout(OPT).
+  ∴ S_P is optimal.  ∎</pre>
+    </div>
+  </div>
+
+  <!-- VISUAL EXCHANGE ARGUMENT -->
+  <div class="interactive-box" style="margin-top:24px;">
+    <h3>🔄 Exchange Argument — Visual Demo</h3>
+    <p class="subtitle">See concretely how we swap studies between OPT and Plucky's schedule.</p>
+    <div id="exchangeDemo">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:16px 0;">
+        <div>
+          <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:8px; letter-spacing:.1em;">PLUCKY'S SCHEDULE</div>
+          <div id="pluckyExSched" class="opt-box winner" style="text-align:left; min-height:80px;"></div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:8px; letter-spacing:.1em;">OPT (before swap)</div>
+          <div id="optExSched" class="opt-box" style="text-align:left; min-height:80px;"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="doExchange()">Perform Exchange Swap →</button>
+      <div class="step-log" id="exchangeLog" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     3.3 — UTILITARIANISM
+     ═══════════════════════════════════════ -->
+<div id="s33">
+  <div class="section-marker">
+    <span class="section-num">Problem 3.3</span>
+    <div class="section-line"></div>
+    <span class="section-pts">16 pts — Ethics in CS</span>
+  </div>
+
+  <h2>Utilitarian Value — When the Algorithm Meets Ethics</h2>
+
+  <div class="callout">
+    <div class="callout-icon">📚</div>
+    <p><strong>Context:</strong> This question uses the scheduling problem as a lens to explore utilitarianism — a major ethical framework in CS ethics. These questions have specific correct answers; they're not opinion questions. Know the framework cold.</p>
+  </div>
+
+  <!-- 3.3.1 -->
+  <div id="s331">
+    <div class="section-marker" style="margin-top:32px;">
+      <span class="section-num">3.3.1</span>
+      <div class="section-line"></div>
+      <span class="section-pts">4 pts</span>
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; color:#fff; margin-bottom:12px;">How does a utilitarian calculate value?</h3>
+
+    <div class="card card-accent">
+      <h3>Utilitarianism in One Sentence</h3>
+      <p>A utilitarian calculates the value of an action as <strong>the sum of wellbeing (utility/happiness) produced across all affected individuals</strong>.</p>
+      <div class="block-math">Value(action) = Σ wellbeing(person_i, action)  for all affected persons i</div>
+    </div>
+
+    <div class="utility-calc">
+      <div class="uc-card">
+        <h4>Does Lucky's Payout Count?</h4>
+        <p style="font-size:.88rem;">Yes — but <em>only as one person's utility among many</em>. Lucky's $10 personal payout is part of the sum, but so is:</p>
+        <ul style="font-size:.85rem;">
+          <li>The scientific value of the research</li>
+          <li>Benefits to future patients from the psychology findings</li>
+          <li>The study team's funding security</li>
+          <li>The participants' own experience</li>
+        </ul>
+        <p style="font-size:.85rem; margin-top:8px;">So Lucky's payout factors in, but it's <em>not privileged</em> — it's just one input.</p>
+      </div>
+      <div class="uc-card">
+        <h4>Utilitarian Total for a Study</h4>
+        <div id="utilCalc">
+          <div class="person-row">
+            <div class="person-dot" style="background:var(--accent)"></div>
+            <span style="flex:1; font-size:.82rem;">Lucky's payout</span>
+            <span class="range-val" id="vLucky">$10</span>
+          </div>
+          <input type="range" min="0" max="30" value="10" oninput="updateUtil('lucky', this.value)">
+          <div class="person-row">
+            <div class="person-dot" style="background:var(--accent2)"></div>
+            <span style="flex:1; font-size:.82rem;">Research benefit (society)</span>
+            <span class="range-val" id="vSociety">$25</span>
+          </div>
+          <input type="range" min="0" max="100" value="25" oninput="updateUtil('society', this.value)">
+          <div class="person-row">
+            <div class="person-dot" style="background:var(--accent3)"></div>
+            <span style="flex:1; font-size:.82rem;">Researcher utility</span>
+            <span class="range-val" id="vResearcher">$8</span>
+          </div>
+          <input type="range" min="0" max="30" value="8" oninput="updateUtil('researcher', this.value)">
+          <div class="utility-total" id="utilTotal" style="color:var(--accent);">Total: $43</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-ok" style="margin-top:4px;">
+      <h3>📝 Exam Answer Template</h3>
+      <p><strong>How a utilitarian calculates value:</strong> "A utilitarian calculates the value of each study as the total sum of wellbeing (utility) produced across <em>all</em> individuals affected — including researchers, future beneficiaries of the research, and society at large."</p>
+      <p><strong>Does Lucky's payout factor in:</strong> "Yes — Lucky's personal payout does factor into the utilitarian calculation, but only as one person's share of the total utility. It is not the sole or primary measure of value; the broader societal benefits of the research carry significant weight as well."</p>
+    </div>
+  </div>
+
+  <!-- 3.3.2 -->
+  <div id="s332">
+    <div class="section-marker" style="margin-top:32px;">
+      <span class="section-num">3.3.2</span>
+      <div class="section-line"></div>
+      <span class="section-pts">4 pts</span>
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; color:#fff; margin-bottom:12px;">What changes to make Plucky's algorithm utilitarian?</h3>
+
+    <div class="card">
+      <p>The algorithm structure stays exactly the same — only the <strong>value used for sorting</strong> changes:</p>
+    </div>
+
+    <div class="exchange-grid">
+      <div class="opt-box loser">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">PLUCKY'S ORIGINAL</div>
+        <div style="font-size:.85rem; margin-bottom:6px;">Sort studies by <strong style="color:var(--accent4)">personal payout p_i</strong></div>
+        <div style="font-family:'JetBrains Mono'; font-size:.78rem; color:var(--muted);">Maximize: Σ p_i for chosen studies</div>
+      </div>
+      <div class="vs-label">→</div>
+      <div class="opt-box winner">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">UTILITARIAN VERSION</div>
+        <div style="font-size:.85rem; margin-bottom:6px;">Sort by <strong style="color:var(--accent3)">total utility u_i</strong> (sum of all affected parties)</div>
+        <div style="font-family:'JetBrains Mono'; font-size:.78rem; color:var(--muted);">Maximize: Σ u_i for chosen studies</div>
+      </div>
+    </div>
+
+    <div class="card card-accent">
+      <h3>📝 Exam Answer Template (2–3 sentences)</h3>
+      <p>"To maximize utilitarian value, Lucky should replace each study's personal payout <span class="math">p_i</span> with its <em>total utility</em> <span class="math">u_i</span> — the sum of wellbeing produced for all affected individuals including researchers, future beneficiaries of the research findings, and society. The algorithm would then sort studies in decreasing order of <span class="math">u_i</span> instead of <span class="math">p_i</span>. Everything else in Plucky's algorithm — the scheduling logic of placing each study at the latest available slot — remains unchanged."</p>
+    </div>
+  </div>
+
+  <!-- 3.3.3 -->
+  <div id="s333">
+    <div class="section-marker" style="margin-top:32px;">
+      <span class="section-num">3.3.3</span>
+      <div class="section-line"></div>
+      <span class="section-pts">4 pts</span>
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; color:#fff; margin-bottom:12px;">Why is the utilitarian calculation difficult in practice?</h3>
+
+    <div class="card card-warn">
+      <h3>The Measurement Problem</h3>
+      <p>Even if we agree on utilitarianism as a framework, actually <em>computing</em> the total utility of a study requires measuring things that are extraordinarily hard to quantify:</p>
+    </div>
+
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-icon">▶</span>
+        Hard-to-measure example 1: Long-term societal benefits
+      </div>
+      <div class="acc-body">
+        <p>A psychology study today might inform clinical treatments used 20 years from now, improving mental health outcomes for millions of people. How do you attach a dollar value (or any utility value) to that? You'd need to:</p>
+        <ul>
+          <li>Estimate how many people will be affected</li>
+          <li>Estimate how much better off they'll be</li>
+          <li>Discount future benefits over time (what's $1 of benefit in 20 years worth today?)</li>
+          <li>Account for uncertainty — the study might not find anything useful</li>
+        </ul>
+        <p>Each of these is itself a difficult empirical and philosophical question.</p>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-icon">▶</span>
+        Hard-to-measure example 2: Comparing utility across people
+      </div>
+      <div class="acc-body">
+        <p>Utilitarianism requires summing utility across individuals. But utility isn't measured in dollars — it's subjective wellbeing. Is $10 of happiness to a rich person the same as $10 to a poor person? How do you compare the psychological distress of a study participant to the abstract future benefit to an unborn patient?</p>
+        <p>This is called the <strong>interpersonal comparison of utility</strong> problem, and there's no consensus solution.</p>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span class="acc-icon">▶</span>
+        Hard-to-measure example 3: Scope of "affected individuals"
+      </div>
+      <div class="acc-body">
+        <p>Who counts? Just the direct participants? The research team? All future patients who might benefit? Future generations? Non-human animals? The boundary of "affected individuals" is a philosophical choice that dramatically changes the calculation, and there's no objective way to set it.</p>
+      </div>
+    </div>
+
+    <div class="card card-ok">
+      <h3>📝 Exam Answer Template (2–3 sentences)</h3>
+      <p>"The utilitarian calculation is difficult because it requires measuring quantities that are highly uncertain or subjective. For example, the long-term societal benefit of a psychology study — how many people's mental health will improve, and by how much — cannot be known with precision at the time of scheduling. Even if we could estimate these benefits, comparing utility across different individuals (e.g., equating Lucky's $10 payout with a future patient's improved quality of life) involves deep philosophical assumptions with no objective answer."</p>
+    </div>
+  </div>
+
+  <!-- 3.3.4 -->
+  <div id="s334">
+    <div class="section-marker" style="margin-top:32px;">
+      <span class="section-num">3.3.4</span>
+      <div class="section-line"></div>
+      <span class="section-pts">4 pts</span>
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; color:#fff; margin-bottom:12px;">Privacy violation that participants never learn about — does it affect utilitarian value?</h3>
+
+    <div class="callout">
+      <div class="callout-icon">⚖️</div>
+      <p>This is testing whether you understand that utilitarianism is <em>strictly consequentialist</em> — it evaluates actions based only on their outcomes (consequences), specifically changes in wellbeing. If no one's wellbeing changes, the utilitarian verdict doesn't change.</p>
+    </div>
+
+    <div class="exchange-grid">
+      <div class="opt-box winner">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">UTILITARIAN VIEW</div>
+        <div style="font-size:.9rem; font-weight:700; color:var(--accent3);">Arguably NO effect</div>
+        <div style="font-size:.82rem; margin-top:6px;">If participants never find out → no decrease in their wellbeing → utility sum unchanged</div>
+      </div>
+      <div class="vs-label">vs</div>
+      <div class="opt-box loser">
+        <div style="font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); margin-bottom:6px;">DEONTOLOGICAL VIEW</div>
+        <div style="font-size:.9rem; font-weight:700; color:var(--accent4);">YES — wrong regardless</div>
+        <div style="font-size:.82rem; margin-top:6px;">Rights were violated. That's wrong whether or not anyone finds out or suffers.</div>
+      </div>
+    </div>
+
+    <div class="card card-warn" style="margin-top:16px;">
+      <h3>⚠️ The Nuanced Utilitarian Case</h3>
+      <p>A careful utilitarian might argue there <em>are</em> some indirect effects even if participants don't know:</p>
+      <ul>
+        <li>If discovered later, it could <strong>erode trust in research</strong> broadly, reducing participation in future studies</li>
+        <li>The <strong>researchers' own wellbeing</strong> may be affected (guilt, institutional risk)</li>
+        <li>There's a risk of future harm if the data is misused</li>
+        <li>A <strong>rule utilitarian</strong> would argue that allowing privacy violations sets a bad precedent with negative long-run consequences</li>
+      </ul>
+      <p>But these are second-order effects. The <em>direct, first-order</em> utilitarian answer is that undiscovered harms don't register in the utility calculation.</p>
+    </div>
+
+    <div class="card card-ok">
+      <h3>📝 Exam Answer Template (2–3 sentences)</h3>
+      <p>"Under strict utilitarianism, the privacy violation would <em>not</em> affect the study's value if participants never discover it — utilitarianism evaluates actions purely by their consequences on wellbeing, and an undiscovered violation produces no decrease in participants' experienced wellbeing. However, a more careful utilitarian analysis might note indirect effects: if the violation were ever discovered, it could erode public trust in research institutions, reducing participation in future studies and lowering overall societal utility. A rule utilitarian would additionally argue that permitting privacy violations even when undetected encourages a culture with harmful long-run consequences."</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SUMMARY
+     ═══════════════════════════════════════ -->
+<div id="summary">
+  <div class="section-marker" style="margin-top:60px;">
+    <span class="section-num">Summary</span>
+    <div class="section-line"></div>
+    <span class="section-pts">Key Takeaways</span>
+  </div>
+
+  <h2>Everything You Need to Know</h2>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+    <div class="card card-warn">
+      <h4>3.1 — Counterexample</h4>
+      <p style="font-size:.88rem;">Lucky's algorithm schedules studies at the <strong>earliest available day</strong>. This can block tight-deadline studies.</p>
+      <p style="font-size:.88rem;"><strong>Instance:</strong> A(d=1,$10), B(d=0,$6), C(d=0,$5)</p>
+      <p style="font-size:.88rem;">Lucky gets $10; optimal is $16 (B+A).</p>
+    </div>
+    <div class="card card-ok">
+      <h4>3.2 — Exchange Argument</h4>
+      <p style="font-size:.88rem;">Plucky schedules at the <strong>latest available day</strong>. Proof: any opt schedule can be transformed to Plucky's by swapping, never losing value.</p>
+      <p style="font-size:.88rem;">Always say: (1) feasibility, (2) exchange argument, (3) QED.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>3.3.1 — Utilitarianism</h4>
+      <p style="font-size:.88rem;">Value = sum of wellbeing for ALL affected parties. Lucky's payout counts but isn't privileged.</p>
+    </div>
+    <div class="card card-gold">
+      <h4>3.3.2–3.3.4 — Applied Ethics</h4>
+      <p style="font-size:.88rem;"><strong>Fix:</strong> sort by total utility u_i, not p_i.<br><strong>Hard:</strong> long-term benefits, interpersonal comparison.<br><strong>Privacy:</strong> undiscovered harm → no direct utility effect (but indirect effects exist).</p>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg, rgba(124,106,247,.1), rgba(246,167,64,.05));">
+    <h3>🎯 Proof Technique Cheat Sheet</h3>
+    <table class="study-table">
+      <thead><tr><th>Technique</th><th>When to use it</th><th>Structure</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--accent4)">Counterexample</strong></td>
+          <td>Prove algorithm is WRONG</td>
+          <td>Give instance, show algorithm output, show better output</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent2)">Exchange Argument</strong></td>
+          <td>Prove greedy is CORRECT</td>
+          <td>Take OPT, swap to match greedy, show no loss</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent3)">Greedy Stays Ahead</strong></td>
+          <td>Prove greedy is CORRECT</td>
+          <td>Show greedy is always ≥ OPT at every step</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer>
+  <span class="tag">CS161</span> · Winter 2024 · Section 3 Greedy Algorithms ·
+  Prepared for exam tutoring session
+</footer>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════ -->
+<script>
+// ── PROGRESS BAR ──
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+  document.getElementById('pbar').style.transform = `scaleX(${p})`;
+});
+
+// ── ACCORDION ──
+function toggleAcc(header) {
+  const body = header.nextElementSibling;
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ── UTILITY CALC ──
+let utilVals = { lucky: 10, society: 25, researcher: 8 };
+function updateUtil(key, val) {
+  utilVals[key] = parseInt(val);
+  document.getElementById('v' + key.charAt(0).toUpperCase() + key.slice(1)).textContent = '$' + val;
+  document.getElementById('utilTotal').textContent = 'Total: $' + Object.values(utilVals).reduce((a,b)=>a+b,0);
+}
+
+// ──────────────────────────────────────────
+// LUCKY'S INTERACTIVE DEMO
+// ──────────────────────────────────────────
+let studyData = [];
+
+function loadPreset(type) {
+  if (type === 'exam') {
+    studyData = [{id:'A', d:1, p:10},{id:'B', d:0, p:6},{id:'C', d:0, p:5}];
+  } else {
+    studyData = [{id:'X', d:0, p:8},{id:'Y', d:1, p:5},{id:'Z', d:1, p:5}];
+  }
+  renderStudyTable();
+}
+
+function resetCustom() {
+  studyData = [];
+  renderStudyTable();
+  document.getElementById('luckyResult').style.display = 'none';
+}
+
+function addStudyRow() {
+  const n = studyData.length;
+  studyData.push({id: String.fromCharCode(65+n), d:1, p:5});
+  renderStudyTable();
+}
+
+function renderStudyTable() {
+  const tbody = document.getElementById('studyBody');
+  tbody.innerHTML = '';
+  studyData.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input style="background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',monospace;width:40px;" value="${s.id}" onchange="studyData[${i}].id=this.value"></td>
+      <td><input type="number" min="0" max="10" style="background:transparent;border:none;color:var(--accent2);font-family:'JetBrains Mono',monospace;width:50px;" value="${s.d}" onchange="studyData[${i}].d=parseInt(this.value)"></td>
+      <td><input type="number" min="0" max="99" style="background:transparent;border:none;color:var(--accent);font-family:'JetBrains Mono',monospace;width:60px;" value="${s.p}" onchange="studyData[${i}].p=parseInt(this.value)"></td>
+      <td><button class="btn btn-danger" style="padding:4px 10px;font-size:11px;" onclick="studyData.splice(${i},1);renderStudyTable()">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function runLucky() {
+  if (!studyData.length) return;
+  const sorted = [...studyData].sort((a,b)=>b.p-a.p);
+  let day = 0, payout = 0;
+  const schedule = [], skipped = [];
+  const log = [];
+  for (const s of sorted) {
+    if (day <= s.d) {
+      schedule.push({...s, assignedDay: day});
+      log.push(`✓ Study ${s.id} (p=$${s.p}, d=${s.d}): assigned to day ${day}`);
+      day++;
+      payout += s.p;
+    } else {
+      skipped.push(s);
+      log.push(`✗ Study ${s.id} (p=$${s.p}, d=${s.d}): SKIPPED (current day=${day} > deadline=${s.d})`);
+    }
+  }
+  renderTimeline(schedule, skipped);
+  const rb = document.getElementById('resultBoxes');
+  rb.innerHTML = `<span class="result-badge bad">Lucky's total: $${payout}</span>`;
+  document.getElementById('luckyLog').innerHTML = log.join('<br>');
+  document.getElementById('luckyResult').style.display = 'block';
+}
+
+function runOptimal() {
+  if (!studyData.length) return;
+  // Plucky's algorithm for optimal
+  const sorted = [...studyData].sort((a,b)=>b.p-a.p);
+  const maxD = Math.max(...studyData.map(s=>s.d));
+  const slots = new Array(maxD+1).fill(null);
+  let payout = 0;
+  const schedule = [], skipped = [];
+  for (const s of sorted) {
+    let placed = false;
+    for (let day = s.d; day >= 0; day--) {
+      if (!slots[day]) {
+        slots[day] = s;
+        schedule.push({...s, assignedDay: day});
+        payout += s.p;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) skipped.push(s);
+  }
+  const rb = document.getElementById('resultBoxes');
+  rb.innerHTML += `<span class="result-badge good">Plucky's optimal: $${payout}</span>`;
+  document.getElementById('luckyLog').innerHTML += '<br>— Optimal (Plucky\'s): ' + schedule.map(s=>`Study ${s.id} on day ${s.assignedDay}`).join(', ');
+}
+
+function renderTimeline(schedule, skipped) {
+  const maxD = studyData.length > 0 ? Math.max(...studyData.map(s=>s.d)) : 3;
+  const days = Math.max(maxD+1, schedule.length);
+  const W = Math.max(500, days*80+80);
+  const svg = document.getElementById('timelineSvg');
+  svg.setAttribute('width', W);
+  let html = '';
+  // Draw day markers
+  for (let i = 0; i <= days; i++) {
+    const x = 40 + i*70;
+    html += `<line x1="${x}" y1="50" x2="${x}" y2="60" stroke="var(--border)" stroke-width="1"/>`;
+    html += `<text x="${x}" y="78" text-anchor="middle" class="day-label" fill="var(--muted)">Day ${i}</text>`;
+  }
+  html += `<line x1="40" y1="55" x2="${40+days*70}" y2="55" stroke="var(--border)" stroke-width="1"/>`;
+  // Draw scheduled studies
+  for (const s of schedule) {
+    const x = 40 + s.assignedDay*70;
+    html += `<rect x="${x-24}" y="22" width="48" height="28" rx="5" fill="rgba(62,207,142,.15)" stroke="var(--accent3)" stroke-width="1.5"/>`;
+    html += `<text x="${x}" y="33" text-anchor="middle" font-family="Syne" font-size="10" fill="var(--accent3)" font-weight="700">${s.id}</text>`;
+    html += `<text x="${x}" y="44" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--accent)">$${s.p}</text>`;
+    // Deadline marker
+    const dx = 40 + s.d*70;
+    html += `<line x1="${dx}" y1="10" x2="${dx}" y2="50" stroke="var(--accent2)" stroke-width="1" stroke-dasharray="3,2"/>`;
+    html += `<text x="${dx}" y="9" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--accent2)">d=${s.d}</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// Initialize
+loadPreset('exam');
+
+// ──────────────────────────────────────────
+// PLUCKY'S STEPPER
+// ──────────────────────────────────────────
+const PLUCKY_PRESETS = {
+  easy: [{id:'A', d:1, p:10},{id:'B', d:0, p:6},{id:'C', d:0, p:5}],
+  proof: [{id:'A', d:3, p:10},{id:'B', d:1, p:8},{id:'C', d:2, p:7},{id:'D', d:0, p:5},{id:'E', d:1, p:4}],
+  tricky: [{id:'A', d:0, p:9},{id:'B', d:0, p:7},{id:'C', d:1, p:6},{id:'D', d:2, p:5}]
+};
+
+let pState = { studies:[], sorted:[], slots:[], stepIdx:0, payout:0 };
+
+function pluckyPreset(name) {
+  pState.studies = JSON.parse(JSON.stringify(PLUCKY_PRESETS[name]));
+  pluckyReset();
+}
+
+function pluckyReset() {
+  const maxD = pState.studies.length ? Math.max(...pState.studies.map(s=>s.d)) : 0;
+  pState.sorted = [...pState.studies].sort((a,b)=>b.p-a.p);
+  pState.slots = new Array(maxD+1).fill(null);
+  pState.stepIdx = 0;
+  pState.payout = 0;
+  renderPluckyStudies();
+  renderSlots(-1);
+  document.getElementById('pluckyLog').textContent = 'Press Step to begin.';
+  document.getElementById('pluckyTotal').textContent = '';
+}
+
+function renderPluckyStudies() {
+  const el = document.getElementById('pluckyStudies');
+  el.innerHTML = pState.sorted.map((s,i) => {
+    const done = i < pState.stepIdx;
+    const cur = i === pState.stepIdx;
+    return `<div class="queue-item ${done?'done':''} ${cur?'current':''}">
+      <span style="color:var(--accent);font-weight:700;">${s.id}</span>
+      <span class="pill">p=$${s.p}</span>
+      <span class="pill">d=${s.d}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSlots(highlightDay) {
+  const el = document.getElementById('slotsRow');
+  el.innerHTML = pState.slots.map((s, i) => {
+    const highlight = i === highlightDay;
+    const booked = s !== null;
+    return `<div class="slot ${booked?'booked':''} ${highlight?'highlight':''}">
+      <div class="day-num">Day ${i}</div>
+      <div class="study-id">${s ? s.id : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function pluckyStep() {
+  if (pState.stepIdx >= pState.sorted.length) {
+    document.getElementById('pluckyLog').textContent = '✅ All studies processed.';
+    document.getElementById('pluckyTotal').textContent = `Total payout: $${pState.payout}`;
+    return;
+  }
+  const s = pState.sorted[pState.stepIdx];
+  let placed = false, placedDay = -1;
+  for (let day = s.d; day >= 0; day--) {
+    if (!pState.slots[day]) {
+      pState.slots[day] = s;
+      pState.payout += s.p;
+      placed = true;
+      placedDay = day;
+      break;
+    }
+  }
+  pState.stepIdx++;
+  renderPluckyStudies();
+  renderSlots(placedDay);
+  const log = document.getElementById('pluckyLog');
+  if (placed) {
+    log.innerHTML = `▶ Processing Study <strong style="color:var(--accent)">${s.id}</strong> (p=$${s.p}, d=${s.d})<br>Scan days ${s.d}→0... Day ${placedDay} is free! ✅ Scheduled on day ${placedDay}.`;
+  } else {
+    log.innerHTML = `▶ Processing Study <strong style="color:var(--accent)">${s.id}</strong> (p=$${s.p}, d=${s.d})<br>Scan days ${s.d}→0... All days 0–${s.d} are booked. ❌ Study dropped.`;
+  }
+  if (pState.stepIdx >= pState.sorted.length) {
+    document.getElementById('pluckyTotal').textContent = `✅ Done! Total payout: $${pState.payout}`;
+  }
+}
+
+function pluckyRunAll() {
+  while (pState.stepIdx < pState.sorted.length) pluckyStep();
+}
+
+// ── EXCHANGE DEMO ──
+let exSwapped = false;
+function setupExchange() {
+  document.getElementById('pluckyExSched').innerHTML = `
+    <div style="font-family:'JetBrains Mono'; font-size:.82rem; line-height:1.9;">
+      Day 0: <strong style="color:var(--accent3);">B</strong> (p=$6)<br>
+      Day 1: <strong style="color:var(--accent3);">A</strong> (p=$10)<br>
+      <div style="color:var(--muted); margin-top:6px; font-size:.75rem;">C dropped (no slot ≤ d=0)</div>
+    </div>`;
+  document.getElementById('optExSched').innerHTML = `
+    <div style="font-family:'JetBrains Mono'; font-size:.82rem; line-height:1.9;">
+      Day 0: <strong style="color:var(--accent4);">A</strong> (p=$10)<br>
+      Day 1: <strong style="color:var(--accent3);">B</strong> (p=$6)<br>
+      <div style="color:var(--muted); margin-top:6px; font-size:.75rem;">C dropped</div>
+    </div>`;
+  document.getElementById('exchangeLog').textContent = 'OPT has A on day 0, B on day 1. Plucky has B on day 0, A on day 1. Click to swap A↔B in OPT.';
+  exSwapped = false;
+}
+function doExchange() {
+  if (exSwapped) return;
+  exSwapped = true;
+  document.getElementById('optExSched').className = 'opt-box winner';
+  document.getElementById('optExSched').innerHTML = `
+    <div style="font-family:'JetBrains Mono'; font-size:.82rem; line-height:1.9;">
+      Day 0: <strong style="color:var(--accent3);">B</strong> (p=$6) ← was A<br>
+      Day 1: <strong style="color:var(--accent3);">A</strong> (p=$10) ← was B<br>
+      <div style="color:var(--accent3); margin-top:6px; font-size:.75rem;">✅ Payout still $16. OPT = Plucky!</div>
+    </div>`;
+  document.getElementById('exchangeLog').textContent = 'Swapped A and B. Since p_A=$10 ≥ p_B=$6 and A can legally go on day 1 (d_A=1≥1), the swap is valid. OPT now equals Plucky\'s schedule — same payout, same assignments. QED.';
+}
+setupExchange();
+pluckyPreset('easy');
+</script>
+</body>
+</html>

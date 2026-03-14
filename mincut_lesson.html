@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Max-Flow Min-Cut From Zero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Bitter:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+  :root {
+    --bg: #0e1117;
+    --bg2: #151820;
+    --card: #1a1f2e;
+    --border: #252d3d;
+    --accent: #38bdf8;
+    --accent2: #fb923c;
+    --accent3: #4ade80;
+    --accent4: #f472b6;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --s-side: rgba(56,189,248,0.12);
+    --t-side: rgba(251,146,60,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Bitter', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; right: 0;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle at top right, rgba(56,189,248,0.04), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 52px;
+  }
+  .header .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.25);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: clamp(38px, 8vw, 78px);
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .header h1 em { color: var(--accent); font-style: italic; }
+  .header h1 .eq { color: var(--accent2); }
+  .header h1 .mc { color: var(--accent3); }
+  .header .sub {
+    color: var(--muted);
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 400;
+    margin-top: 16px;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  /* PROGRESS */
+  .progress {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 44px;
+  }
+  .pseg {
+    height: 3px;
+    flex: 1;
+    background: var(--border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .pseg.done { background: var(--accent3); }
+  .pseg.active { background: var(--accent); }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: up 0.35s ease forwards; }
+  @keyframes up { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+  /* CHAPTER BADGE */
+  .chap {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .chap-n {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 4px;
+  }
+  .chap-title { font-size: 13px; color: var(--muted); font-style: italic; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 18px;
+  }
+  .card h2 { font-size: 26px; font-weight: 700; margin-bottom: 14px; line-height: 1.15; }
+  .card p { font-size: 15px; color: #94a3b8; line-height: 1.75; font-weight: 400; margin-bottom: 12px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card strong { color: var(--text); font-weight: 700; }
+
+  /* CALLOUTS */
+  .box {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .box-blue { background: rgba(56,189,248,0.08); border-left: 3px solid var(--accent); color: #bae6fd; }
+  .box-orange { background: rgba(251,146,60,0.08); border-left: 3px solid var(--accent2); color: #fed7aa; }
+  .box-green { background: rgba(74,222,128,0.08); border-left: 3px solid var(--accent3); color: #bbf7d0; }
+  .box-red { background: rgba(248,113,113,0.08); border-left: 3px solid var(--red); color: #fecaca; }
+  .box-pink { background: rgba(244,114,182,0.08); border-left: 3px solid var(--accent4); color: #fbcfe8; }
+
+  /* GRAPH AREA */
+  .garea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 18px 0;
+  }
+  .garea svg { width: 100%; display: block; }
+
+  /* CONTROLS */
+  .ctrl {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-p { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); color: var(--accent); }
+  .btn-p:hover { background: rgba(56,189,248,0.3); }
+  .btn-r { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.35); color: var(--red); }
+  .btn-r:hover { background: rgba(248,113,113,0.25); }
+  .msgbox {
+    flex: 1;
+    background: rgba(56,189,248,0.05);
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+    line-height: 1.5;
+    min-width: 180px;
+  }
+
+  /* TWO COL */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+
+  /* INFOBOX */
+  .ibox {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .ibox label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .ibox .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* TABLE */
+  .tbl { width:100%; border-collapse:collapse; font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; }
+  .tbl th { background:rgba(56,189,248,0.1); color:var(--accent); padding:9px 13px; text-align:left; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
+  .tbl td { padding:9px 13px; border-bottom:1px solid var(--border); color:#94a3b8; }
+  .tbl .hi td { background:rgba(56,189,248,0.07); color:var(--text); }
+  .tbl .min-row td { background:rgba(74,222,128,0.08); color:#bbf7d0; font-weight:600; }
+
+  /* CODE */
+  .code {
+    background: #0a0d13;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: #94a3b8;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  .code .kw { color: #f472b6; }
+  .code .fn { color: #7dd3fc; }
+  .code .cm { color: #475569; font-style: italic; }
+  .code .hl { background: rgba(56,189,248,0.12); border-radius: 3px; padding: 1px 4px; color: var(--accent); }
+  .code .warn { background: rgba(248,113,113,0.12); border-radius: 3px; padding: 1px 4px; color: var(--red); }
+
+  /* CUT VISUALIZER SPECIFIC */
+  .cut-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  /* NAV */
+  .nav-btns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 38px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+  .nav-btn {
+    font-family: 'Bitter', serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 26px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .nav-btn.go { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.35); color: var(--accent); }
+  .nav-btn.go:hover { background: rgba(56,189,248,0.25); }
+
+  @media(max-width:580px) {
+    .two { grid-template-columns:1fr; }
+    .header h1 { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="pill">CS 6515 — Lecture 3</div>
+    <h1>Max <em>Flow</em><br><span class="eq">=</span> Min <span class="mc">Cut</span></h1>
+    <p class="sub">Why Ford-Fulkerson actually works, what a "cut" even is, and the most elegant theorem in network algorithms.</p>
+  </div>
+
+  <div class="progress" id="prog">
+    <div class="pseg active" onclick="goTo(0)"></div>
+    <div class="pseg" onclick="goTo(1)"></div>
+    <div class="pseg" onclick="goTo(2)"></div>
+    <div class="pseg" onclick="goTo(3)"></div>
+    <div class="pseg" onclick="goTo(4)"></div>
+    <div class="pseg" onclick="goTo(5)"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 0: Is FF well designed? -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section active" id="sec0">
+    <div class="chap">
+      <span class="chap-n">Chapter 1 / 6</span>
+      <span class="chap-title">The Problem</span>
+    </div>
+
+    <div class="card">
+      <h2>Wait — Does Ford-Fulkerson Actually Work? 🤔</h2>
+      <p>Last lesson you learned Ford-Fulkerson: find an augmenting path, push flow, repeat. But your notes ask a sharp question right at the top: <strong>"Is this algorithm well-designed?"</strong></p>
+      <p>That means three things: does it always <strong>terminate</strong>? Does it always find the <strong>true maximum</strong>? Is it <strong>fast enough</strong> to be useful?</p>
+      <div class="box box-orange">
+        ⚠️ Spoiler: it's not always well-designed. There's a real scenario where Ford-Fulkerson can run <strong>forever</strong> and never give you an answer.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">The Termination Problem</h2>
+      <p>If all edge capacities are <strong>integers</strong>, Ford-Fulkerson is fine. Each iteration adds at least 1 unit of flow, and flow is bounded by the total capacity, so it must stop eventually.</p>
+      <p>But what if capacities are <strong>irrational numbers</strong> — like √2 or π? Then each iteration might add a tiny, shrinking amount of flow. The algorithm can keep running, getting closer and closer to the max but <strong>never actually reaching it</strong>. Infinite loop. 💀</p>
+      <div class="box box-red">
+        🔴 <strong>Ford-Fulkerson with DFS can loop forever on irrational capacities.</strong> This is a real, known theoretical weakness — not just a coding bug.
+      </div>
+    </div>
+
+    <div class="card" style="border-color:rgba(251,146,60,0.3)">
+      <h2 style="font-size:20px">Concrete Example — The Golden Ratio Trap 🌀</h2>
+      <p>The classic example uses <strong>φ = (1+√5)/2 ≈ 1.618</strong>, the golden ratio. It's irrational, and it has a special property: <strong>1/φ = φ − 1 ≈ 0.618</strong>. Every power of 1/φ is also irrational.</p>
+      <p>Imagine a simple network: s → A → t, with one extra edge A → B and B → t. The edge s→A has capacity <strong>1</strong>, edge A→B has capacity <strong>1/φ ≈ 0.618</strong>, and the rest have large capacity. DFS unluckily keeps picking a path through A→B every other iteration:</p>
+
+      <div class="garea" style="margin:16px 0">
+        <div class="two" style="margin-bottom:14px;gap:8px">
+          <div class="ibox"><label>Iteration</label><div class="val" id="phiIter">0</div></div>
+          <div class="ibox"><label>Flow pushed this step</label><div class="val" id="phiPushed" style="font-size:16px">—</div></div>
+          <div class="ibox"><label>Total flow so far</label><div class="val" id="phiTotal" style="color:var(--accent3)">0</div></div>
+          <div class="ibox"><label>True max flow</label><div class="val" style="color:var(--muted)">1.0</div></div>
+        </div>
+
+        <svg viewBox="0 0 520 160" id="phiSvg">
+          <defs>
+            <marker id="phi_arr" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+              <polygon points="0 0,7 2.5,0 5" fill="#475569"/>
+            </marker>
+            <marker id="phi_arr_b" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+              <polygon points="0 0,7 2.5,0 5" fill="#38bdf8"/>
+            </marker>
+            <marker id="phi_arr_o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+              <polygon points="0 0,7 2.5,0 5" fill="#fb923c"/>
+            </marker>
+          </defs>
+          <!-- edges: s->A, A->t, s->B, A->B, B->t -->
+          <line x1="68" y1="80" x2="218" y2="45" stroke="#252d3d" stroke-width="2" marker-end="url(#phi_arr)" id="phi_sA"/>
+          <line x1="258" y1="45" x2="448" y2="80" stroke="#252d3d" stroke-width="2" marker-end="url(#phi_arr)" id="phi_At"/>
+          <line x1="68" y1="80" x2="218" y2="118" stroke="#252d3d" stroke-width="2" marker-end="url(#phi_arr)" id="phi_sB"/>
+          <line x1="240" y1="62" x2="240" y2="102" stroke="#252d3d" stroke-width="2" marker-end="url(#phi_arr)" id="phi_AB"/>
+          <line x1="258" y1="118" x2="448" y2="88" stroke="#252d3d" stroke-width="2" marker-end="url(#phi_arr)" id="phi_Bt"/>
+          <!-- cap labels -->
+          <text x="130" y="48" font-family="JetBrains Mono" font-size="10" fill="#64748b" id="lbl_sA">cap=1</text>
+          <text x="340" y="52" font-family="JetBrains Mono" font-size="10" fill="#64748b" id="lbl_At">cap=∞</text>
+          <text x="100" y="118" font-family="JetBrains Mono" font-size="10" fill="#64748b" id="lbl_sB">cap=∞</text>
+          <text x="248" y="88" font-family="JetBrains Mono" font-size="10" fill="#fb923c" id="lbl_AB">cap=1/φ≈0.618</text>
+          <text x="340" y="118" font-family="JetBrains Mono" font-size="10" fill="#64748b" id="lbl_Bt">cap=∞</text>
+          <!-- nodes -->
+          <circle cx="44" cy="80" r="24" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="2"/>
+          <text x="44" y="86" text-anchor="middle" font-family="Bitter" font-size="17" font-weight="900" fill="#38bdf8">s</text>
+          <circle cx="238" cy="44" r="20" fill="#151820" stroke="#252d3d" stroke-width="2" id="phi_nA"/>
+          <text x="238" y="49" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8">A</text>
+          <circle cx="238" cy="120" r="20" fill="#151820" stroke="#252d3d" stroke-width="2" id="phi_nB"/>
+          <text x="238" y="125" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8">B</text>
+          <circle cx="470" cy="84" r="24" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="2"/>
+          <text x="470" y="90" text-anchor="middle" font-family="Bitter" font-size="17" font-weight="900" fill="#fb923c">t</text>
+        </svg>
+
+        <div class="ctrl">
+          <button class="btn btn-r" onclick="resetPhi()">↺ Reset</button>
+          <button class="btn btn-p" onclick="stepPhi()" id="phiBtn">Step →</button>
+          <div class="msgbox" id="phiMsg">DFS picks paths unluckily. Click Step to watch the flow shrink each iteration — heading toward 1.0 but never arriving.</div>
+        </div>
+      </div>
+
+      <!-- iteration log table -->
+      <table class="tbl" id="phiTable">
+        <thead><tr><th>Iter</th><th>Path taken</th><th>Flow pushed</th><th>Total flow</th><th>Gap to max</th></tr></thead>
+        <tbody id="phiLog">
+          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:14px">Steps will appear here...</td></tr>
+        </tbody>
+      </table>
+
+      <div class="box box-orange" style="margin-top:16px">
+        👆 Notice the pattern: each push is exactly <strong>(1/φ)ⁿ</strong> of the previous one. The amounts get smaller and smaller — 0.618, then 0.382, then 0.236, then 0.146... — but they never reach zero. The algorithm keeps running <strong>forever</strong>, always getting closer to 1.0 but never quite there.
+      </div>
+      <div class="box box-green" style="margin-top:10px">
+        ✅ <strong>Fix: Edmonds-Karp (BFS).</strong> BFS always picks the <em>shortest</em> path. This means it would immediately find s→A→t in 1 step and push 1 unit — done in a single iteration. BFS is immune to this trap because it doesn't wander down longer irrational paths.
+      </div>
+    </div>
+
+    <div class="card">
+      <p>But even with integers — how do we know FF finds the <em>actual maximum</em> and not just a local one? That requires a proof. And that proof needs a new concept: the <strong>cut</strong>.</p>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" disabled>← Back</button>
+      <button class="nav-btn go" onclick="goTo(1)">What is a Cut? →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 1: What is a cut -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="sec1">
+    <div class="chap">
+      <span class="chap-n">Chapter 2 / 6</span>
+      <span class="chap-title">New Concept</span>
+    </div>
+
+    <div class="card">
+      <h2>A Cut — Slicing the Graph in Two ✂️</h2>
+      <p>Forget flow for a second. Imagine the graph as a country, and you draw a border through it. On one side you have the <strong>source s</strong>, on the other side you have the <strong>sink t</strong>.</p>
+      <p>That border is called an <strong>s-t cut</strong>. Formally it splits all vertices V into two groups:</p>
+      <div class="two">
+        <div class="ibox" style="border-color:rgba(56,189,248,0.35)">
+          <label>L (Left side)</label>
+          <div style="font-size:14px;color:#7dd3fc;line-height:1.7">Contains the <strong>source s</strong>. All the vertices on s's side of the border.</div>
+        </div>
+        <div class="ibox" style="border-color:rgba(251,146,60,0.35)">
+          <label>R (Right side)</label>
+          <div style="font-size:14px;color:#fed7aa;line-height:1.7">Contains the <strong>sink t</strong>. All the vertices on t's side of the border.</div>
+        </div>
+      </div>
+      <div class="box box-blue">
+        📐 <strong>Rules:</strong> Every vertex goes in exactly one side. s must be in L. t must be in R. That's it — everything else can go anywhere.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">Cut Capacity — The Cost of the Border</h2>
+      <p>Once you draw the border, look at all the edges that <strong>cross from L to R</strong> (going left-to-right, s-side to t-side). Add up their capacities. That total is the <strong>capacity of the cut</strong>, written cap(L, R).</p>
+      <p><em>Important:</em> edges going R→L (right to left, backwards across the border) do NOT count. Only edges going in the forward direction, L→R.</p>
+      <div class="box box-orange">
+        🤔 <strong>Why does cap(L,R) matter?</strong> Think about it physically: ALL flow from s to t must at some point cross the border from L to R. The border is a bottleneck for the entire network. The cut capacity is the absolute maximum any flow could ever be.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px">Interactive: Click vertices to assign them to L or R</div>
+      <p style="margin-bottom:4px">Try building different cuts below. Click a <strong>middle node</strong> (A or B) to flip it between L and R. Watch the cut capacity change.</p>
+    </div>
+
+    <div class="garea">
+      <div class="two" style="margin-bottom:14px;gap:8px">
+        <div class="ibox">
+          <label>L side (blue)</label>
+          <div class="val" id="lSide" style="font-size:14px;color:var(--accent)">s</div>
+        </div>
+        <div class="ibox">
+          <label>R side (orange)</label>
+          <div class="val" id="rSide" style="font-size:14px;color:var(--accent2)">A, B, t</div>
+        </div>
+      </div>
+      <div class="ibox" style="margin-bottom:14px">
+        <label>Cut Capacity = sum of L→R edges</label>
+        <div class="val" id="cutCap">9</div>
+      </div>
+
+      <svg viewBox="0 0 520 210" id="cutSvg">
+        <defs>
+          <marker id="ac" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#475569"/>
+          </marker>
+          <marker id="acb" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#38bdf8"/>
+          </marker>
+          <marker id="aco" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#fb923c"/>
+          </marker>
+        </defs>
+        <!-- Cut divider line -->
+        <line x1="270" y1="10" x2="270" y2="200" stroke="rgba(248,113,113,0.0)" stroke-width="2" stroke-dasharray="8,5" id="cutLine"/>
+
+        <!-- Edges: s->A(8), s->B(1), A->B(10), A->t(5), B->t(8) -->
+        <line x1="72" y1="97" x2="178" y2="65" stroke="#334155" stroke-width="2" marker-end="url(#ac)" id="ce_sA"/>
+        <line x1="72" y1="113" x2="178" y2="148" stroke="#334155" stroke-width="2" marker-end="url(#ac)" id="ce_sB"/>
+        <line x1="222" y1="62" x2="398" y2="62" stroke="#334155" stroke-width="2" marker-end="url(#ac)" id="ce_At"/>
+        <line x1="202" y1="78" x2="202" y2="136" stroke="#334155" stroke-width="2" marker-end="url(#ac)" id="ce_AB"/>
+        <line x1="222" y1="155" x2="398" y2="155" stroke="#334155" stroke-width="2" marker-end="url(#ac)" id="ce_Bt"/>
+
+        <!-- Edge labels -->
+        <text x="108" y="69" font-family="JetBrains Mono" font-size="11" id="cl_sA" fill="#64748b">8</text>
+        <text x="108" y="150" font-family="JetBrains Mono" font-size="11" id="cl_sB" fill="#64748b">1</text>
+        <text x="295" y="52" font-family="JetBrains Mono" font-size="11" id="cl_At" fill="#64748b">5</text>
+        <text x="210" y="112" font-family="JetBrains Mono" font-size="11" id="cl_AB" fill="#64748b">10</text>
+        <text x="295" y="145" font-family="JetBrains Mono" font-size="11" id="cl_Bt" fill="#64748b">8</text>
+
+        <!-- Nodes -->
+        <circle cx="50" cy="105" r="26" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="2"/>
+        <text x="50" y="111" text-anchor="middle" font-family="Bitter" font-size="18" font-weight="900" fill="#38bdf8">s</text>
+
+        <circle cx="200" cy="60" r="22" fill="var(--bg)" stroke="#475569" stroke-width="2" id="cn_A" style="cursor:pointer" onclick="flipNode('A')"/>
+        <text x="200" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8" id="ct_A">A</text>
+
+        <circle cx="200" cy="155" r="22" fill="var(--bg)" stroke="#475569" stroke-width="2" id="cn_B" style="cursor:pointer" onclick="flipNode('B')"/>
+        <text x="200" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8" id="ct_B">B</text>
+
+        <circle cx="420" cy="108" r="26" fill="rgba(251,146,60,0.12)" stroke="#fb923c" stroke-width="2"/>
+        <text x="420" y="114" text-anchor="middle" font-family="Bitter" font-size="18" font-weight="900" fill="#fb923c">t</text>
+      </svg>
+
+      <div id="cutMsg" class="msgbox" style="margin-top:12px">s is always L. t is always R. Click A or B to move them between sides.</div>
+    </div>
+
+    <div class="card" style="margin-top:4px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">All possible cuts for this graph</div>
+      <table class="tbl" id="cutsTable">
+        <thead><tr><th>Cut (L, R)</th><th>Crossing edges (L→R only)</th><th>Cap(L,R)</th></tr></thead>
+        <tbody>
+          <tr id="cut_row_1"><td>{s} | {A,B,t}</td><td>s→A (8), s→B (1)</td><td>9</td></tr>
+          <tr id="cut_row_2"><td>{s,A} | {B,t}</td><td>A→t (5), A→B (10), s→B (1)</td><td>16</td></tr>
+          <tr id="cut_row_3"><td>{s,B} | {A,t}</td><td>s→A (8), B→t (8)</td><td>16</td></tr>
+          <tr id="cut_row_4"><td>{s,A,B} | {t}</td><td>A→t (5), B→t (8)</td><td>13</td></tr>
+        </tbody>
+      </table>
+      <div class="box box-green" style="margin-top:14px">
+        🎯 The smallest cut capacity is <strong>9</strong> — the cut {s} | {A,B,t}. That's the <strong>min cut</strong>. And look: 9 is also the max flow we found last lesson. Coincidence? Nope — that's the theorem.
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goTo(0)">← FF Problem</button>
+      <button class="nav-btn go" onclick="goTo(2)">Flow ≤ Any Cut →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 2: Flow <= cut -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="sec2">
+    <div class="chap">
+      <span class="chap-n">Chapter 3 / 6</span>
+      <span class="chap-title">The Upper Bound</span>
+    </div>
+
+    <div class="card">
+      <h2>Every Cut Is An Upper Bound on Flow 🚧</h2>
+      <p>Here's a key insight before the big theorem. Think about the border analogy again:</p>
+      <p><strong>ALL</strong> flow from s to t must cross the border from L to R at some point. There's no way around it — s is on one side, t is on the other, so every unit of flow has to cross.</p>
+      <p>That means: <strong>size(f) ≤ cap(L, R)</strong> — for ANY cut (L, R) you pick.</p>
+
+      <div class="box box-blue">
+        📦 Think of it like shipping packages. If there are only 3 roads leading out of the source's city, no matter how many warehouses and routes exist inside that city, the max packages you can ship is limited by those 3 outgoing roads.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">Why Exactly? (The Proof Intuition)</h2>
+      <p>Take any valid flow f and any cut (L, R). The flow going from L to R across the cut minus any flow going backwards (R to L) equals the total flow size.</p>
+
+      <div class="box box-orange">
+        size(f) = (flow on L→R edges) − (flow on R→L edges)
+      </div>
+
+      <p>Since flow on R→L edges is ≥ 0, this means:</p>
+      <div class="box box-blue">
+        size(f) ≤ flow on L→R edges ≤ capacity of L→R edges = cap(L, R)
+      </div>
+
+      <p>This works for <strong>every single cut</strong> you could possibly draw. Every cut gives you a valid upper bound. So if you find a cut with capacity 9, you <em>know</em> the max flow can never exceed 9.</p>
+
+      <div class="box box-pink">
+        💡 <strong>This is super useful!</strong> If you find a flow of size X AND a cut with capacity X, you've proven both are optimal simultaneously — the flow can't go higher (cut proves it) and the cut can't go lower (flow proves it).
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">Example with Numbers</h2>
+      <p>Using the lecture's graph (s→A cap 8, s→B cap 1, A→t cap 5, A→B cap 10, B→t cap 8):</p>
+      <table class="tbl">
+        <thead><tr><th>Cut</th><th>Cap(L,R)</th><th>What it tells us</th></tr></thead>
+        <tbody>
+          <tr><td>{s} | {A,B,t}</td><td style="color:var(--accent3)">9</td><td style="color:#94a3b8">Flow can NEVER exceed 9</td></tr>
+          <tr><td>{s,A} | {B,t}</td><td>16</td><td style="color:#94a3b8">Flow can never exceed 16 (weaker bound)</td></tr>
+          <tr><td>{s,A,B} | {t}</td><td>13</td><td style="color:#94a3b8">Flow can never exceed 13 (weaker bound)</td></tr>
+        </tbody>
+      </table>
+      <div class="box box-green" style="margin-top:14px">
+        The tightest upper bound comes from the <strong>minimum cut</strong>. All other cuts give looser, less useful bounds. So: max flow ≤ min cut capacity.
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goTo(1)">← Cuts</button>
+      <button class="nav-btn go" onclick="goTo(3)">The Big Theorem →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 3: Max-Flow = Min-Cut Theorem -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="sec3">
+    <div class="chap">
+      <span class="chap-n">Chapter 4 / 6</span>
+      <span class="chap-title">The Big Result</span>
+    </div>
+
+    <div class="card" style="border-color:rgba(74,222,128,0.3)">
+      <h2 style="color:var(--accent3)">The Max-Flow Min-Cut Theorem 🏆</h2>
+      <p>We just showed max flow ≤ min cut. But the theorem says something stronger:</p>
+      <div class="box box-green" style="font-size:18px;text-align:center;padding:24px">
+        <strong>Max Flow = Min Cut</strong><br>
+        <span style="font-size:14px;opacity:0.8">The maximum possible flow equals the capacity of the minimum cut. Exactly equal. Always.</span>
+      </div>
+      <p>This is one of the most beautiful results in computer science. Two completely different things — optimal flow through a network, and the weakest bottleneck in the network — turn out to be the same number.</p>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">Why Does This Prove Ford-Fulkerson is Correct?</h2>
+      <p>Remember Ford-Fulkerson stops when there's <strong>no augmenting path from s to t</strong> in the residual graph. At that point, is it truly at maximum flow? Let's see:</p>
+
+      <div class="box box-orange">
+        When FF stops, define L = all vertices reachable from s in the residual graph, and R = everything else (including t, since t is not reachable — that's why FF stopped).
+      </div>
+
+      <p>Now look at every edge crossing from L to R in the <strong>original graph</strong>:</p>
+      <ul style="color:#94a3b8;font-size:15px;line-height:2;padding-left:22px;margin:12px 0">
+        <li>Every edge u→v where u∈L, v∈R must be <strong>completely full</strong> (f(u→v) = c(u→v)). If it weren't, there'd be residual capacity forward, meaning v would be reachable from s — contradiction.</li>
+        <li>Every edge u→v where u∈R, v∈L (backwards edges) must carry <strong>zero flow</strong>. If it did carry flow, the backward residual edge would exist, making u reachable — contradiction.</li>
+      </ul>
+
+      <div class="box box-blue">
+        So: size(f) = (flow on L→R edges) − (flow on R→L edges) = cap(L,R) − 0 = cap(L,R)
+      </div>
+
+      <p>The flow <strong>equals</strong> a cut capacity. But we know flow ≤ any cut. So this must be the <strong>minimum cut</strong>, and the flow must be <strong>maximum</strong>. ✅</p>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">The Three Equivalent Statements</h2>
+      <p>Your notes show that these three things are ALL equivalent — if any one is true, all three are true:</p>
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Statement</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>1</td><td>f is a maximum flow</td><td style="color:#94a3b8">No valid flow is larger than f</td></tr>
+          <tr class="hi"><td>2</td><td>No augmenting path in residual graph G<sup>f</sup></td><td style="color:#94a3b8">Ford-Fulkerson has terminated</td></tr>
+          <tr class="hi"><td>3</td><td>size(f) = cap(L,R) for some cut (L,R)</td><td style="color:#94a3b8">Flow matches a cut = both are optimal</td></tr>
+        </tbody>
+      </table>
+      <div class="box box-pink" style="margin-top:14px">
+        ✨ This is why FF is correct: when it terminates (statement 2), the flow it found equals a cut capacity (statement 3), which means it's the maximum possible flow (statement 1). All three are guaranteed simultaneously.
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goTo(2)">← Flow ≤ Cut</button>
+      <button class="nav-btn go" onclick="goTo(4)">See It Live →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 4: Interactive min-cut finder -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="sec4">
+    <div class="chap">
+      <span class="chap-n">Chapter 5 / 6</span>
+      <span class="chap-title">Interactive Proof</span>
+    </div>
+
+    <div class="card">
+      <h2>Watch FF Stop = Min Cut Appear 🔬</h2>
+      <p>Step through Ford-Fulkerson below. When it terminates, we'll highlight exactly which vertices are reachable from s in the residual graph — and show that the resulting cut IS the min cut.</p>
+    </div>
+
+    <div class="garea">
+      <div class="two" style="margin-bottom:12px;gap:8px">
+        <div class="ibox"><label>Flow Size</label><div class="val" id="liveFlow">0</div></div>
+        <div class="ibox"><label>Status</label><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)" id="liveStatus">Ready</div></div>
+      </div>
+
+      <svg viewBox="0 0 520 220" id="liveSvg">
+        <defs>
+          <marker id="al" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#334155"/>
+          </marker>
+          <marker id="alb" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#38bdf8"/>
+          </marker>
+          <marker id="alf" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#4ade80"/>
+          </marker>
+        </defs>
+
+        <!-- Cut line (hidden until done) -->
+        <line x1="105" y1="5" x2="105" y2="215" stroke="rgba(248,113,113,0)" stroke-width="2.5" stroke-dasharray="8,5" id="liveCut"/>
+        <text x="50" y="20" font-family="JetBrains Mono" font-size="10" fill="rgba(248,113,113,0)" id="liveCutLbl">L-side</text>
+        <text x="140" y="20" font-family="JetBrains Mono" font-size="10" fill="rgba(248,113,113,0)" id="liveCutLblR">R-side</text>
+
+        <!-- Edges -->
+        <line x1="72" y1="97" x2="178" y2="65" stroke="#2d3748" stroke-width="2" marker-end="url(#al)" id="le_sA"/>
+        <line x1="72" y1="113" x2="178" y2="148" stroke="#2d3748" stroke-width="2" marker-end="url(#al)" id="le_sB"/>
+        <line x1="222" y1="62" x2="398" y2="62" stroke="#2d3748" stroke-width="2" marker-end="url(#al)" id="le_At"/>
+        <line x1="202" y1="78" x2="202" y2="136" stroke="#2d3748" stroke-width="2" marker-end="url(#al)" id="le_AB"/>
+        <line x1="222" y1="155" x2="398" y2="155" stroke="#2d3748" stroke-width="2" marker-end="url(#al)" id="le_Bt"/>
+        <!-- Edge labels -->
+        <text x="108" y="69" font-family="JetBrains Mono" font-size="11" id="ll_sA" fill="#64748b">0/8</text>
+        <text x="108" y="150" font-family="JetBrains Mono" font-size="11" id="ll_sB" fill="#64748b">0/1</text>
+        <text x="295" y="52" font-family="JetBrains Mono" font-size="11" id="ll_At" fill="#64748b">0/5</text>
+        <text x="210" y="112" font-family="JetBrains Mono" font-size="11" id="ll_AB" fill="#64748b">0/10</text>
+        <text x="295" y="145" font-family="JetBrains Mono" font-size="11" id="ll_Bt" fill="#64748b">0/8</text>
+        <!-- Nodes -->
+        <circle cx="50" cy="105" r="26" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="2" id="ln_s"/>
+        <text x="50" y="111" text-anchor="middle" font-family="Bitter" font-size="18" font-weight="900" fill="#38bdf8">s</text>
+        <circle cx="200" cy="60" r="22" fill="var(--bg2)" stroke="#334155" stroke-width="2" id="ln_A"/>
+        <text x="200" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8">A</text>
+        <circle cx="200" cy="155" r="22" fill="var(--bg2)" stroke="#334155" stroke-width="2" id="ln_B"/>
+        <text x="200" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#94a3b8">B</text>
+        <circle cx="420" cy="108" r="26" fill="rgba(251,146,60,0.1)" stroke="#fb923c" stroke-width="2" id="ln_t"/>
+        <text x="420" y="114" text-anchor="middle" font-family="Bitter" font-size="18" font-weight="900" fill="#fb923c">t</text>
+      </svg>
+
+      <div class="ctrl">
+        <button class="btn btn-r" onclick="resetLive()">↺ Reset</button>
+        <button class="btn btn-p" onclick="stepLive()" id="liveBtn">Step →</button>
+        <div class="msgbox" id="liveMsg">Click Step to run Ford-Fulkerson. Watch for when it stops — then the min cut appears.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:4px" id="minCutReveal" style="display:none">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Min Cut Analysis</div>
+      <table class="tbl" id="minCutTable">
+        <thead><tr><th>Edge</th><th>Direction</th><th>Flow / Cap</th><th>Role in cut</th></tr></thead>
+        <tbody id="minCutBody">
+          <tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">Complete the simulation to see the min cut</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goTo(3)">← Theorem</button>
+      <button class="nav-btn go" onclick="goTo(5)">Summary →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SEC 5: Summary + cheat sheet -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" id="sec5">
+    <div class="chap">
+      <span class="chap-n">Chapter 6 / 6</span>
+      <span class="chap-title">Wrap-Up</span>
+    </div>
+
+    <div class="card">
+      <h2>The Full Story in One Picture 🗺️</h2>
+      <p>Here's how everything from lectures 2 and 3 connects:</p>
+      <div class="box box-blue">
+        <strong>Network</strong> → you want to maximize flow from s to t<br>
+        ↓<br>
+        <strong>Ford-Fulkerson</strong> → keep finding augmenting paths in the residual graph<br>
+        ↓<br>
+        <strong>Terminates</strong> → no path from s to t in residual graph<br>
+        ↓<br>
+        <strong>At termination</strong> → reachable vertices = L, rest = R → this IS the min cut<br>
+        ↓<br>
+        <strong>Max-Flow = Min-Cut</strong> → the flow found is provably optimal
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">The Three Algorithms</h2>
+      <table class="tbl">
+        <thead><tr><th>Algorithm</th><th>Path Search</th><th>Complexity</th><th>Weakness</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--red)">Ford-Fulkerson</td><td>DFS (any path)</td><td>O(C · E)</td><td style="color:#94a3b8">Loops on irrationals, slow if C huge</td></tr>
+          <tr><td style="color:var(--accent)">Edmonds-Karp</td><td>BFS (shortest path)</td><td>O(VE²)</td><td style="color:#94a3b8">Always polynomial ✅</td></tr>
+          <tr><td style="color:var(--accent3)">Scaling Algo</td><td>Large-capacity paths first</td><td>O(E² log C)</td><td style="color:#94a3b8">Better than EK in practice ✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="background:var(--bg);border-color:rgba(74,222,128,0.25)">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px">Complete Cheat Sheet — Lectures 2 & 3</div>
+      <table class="tbl">
+        <thead><tr><th>Concept</th><th>Definition</th><th>Key Formula</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#7dd3fc">Network</td><td style="color:#94a3b8">Graph + source + sink + capacities</td><td style="color:#94a3b8">G=(V,E), s, t, c(e)</td></tr>
+          <tr><td style="color:#7dd3fc">Valid Flow</td><td style="color:#94a3b8">Assignment respecting 2 laws</td><td style="color:#94a3b8">0≤f(e)≤c(e), in=out</td></tr>
+          <tr><td style="color:#7dd3fc">Residual Graph</td><td style="color:#94a3b8">Forward + backward edges</td><td style="color:#94a3b8">fwd: c−f, bwd: f</td></tr>
+          <tr><td style="color:#fed7aa">Augmenting Path</td><td style="color:#94a3b8">s→t path with spare residual capacity</td><td style="color:#94a3b8">Push min residual</td></tr>
+          <tr><td style="color:#fed7aa">Bottleneck</td><td style="color:#94a3b8">Minimum residual on path</td><td style="color:#94a3b8">min c_f(e) on path</td></tr>
+          <tr><td style="color:#bbf7d0">s-t Cut</td><td style="color:#94a3b8">Partition V into L(has s) and R(has t)</td><td style="color:#94a3b8">(L, R), s∈L, t∈R</td></tr>
+          <tr><td style="color:#bbf7d0">Cut Capacity</td><td style="color:#94a3b8">Sum of L→R edge capacities only</td><td style="color:#94a3b8">cap(L,R) = Σc(u→v)</td></tr>
+          <tr><td style="color:#bbf7d0">Upper Bound</td><td style="color:#94a3b8">Any flow ≤ any cut</td><td style="color:#94a3b8">size(f) ≤ cap(L,R)</td></tr>
+          <tr class="min-row"><td>Max=Min Theorem</td><td>Max flow = Min cut capacity</td><td>size(f*) = cap(L*,R*)</td></tr>
+          <tr class="min-row"><td>FF Correctness</td><td>When FF stops, flow = some cut = optimal</td><td>3 equivalent conditions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="goTo(4)">← Live Demo</button>
+      <button class="nav-btn go" onclick="goTo(0)" style="background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.3);color:var(--accent3)">↺ Start Over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── GOLDEN RATIO SIMULATION ──────────────────────────────
+const phi = (1 + Math.sqrt(5)) / 2;
+const phiSteps = [
+  { path:'s → A → t',       pushed: 1/phi,           color:'#38bdf8',  edges:['phi_sA','phi_At'] },
+  { path:'s → B → A → t',   pushed: 1/(phi*phi),      color:'#fb923c',  edges:['phi_sB','phi_AB','phi_At'] },
+  { path:'s → A → B → t',   pushed: 1/(phi*phi*phi),  color:'#38bdf8',  edges:['phi_sA','phi_AB','phi_Bt'] },
+  { path:'s → B → A → t',   pushed: 1/(phi**4),       color:'#fb923c',  edges:['phi_sB','phi_AB','phi_At'] },
+  { path:'s → A → B → t',   pushed: 1/(phi**5),       color:'#38bdf8',  edges:['phi_sA','phi_AB','phi_Bt'] },
+  { path:'s → B → A → t',   pushed: 1/(phi**6),       color:'#fb923c',  edges:['phi_sB','phi_AB','phi_At'] },
+  { path:'s → A → B → t',   pushed: 1/(phi**7),       color:'#38bdf8',  edges:['phi_sA','phi_AB','phi_Bt'] },
+];
+let phiStep = 0, phiTotal = 0;
+const TRUE_MAX = 1.0;
+const allPhiEdges = ['phi_sA','phi_At','phi_sB','phi_AB','phi_Bt'];
+
+function stepPhi() {
+  if (phiStep >= phiSteps.length) return;
+  const s = phiSteps[phiStep];
+  phiTotal += s.pushed;
+
+  // Reset edge colors
+  allPhiEdges.forEach(id => {
+    const el = document.getElementById(id);
+    el.setAttribute('stroke','#252d3d');
+    el.setAttribute('stroke-width','2');
+    el.setAttribute('marker-end','url(#phi_arr)');
+  });
+  // Highlight active path
+  s.edges.forEach(id => {
+    const el = document.getElementById(id);
+    el.setAttribute('stroke', s.color);
+    el.setAttribute('stroke-width','3');
+    el.setAttribute('marker-end', s.color==='#38bdf8'?'url(#phi_arr_b)':'url(#phi_arr_o)');
+  });
+
+  document.getElementById('phiIter').textContent = phiStep + 1;
+  document.getElementById('phiPushed').textContent = s.pushed.toFixed(4);
+  document.getElementById('phiTotal').textContent = phiTotal.toFixed(4);
+
+  const gap = (TRUE_MAX - phiTotal).toFixed(4);
+  // Add row to log
+  const tbody = document.getElementById('phiLog');
+  if (phiStep === 0) tbody.innerHTML = '';
+  const row = document.createElement('tr');
+  const isOdd = phiStep % 2 === 0;
+  row.innerHTML = `
+    <td style="color:${s.color}">${phiStep+1}</td>
+    <td style="color:#94a3b8;font-size:11px">${s.path}</td>
+    <td style="color:${s.color};font-weight:600">${s.pushed.toFixed(5)}</td>
+    <td style="color:var(--accent3)">${phiTotal.toFixed(5)}</td>
+    <td style="color:var(--red)">${gap}</td>
+  `;
+  tbody.appendChild(row);
+
+  document.getElementById('phiMsg').textContent =
+    `Iteration ${phiStep+1}: DFS chose path "${s.path}" and pushed ${s.pushed.toFixed(5)} units. Total = ${phiTotal.toFixed(5)}. Still ${gap} away from max. Getting smaller... but never zero.`;
+
+  phiStep++;
+  if (phiStep >= phiSteps.length) {
+    document.getElementById('phiBtn').disabled = true;
+    document.getElementById('phiMsg').textContent = '🔁 The pattern continues FOREVER — each push is exactly 1/φ of the last. The gap never reaches zero. This is the infinite loop problem with irrational capacities.';
+  }
+}
+
+function resetPhi() {
+  phiStep = 0; phiTotal = 0;
+  document.getElementById('phiIter').textContent = '0';
+  document.getElementById('phiPushed').textContent = '—';
+  document.getElementById('phiTotal').textContent = '0';
+  document.getElementById('phiBtn').disabled = false;
+  document.getElementById('phiLog').innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:14px">Steps will appear here...</td></tr>';
+  document.getElementById('phiMsg').textContent = 'DFS picks paths unluckily. Click Step to watch the flow shrink each iteration — heading toward 1.0 but never arriving.';
+  allPhiEdges.forEach(id => {
+    const el = document.getElementById(id);
+    el.setAttribute('stroke','#252d3d');
+    el.setAttribute('stroke-width','2');
+    el.setAttribute('marker-end','url(#phi_arr)');
+  });
+}
+
+// ── NAV ──────────────────────────────────────────────────
+let cur = 0;
+function goTo(i) {
+  document.getElementById('sec'+cur).classList.remove('active');
+  cur = i;
+  document.getElementById('sec'+cur).classList.add('active');
+  const segs = document.querySelectorAll('.pseg');
+  segs.forEach((s,idx) => s.className = 'pseg' + (idx<i?' done':idx===i?' active':''));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── CUT INTERACTIVE ─────────────────────────────────────
+// Graph: s->A(8), s->B(1), A->t(5), A->B(10), B->t(8)
+// nodes: s always L, t always R; A and B toggleable
+const nodeInL = { A: false, B: false };
+
+function computeCut() {
+  const L = new Set(['s']);
+  const R = new Set(['t']);
+  if (nodeInL.A) L.add('A'); else R.add('A');
+  if (nodeInL.B) L.add('B'); else R.add('B');
+
+  // Edges: {from, to, cap, edgeId}
+  const edges = [
+    {from:'s',to:'A',cap:8,eid:'ce_sA',lid:'cl_sA'},
+    {from:'s',to:'B',cap:1,eid:'ce_sB',lid:'cl_sB'},
+    {from:'A',to:'t',cap:5,eid:'ce_At',lid:'cl_At'},
+    {from:'A',to:'B',cap:10,eid:'ce_AB',lid:'cl_AB'},
+    {from:'B',to:'t',cap:8,eid:'ce_Bt',lid:'cl_Bt'},
+  ];
+
+  let cap = 0;
+  let crossing = [];
+  edges.forEach(e => {
+    const fromL = L.has(e.from);
+    const toR = R.has(e.to);
+    const fromR = R.has(e.from);
+    const toL = L.has(e.to);
+    const el = document.getElementById(e.eid);
+    const ll = document.getElementById(e.lid);
+    if (fromL && toR) {
+      // crossing L->R
+      el.setAttribute('stroke','#38bdf8');
+      el.setAttribute('stroke-width','3');
+      el.setAttribute('marker-end','url(#acb)');
+      ll.setAttribute('fill','#38bdf8');
+      cap += e.cap;
+      crossing.push(e.from+'→'+e.to+' ('+e.cap+')');
+    } else if (fromR && toL) {
+      // backwards, doesn't count
+      el.setAttribute('stroke','rgba(251,146,60,0.4)');
+      el.setAttribute('stroke-width','1.5');
+      el.setAttribute('marker-end','url(#aco)');
+      ll.setAttribute('fill','#fb923c');
+    } else {
+      el.setAttribute('stroke','#334155');
+      el.setAttribute('stroke-width','2');
+      el.setAttribute('marker-end','url(#ac)');
+      ll.setAttribute('fill','#64748b');
+    }
+  });
+
+  // Update node colors
+  ['A','B'].forEach(n => {
+    const inL = L.has(n);
+    document.getElementById('cn_'+n).setAttribute('stroke', inL ? '#38bdf8' : '#fb923c');
+    document.getElementById('cn_'+n).setAttribute('fill', inL ? 'rgba(56,189,248,0.1)' : 'rgba(251,146,60,0.1)');
+    document.getElementById('ct_'+n).setAttribute('fill', inL ? '#7dd3fc' : '#fed7aa');
+  });
+
+  document.getElementById('cutCap').textContent = cap;
+  document.getElementById('lSide').textContent = [...L].join(', ');
+  document.getElementById('rSide').textContent = [...R].join(', ');
+
+  const msgs = {
+    'false,false': 'Cut {s} | {A,B,t} — only s→A and s→B cross. Cap = 9. This is the MINIMUM CUT!',
+    'true,false':  'Cut {s,A} | {B,t} — edges A→t, A→B, s→B all cross. Cap = 16.',
+    'false,true':  'Cut {s,B} | {A,t} — edges s→A and B→t cross. Cap = 16.',
+    'true,true':   'Cut {s,A,B} | {t} — only A→t and B→t cross (both go into t). Cap = 13.',
+  };
+  const key = nodeInL.A+','+nodeInL.B;
+  document.getElementById('cutMsg').textContent = msgs[key];
+
+  // Highlight table row
+  const rowMap = {'false,false':'cut_row_1','true,false':'cut_row_2','false,true':'cut_row_3','true,true':'cut_row_4'};
+  document.querySelectorAll('#cutsTable tbody tr').forEach(r => r.className = '');
+  const activeRow = document.getElementById(rowMap[key]);
+  if(activeRow) activeRow.className = 'min-row';
+}
+
+function flipNode(n) {
+  nodeInL[n] = !nodeInL[n];
+  computeCut();
+}
+
+computeCut(); // init
+
+// ── LIVE FF SIMULATION ────────────────────────────────────
+const liveSteps = [
+  {
+    iter: 1, path:'s→A→t', bn:5,
+    flows:{sA:5,sB:0,At:5,AB:0,Bt:0}, total:5,
+    highlight:['le_sA','le_At'],
+    msg:'Iteration 1: Path s→A→t found. Bottleneck = min(8,5) = 5. A→t is now FULL (5/5).'
+  },
+  {
+    iter: 2, path:'s→A→B→t', bn:3, total:8,
+    flows:{sA:8,sB:0,At:5,AB:3,Bt:3},
+    highlight:['le_sA','le_AB','le_Bt'],
+    msg:'Iteration 2: A→t is full but A→B→t still has capacity. Bottleneck=min(3,10,8)=3. s→A now FULL (8/8).'
+  },
+  {
+    iter: 3, path:'s→B→t', bn:1, total:9,
+    flows:{sA:8,sB:1,At:5,AB:3,Bt:4},
+    highlight:['le_sB','le_Bt'],
+    msg:'Iteration 3: Path s→B→t. Bottleneck=min(1,5)=1. s→B is now FULL (1/1).'
+  },
+  {
+    iter:'done', path:'No path exists', bn:0, total:9,
+    flows:{sA:8,sB:1,At:5,AB:3,Bt:4},
+    highlight:[],
+    msg:'FF terminates. No augmenting path from s to t. Now: which vertices are reachable from s in the residual graph?',
+    showCut: true
+  }
+];
+let liveStep = 0;
+const liveCaps = {sA:8,sB:1,At:5,AB:10,Bt:8};
+
+function updateLiveLabels(flows) {
+  const map = {sA:'ll_sA',sB:'ll_sB',At:'ll_At',AB:'ll_AB',Bt:'ll_Bt'};
+  Object.entries(flows).forEach(([e,f]) => {
+    const el = document.getElementById(map[e]);
+    const c = liveCaps[e];
+    if(el) {
+      el.textContent = f+'/'+c;
+      el.setAttribute('fill', f===c ? '#f87171' : f>0 ? '#38bdf8' : '#64748b');
+    }
+  });
+}
+
+function highlightLiveEdges(ids) {
+  ['le_sA','le_sB','le_At','le_AB','le_Bt'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){el.setAttribute('stroke','#2d3748');el.setAttribute('stroke-width','2');el.setAttribute('marker-end','url(#al)');}
+  });
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el){el.setAttribute('stroke','#38bdf8');el.setAttribute('stroke-width','3');el.setAttribute('marker-end','url(#alb)');}
+  });
+}
+
+function stepLive() {
+  if(liveStep >= liveSteps.length) return;
+  const s = liveSteps[liveStep];
+  document.getElementById('liveFlow').textContent = s.total;
+  document.getElementById('liveMsg').textContent = s.msg;
+  highlightLiveEdges(s.highlight);
+  updateLiveLabels(s.flows);
+
+  if(s.iter==='done') {
+    document.getElementById('liveStatus').textContent = '🏁 MAX FLOW = 9';
+    document.getElementById('liveStatus').style.color = '#4ade80';
+    document.getElementById('liveBtn').disabled = true;
+    // Show the min cut: s is only reachable node (s→A full, s→B full)
+    // L = {s}, R = {A,B,t}
+    setTimeout(showMinCut, 600);
+  } else {
+    document.getElementById('liveStatus').textContent = 'Iter '+s.iter+': '+s.path;
+  }
+  liveStep++;
+}
+
+function showMinCut() {
+  // Color s blue (L-side), A+B+t orange (R-side)
+  document.getElementById('ln_A').setAttribute('stroke','#fb923c');
+  document.getElementById('ln_A').setAttribute('fill','rgba(251,146,60,0.15)');
+  document.getElementById('ln_B').setAttribute('stroke','#fb923c');
+  document.getElementById('ln_B').setAttribute('fill','rgba(251,146,60,0.15)');
+  document.getElementById('ln_t').setAttribute('stroke','#fb923c');
+
+  // Show cut line
+  const cl = document.getElementById('liveCut');
+  cl.setAttribute('stroke','rgba(248,113,113,0.6)');
+  document.getElementById('liveCutLbl').setAttribute('fill','rgba(56,189,248,0.8)');
+  document.getElementById('liveCutLblR').setAttribute('fill','rgba(251,146,60,0.8)');
+
+  // Highlight crossing edges (s→A and s→B)
+  ['le_sA','le_sB'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){el.setAttribute('stroke','#4ade80');el.setAttribute('stroke-width','3.5');el.setAttribute('marker-end','url(#alf)');}
+  });
+
+  document.getElementById('liveMsg').textContent = '✅ L = {s} (blue), R = {A,B,t} (orange). Both s→A and s→B are FULL — no forward residual. Min cut capacity = 8+1 = 9 = Max flow. Proven!';
+
+  // Fill min cut table
+  const tbody = document.getElementById('minCutBody');
+  tbody.innerHTML = `
+    <tr class="min-row"><td>s → A</td><td>L → R (crossing)</td><td>8/8 FULL</td><td style="color:#4ade80">Counts! Cap=8</td></tr>
+    <tr class="min-row"><td>s → B</td><td>L → R (crossing)</td><td>1/1 FULL</td><td style="color:#4ade80">Counts! Cap=1</td></tr>
+    <tr><td>A → t</td><td>R → R (same side)</td><td>5/5</td><td style="color:var(--muted)">Doesn't cross cut</td></tr>
+    <tr><td>A → B</td><td>R → R (same side)</td><td>3/10</td><td style="color:var(--muted)">Doesn't cross cut</td></tr>
+    <tr><td>B → t</td><td>R → R (same side)</td><td>4/8</td><td style="color:var(--muted)">Doesn't cross cut</td></tr>
+    <tr class="hi"><td colspan="3"><strong>Min Cut Capacity</strong></td><td style="color:#4ade80;font-weight:700">8+1 = 9 = Max Flow ✅</td></tr>
+  `;
+}
+
+function resetLive() {
+  liveStep = 0;
+  document.getElementById('liveFlow').textContent = '0';
+  document.getElementById('liveStatus').textContent = 'Ready';
+  document.getElementById('liveStatus').style.color = 'var(--accent)';
+  document.getElementById('liveMsg').textContent = 'Click Step to run Ford-Fulkerson. Watch for when it stops — then the min cut appears.';
+  document.getElementById('liveBtn').disabled = false;
+  highlightLiveEdges([]);
+  updateLiveLabels({sA:0,sB:0,At:0,AB:0,Bt:0});
+  ['ln_A','ln_B'].forEach(id => {
+    document.getElementById(id).setAttribute('stroke','#334155');
+    document.getElementById(id).setAttribute('fill','var(--bg2)');
+  });
+  document.getElementById('ln_t').setAttribute('stroke','#fb923c');
+  document.getElementById('liveCut').setAttribute('stroke','rgba(248,113,113,0)');
+  document.getElementById('liveCutLbl').setAttribute('fill','rgba(56,189,248,0)');
+  document.getElementById('liveCutLblR').setAttribute('fill','rgba(251,146,60,0)');
+  document.getElementById('minCutBody').innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">Complete the simulation to see the min cut</td></tr>';
+}
+</script>
+</body>
+</html>

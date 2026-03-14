@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Short Answer Deep Dive — CS161 Section 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inconsolata:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080d;--surf:#0e1118;--surf2:#141822;--border:#1d2535;--border2:#28334a;
+  --cyan:#00d4ff;--lime:#a8ff3e;--pink:#ff4d8d;--gold:#ffd166;--violet:#9d7fff;--coral:#ff7c5c;
+  --text:#d8e4f0;--muted:#4a6070;--muted2:#2a3a4a;--code:#060810;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;}
+
+/* HERO */
+.hero{
+  background:var(--bg);border-bottom:1px solid var(--border);
+  padding:60px 48px 52px;position:relative;overflow:hidden;min-height:280px;
+}
+.hero-dots{
+  position:absolute;inset:0;
+  background-image:radial-gradient(circle,var(--border2) 1px,transparent 1px);
+  background-size:28px 28px;opacity:.5;
+}
+.hero-glow{position:absolute;bottom:-100px;left:10%;width:600px;height:300px;
+  background:radial-gradient(ellipse,rgba(0,212,255,.07) 0%,transparent 70%);pointer-events:none;}
+.hero-badge{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--cyan);background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);
+  padding:4px 14px;border-radius:20px;display:inline-block;margin-bottom:18px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.6rem);font-weight:900;
+  line-height:1.08;color:#fff;max-width:700px;margin-bottom:14px;}
+.hero h1 em{font-style:italic;color:var(--cyan);}
+.hero-sub{color:var(--muted);max-width:520px;font-size:.95rem;margin-bottom:32px;}
+.nav-row{display:flex;gap:8px;flex-wrap:wrap;}
+.np{font-family:'Inconsolata',monospace;font-size:11px;padding:6px 14px;border-radius:20px;
+  border:1px solid var(--border2);background:var(--surf);color:var(--muted);text-decoration:none;transition:all .2s;cursor:pointer;}
+.np:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:52px 32px;}
+
+/* SECTION HEADERS */
+.sec-head{display:flex;align-items:center;gap:14px;margin:60px 0 28px;}
+.sec-head:first-child{margin-top:0;}
+.sec-tag{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);background:rgba(255,209,102,.07);border:1px solid rgba(255,209,102,.2);
+  padding:4px 12px;border-radius:4px;white-space:nowrap;}
+.sec-line{flex:1;height:1px;background:var(--border);}
+.sec-pts{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* TYPE */
+h2{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#fff;margin-bottom:12px;}
+h3{font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:8px;}
+h4{font-family:'Inconsolata',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+p{margin-bottom:13px;}
+ul,ol{padding-left:20px;margin-bottom:13px;}
+li{margin-bottom:5px;}
+strong{color:#fff;font-weight:600;}
+em{color:var(--cyan);}
+
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:18px;}
+.card-cyan{border-left:3px solid var(--cyan);}
+.card-lime{border-left:3px solid var(--lime);}
+.card-pink{border-left:3px solid var(--pink);}
+.card-gold{border-left:3px solid var(--gold);}
+.card-violet{border-left:3px solid var(--violet);}
+.card-coral{border-left:3px solid var(--coral);}
+
+/* PROBLEM BLOCK */
+.pb{background:var(--code);border:1px solid var(--border2);border-radius:10px;padding:20px 24px;margin-bottom:22px;}
+.pb .ql{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:7px;display:block;}
+
+/* CODE */
+pre,code{font-family:'Inconsolata',monospace;}
+pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:16px 20px;overflow-x:auto;line-height:1.75;margin:12px 0;font-size:.8rem;}
+code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;font-size:.84em;}
+.kw{color:#c792ea;}.fn{color:var(--lime);}.cm{color:var(--muted);font-style:italic;}.nu{color:var(--gold);}.va{color:#89ddff;}.st{color:var(--cyan);}
+
+/* CALLOUT */
+.callout{display:flex;gap:12px;align-items:flex-start;background:var(--surf2);border-radius:8px;padding:13px 17px;margin:14px 0;}
+.ci{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+.callout p{margin:0;font-size:.9rem;}
+
+/* BADGE */
+.badge{display:inline-block;font-family:'Inconsolata',monospace;font-size:.76rem;padding:3px 10px;border-radius:4px;margin:2px;}
+.bc{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);color:var(--cyan);}
+.bl{background:rgba(168,255,62,.1);border:1px solid rgba(168,255,62,.3);color:var(--lime);}
+.bp{background:rgba(255,77,141,.1);border:1px solid rgba(255,77,141,.3);color:var(--pink);}
+.bg{background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.3);color:var(--gold);}
+.bv{background:rgba(157,127,255,.1);border:1px solid rgba(157,127,255,.3);color:var(--violet);}
+
+/* BUTTONS */
+.btn{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;padding:8px 18px;border-radius:7px;border:none;cursor:pointer;transition:all .18s;}
+.btn-c{background:var(--cyan);color:#000;}
+.btn-c:hover{background:#4de6ff;}
+.btn-ghost{background:var(--surf);border:1px solid var(--border2);color:var(--text);}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+.btn-l{background:rgba(168,255,62,.15);border:1px solid var(--lime);color:var(--lime);}
+.btn-l:hover{background:rgba(168,255,62,.3);}
+.btn-p{background:rgba(255,77,141,.15);border:1px solid var(--pink);color:var(--pink);}
+.btn-g{background:rgba(255,209,102,.15);border:1px solid var(--gold);color:var(--gold);}
+.btn-v{background:rgba(157,127,255,.15);border:1px solid var(--violet);color:var(--violet);}
+
+/* IBOX */
+.ibox{background:var(--surf2);border:1px solid var(--border2);border-radius:14px;padding:24px;margin:22px 0;}
+.ibox-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.ibox-sub{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);margin-bottom:16px;letter-spacing:.04em;}
+
+/* STEPLOG */
+.steplog{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:11px 15px;
+  font-family:'Inconsolata',monospace;font-size:.78rem;color:var(--lime);min-height:42px;line-height:1.7;margin:10px 0;}
+
+/* ACCORDION */
+.acc{margin:8px 0;}
+.acc-h{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);border-radius:8px;
+  padding:11px 15px;cursor:pointer;user-select:none;transition:all .18s;font-size:.91rem;font-weight:600;color:#fff;}
+.acc-h:hover{border-color:var(--cyan);}
+.acc-icon{color:var(--cyan);font-size:.85rem;transition:transform .2s;}
+.acc-h.open .acc-icon{transform:rotate(90deg);}
+.acc-b{display:none;background:var(--code);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;font-size:.9rem;}
+.acc-b.open{display:block;}
+
+/* GRAPH CANVAS */
+.gc{background:var(--code);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;}
+canvas{display:block;}
+
+/* TABLES */
+.dt{width:100%;border-collapse:collapse;font-size:.84rem;margin:10px 0;}
+.dt th{font-family:'Inconsolata',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);}
+.dt td{padding:8px 11px;border-bottom:1px solid rgba(255,255,255,.03);font-family:'Inconsolata',monospace;}
+.dt tr:last-child td{border-bottom:none;}
+.hl-c td{background:rgba(0,212,255,.07);}
+.hl-l td{background:rgba(168,255,62,.07);}
+.hl-g td{background:rgba(255,209,102,.07);}
+.hl-p td{background:rgba(255,77,141,.07);}
+
+/* MATH */
+.math{font-family:'Inconsolata',monospace;font-style:italic;color:var(--gold);font-size:.88em;}
+.bmath{font-family:'Inconsolata',monospace;background:var(--code);border:1px solid var(--border);border-radius:6px;
+  padding:10px 16px;margin:10px 0;color:var(--gold);text-align:center;font-size:.86rem;}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0;}
+@media(max-width:620px){.two{grid-template-columns:1fr;}}
+
+/* FLOW SPECIFIC */
+.flow-input{display:flex;align-items:center;gap:8px;margin:4px 0;font-family:'Inconsolata',monospace;font-size:.82rem;}
+.flow-input label{color:var(--muted);min-width:90px;}
+.flow-input input{background:var(--surf);border:1px solid var(--border2);color:var(--gold);
+  padding:4px 10px;border-radius:5px;font-family:'Inconsolata',monospace;font-size:.82rem;width:60px;}
+.flow-result{font-family:'Inconsolata',monospace;font-size:.9rem;padding:8px 14px;border-radius:6px;margin:6px 0;}
+.flow-ok{background:rgba(168,255,62,.1);border:1px solid var(--lime);color:var(--lime);}
+.flow-bad{background:rgba(255,77,141,.1);border:1px solid var(--pink);color:var(--pink);}
+
+/* NODE SCORE VIZ */
+.dag-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  width:56px;height:56px;border-radius:50%;border:2px solid var(--border2);background:var(--surf);
+  font-family:'Inconsolata',monospace;font-size:.75rem;margin:4px;transition:all .3s;cursor:default;}
+.dag-node .score{font-size:.65rem;color:var(--muted);}
+.dag-node .dscore{font-size:.75rem;color:var(--lime);font-weight:700;}
+.dag-node.active{border-color:var(--gold);background:rgba(255,209,102,.12);}
+.dag-node.done{border-color:var(--lime);background:rgba(168,255,62,.1);}
+
+/* PBAR */
+.pbar{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--lime));transform-origin:left;z-index:100;}
+
+/* Comparison table */
+.comp-table{width:100%;border-collapse:collapse;margin:12px 0;}
+.comp-table th{padding:10px 14px;background:var(--surf2);font-family:'Inconsolata',monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);}
+.comp-table td{padding:10px 14px;border:1px solid var(--border);font-size:.88rem;vertical-align:top;}
+.comp-table tr:nth-child(odd) td{background:var(--surf);}
+.comp-table tr:nth-child(even) td{background:var(--surf2);}
+
+/* PRIM TOGGLE */
+.rep-toggle{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border2);margin:12px 0;width:fit-content;}
+.rep-btn{font-family:'Outfit',sans-serif;font-weight:600;font-size:.82rem;padding:9px 22px;background:var(--surf);color:var(--muted);border:none;cursor:pointer;transition:all .2s;}
+.rep-btn.active{background:var(--cyan);color:#000;}
+
+/* BF table animation */
+.bf-cell{font-family:'Inconsolata',monospace;font-size:.8rem;padding:7px 10px;border-radius:4px;
+  background:var(--surf);border:1px solid var(--border);text-align:center;transition:all .3s;}
+.bf-cell.updated{background:rgba(168,255,62,.2);border-color:var(--lime);}
+.bf-cell.inf{color:var(--muted);}
+.bf-cell.active{background:rgba(255,209,102,.15);border-color:var(--gold);}
+.bf-row{display:flex;gap:6px;margin:4px 0;}
+
+/* SCC path */
+.scc-node-box{display:flex;align-items:center;justify-content:center;
+  width:70px;height:36px;border-radius:6px;border:2px solid var(--border2);background:var(--surf);
+  font-family:'Inconsolata',monospace;font-size:.78rem;transition:all .3s;white-space:nowrap;}
+.scc-node-box.highlight{border-color:var(--cyan);background:rgba(0,212,255,.12);}
+.scc-node-box.source{border-color:var(--gold);background:rgba(255,209,102,.12);}
+.scc-node-box.target{border-color:var(--violet);background:rgba(157,127,255,.12);}
+.scc-path-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:8px 0;}
+.scc-arrow{color:var(--muted);font-size:1rem;}
+
+/* answer template */
+.answer-template{background:rgba(168,255,62,.05);border:1px solid rgba(168,255,62,.2);border-radius:10px;padding:18px 22px;margin:14px 0;}
+.answer-template h4{color:var(--lime);margin-bottom:10px;}
+
+hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+footer{border-top:1px solid var(--border);padding:26px 32px;text-align:center;font-family:'Inconsolata',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.08em;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp .45s ease both;}
+</style>
+</head>
+<body>
+<div class="pbar" id="pbar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <span class="hero-badge">CS161 · Winter 2024 · Section 2 · Final Exam Prep</span>
+  <h1>Short Answer,<br><em>Deep Knowledge</em></h1>
+  <p class="hero-sub">Five problems — max flow, MSTs, Bellman-Ford, DAG DP, and SCC reachability. All explained from zero, with every answer solved step by step.</p>
+  <div class="nav-row">
+    <a class="np" href="#p21">2.1 Max Flow</a>
+    <a class="np" href="#p22">2.2 Prim's Representation</a>
+    <a class="np" href="#p23">2.3 Bounded Earnings</a>
+    <a class="np" href="#p24">2.4 descendantScore</a>
+    <a class="np" href="#p25">2.5 SCC Reachability</a>
+    <a class="np" href="#summary">Summary</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════
+     2.1 — MAX FLOW
+     ═══════════════════════════════════ -->
+<div id="p21">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 2.1</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">6 pts — Max Flow on a Specific Graph</span>
+  </div>
+
+  <h2>Max Flow — The Water Pipes Problem</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>You're given a specific graph with edge capacities. Find the <strong>maximum flow</strong> from s to t and fill in the flow on every edge.</p>
+  </div>
+
+  <div class="callout"><div class="ci">💧</div>
+    <p><strong>Mental model first:</strong> Imagine s is a water reservoir and t is a city. Each edge is a pipe with a maximum capacity. How much water can you push from reservoir to city per second? That's max flow.</p>
+  </div>
+
+  <h3>The Core Rules (Never Forget These)</h3>
+  <div class="two">
+    <div class="card card-cyan">
+      <h4>Rule 1 — Capacity Constraint</h4>
+      <p>Flow on any edge must be between 0 and its capacity. You can't overfill a pipe.</p>
+      <div class="bmath">0 ≤ f(e) ≤ capacity(e)</div>
+    </div>
+    <div class="card card-lime">
+      <h4>Rule 2 — Conservation</h4>
+      <p>At every middle node (not s or t): flow in = flow out. Water doesn't appear or disappear in the middle.</p>
+      <div class="bmath">Σ flow_in(v) = Σ flow_out(v)</div>
+    </div>
+  </div>
+
+  <div class="card card-gold">
+    <h3>The Max-Flow Min-Cut Theorem</h3>
+    <p>The maximum possible flow equals the minimum cut capacity. A <strong>cut</strong> is any partition of vertices into two sets (one containing s, one containing t). The capacity of a cut = sum of capacities of edges going from the s-side to the t-side.</p>
+    <p>So to verify your max flow is actually maximum: find any cut whose capacity equals your flow value. If they match, you're done.</p>
+  </div>
+
+  <h3>Ford-Fulkerson in Plain English</h3>
+  <p>The algorithm for finding max flow:</p>
+  <ol>
+    <li>Start with zero flow on all edges.</li>
+    <li>Find any path from s to t with remaining capacity (an <strong>augmenting path</strong>).</li>
+    <li>Push as much flow as possible through that path (limited by the bottleneck edge).</li>
+    <li>Update the <strong>residual graph</strong> — reduce forward capacity, increase backward capacity.</li>
+    <li>Repeat until no augmenting path exists.</li>
+  </ol>
+
+  <div class="callout"><div class="ci">🔁</div>
+    <p><strong>Residual graph:</strong> after sending flow along an edge, you create a "reverse" edge in the residual graph. This lets the algorithm "undo" mistakes by routing flow backward. The reverse edge capacity = amount of flow already sent on the forward edge.</p>
+  </div>
+
+  <!-- INTERACTIVE MAX FLOW -->
+  <div class="ibox">
+    <div class="ibox-title">🌊 Exam Graph — Interactive Max Flow Solver</div>
+    <div class="ibox-sub">This is the exact graph from Problem 2.1. Fill in flows manually or use the solver. Verify conservation at each node.</div>
+
+    <div class="gc" style="margin-bottom:14px;">
+      <canvas id="flowCanvas" width="860" height="380"></canvas>
+    </div>
+
+    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px;">
+      <div>
+        <h4 style="margin-bottom:10px;">EDGE FLOWS (fill in your answer)</h4>
+        <div id="flowInputs"></div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <h4 style="margin-bottom:10px;">VALIDATION</h4>
+        <div id="flowValidation"></div>
+        <div style="margin-top:10px;">
+          <span style="font-family:'Inconsolata';font-size:.8rem;color:var(--muted);">Total flow from s: </span>
+          <span id="totalFlow" style="font-family:'Inconsolata';font-size:.9rem;color:var(--cyan);font-weight:700;">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="btn btn-c" onclick="solveMF()">⭐ Show Optimal Solution</button>
+      <button class="btn btn-ghost" onclick="resetMF()">↺ Reset Flows to 0</button>
+      <button class="btn btn-l" onclick="validateMF()">✓ Validate My Flow</button>
+    </div>
+    <div class="steplog" id="flowLog">Fill in the flow values above, or click "Show Optimal Solution" to see the answer.</div>
+
+    <div style="margin-top:16px;">
+      <h4>HOW TO FIND MAX FLOW ON THIS GRAPH — STEP BY STEP</h4>
+      <div class="acc">
+        <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Step 1: Find augmenting paths</div>
+        <div class="acc-b">
+          <p>Scan for paths from s to t with remaining capacity. In the exam graph:</p>
+          <p><strong>Path 1:</strong> s→v1→t (capacities: 4, 20). Bottleneck = 4. Send 4 units.</p>
+          <p><strong>Path 2:</strong> s→v2→v4→t (capacities: 2, 2, 7). Bottleneck = 2. Send 2 units.</p>
+          <p><strong>Path 3:</strong> s→v3→v5→t (capacities: 2, 5, 7). Bottleneck = 2. Send 2 units.</p>
+          <p>No more augmenting paths exist with positive residual capacity.</p>
+        </div>
+      </div>
+      <div class="acc">
+        <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Step 2: Verify with Min-Cut</div>
+        <div class="acc-b">
+          <p>Cut: {s} vs {v1,v2,v3,v4,v5,t}. Edges crossing: s→v1 (cap 4), s→v2 (cap 2), s→v3 (cap 2). Total = 8.</p>
+          <p>Our flow = 8 = cut capacity → this is maximum. ✓</p>
+        </div>
+      </div>
+      <div class="acc">
+        <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Step 3: Check conservation at each node</div>
+        <div class="acc-b">
+          <p>For each middle node, verify flow in = flow out:</p>
+          <ul>
+            <li><strong>v1:</strong> in=4 (from s), out=4 (to t). ✓</li>
+            <li><strong>v2:</strong> in=2 (from s), out=2 (to v4). ✓</li>
+            <li><strong>v3:</strong> in=2 (from s), out=2 (to v5). ✓</li>
+            <li><strong>v4:</strong> in=2 (from v2), out=2 (to t). ✓</li>
+            <li><strong>v5:</strong> in=2 (from v3), out=2 (to t). ✓</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="answer-template">
+    <h4>📝 EXAM ANSWER</h4>
+    <p>Maximum flow = <strong style="color:var(--gold)">8</strong>. The flow is:</p>
+    <p style="font-family:'Inconsolata';font-size:.85rem;">s→v1: 4/4 &nbsp;|&nbsp; s→v2: 2/2 &nbsp;|&nbsp; s→v3: 2/2 &nbsp;|&nbsp; v1→t: 4/20 &nbsp;|&nbsp; v2→v4: 2/2 &nbsp;|&nbsp; v4→t: 2/7 &nbsp;|&nbsp; v3→v5: 2/5 &nbsp;|&nbsp; v5→t: 2/7 &nbsp;|&nbsp; all others: 0</p>
+    <p>Min cut: ({s}, rest), capacity = 4+2+2 = 8 = max flow. ✓</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     2.2 — PRIM'S ALGORITHM
+     ═══════════════════════════════════ -->
+<div id="p22">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 2.2</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">6 pts — Graph Representation for Prim's</span>
+  </div>
+
+  <h2>Prim's MST — Which Graph Representation?</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>You want to run Prim's algorithm on an undirected weighted connected graph with n vertices and m edges, achieving the <strong>best possible asymptotic runtime</strong>. Should you store the graph as an <strong>adjacency list</strong> or an <strong>adjacency matrix</strong>? Justify your choice.</p>
+  </div>
+
+  <h3>First: What Are These Two Representations?</h3>
+
+  <div class="two">
+    <div class="card card-cyan">
+      <h4>Adjacency List</h4>
+      <p>Each vertex has a list of its neighbors (and edge weights). Only stores edges that actually exist.</p>
+      <p><strong>Space:</strong> O(n + m)</p>
+      <p><strong>Check if edge (u,v) exists:</strong> O(degree of u)</p>
+      <p><strong>Find all neighbors of u:</strong> O(degree of u)</p>
+      <p>Great when the graph is <strong>sparse</strong> (few edges, m ≪ n²).</p>
+    </div>
+    <div class="card card-gold">
+      <h4>Adjacency Matrix</h4>
+      <p>An n×n grid. Entry [i][j] = weight of edge i→j, or ∞ if no edge.</p>
+      <p><strong>Space:</strong> O(n²)</p>
+      <p><strong>Check if edge (u,v) exists:</strong> O(1)</p>
+      <p><strong>Find all neighbors of u:</strong> O(n) — must scan entire row</p>
+      <p>Great when the graph is <strong>dense</strong> (many edges, m ≈ n²).</p>
+    </div>
+  </div>
+
+  <!-- PRIM'S VISUALIZATION -->
+  <div class="ibox">
+    <div class="ibox-title">🌲 How Prim's Algorithm Works</div>
+    <div class="ibox-sub">Prim's builds an MST by greedily adding the cheapest edge connecting the current tree to an unvisited vertex</div>
+    <div class="gc">
+      <canvas id="primCanvas" width="860" height="300"></canvas>
+    </div>
+    <div style="margin:10px 0;">
+      <span style="font-family:'Inconsolata';font-size:10px;color:var(--muted);">PRIORITY QUEUE (vertex: key/min-edge-weight):</span>
+      <div id="primPQ" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;"></div>
+    </div>
+    <div style="margin:6px 0;">
+      <span style="font-family:'Inconsolata';font-size:10px;color:var(--muted);">MST EDGES SO FAR:</span>
+      <div id="primMST" style="font-family:'Inconsolata';font-size:.8rem;margin-top:4px;color:var(--lime);"></div>
+    </div>
+    <div class="steplog" id="primLog">Press Step to run Prim's algorithm from vertex A.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-c" onclick="primStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="primReset()">↺ Reset</button>
+      <button class="btn btn-l" onclick="primRunAll()">Run All ▶▶</button>
+    </div>
+  </div>
+
+  <h3>What Does Prim's Actually Do? — The Key Operations</h3>
+  <p>At each iteration, Prim's does two things:</p>
+  <ol>
+    <li><strong>Extract-Min:</strong> pick the unvisited vertex with the smallest key (cheapest connecting edge).</li>
+    <li><strong>Decrease-Key:</strong> for each neighbor of the extracted vertex, update their key if we found a cheaper connecting edge.</li>
+  </ol>
+  <p>The runtime of Prim's <em>critically depends on how we find neighbors</em> in step 2.</p>
+
+  <!-- REPRESENTATION COMPARISON -->
+  <div class="ibox">
+    <div class="ibox-title">⚖️ Adjacency List vs Matrix — Runtime Comparison</div>
+    <div class="ibox-sub">Click a representation to see how it affects Prim's runtime</div>
+
+    <div class="rep-toggle">
+      <button class="rep-btn active" id="repListBtn" onclick="showRep('list')">Adjacency List</button>
+      <button class="rep-btn" id="repMatBtn" onclick="showRep('matrix')">Adjacency Matrix</button>
+    </div>
+
+    <div id="repListExplain">
+      <p>With an adjacency list, each vertex only knows about edges that exist. In the Decrease-Key step, we only look at <em>actual neighbors</em> — no wasted scans.</p>
+      <table class="comp-table">
+        <thead><tr><th>Operation</th><th>How Many Times?</th><th>Cost Each</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>Extract-Min (min-heap)</td><td>n times</td><td>O(log n)</td><td>O(n log n)</td></tr>
+          <tr><td>Decrease-Key</td><td>m times total (once per edge)</td><td>O(log n)</td><td>O(m log n)</td></tr>
+          <tr style="background:rgba(168,255,62,.07)"><td colspan="3"><strong style="color:var(--lime)">TOTAL</strong></td><td><strong style="color:var(--lime)">O((n+m) log n)</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="repMatExplain" style="display:none;">
+      <p>With an adjacency matrix, to find all neighbors of a vertex, you must scan its <em>entire row</em> (n entries), even if most entries are ∞ (no edge). This is wasteful for sparse graphs.</p>
+      <table class="comp-table">
+        <thead><tr><th>Operation</th><th>How Many Times?</th><th>Cost Each</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>Find minimum key vertex</td><td>n times</td><td>O(n) — scan all unvisited</td><td>O(n²)</td></tr>
+          <tr><td>Update neighbors</td><td>n times</td><td>O(n) — scan entire row</td><td>O(n²)</td></tr>
+          <tr style="background:rgba(255,77,141,.07)"><td colspan="3"><strong style="color:var(--pink)">TOTAL</strong></td><td><strong style="color:var(--pink)">O(n²)</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h4>WHICH IS BETTER?</h4>
+      <p>It depends on the graph density:</p>
+      <ul>
+        <li><strong>Sparse graph</strong> (m ≈ n): List gives O(n log n), Matrix gives O(n²). <span style="color:var(--lime)">List wins.</span></li>
+        <li><strong>Dense graph</strong> (m ≈ n²): List gives O(n² log n), Matrix gives O(n²). <span style="color:var(--lime)">Matrix wins.</span></li>
+        <li><strong>General case:</strong> The question asks for the "best possible asymptotic runtime." Since O((n+m) log n) is always ≤ O(n² log n), and equals O(n² log n) only when m = n², <strong>adjacency list is always at least as good</strong>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="answer-template">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Choice: Adjacency list.</strong></p>
+    <p>Prim's algorithm with a min-heap priority queue runs in O((n+m) log n) with an adjacency list. At each step, we extract the minimum-key vertex (O(log n)) and update its neighbors' keys (one Decrease-Key per edge, O(log n) each). Since there are n Extract-Min operations and m Decrease-Key operations total, the runtime is O(n log n + m log n) = O((n+m) log n).</p>
+    <p>With an adjacency matrix, finding neighbors requires scanning an entire row of n entries per vertex, giving O(n²) total. Since O((n+m) log n) ≤ O(n² log n) and equals O(n²) only when m = n² (dense graph) and we drop the log, adjacency list achieves the best asymptotic runtime for Prim's.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     2.3 — BOUNDED EARNINGS
+     ═══════════════════════════════════ -->
+<div id="p23">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 2.3</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">6 pts — Bellman-Ford and Positive Cycles</span>
+  </div>
+
+  <h2>Bounded Earnings — Detecting Positive Cycles</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>Directed graph, edges have dollar amounts (positive = earn, negative = lose). Starting at a specified vertex, traversing an edge multiple times multiplies the earnings. Are your total earnings <strong>bounded</strong> (finite maximum) or <strong>unbounded</strong> (you can earn infinite money)? Design an O(mn) algorithm.</p>
+  </div>
+
+  <div class="callout"><div class="ci">💰</div>
+    <p><strong>Key insight:</strong> earnings are unbounded if and only if there exists a <strong>positive cycle</strong> reachable from the start vertex. If you can reach a cycle where the sum of edge weights is positive, you just keep going around it forever, earning more each loop.</p>
+  </div>
+
+  <div class="two">
+    <div class="card card-lime">
+      <h4>✅ Bounded</h4>
+      <p>No positive cycle reachable from start. There's some finite maximum you can earn — a best path that you can't improve by looping.</p>
+      <p>Example: A→B(+5)→C(+3). Best you can earn: $8. No way to do better.</p>
+    </div>
+    <div class="card card-pink">
+      <h4>❌ Unbounded</h4>
+      <p>A positive cycle is reachable from start. Just loop around it forever.</p>
+      <p>Example: A→B(+5)→A(-2). Cycle total = +3. Go around n times: earn 3n dollars → ∞.</p>
+    </div>
+  </div>
+
+  <h3>Why Bellman-Ford?</h3>
+  <p>Bellman-Ford is famous for detecting <strong>negative cycles</strong> in shortest-path problems. Here we have the same idea in reverse: we want to detect <strong>positive cycles</strong> in a <em>longest-path</em> / maximum earnings problem.</p>
+
+  <div class="card card-cyan">
+    <h3>The Connection to Bellman-Ford</h3>
+    <p>Think about it this way: finding <strong>maximum earnings</strong> = finding the <strong>longest path</strong> (maximizing sum of edge weights). Bellman-Ford for longest paths: instead of relaxing edges by taking minimums, we take maximums.</p>
+    <p><strong>Negative cycle in shortest-path</strong> = you can make paths infinitely short by looping ↔ <strong>Positive cycle in longest-path</strong> = you can make paths infinitely long by looping.</p>
+    <p>So we run a <em>maximizing</em> Bellman-Ford variant, then check: if we can still improve earnings after n-1 rounds, a positive cycle exists → unbounded.</p>
+  </div>
+
+  <h3>The Algorithm</h3>
+  <pre><span class="fn">BOUNDED_EARNINGS</span>(G, start):
+  <span class="cm">// Initialize: dist[v] = max earnings to reach v</span>
+  dist[start] = <span class="nu">0</span>
+  dist[v] = -∞  <span class="cm">for all other v (unreachable initially)</span>
+
+  <span class="cm">// Run n-1 rounds of "relaxation" (here: maximization)</span>
+  <span class="kw">for</span> round = <span class="nu">1</span> to n-<span class="nu">1</span>:
+    <span class="kw">for</span> each edge (u, v) with weight w:
+      <span class="kw">if</span> dist[u] + w > dist[v]:
+        dist[v] = dist[u] + w   <span class="cm">// found better (higher) path</span>
+
+  <span class="cm">// Round n: if we can still improve, a positive cycle exists!</span>
+  <span class="kw">for</span> each edge (u, v) with weight w:
+    <span class="kw">if</span> dist[u] + w > dist[v]:
+      <span class="kw">return false</span>  <span class="cm">// UNBOUNDED: positive cycle reachable</span>
+
+  <span class="kw">return true</span>  <span class="cm">// BOUNDED: no positive cycle found</span></pre>
+
+  <div class="callout"><div class="ci">⚡</div>
+    <p><strong>Why n-1 rounds?</strong> Any simple path in a graph with n vertices has at most n-1 edges. So after n-1 rounds of relaxation, dist[v] holds the maximum earnings along any simple path to v. If we can still improve in round n, the improving path must use a cycle — and since it improves earnings, that cycle must be positive.</p>
+  </div>
+
+  <div class="callout"><div class="ci">📍</div>
+    <p><strong>Reachability matters!</strong> We only care about positive cycles <em>reachable from the start vertex</em>. Initializing dist[v] = -∞ for non-start vertices ensures we only propagate earnings along paths reachable from start. A vertex with dist[v] = -∞ after all rounds was never reached.</p>
+  </div>
+
+  <!-- INTERACTIVE BELLMAN-FORD -->
+  <div class="ibox">
+    <div class="ibox-title">🔄 Bellman-Ford Positive Cycle Detector</div>
+    <div class="ibox-sub">Watch the maximizing Bellman-Ford run. If round n still improves earnings, it's unbounded.</div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-ghost" onclick="bfLoad('bounded')">✅ Bounded Example</button>
+      <button class="btn btn-ghost" onclick="bfLoad('unbounded')">❌ Unbounded (positive cycle)</button>
+      <button class="btn btn-ghost" onclick="bfLoad('exam')">Exam Example (A,B,C)</button>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">GRAPH</div>
+        <div class="gc">
+          <canvas id="bfCanvas" width="380" height="250"></canvas>
+        </div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">EARNINGS TABLE (dist[] values)</div>
+        <div id="bfTable"></div>
+        <div style="margin-top:8px;font-family:'Inconsolata';font-size:10px;color:var(--muted);">ROUND:</div>
+        <div id="bfRound" style="font-family:'Inconsolata';font-size:1.1rem;font-weight:700;color:var(--gold);">0</div>
+      </div>
+    </div>
+
+    <div class="steplog" id="bfLog">Load an example, then press Step to run Bellman-Ford.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-c" onclick="bfStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="bfReset()">↺ Reset</button>
+      <button class="btn btn-l" onclick="bfRunAll()">Run All ▶▶</button>
+    </div>
+    <div id="bfResult" style="margin-top:10px;font-family:'Inconsolata';font-size:.9rem;font-weight:700;"></div>
+  </div>
+
+  <div class="answer-template">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Algorithm:</strong> Run a maximizing version of Bellman-Ford starting from the given vertex. Initialize dist[start]=0 and dist[v]=-∞ for all other vertices. For n-1 rounds, iterate over all edges: for each edge (u,v,w), if dist[u]+w > dist[v], update dist[v]=dist[u]+w. After n-1 rounds, run one more round: if any edge can still improve dist values, a positive cycle is reachable from start → return false (unbounded). Otherwise return true (bounded).</p>
+    <p><strong>Correctness:</strong> After n-1 rounds, dist[v] holds the maximum earnings to reach v along any simple path (at most n-1 edges). If a further improvement is possible, the path must use a cycle. Since the path improves earnings, the cycle must sum to a positive value.</p>
+    <p><strong>Runtime:</strong> n-1 rounds × m edges per round = O(mn). ✓</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     2.4 — DESCENDANTSCORE
+     ═══════════════════════════════════ -->
+<div id="p24">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 2.4</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">6 pts — DAG DP: descendantScore</span>
+  </div>
+
+  <h2>descendantScore — DAG Dynamic Programming</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>DAG where each vertex has an integer <strong>score</strong>. The <strong>descendantScore</strong> of a vertex is the <em>maximum score</em> among itself and all its descendants (vertices it can reach via directed paths). Compute descendantScore for ALL vertices in <strong>O(n+m)</strong>.</p>
+  </div>
+
+  <div class="callout"><div class="ci">🌳</div>
+    <p><strong>Mental model:</strong> Think of a company org chart. Your "descendantScore" is the highest performer among you and everyone below you in the hierarchy. Every manager's score depends on the scores of their reports.</p>
+  </div>
+
+  <h3>Key Observation — Process in Reverse Topological Order</h3>
+
+  <div class="card card-violet">
+    <h3>Why Topological Order?</h3>
+    <p>A DAG has no cycles, so we can find a <strong>topological ordering</strong> — a linear order where every edge goes from earlier to later. In topological order, no vertex has a descendant that comes before it.</p>
+    <p>If we process vertices in <strong>reverse topological order</strong> (sinks first, sources last), then when we compute descendantScore[v], all of v's children already have their descendantScore computed. So we can just take the max!</p>
+    <div class="bmath">descendantScore[v] = max(score[v],  max over all children c of: descendantScore[c])</div>
+  </div>
+
+  <h3>The Algorithm</h3>
+  <pre><span class="fn">COMPUTE_DESCENDANT_SCORES</span>(G):
+  <span class="cm">// Step 1: Topological sort the DAG</span>
+  topoOrder ← <span class="fn">TOPO_SORT</span>(G)   <span class="cm">// O(n+m) via DFS</span>
+
+  <span class="cm">// Step 2: Initialize — every vertex's descendantScore starts as its own score</span>
+  <span class="kw">for</span> each vertex v:
+    descendantScore[v] ← score[v]
+
+  <span class="cm">// Step 3: Process in REVERSE topological order (sinks first)</span>
+  <span class="kw">for</span> v <span class="kw">in</span> reverse(topoOrder):
+    <span class="kw">for</span> each child c <span class="kw">of</span> v:   <span class="cm">// c is a vertex v has an edge to</span>
+      descendantScore[v] ← max(descendantScore[v], descendantScore[c])
+
+  <span class="kw">return</span> descendantScore</pre>
+
+  <div class="callout"><div class="ci">💡</div>
+    <p><strong>Why does this work?</strong> When we process v in reverse topological order, all vertices that v can reach (all descendants) come <em>after</em> v in topological order, meaning they were processed <em>before</em> v in our reverse loop. So descendantScore[c] is already the correct maximum for all of c's descendants when we use it for v.</p>
+  </div>
+
+  <h3>Runtime</h3>
+  <div class="card card-lime">
+    <table class="dt">
+      <thead><tr><th>Step</th><th>Operation</th><th>Runtime</th></tr></thead>
+      <tbody>
+        <tr class="hl-c"><td>1</td><td>Topological sort (DFS)</td><td>O(n+m)</td></tr>
+        <tr class="hl-l"><td>2</td><td>Initialize descendantScore</td><td>O(n)</td></tr>
+        <tr class="hl-c"><td>3</td><td>Reverse topo loop — each edge visited once</td><td>O(n+m)</td></tr>
+        <tr class="hl-l"><td>—</td><td><strong>Total</strong></td><td><strong>O(n+m) ✓</strong></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.85rem;color:var(--muted);">Step 3 is O(n+m) because the outer loop runs n times and the inner "for each child" loop runs over all edges exactly once total across all vertices.</p>
+  </div>
+
+  <!-- INTERACTIVE DAG SCORE -->
+  <div class="ibox">
+    <div class="ibox-title">🎯 descendantScore — Step-Through Visualizer</div>
+    <div class="ibox-sub">Watch descendantScore propagate backward through the DAG in reverse topological order</div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-ghost" onclick="dagLoad('simple')">Simple DAG</button>
+      <button class="btn btn-ghost" onclick="dagLoad('branchy')">Branching DAG</button>
+      <button class="btn btn-ghost" onclick="dagLoad('chain')">Chain DAG</button>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">DAG (number = score, green = descendantScore)</div>
+        <div class="gc">
+          <canvas id="dagCanvas" width="420" height="280"></canvas>
+        </div>
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:8px;">PROCESSING ORDER (reverse topo):</div>
+        <div id="dagOrder" style="display:flex;flex-direction:column;gap:5px;"></div>
+        <div style="margin-top:14px;font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:8px;">TOPO ORDER:</div>
+        <div id="dagTopoRow" style="font-family:'Inconsolata';font-size:.8rem;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <div class="steplog" id="dagLog">Load a DAG, then Step through the algorithm.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-c" onclick="dagStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="dagReset()">↺ Reset</button>
+      <button class="btn btn-l" onclick="dagRunAll()">Run All ▶▶</button>
+    </div>
+    <div id="dagFinal" style="font-family:'Inconsolata';font-size:.8rem;margin-top:10px;color:var(--lime);line-height:1.8;"></div>
+  </div>
+
+  <div class="answer-template">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Algorithm:</strong></p>
+    <ol style="font-size:.9rem;">
+      <li>Run DFS to compute a topological ordering of the DAG. O(n+m).</li>
+      <li>Initialize descendantScore[v] = score[v] for all v.</li>
+      <li>Process vertices in reverse topological order. For each vertex v, for each outgoing edge (v→c), set descendantScore[v] = max(descendantScore[v], descendantScore[c]).</li>
+      <li>Return the descendantScore array.</li>
+    </ol>
+    <p><strong>Correctness:</strong> Processing in reverse topological order ensures all descendants of v are processed before v. When we update descendantScore[v] using descendantScore[c] for each child c, descendantScore[c] already holds the maximum score in c's entire subtree. Taking the max over all children plus v's own score gives the correct descendantScore[v].</p>
+    <p><strong>Runtime:</strong> Topo sort O(n+m) + one pass over vertices and edges O(n+m) = O(n+m). ✓</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     2.5 — SCC PATH REACHABILITY
+     ═══════════════════════════════════ -->
+<div id="p25">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 2.5</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">6 pts — SCC Reachability in O(b²)</span>
+  </div>
+
+  <h2>SCC Path Reachability — Using the Condensation</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>You're given access to the <strong>condensation DAG</strong> of a graph (b SCCs total) and a function <code>getSCC(v)</code> that returns which SCC vertex v belongs to in O(1). Design an <strong>O(b²)</strong> algorithm to determine if there's a path from u to v in the original graph.</p>
+  </div>
+
+  <div class="callout"><div class="ci">🔍</div>
+    <p><strong>Remember:</strong> There's a path from u to v in the original graph if and only if getSCC(u) can reach getSCC(v) in the condensation DAG. This is because SCCs compress all the "local" connectivity — all vertices within the same SCC can already reach each other.</p>
+  </div>
+
+  <h3>Why Work in the Condensation DAG?</h3>
+
+  <div class="two">
+    <div class="card card-cyan">
+      <h4>Original graph is messy</h4>
+      <p>The original graph could have n vertices and m edges with complex structure. But we can't afford expensive operations here.</p>
+      <p>Key: there's a path from u to v in G <strong>if and only if</strong> getSCC(u) can reach getSCC(v) in the condensation DAG.</p>
+    </div>
+    <div class="card card-violet">
+      <h4>Condensation DAG is clean</h4>
+      <p>Only b ≤ n vertices. It's a DAG (no cycles). We just need to check reachability from one SCC-node to another in a graph with b vertices.</p>
+      <p>BFS/DFS on b vertices = O(b + edges of condensation). But the condensation has at most b² edges, so this is O(b²).</p>
+    </div>
+  </div>
+
+  <h3>The Algorithm</h3>
+
+  <pre><span class="fn">PATH_EXISTS</span>(u, v, condensationDAG, getSCC):
+  <span class="cm">// Step 1: Find which SCCs u and v belong to</span>
+  scc_u ← <span class="fn">getSCC</span>(u)   <span class="cm">// O(1)</span>
+  scc_v ← <span class="fn">getSCC</span>(v)   <span class="cm">// O(1)</span>
+
+  <span class="cm">// Special case: same SCC → they can definitely reach each other</span>
+  <span class="kw">if</span> scc_u == scc_v:
+    <span class="kw">return true</span>
+
+  <span class="cm">// Step 2: BFS/DFS from scc_u in the condensation DAG</span>
+  <span class="cm">// Check if scc_v is reachable from scc_u</span>
+  reachable ← <span class="fn">BFS</span>(condensationDAG, scc_u)   <span class="cm">// O(b + edges) = O(b²)</span>
+
+  <span class="kw">return</span> scc_v <span class="kw">in</span> reachable</pre>
+
+  <div class="callout"><div class="ci">⏱</div>
+    <p><strong>Why O(b²)?</strong> BFS/DFS on a graph with b nodes and at most b² edges (since b² is the maximum number of directed edges between b nodes) runs in O(b + b²) = O(b²). The getSCC calls are O(1) each. So the total is O(b²). ✓</p>
+  </div>
+
+  <div class="card card-gold">
+    <h3>Alternative: Precompute All Pairs</h3>
+    <p>If you need to answer <em>many</em> reachability queries, you could run BFS from every SCC-node, giving all-pairs reachability in O(b · b²) = O(b³). Or use a reachability matrix. But the problem only asks about one pair (u,v), so one BFS suffices.</p>
+  </div>
+
+  <!-- INTERACTIVE SCC PATH -->
+  <div class="ibox">
+    <div class="ibox-title">🔗 SCC Reachability — Interactive Demo</div>
+    <div class="ibox-sub">Select source u and target v. Watch BFS traverse the condensation DAG to check reachability.</div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-ghost" onclick="sccPathLoad('ex1')">Example 1</button>
+      <button class="btn btn-ghost" onclick="sccPathLoad('ex2')">Example 2</button>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">ORIGINAL GRAPH (colored by SCC)</div>
+        <div class="gc"><canvas id="sccOrigCanvas" width="420" height="270"></canvas></div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">CONDENSATION DAG (BFS runs here)</div>
+        <div class="gc"><canvas id="sccCondCanvas" width="420" height="270"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0;">
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">Query: Is there a path from</span>
+      <select id="sccU" style="background:var(--surf);border:1px solid var(--border2);color:var(--gold);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">to</span>
+      <select id="sccV" style="background:var(--surf);border:1px solid var(--border2);color:var(--violet);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">?</span>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-c" onclick="runSCCPath()">Check Reachability →</button>
+      <button class="btn btn-ghost" onclick="resetSCCPath()">↺ Reset</button>
+    </div>
+    <div class="steplog" id="sccPathLog">Load an example and select u and v to check path existence.</div>
+    <div id="sccPathResult" style="font-family:'Inconsolata';font-size:1rem;font-weight:700;margin-top:8px;"></div>
+    <div id="sccPathSteps" style="font-family:'Inconsolata';font-size:.78rem;color:var(--muted);margin-top:8px;line-height:2;"></div>
+  </div>
+
+  <div class="answer-template">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Algorithm:</strong></p>
+    <ol style="font-size:.9rem;">
+      <li>Call getSCC(u) and getSCC(v) to get the corresponding SCC-nodes in the condensation DAG. O(1).</li>
+      <li>If getSCC(u) = getSCC(v), return true (same SCC → mutual reachability guaranteed).</li>
+      <li>Run BFS from getSCC(u) in the condensation DAG. Return whether getSCC(v) is visited. O(b + edges of condensation) = O(b²).</li>
+    </ol>
+    <p><strong>Correctness:</strong> There is a path from u to v in the original graph if and only if getSCC(v) is reachable from getSCC(u) in the condensation DAG. This holds because: (a) within an SCC, all vertices can reach each other; (b) between SCCs, reachability in the original graph exactly corresponds to reachability in the condensation.</p>
+    <p><strong>Runtime:</strong> Two getSCC calls O(1), plus BFS on a graph with b nodes and at most b(b-1) ≤ b² directed edges, which runs in O(b + b²) = O(b²). Total: O(b²). ✓</p>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div class="sec-head" style="margin-top:60px;">
+    <span class="sec-tag">Summary</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">All 5 Problems at a Glance</span>
+  </div>
+
+  <h2>Section 2 Cheat Sheet</h2>
+
+  <table class="comp-table" style="margin-bottom:24px;">
+    <thead><tr><th>Problem</th><th>Core Idea</th><th>Algorithm</th><th>Runtime</th><th>Key Trick</th></tr></thead>
+    <tbody>
+      <tr><td><strong>2.1 Max Flow</strong></td><td>Push water through pipes</td><td>Ford-Fulkerson + residual graph</td><td>O(C·E)</td><td>Min cut = Max flow. Verify by finding a cut equal to flow.</td></tr>
+      <tr><td><strong>2.2 Prim's</strong></td><td>Build MST greedily</td><td>Min-heap + adjacency list</td><td>O((n+m)logn)</td><td>List wins because neighbor lookup is O(degree), not O(n).</td></tr>
+      <tr><td><strong>2.3 Bounded Earnings</strong></td><td>Detect positive cycle</td><td>Maximizing Bellman-Ford</td><td>O(mn)</td><td>If round n still improves, a positive cycle exists → unbounded.</td></tr>
+      <tr><td><strong>2.4 descendantScore</strong></td><td>Propagate max score backward</td><td>Reverse topological order DP</td><td>O(n+m)</td><td>Process sinks first; max of own score and all children's descendantScores.</td></tr>
+      <tr><td><strong>2.5 SCC Path</strong></td><td>Reduce to condensation DAG</td><td>getSCC + BFS on condensation</td><td>O(b²)</td><td>Path in original ↔ path in condensation. BFS on b-node DAG is O(b²).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="two">
+    <div class="card card-cyan">
+      <h4>Pattern Recognition</h4>
+      <p><strong>"Can we push more?"</strong> → Max flow / augmenting paths</p>
+      <p><strong>"Build minimum cost tree"</strong> → Prim's or Kruskal's</p>
+      <p><strong>"Is there a cycle affecting optimality?"</strong> → Bellman-Ford</p>
+      <p><strong>"Propagate values in DAG"</strong> → Topological order DP</p>
+      <p><strong>"Reachability with SCCs given"</strong> → Work in condensation</p>
+    </div>
+    <div class="card card-gold">
+      <h4>Runtime Intuitions</h4>
+      <p><strong>O(n+m)</strong> — one DFS or BFS pass</p>
+      <p><strong>O(m log n)</strong> — priority queue with edges</p>
+      <p><strong>O(mn)</strong> — Bellman-Ford (n rounds × m edges)</p>
+      <p><strong>O(b²)</strong> — BFS on condensation (b nodes, ≤b² edges)</p>
+      <p><strong>O(n³)</strong> — Floyd-Warshall (triple loop over n vertices)</p>
+    </div>
+  </div>
+</div>
+</div><!-- /wrap -->
+
+<footer>CS161 · Winter 2024 · Section 2 Short Answer · Prepared for exam tutoring session</footer>
+
+<script>
+// ═══════════════════ PROGRESS BAR ═══════════════════
+window.addEventListener('scroll',function(){
+  var p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  document.getElementById('pbar').style.transform='scaleX('+p+')';
+});
+
+function toggleAcc(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
+
+// ═══════════════════ CANVAS UTILS ═══════════════════
+var SCC_COLORS=['#00d4ff','#a8ff3e','#ff4d8d','#ffd166','#9d7fff','#ff7c5c','#40e0d0'];
+
+function drawArrow(ctx,x1,y1,x2,y2,col,w,r){
+  col=col||'#28334a'; w=w||1.5; r=r||22;
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1)return;
+  var ux=dx/len,uy=dy/len,sx=x1+ux*r,sy=y1+uy*r,ex=x2-ux*r,ey=y2-uy*r;
+  var al=9,aw=5,ax=ex-ux*al,ay=ey-uy*al,px=-uy,py=ux;
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ex,ey);
+  ctx.lineTo(ax+px*aw,ay+py*aw);ctx.lineTo(ax-px*aw,ay-py*aw);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();
+}
+
+function drawNode(ctx,x,y,label,fill,stroke,tc,r){
+  fill=fill||'#0e1118'; stroke=stroke||'#00d4ff'; tc=tc||'#d8e4f0'; r=r||22;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=fill;ctx.fill();
+  ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=tc;ctx.font='bold 12px Inconsolata,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,x,y);
+}
+
+function drawWL(ctx,x1,y1,x2,y2,w,col){
+  col=col||'#ffd166';
+  var mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,l=Math.sqrt(dx*dx+dy*dy);
+  var px=-dy/l*10,py=dx/l*10;
+  ctx.fillStyle=col;ctx.font='11px Inconsolata,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(w,mx+px,my+py);
+}
+
+function clearCanvas(id,w,h){
+  var c=document.getElementById(id),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,w,h);ctx.fillStyle='#060810';ctx.fillRect(0,0,w,h);
+  return ctx;
+}
+
+function setHTML(id,html){document.getElementById(id).innerHTML=html;}
+function setText(id,txt){document.getElementById(id).textContent=txt;}
+
+// ═══════════════════ 2.1 MAX FLOW ═══════════════════
+var MF={
+  nodes:[
+    {x:60,y:190,label:'s'},
+    {x:220,y:90,label:'v1'},
+    {x:220,y:190,label:'v2'},
+    {x:220,y:290,label:'v3'},
+    {x:400,y:130,label:'v4'},
+    {x:400,y:270,label:'v5'},
+    {x:570,y:190,label:'t'}
+  ],
+  edges:[
+    [0,1,4],[0,2,2],[0,3,2],
+    [1,6,20],[1,4,2],
+    [2,4,2],[2,5,1],
+    [3,5,5],
+    [4,6,7],[5,6,7],
+    [4,5,2]
+  ]
+};
+var OPTIMAL_FLOW={'0-1':4,'0-2':2,'0-3':2,'1-6':4,'1-4':0,'2-4':2,'2-5':0,'3-5':2,'4-6':2,'5-6':2,'4-5':0};
+var mfFlow={};
+
+function mfKey(e){return e[0]+'-'+e[1];}
+
+function initMF(){
+  MF.edges.forEach(function(e){mfFlow[mfKey(e)]=0;});
+  buildFlowInputs();
+  renderMF();
+}
+
+function buildFlowInputs(){
+  var html='';
+  MF.edges.forEach(function(e,idx){
+    var from=MF.nodes[e[0]].label,to=MF.nodes[e[1]].label,cap=e[2],key=mfKey(e);
+    html+='<div class="flow-input">'
+      +'<label>'+from+'&rarr;'+to+' (cap '+cap+'):</label>'
+      +'<input type="number" min="0" max="'+cap+'" value="0" id="fi_'+key+'"'
+      +' onchange="mfFlow[\''+key+'\']=parseInt(this.value)||0;validateMF();renderMF();">'
+      +'</div>';
+  });
+  setHTML('flowInputs',html);
+}
+
+function renderMF(){
+  var ctx=clearCanvas('flowCanvas',860,380);
+  MF.edges.forEach(function(e){
+    var a=MF.nodes[e[0]],b=MF.nodes[e[1]];
+    var f=mfFlow[mfKey(e)]||0,cap=e[2];
+    var col=f===cap?'#a8ff3e':(f>0?'#ffd166':'#28334a');
+    var lw=f===cap?2.5:1.5;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,lw);
+    var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+    var dx=b.x-a.x,dy=b.y-a.y,l=Math.sqrt(dx*dx+dy*dy);
+    var px=-dy/l*14,py=dx/l*14;
+    ctx.fillStyle=f===cap?'#a8ff3e':(f>0?'#ffd166':'#4a6070');
+    ctx.font='11px Inconsolata,monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(f+'/'+cap,mx+px,my+py);
+  });
+  MF.nodes.forEach(function(n,i){
+    var fill=i===0?'rgba(0,212,255,.2)':(i===6?'rgba(157,127,255,.2)':'#0e1118');
+    var stroke=i===0?'#00d4ff':(i===6?'#9d7fff':'#28334a');
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+  });
+}
+
+function validateMF(){
+  var totalOut=0;
+  MF.edges.filter(function(e){return e[0]===0;}).forEach(function(e){totalOut+=mfFlow[mfKey(e)]||0;});
+  setText('totalFlow',totalOut);
+  var html='';
+  [1,2,3,4,5].forEach(function(ni){
+    var label=MF.nodes[ni].label,inF=0,outF=0;
+    MF.edges.forEach(function(e){
+      if(e[1]===ni)inF+=mfFlow[mfKey(e)]||0;
+      if(e[0]===ni)outF+=mfFlow[mfKey(e)]||0;
+    });
+    var ok=inF===outF;
+    html+='<div class="flow-result '+(ok?'flow-ok':'flow-bad')+'">'+label+': in='+inF+(ok?' = ':' &ne; ')+'out='+outF+(ok?' ✓':' ✗')+'</div>';
+  });
+  var capOk=true;
+  MF.edges.forEach(function(e){var f=mfFlow[mfKey(e)]||0;if(f>e[2]||f<0)capOk=false;});
+  html+='<div class="flow-result '+(capOk?'flow-ok':'flow-bad')+'">Capacities: '+(capOk?'all respected ✓':'VIOLATED ✗')+'</div>';
+  setHTML('flowValidation',html);
+  setText('flowLog','Total flow = '+totalOut+'. '+(capOk?'Capacities respected.':'Check red nodes.'));
+}
+
+function solveMF(){
+  Object.keys(OPTIMAL_FLOW).forEach(function(k){
+    mfFlow[k]=OPTIMAL_FLOW[k];
+    var el=document.getElementById('fi_'+k);
+    if(el)el.value=OPTIMAL_FLOW[k];
+  });
+  validateMF();renderMF();
+  setText('flowLog','Optimal solution: Max flow = 8. Paths: s→v1→t (4), s→v2→v4→t (2), s→v3→v5→t (2).');
+}
+
+function resetMF(){
+  MF.edges.forEach(function(e){
+    mfFlow[mfKey(e)]=0;
+    var el=document.getElementById('fi_'+mfKey(e));
+    if(el)el.value=0;
+  });
+  validateMF();renderMF();
+  setText('flowLog','Reset. Fill in your flow values.');
+}
+
+initMF();
+
+// ═══════════════════ PRIM'S ═══════════════════
+var PRIM_G={
+  nodes:[{x:80,y:150,label:'A'},{x:220,y:70,label:'B'},{x:360,y:70,label:'C'},{x:500,y:150,label:'D'},{x:360,y:230,label:'E'},{x:220,y:230,label:'F'}],
+  edges:[[0,1,4],[0,5,2],[1,2,6],[1,5,5],[2,3,3],[2,4,2],[3,4,8],[3,5,9],[4,5,1],[1,4,7]]
+};
+var primState={inMST:[],keys:{},parents:{},step:0,done:false,mstEdges:[],pq:[]};
+
+function primReset(){
+  primState={inMST:[],keys:{},parents:{},step:0,done:false,mstEdges:[],pq:[]};
+  renderPrim();
+  setHTML('primPQ','');
+  setText('primMST','—');
+  setText('primLog','Press Step to run Prim\'s algorithm from vertex A.');
+}
+
+function renderPrim(){
+  var ctx=clearCanvas('primCanvas',860,300);
+  PRIM_G.edges.forEach(function(e){
+    var a=PRIM_G.nodes[e[0]],b=PRIM_G.nodes[e[1]];
+    var inMST=primState.mstEdges.some(function(me){
+      return (me[0]===e[0]&&me[1]===e[1])||(me[0]===e[1]&&me[1]===e[0]);
+    });
+    var col=inMST?'#a8ff3e':'#28334a',lw=inMST?2.5:1.5;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,lw);
+    drawArrow(ctx,b.x,b.y,a.x,a.y,col,lw);
+    drawWL(ctx,a.x,a.y,b.x,b.y,e[2]);
+  });
+  PRIM_G.nodes.forEach(function(n,i){
+    var inT=primState.inMST.indexOf(i)>=0;
+    var fill=inT?'rgba(168,255,62,.2)':'#0e1118';
+    var stroke=inT?'#a8ff3e':'#00d4ff';
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    if(primState.keys[i]!==undefined&&!inT){
+      ctx.fillStyle='#ffd166';ctx.font='10px Inconsolata,monospace';
+      ctx.textAlign='center';ctx.fillText('k='+primState.keys[i],n.x,n.y+32);
+    }
+  });
+}
+
+function renderPrimPQ(){
+  var html='';
+  primState.pq.slice(0,8).forEach(function(i){
+    var k=primState.keys[i];
+    html+='<div style="font-family:Inconsolata,monospace;font-size:.78rem;padding:4px 10px;'
+      +'border-radius:5px;border:1px solid var(--border2);background:var(--surf);display:inline-block;margin:2px;">'
+      +PRIM_G.nodes[i].label+':'+(k===Infinity?'∞':k)+'</div>';
+  });
+  setHTML('primPQ',html);
+}
+
+function primStep(){
+  if(primState.done)return;
+  var n=PRIM_G.nodes.length;
+  if(primState.step===0){
+    for(var i=0;i<n;i++)primState.keys[i]=Infinity;
+    primState.keys[0]=0;
+    primState.pq=[];for(var j=0;j<n;j++)primState.pq.push(j);
+    primState.step=1;renderPrim();
+    setText('primLog','Init: key[A]=0, all others=∞. All vertices in priority queue.');
+    renderPrimPQ();return;
+  }
+  if(primState.pq.length===0){primState.done=true;setText('primLog','✅ MST complete!');return;}
+  primState.pq.sort(function(a,b){return primState.keys[a]-primState.keys[b];});
+  var u=primState.pq.shift();
+  if(primState.keys[u]===Infinity){primState.done=true;setText('primLog','✅ Done.');return;}
+  primState.inMST.push(u);
+  if(primState.parents[u]!==undefined)primState.mstEdges.push([primState.parents[u],u,primState.keys[u]]);
+  var updates=[];
+  PRIM_G.edges.forEach(function(e){
+    var v=-1,w=e[2];
+    if(e[0]===u)v=e[1];else if(e[1]===u)v=e[0];
+    if(v>=0&&primState.inMST.indexOf(v)<0&&w<primState.keys[v]){
+      primState.keys[v]=w;primState.parents[v]=u;
+      updates.push(PRIM_G.nodes[v].label+'→'+w);
+    }
+  });
+  renderPrim();renderPrimPQ();
+  var mstStr=primState.mstEdges.map(function(e){
+    return PRIM_G.nodes[e[0]].label+'-'+PRIM_G.nodes[e[1]].label+'('+e[2]+')';
+  }).join(', ');
+  setText('primMST',mstStr||'—');
+  setText('primLog','Added '+PRIM_G.nodes[u].label+' to MST (key='+primState.keys[u]+'). '+(updates.length?'Updated: '+updates.join(', '):'No key updates.'));
+}
+
+function primRunAll(){while(!primState.done&&primState.step<30)primStep();}
+primReset();
+
+function showRep(type){
+  document.getElementById('repListBtn').classList.toggle('active',type==='list');
+  document.getElementById('repMatBtn').classList.toggle('active',type==='matrix');
+  document.getElementById('repListExplain').style.display=type==='list'?'':'none';
+  document.getElementById('repMatExplain').style.display=type==='matrix'?'':'none';
+}
+
+// ═══════════════════ BELLMAN-FORD ═══════════════════
+var BF_GRAPHS={
+  bounded:{
+    nodes:[{x:70,y:125,label:'A'},{x:200,y:60,label:'B'},{x:200,y:190,label:'C'},{x:330,y:125,label:'D'}],
+    edges:[[0,1,5,'A→B +5'],[0,2,3,'A→C +3'],[1,3,2,'B→D +2'],[2,3,4,'C→D +4']]
+  },
+  unbounded:{
+    nodes:[{x:70,y:125,label:'A'},{x:210,y:60,label:'B'},{x:210,y:190,label:'C'},{x:350,y:125,label:'D'}],
+    edges:[[0,1,5,'A→B +5'],[1,2,-2,'B→C -2'],[2,1,1,'C→B +1'],[1,3,6,'B→D +6']]
+  },
+  exam:{
+    nodes:[{x:70,y:125,label:'A'},{x:220,y:125,label:'B'},{x:350,y:125,label:'C'}],
+    edges:[[0,1,5,'A→B +5'],[1,0,-2,'B→A -2'],[1,2,6,'B→C +6']]
+  }
+};
+
+var bfG=null,bfDist=[],bfRoundNum=0,bfEdgeIdx=0,bfDone=false,bfStarted=false;
+var NEG_INF=-999999;
+
+function bfLoad(name){
+  bfG=JSON.parse(JSON.stringify(BF_GRAPHS[name]));
+  bfReset();
+}
+
+function bfReset(){
+  if(!bfG)return;
+  bfDist=bfG.nodes.map(function(_,i){return i===0?0:NEG_INF;});
+  bfRoundNum=0;bfEdgeIdx=0;bfDone=false;bfStarted=false;
+  renderBFGraph([]);renderBFTable(-1);
+  setText('bfRound','0');
+  setText('bfLog','Initialized: dist[A]=0, all others=-∞. Press Step.');
+  setHTML('bfResult','');
+}
+
+function renderBFGraph(hlEdges){
+  var ctx=clearCanvas('bfCanvas',380,250);
+  if(!bfG)return;
+  bfG.edges.forEach(function(e,i){
+    var a=bfG.nodes[e[0]],b=bfG.nodes[e[1]];
+    var hl=hlEdges.indexOf(i)>=0;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,hl?'#ffd166':'#28334a',hl?2.5:1.5);
+    var lbl=e[2]>0?'+'+e[2]:String(e[2]);
+    drawWL(ctx,a.x,a.y,b.x,b.y,lbl);
+  });
+  bfG.nodes.forEach(function(n,i){
+    var d=bfDist[i];
+    var reached=d!==NEG_INF;
+    var fill=reached?'rgba(0,212,255,.15)':'#0e1118';
+    var stroke=reached?'#00d4ff':'#28334a';
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    if(reached){
+      ctx.fillStyle='#a8ff3e';ctx.font='10px Inconsolata,monospace';
+      ctx.textAlign='center';ctx.fillText(String(d),n.x,n.y+32);
+    }
+  });
+}
+
+function renderBFTable(activeEdge){
+  if(!bfG)return;
+  var html='<div class="bf-row">';
+  bfG.nodes.forEach(function(n,i){
+    var d=bfDist[i];
+    var cls='bf-cell'+(d===NEG_INF?' inf':'');
+    html+='<div class="'+cls+'">'+n.label+'<br>'+(d===NEG_INF?'-∞':d)+'</div>';
+  });
+  html+='</div><div style="font-family:Inconsolata,monospace;font-size:.72rem;color:var(--muted);margin-top:8px;">';
+  bfG.edges.forEach(function(e,i){
+    var act=i===activeEdge;
+    html+='<div style="padding:2px 0;color:'+(act?'var(--gold)':'var(--muted)')+';">'+(act?'▶ ':'&nbsp;&nbsp;&nbsp;')+e[3]+'</div>';
+  });
+  html+='</div>';
+  setHTML('bfTable',html);
+}
+
+function bfStep(){
+  if(!bfG||bfDone)return;
+  var n=bfG.nodes.length;
+  var totalRounds=n;
+  if(!bfStarted){
+    bfStarted=true;
+    renderBFTable(-1);
+    setText('bfLog','Starting relaxation rounds. n='+n+' so we run '+(n-1)+' rounds + 1 detection round.');
+    return;
+  }
+  if(bfRoundNum>=totalRounds){
+    bfDone=true;
+    checkBFCycle();
+    return;
+  }
+  var e=bfG.edges[bfEdgeIdx];
+  var u=e[0],v=e[1],w=e[2];
+  var updated=false;
+  if(bfDist[u]!==NEG_INF&&bfDist[u]+w>bfDist[v]){
+    bfDist[v]=bfDist[u]+w;
+    updated=true;
+  }
+  var isDetect=bfRoundNum===n-1;
+  renderBFGraph([bfEdgeIdx]);
+  renderBFTable(bfEdgeIdx);
+  setText('bfRound',isDetect?(bfRoundNum+1)+' (DETECTION)':String(bfRoundNum+1));
+  if(isDetect&&updated){
+    setText('bfLog','Round '+(bfRoundNum+1)+' (detection): dist['+bfG.nodes[v].label+'] STILL improving! Positive cycle detected.');
+    setHTML('bfResult','<span style="color:var(--pink);font-size:1rem;">❌ UNBOUNDED — positive cycle reachable!</span>');
+    bfDone=true;
+    return;
+  }
+  setText('bfLog','Round '+(bfRoundNum+1)+(isDetect?' [DETECTION]':'')+': Edge '+e[3]+': '+(updated?'improved dist['+bfG.nodes[v].label+'] to '+bfDist[v]+' ✅':'no improvement'));
+  bfEdgeIdx++;
+  if(bfEdgeIdx>=bfG.edges.length){bfEdgeIdx=0;bfRoundNum++;}
+  if(bfRoundNum>=totalRounds){bfDone=true;checkBFCycle();}
+}
+
+function checkBFCycle(){
+  if(!bfG)return;
+  var found=false;
+  bfG.edges.forEach(function(e){
+    if(bfDist[e[0]]!==NEG_INF&&bfDist[e[0]]+e[2]>bfDist[e[1]])found=true;
+  });
+  if(found){
+    setHTML('bfResult','<span style="color:var(--pink);font-size:1rem;">❌ UNBOUNDED — positive cycle reachable</span>');
+    setText('bfLog','Detection round found improvements → positive cycle exists → earnings unbounded.');
+  } else {
+    setHTML('bfResult','<span style="color:var(--lime);font-size:1rem;">✅ BOUNDED — no positive cycle reachable</span>');
+    setText('bfLog','No improvements in detection round → no positive cycle → earnings bounded.');
+  }
+}
+
+function bfRunAll(){
+  if(!bfG)return;
+  var n=bfG.nodes.length;
+  for(var r=0;r<n;r++){
+    bfG.edges.forEach(function(e){
+      if(bfDist[e[0]]!==NEG_INF&&bfDist[e[0]]+e[2]>bfDist[e[1]])bfDist[e[1]]=bfDist[e[0]]+e[2];
+    });
+  }
+  bfRoundNum=n;bfEdgeIdx=0;bfDone=true;
+  renderBFGraph([]);renderBFTable(-1);
+  setText('bfRound',String(n));
+  checkBFCycle();
+}
+
+bfLoad('exam');
+
+// ═══════════════════ DAG DESCENDANTSCORE ═══════════════════
+var DAG_PRESETS={
+  simple:{
+    nodes:[{x:100,y:70,label:'A',score:3},{x:280,y:70,label:'B',score:8},{x:100,y:210,label:'C',score:5},{x:280,y:210,label:'D',score:1},{x:190,y:140,label:'E',score:6}],
+    edges:[[0,4],[1,4],[0,2],[1,3],[2,3]]
+  },
+  branchy:{
+    nodes:[{x:60,y:140,label:'A',score:2},{x:190,y:60,label:'B',score:9},{x:190,y:220,label:'C',score:4},{x:320,y:60,label:'D',score:7},{x:320,y:220,label:'E',score:3},{x:430,y:140,label:'F',score:11}],
+    edges:[[0,1],[0,2],[1,3],[1,4],[2,4],[3,5],[4,5]]
+  },
+  chain:{
+    nodes:[{x:60,y:140,label:'A',score:5},{x:190,y:140,label:'B',score:2},{x:320,y:140,label:'C',score:8},{x:450,y:140,label:'D',score:3}],
+    edges:[[0,1],[1,2],[2,3]]
+  }
+};
+
+var dagG=null,dagDS=[],dagTopo=[],dagStepIdx=0,dagDone=false;
+
+function dagLoad(name){
+  dagG=JSON.parse(JSON.stringify(DAG_PRESETS[name]));
+  dagReset();
+}
+
+function dagReset(){
+  if(!dagG)return;
+  dagDS=dagG.nodes.map(function(n){return n.score;});
+  dagTopo=topoSort(dagG);
+  dagStepIdx=0;dagDone=false;
+  renderDAGCanvas(-1);
+  renderDagOrder();
+  setText('dagTopoRow','Topo order: '+dagTopo.map(function(i){return dagG.nodes[i].label;}).join(' → '));
+  setText('dagLog','Initialized descendantScore[v]=score[v] for all v. Press Step to propagate in reverse topo order.');
+  setHTML('dagFinal','');
+}
+
+function topoSort(g){
+  var n=g.nodes.length,vis=new Array(n).fill(false),ord=[];
+  function dfs(v){
+    vis[v]=true;
+    g.edges.forEach(function(e){if(e[0]===v&&!vis[e[1]])dfs(e[1]);});
+    ord.push(v);
+  }
+  for(var i=0;i<n;i++)if(!vis[i])dfs(i);
+  return ord.reverse();
+}
+
+function renderDAGCanvas(activeV){
+  var ctx=clearCanvas('dagCanvas',420,280);
+  if(!dagG)return;
+  dagG.edges.forEach(function(e){
+    var a=dagG.nodes[e[0]],b=dagG.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,'#28334a');
+  });
+  dagG.nodes.forEach(function(n,i){
+    var rev=dagTopo.slice().reverse();
+    var processed=rev.slice(0,dagStepIdx).indexOf(i)>=0;
+    var current=activeV===i;
+    var fill=current?'rgba(255,209,102,.2)':(processed?'rgba(168,255,62,.15)':'#0e1118');
+    var stroke=current?'#ffd166':(processed?'#a8ff3e':'#28334a');
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    ctx.fillStyle='#ffd166';ctx.font='9px Inconsolata,monospace';ctx.textAlign='center';
+    ctx.fillText('s='+n.score,n.x,n.y-32);
+    ctx.fillStyle=processed?'#a8ff3e':'#4a6070';
+    ctx.fillText('ds='+dagDS[i],n.x,n.y+34);
+  });
+}
+
+function renderDagOrder(){
+  var rev=dagTopo.slice().reverse();
+  var html='';
+  rev.forEach(function(i,step){
+    var done=step<dagStepIdx,cur=step===dagStepIdx;
+    var bc=cur?'var(--gold)':(done?'var(--lime)':'var(--border)');
+    var bg=cur?'rgba(255,209,102,.08)':(done?'rgba(168,255,62,.06)':'var(--surf)');
+    var op=done&&!cur?'0.5':'1';
+    var nc=cur?'var(--gold)':(done?'var(--lime)':'var(--muted)');
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;'
+      +'border:1px solid '+bc+';background:'+bg+';opacity:'+op+';margin-bottom:4px;">'
+      +'<span style="font-family:Inconsolata,monospace;font-size:.78rem;color:'+nc+';">'+(step+1)+'.</span>'
+      +'<span style="font-family:Inconsolata,monospace;font-size:.82rem;color:#fff;">'+dagG.nodes[i].label+'</span>'
+      +'<span style="font-family:Inconsolata,monospace;font-size:.72rem;color:var(--muted);">score='+dagG.nodes[i].score+'</span>'
+      +'<span style="font-family:Inconsolata,monospace;font-size:.78rem;color:var(--lime);">ds='+dagDS[i]+'</span>'
+      +'</div>';
+  });
+  setHTML('dagOrder',html);
+}
+
+function dagStep(){
+  if(!dagG||dagDone)return;
+  var rev=dagTopo.slice().reverse();
+  if(dagStepIdx>=rev.length){
+    dagDone=true;
+    renderDagOrder();
+    var finalStr=dagG.nodes.map(function(n,i){return n.label+': ds='+dagDS[i];}).join('  |  ');
+    setHTML('dagFinal','<strong>Final results:</strong> '+finalStr);
+    setText('dagLog','✅ Complete! All descendantScores computed.');
+    return;
+  }
+  var v=rev[dagStepIdx];
+  var children=dagG.edges.filter(function(e){return e[0]===v;}).map(function(e){return e[1];});
+  children.forEach(function(c){if(dagDS[c]>dagDS[v])dagDS[v]=dagDS[c];});
+  dagStepIdx++;
+  renderDAGCanvas(v);
+  renderDagOrder();
+  var childStr=children.map(function(c){return dagG.nodes[c].label+'(ds='+dagDS[c]+')';}).join(', ')||'none';
+  setText('dagLog','Processing '+dagG.nodes[v].label+': own score='+dagG.nodes[v].score+', children=['+childStr+'] → descendantScore='+dagDS[v]);
+}
+
+function dagRunAll(){if(!dagG)return;while(!dagDone&&dagStepIdx<200)dagStep();}
+dagLoad('simple');
+
+// ═══════════════════ SCC PATH REACHABILITY ═══════════════════
+var SCC_PATH_GRAPHS={
+  ex1:{
+    nodes:[{x:80,y:100,label:'A'},{x:80,y:220,label:'B'},{x:210,y:160,label:'C'},{x:330,y:100,label:'D'},{x:330,y:220,label:'E'},{x:410,y:160,label:'F'}],
+    edges:[[0,1],[1,0],[0,2],[1,2],[2,3],[2,4],[3,5],[4,5]]
+  },
+  ex2:{
+    nodes:[{x:60,y:140,label:'A'},{x:170,y:70,label:'B'},{x:280,y:140,label:'C'},{x:170,y:210,label:'D'},{x:380,y:70,label:'E'},{x:380,y:210,label:'F'}],
+    edges:[[0,1],[1,2],[2,3],[3,0],[2,4],[4,5],[5,4]]
+  }
+};
+var sccPG=null,sccPComp=null,sccPNc=0,sccPDagAdj=null,sccPDagNodes=null;
+
+function sccPathLoad(name){
+  sccPG=JSON.parse(JSON.stringify(SCC_PATH_GRAPHS[name]));
+  var n=sccPG.nodes.length;
+  var adj=[],radj=[];
+  for(var i=0;i<n;i++){adj.push([]);radj.push([]);}
+  sccPG.edges.forEach(function(e){adj[e[0]].push(e[1]);radj[e[1]].push(e[0]);});
+  var vis=new Array(n).fill(false),ord=[];
+  function d1(v){vis[v]=true;adj[v].forEach(function(u){if(!vis[u])d1(u);});ord.push(v);}
+  for(var i=0;i<n;i++)if(!vis[i])d1(i);
+  sccPComp=new Array(n).fill(-1);sccPNc=0;
+  function d2(v,c){sccPComp[v]=c;radj[v].forEach(function(u){if(sccPComp[u]===-1)d2(u,c);});}
+  for(var i=n-1;i>=0;i--){if(sccPComp[ord[i]]===-1){d2(ord[i],sccPNc);sccPNc++;}}
+  sccPDagAdj=[];
+  for(var i=0;i<sccPNc;i++)sccPDagAdj.push(new Set());
+  sccPG.edges.forEach(function(e){
+    var a=sccPComp[e[0]],b=sccPComp[e[1]];
+    if(a!==b)sccPDagAdj[a].add(b);
+  });
+  sccPDagNodes=[];
+  for(var i=0;i<sccPNc;i++){
+    var members=sccPG.nodes.filter(function(_,j){return sccPComp[j]===i;}).map(function(nd){return nd.label;});
+    var xs=sccPG.nodes.filter(function(_,j){return sccPComp[j]===i;}).map(function(nd){return nd.x;});
+    var ys=sccPG.nodes.filter(function(_,j){return sccPComp[j]===i;}).map(function(nd){return nd.y;});
+    sccPDagNodes.push({
+      x:60+i*(300/Math.max(sccPNc-1,1)),
+      y:140+(i%2===0?-40:40),
+      members:members,
+      color:SCC_COLORS[i%SCC_COLORS.length]
+    });
+  }
+  var uSel=document.getElementById('sccU'),vSel=document.getElementById('sccV');
+  uSel.innerHTML='';vSel.innerHTML='';
+  sccPG.nodes.forEach(function(nd,i){
+    uSel.innerHTML+='<option value="'+i+'">'+nd.label+'</option>';
+    vSel.innerHTML+='<option value="'+i+'">'+nd.label+'</option>';
+  });
+  uSel.value='0';vSel.value=String(n-1);
+  renderSCCOrig({});
+  renderSCCCond(new Set(),-1,-1);
+  setText('sccPathLog','Graph loaded. Select u and v, then click Check Reachability.');
+  setHTML('sccPathResult','');
+  setHTML('sccPathSteps','');
+}
+
+function renderSCCOrig(colorMap){
+  var ctx=clearCanvas('sccOrigCanvas',420,270);
+  if(!sccPG)return;
+  sccPG.edges.forEach(function(e){
+    var a=sccPG.nodes[e[0]],b=sccPG.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,'#28334a');
+  });
+  sccPG.nodes.forEach(function(n,i){
+    var c=SCC_COLORS[sccPComp[i]%SCC_COLORS.length];
+    var hi=colorMap[i];
+    var fill=hi?(c+'33'):'#0e1118';
+    drawNode(ctx,n.x,n.y,n.label,fill,c,'#fff');
+    if(hi){
+      ctx.fillStyle=hi==='source'?'#ffd166':'#9d7fff';
+      ctx.font='9px Inconsolata,monospace';ctx.textAlign='center';
+      ctx.fillText(hi==='source'?'u':'v',n.x,n.y-34);
+    }
+  });
+}
+
+function renderSCCCond(reachable,srcSCC,tgtSCC){
+  var ctx=clearCanvas('sccCondCanvas',420,270);
+  if(!sccPDagNodes)return;
+  sccPDagAdj.forEach(function(s,u){
+    s.forEach(function(v){
+      var a=sccPDagNodes[u],b=sccPDagNodes[v];
+      var inPath=(reachable.has(u)||u===srcSCC)&&reachable.has(v);
+      drawArrow(ctx,a.x,a.y,b.x,b.y,inPath?'#a8ff3e':'#28334a',inPath?2.5:1.5);
+    });
+  });
+  sccPDagNodes.forEach(function(nd,i){
+    var isSrc=i===srcSCC,isTgt=i===tgtSCC,isR=reachable.has(i);
+    var fill=isSrc?'rgba(255,209,102,.2)':(isTgt?'rgba(157,127,255,.2)':(isR?'rgba(168,255,62,.12)':'#0e1118'));
+    var stroke=isSrc?'#ffd166':(isTgt?'#9d7fff':(isR?'#a8ff3e':nd.color));
+    var lbl='{'+nd.members.join(',')+'}';
+    drawNode(ctx,nd.x,nd.y,lbl,fill,stroke,'#fff',28);
+    if(isSrc){ctx.fillStyle='#ffd166';ctx.font='9px Inconsolata,monospace';ctx.textAlign='center';ctx.fillText('getSCC(u)',nd.x,nd.y-42);}
+    if(isTgt){ctx.fillStyle='#9d7fff';ctx.font='9px Inconsolata,monospace';ctx.textAlign='center';ctx.fillText('getSCC(v)',nd.x,nd.y+50);}
+  });
+}
+
+function runSCCPath(){
+  if(!sccPG)return;
+  var ui=parseInt(document.getElementById('sccU').value);
+  var vi=parseInt(document.getElementById('sccV').value);
+  var su=sccPComp[ui],sv=sccPComp[vi];
+  var steps=[];
+  steps.push('getSCC('+sccPG.nodes[ui].label+') = SCC'+(su+1)+' = {'+sccPDagNodes[su].members.join(',')+'}');
+  steps.push('getSCC('+sccPG.nodes[vi].label+') = SCC'+(sv+1)+' = {'+sccPDagNodes[sv].members.join(',')+'}');
+  if(su===sv){
+    steps.push('Same SCC! → PATH EXISTS (all vertices in same SCC can reach each other)');
+    setHTML('sccPathResult','<span style="color:var(--lime);">✅ PATH EXISTS</span>');
+    setHTML('sccPathSteps',steps.join('<br>'));
+    var cm={};
+    sccPG.nodes.forEach(function(_,i){if(sccPComp[i]===su)cm[i]='source';});
+    renderSCCOrig(cm);renderSCCCond(new Set([su]),su,sv);
+    setText('sccPathLog','u and v are in the same SCC → path always exists.');
+    return;
+  }
+  var visited=new Set([su]),queue=[su];
+  steps.push('BFS from SCC'+(su+1)+' in condensation DAG:');
+  while(queue.length>0){
+    var curr=queue.shift();
+    steps.push('&nbsp;&nbsp;Visit SCC'+(curr+1)+' = {'+sccPDagNodes[curr].members.join(',')+'}');
+    sccPDagAdj[curr].forEach(function(nb){
+      if(!visited.has(nb)){
+        visited.add(nb);queue.push(nb);
+        steps.push('&nbsp;&nbsp;&nbsp;&nbsp;→ can reach SCC'+(nb+1));
+      }
+    });
+  }
+  var found=visited.has(sv);
+  steps.push(found?'SCC'+(sv+1)+' was reached ✅':'SCC'+(sv+1)+' NOT reached ❌');
+  var resEl=document.getElementById('sccPathResult');
+  resEl.style.color=found?'var(--lime)':'var(--pink)';
+  resEl.textContent=found?'✅ PATH EXISTS':'❌ NO PATH';
+  setHTML('sccPathSteps',steps.join('<br>'));
+  setText('sccPathLog','BFS explored '+visited.size+' SCC(s) from SCC'+(su+1)+'.');
+  var cm={};
+  sccPG.nodes.forEach(function(_,i){
+    if(sccPComp[i]===su)cm[i]='source';
+    else if(sccPComp[i]===sv)cm[i]='target';
+  });
+  renderSCCOrig(cm);renderSCCCond(visited,su,sv);
+}
+
+function resetSCCPath(){
+  setHTML('sccPathResult','');
+  setHTML('sccPathSteps','');
+  renderSCCCond(new Set(),-1,-1);
+  setText('sccPathLog','Select u and v, then check reachability.');
+}
+
+sccPathLoad('ex1');
+</script>
+</body>
+</html>
