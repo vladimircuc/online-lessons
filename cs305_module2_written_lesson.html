@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS 305 — Software Security: Module 2 Written Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'Lato', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; }
+  .nav-steps { display: flex; gap: 4px; }
+  .nav-dot { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); background: transparent; cursor: pointer; font-family: var(--font-head); font-size: 11px; font-weight: 700; color: var(--text3); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .nav-dot:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-dot.active { background: var(--accent); border-color: var(--accent); color: #0a0e1a; }
+  .nav-dot.done { background: rgba(16,185,129,0.15); border-color: var(--accent3); color: var(--accent3); }
+
+  /* MAIN */
+  main { padding-top: 56px; }
+
+  /* SECTIONS */
+  .slide { min-height: 100vh; display: none; flex-direction: column; justify-content: center; padding: 4rem 2rem; max-width: 900px; margin: 0 auto; }
+  .slide.active { display: flex; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  h1 { font-family: var(--font-head); font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
+  h2 { font-family: var(--font-head); font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; line-height: 1.2; margin-bottom: 1.2rem; }
+  h3 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  p { color: var(--text2); line-height: 1.8; font-size: 1.05rem; margin-bottom: 1rem; }
+  .accent-text { color: var(--accent); }
+  .green-text { color: var(--accent3); }
+  .warn-text { color: var(--warn); }
+  .danger-text { color: var(--danger); }
+
+  /* NAV BUTTONS */
+  .slide-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .btn { font-family: var(--font-head); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; padding: 10px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s; border: none; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost:disabled { opacity: 0.2; cursor: default; }
+  .btn-primary { background: var(--accent); color: #0a0e1a; }
+  .btn-primary:hover { background: #33ddff; }
+  .slide-counter { font-family: var(--font-mono); font-size: 12px; color: var(--text3); }
+
+  /* CARDS */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .card.accent-border { border-color: rgba(0,212,255,0.3); }
+  .card.green-border { border-color: rgba(16,185,129,0.3); }
+  .card.warn-border { border-color: rgba(245,158,11,0.3); }
+  .card.danger-border { border-color: rgba(239,68,68,0.3); }
+
+  /* ANALOGY BOX */
+  .analogy { background: rgba(124,58,237,0.1); border-left: 3px solid var(--accent2); border-radius: 0 8px 8px 0; padding: 1.2rem 1.5rem; margin: 1.5rem 0; }
+  .analogy-label { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .analogy p { color: var(--text2); margin: 0; }
+
+  /* HOUSE ANIMATION */
+  .house-demo { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; }
+  .house-scene { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; }
+  .house-svg-wrap { flex-shrink: 0; }
+  .house-checks { flex: 1; min-width: 220px; }
+  .house-check { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+  .house-check:last-child { border-bottom: none; }
+  .house-check .hc-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+  .house-check .hc-icon.bad { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .house-check .hc-icon.ok { background: rgba(16,185,129,0.15); color: var(--accent3); }
+  .house-check .hc-label { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--font-head); }
+  .house-check .hc-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .house-check .hc-toggle { margin-top: 6px; font-size: 12px; color: var(--accent); display: none; }
+  .house-check.revealed .hc-toggle { display: block; }
+
+  /* INJECTION DEMO */
+  .inject-demo { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+  .inject-demo label { font-family: var(--font-mono); font-size: 11px; color: var(--text3); display: block; margin-bottom: 6px; }
+  .inject-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 10px 14px; color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .inject-input:focus { border-color: var(--accent); }
+  .inject-input.danger { border-color: var(--danger); }
+  .inject-output { margin-top: 1rem; background: var(--bg3); border-radius: 6px; padding: 1rem; font-family: var(--font-mono); font-size: 13px; min-height: 60px; transition: all 0.3s; }
+  .inject-output.safe { border-left: 3px solid var(--accent3); color: var(--accent3); }
+  .inject-output.hacked { border-left: 3px solid var(--danger); color: var(--danger); animation: shake 0.3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .inject-hint { font-size: 12px; color: var(--text3); margin-top: 8px; font-family: var(--font-mono); }
+
+  /* 7 AREAS GRID */
+  .areas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 1.5rem 0; }
+  .area-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
+  .area-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--border); transition: background 0.25s; }
+  .area-card.relevant::before { background: var(--accent3); }
+  .area-card.skip::before { background: var(--text3); }
+  .area-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .area-card.revealed.relevant { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.25); }
+  .area-card.revealed.skip { opacity: 0.4; }
+  .area-name { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .area-tag { display: inline-block; font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 4px; }
+  .area-tag.yes { background: rgba(16,185,129,0.15); color: var(--accent3); }
+  .area-tag.no { background: rgba(100,116,139,0.15); color: var(--text3); }
+  .area-reason { font-size: 12px; color: var(--text3); margin-top: 8px; line-height: 1.6; display: none; }
+  .area-card.revealed .area-reason { display: block; }
+
+  /* CODE VIEWER */
+  .code-block { background: #0d1117; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 1rem 0; }
+  .code-header { background: var(--bg3); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .code-filename { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+  .code-body { padding: 1.2rem 1.5rem; overflow-x: auto; }
+  .code-body pre { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.8; color: #e2e8f0; white-space: pre; }
+  .hl-bad { background: rgba(239,68,68,0.18); border-radius: 3px; color: #fca5a5; }
+  .hl-good { background: rgba(16,185,129,0.18); border-radius: 3px; color: #6ee7b7; }
+  .hl-neutral { color: #93c5fd; }
+  .hl-string { color: #fbbf24; }
+  .hl-comment { color: #475569; }
+
+  /* VULN CARDS */
+  .vuln-list { display: flex; flex-direction: column; gap: 10px; margin: 1.5rem 0; }
+  .vuln-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
+  .vuln-card:hover { border-color: var(--border2); }
+  .vuln-card.open { border-color: rgba(239,68,68,0.35); }
+  .vuln-card.open.medium { border-color: rgba(245,158,11,0.35); }
+  .vuln-head { display: flex; align-items: center; gap: 12px; padding: 1rem 1.2rem; }
+  .sev { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 4px; flex-shrink: 0; }
+  .sev.critical { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .sev.high { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .sev.medium { background: rgba(96,165,250,0.15); color: #93c5fd; }
+  .vuln-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .vuln-arrow { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+  .vuln-card.open .vuln-arrow { transform: rotate(90deg); }
+  .vuln-body { padding: 0 1.2rem 1.2rem; display: none; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .vuln-card.open .vuln-body { display: block; }
+  .vuln-body p { font-size: 13.5px; color: var(--text2); margin-bottom: 0.75rem; }
+  .vuln-body code { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: var(--accent); }
+  .fix-row { display: flex; align-items: flex-start; gap: 10px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
+  .fix-label { font-family: var(--font-mono); font-size: 10px; color: var(--accent3); flex-shrink: 0; padding-top: 1px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .fix-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* TEMPLATE BUILDER */
+  .template-builder { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 1.5rem 0; }
+  .tb-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tb-tab { padding: 12px 20px; font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tb-tab:hover { color: var(--text); }
+  .tb-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tb-content { display: none; padding: 1.5rem; }
+  .tb-content.active { display: block; }
+  .tb-field { margin-bottom: 1.2rem; }
+  .tb-label { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 6px; display: block; letter-spacing: 0.05em; }
+  .tb-example { background: var(--bg3); border-radius: 6px; padding: 1rem; font-size: 13px; color: var(--text2); line-height: 1.7; border-left: 3px solid var(--accent2); }
+  .tb-example strong { color: var(--text); font-weight: 700; }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; margin: 1.5rem 0; }
+  .cl-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .cl-item:hover { border-color: var(--border2); }
+  .cl-item.checked { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3); }
+  .cl-box { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border2); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .cl-item.checked .cl-box { background: var(--accent3); border-color: var(--accent3); }
+  .cl-checkmark { display: none; color: #0a0e1a; font-size: 12px; font-weight: 700; }
+  .cl-item.checked .cl-checkmark { display: block; }
+  .cl-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+  .cl-item.checked .cl-text { color: #6ee7b7; }
+
+  /* PROGRESS BAR */
+  .progress-track { width: 100%; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 0.5rem; }
+  .progress-fill { height: 100%; background: var(--accent3); transition: width 0.5s ease; border-radius: 2px; }
+  .progress-label { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+
+  /* HERO ACCENT */
+  .hero-accent { font-size: clamp(4rem, 10vw, 8rem); font-family: var(--font-head); font-weight: 800; line-height: 1; opacity: 0.04; position: absolute; top: 56px; right: -1rem; pointer-events: none; z-index: 0; }
+  .slide { position: relative; }
+  .slide > * { position: relative; z-index: 1; }
+
+  /* FLOW DIAGRAM */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0; }
+  .flow-row { display: flex; align-items: center; gap: 0; }
+  .flow-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.2rem; font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--text); flex: 1; text-align: center; transition: all 0.3s; }
+  .flow-box.lit { background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.4); color: var(--accent); }
+  .flow-arrow { padding: 0 8px; color: var(--text3); font-size: 18px; flex-shrink: 0; }
+  .flow-arrow.down { display: flex; justify-content: center; padding: 6px 0; color: var(--text3); }
+
+  /* STEP BADGE */
+  .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); color: var(--accent); font-family: var(--font-head); font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  /* GLOW PILL */
+  .pill { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 3px 10px; border-radius: 100px; margin-right: 6px; margin-bottom: 4px; }
+  .pill.blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .pill.green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+  .pill.red { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+  .pill.amber { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+
+  /* STEP WALKTHROUGH */
+  .step-walk { display: flex; flex-direction: column; gap: 12px; margin: 1.5rem 0; }
+  .sw-item { display: flex; gap: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; cursor: pointer; transition: all 0.2s; }
+  .sw-item:hover { border-color: var(--border2); }
+  .sw-item.done { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3); }
+  .sw-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25); color: var(--accent); font-family: var(--font-head); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .sw-item.done .sw-num { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--accent3); }
+  .sw-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .sw-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .sw-tip { font-size: 12px; color: var(--warn); background: rgba(245,158,11,0.07); border-left: 2px solid var(--warn); border-radius: 0 4px 4px 0; padding: 6px 10px; margin-top: 8px; }
+
+  /* HUNT LIST */
+  .hunt-list { display: flex; flex-direction: column; gap: 10px; margin: 1.5rem 0; }
+  .hunt-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .hunt-item.open { border-color: rgba(0,212,255,0.25); }
+  .hunt-header { display: flex; align-items: center; gap: 10px; padding: 1rem 1.2rem; cursor: pointer; transition: background 0.15s; }
+  .hunt-header:hover { background: var(--bg3); }
+  .hunt-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .hunt-num { font-family: var(--font-mono); font-size: 10px; color: var(--text3); flex-shrink: 0; }
+  .hunt-term { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hunt-sev { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+  .hunt-sev.critical { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .hunt-sev.high { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .hunt-sev.medium { background: rgba(96,165,250,0.15); color: #93c5fd; }
+  .hunt-arrow { font-size: 11px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
+  .hunt-item.open .hunt-arrow { transform: rotate(90deg); }
+  .hunt-body { display: none; padding: 0 1.2rem 1.2rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .hunt-item.open .hunt-body { display: block; }
+  .hunt-body p { font-size: 13.5px; color: var(--text2); line-height: 1.7; margin-bottom: 0.75rem; }
+  .hunt-body code { font-family: var(--font-mono); font-size: 12px; background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: var(--accent); }
+  .hunt-found { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px; padding: 8px 12px; font-size: 12.5px; color: var(--text2); line-height: 1.6; }
+  .hunt-found-label { font-family: var(--font-mono); font-size: 10px; color: var(--accent3); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+
+  /* WRITE-UP TABS */
+  .writeup-tabs { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 1.5rem 0; }
+  .wt-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .wt-tab { padding: 11px 18px; font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .wt-tab:hover { color: var(--text); }
+  .wt-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .wt-content { display: none; padding: 1.5rem; }
+  .wt-content.active { display: block; }
+  .starter-block { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 10px; }
+  .starter-block.warn { border-color: rgba(245,158,11,0.25); }
+  .starter-block.green { border-color: rgba(16,185,129,0.25); }
+  .starter-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .starter-text { font-size: 13px; color: var(--text2); line-height: 1.75; }
+  .starter-text code { font-family: var(--font-mono); font-size: 12px; background: var(--bg2); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
+  .fill { color: var(--warn); font-style: italic; }
+
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .areas-grid { grid-template-columns: 1fr 1fr; }
+    .house-scene { flex-direction: column; }
+    nav { padding: 0 1rem; }
+    .nav-steps { gap: 2px; }
+    .nav-dot { width: 22px; height: 22px; font-size: 10px; }
+    .slide { padding: 2rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">CS 305 · Mod 2 Written</div>
+  <div class="nav-steps" id="navDots"></div>
+</nav>
+
+<main>
+
+<!-- SLIDE 0: INTRO -->
+<section class="slide active" id="slide-0">
+  <div class="hero-accent">SEC</div>
+  <div class="eyebrow">Module 2 · Written Assignment</div>
+  <h1>Let's make <span class="accent-text">secure coding</span> actually make sense.</h1>
+  <p>This lesson walks you through everything you need to understand AND complete the written assignment — step by step, no textbook needed.</p>
+  <div class="card-grid" style="margin-top:2rem">
+    <div class="card accent-border">
+      <h3 class="accent-text">What you'll understand</h3>
+      <p style="font-size:13px;margin-top:0.5rem">What Spring is, what vulnerabilities look like, what the 7 security areas are, and how attackers think.</p>
+    </div>
+    <div class="card green-border">
+      <h3 class="green-text">What you'll do</h3>
+      <p style="font-size:13px;margin-top:0.5rem">Open the code base, find real vulnerabilities, and fill out the assignment template with specific, correct answers.</p>
+    </div>
+    <div class="card warn-border">
+      <h3 class="warn-text">Time estimate</h3>
+      <p style="font-size:13px;margin-top:0.5rem">About 60–90 min total. This lesson is ~20 min, then filling the template takes another 30–40 min.</p>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="btn btn-ghost" disabled>← Back</button>
+    <span class="slide-counter" id="counter-0">1 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(1)">Let's go →</button>
+  </div>
+</section>
+
+<!-- SLIDE 1: WHAT IS THIS COURSE -->
+<section class="slide" id="slide-1">
+  <div class="eyebrow">Concept 1 of 6</div>
+  <h2>What is software security — and why does it matter?</h2>
+  <p>Most programmers learn to write code that <em>works</em>. Software security means writing code that works AND can't be exploited by attackers.</p>
+
+  <div class="house-demo">
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.1em">Interactive analogy — click each item</p>
+    <div class="house-scene">
+      <div class="house-svg-wrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <polygon points="80,20 150,70 10,70" fill="#1a2235" stroke="rgba(0,212,255,0.3)" stroke-width="2"/>
+          <rect x="20" y="70" width="120" height="80" fill="#111827" stroke="rgba(0,212,255,0.2)" stroke-width="1.5"/>
+          <rect x="60" y="110" width="40" height="40" fill="#0d1117" stroke="rgba(0,212,255,0.15)" stroke-width="1"/>
+          <rect id="door-rect" x="65" y="115" width="12" height="8" fill="#0a0e1a" stroke="#475569" stroke-width="1"/>
+          <circle id="lock-icon" cx="79" cy="119" r="3" fill="#475569"/>
+          <rect id="window-left" x="28" y="80" width="28" height="20" fill="#0d1117" stroke="#475569" stroke-width="1"/>
+          <rect id="window-right" x="104" y="80" width="28" height="20" fill="#0d1117" stroke="#475569" stroke-width="1"/>
+          <line id="wl-line" x1="42" y1="80" x2="42" y2="100" stroke="#1e3a4c" stroke-width="1"/>
+          <line id="wr-line" x1="118" y1="80" x2="118" y2="100" stroke="#1e3a4c" stroke-width="1"/>
+          <rect id="basement-door" x="68" y="145" width="24" height="5" fill="#0a0e1a" stroke="#1e3a4c" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="house-checks">
+        <div class="house-check" onclick="revealCheck(this, 'The front door lock = authentication. Does the app verify WHO you are before letting you in?')">
+          <div class="hc-icon bad">🔒</div>
+          <div>
+            <div class="hc-label">Front door lock</div>
+            <div class="hc-sub">Does it keep unauthorized people out?</div>
+            <div class="hc-toggle"></div>
+          </div>
+        </div>
+        <div class="house-check" onclick="revealCheck(this, 'Open windows = unvalidated inputs. Any opening where something unexpected can get in = vulnerability. In code: user input that isn\'t checked.')">
+          <div class="hc-icon bad">🪟</div>
+          <div>
+            <div class="hc-label">Windows left open</div>
+            <div class="hc-sub">Any gap an attacker can sneak through?</div>
+            <div class="hc-toggle"></div>
+          </div>
+        </div>
+        <div class="house-check" onclick="revealCheck(this, 'Basement hatch = dependency vulnerabilities. A library your app uses might have its own secret backdoor that attackers already know about.')">
+          <div class="hc-icon bad">🚪</div>
+          <div>
+            <div class="hc-label">Hidden basement hatch</div>
+            <div class="hc-sub">Vulnerabilities in libraries you use?</div>
+            <div class="hc-toggle"></div>
+          </div>
+        </div>
+        <div class="house-check" onclick="revealCheck(this, 'Error messages = don\'t leave your blueprints on the porch. Detailed error messages tell attackers exactly what\'s inside your code.')">
+          <div class="hc-icon bad">📋</div>
+          <div>
+            <div class="hc-label">Blueprints left outside</div>
+            <div class="hc-sub">Error messages revealing internals?</div>
+            <div class="hc-toggle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(0)">← Back</button>
+    <span class="slide-counter">2 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 2: SPRING + SPEL -->
+<section class="slide" id="slide-2">
+  <div class="eyebrow">Concept 2 of 6</div>
+  <h2>Spring, SpEL, and why this version is dangerous</h2>
+  <p><strong style="color:var(--text)">Spring</strong> is a Java framework — it handles the boring plumbing of web apps (routing requests, connecting to databases) so you focus on business logic. The assignment scenario uses <span class="pill amber">spring-data-rest-webmvc 2.6.5</span> — a version with a known critical vulnerability.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">UserController.java — normal safe code</span>
+      <span class="pill green">safe</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="hl-neutral">@PostMapping</span>(<span class="hl-string">"/greet"</span>)
+<span class="hl-neutral">public</span> String greet(<span class="hl-neutral">@RequestParam</span> String name) {
+    <span class="hl-comment">// safe: just using the string directly, no eval</span>
+    <span class="hl-good">return "Hello, " + sanitize(name);</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">UserController.java — vulnerable SpEL code</span>
+      <span class="pill red">vulnerable</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="hl-neutral">@PostMapping</span>(<span class="hl-string">"/greet"</span>)
+<span class="hl-neutral">public</span> String greet(<span class="hl-neutral">@RequestParam</span> String name) {
+    ExpressionParser parser = <span class="hl-neutral">new</span> SpelExpressionParser();
+    <span class="hl-comment">// DANGEROUS: evaluating raw user input as an expression!</span>
+    <span class="hl-bad">Expression exp = parser.parseExpression(name);</span>
+    <span class="hl-bad">return exp.getValue(String.class);</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="inject-demo">
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.1em">Try it — SpEL injection simulator</p>
+    <label>What the user types into the form:</label>
+    <input class="inject-input" id="spel-input" type="text" value="Darcie" placeholder="Type a name..." oninput="simulateSpEL(this.value)">
+    <div class="inject-hint">Try typing: <code style="color:var(--accent);font-family:var(--font-mono);font-size:12px">T(java.lang.Runtime).getRuntime().exec('rm -rf /')</code></div>
+    <div class="inject-output safe" id="spel-output">Server response: Hello, Darcie</div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+    <span class="slide-counter">3 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 3: 7 AREAS -->
+<section class="slide" id="slide-3">
+  <div class="eyebrow">Concept 3 of 6</div>
+  <h2>The 7 areas of security — which ones apply here?</h2>
+  <p>The assignment asks you to go through all 7 areas and say which are relevant to this Spring app. <strong style="color:var(--text)">Click each card</strong> to reveal whether it applies and why.</p>
+
+  <div class="areas-grid" id="areasGrid">
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Input Validation</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">SpEL injection happens because user input is processed without validation. This is the #1 concern. Look for @RequestParam values going directly into logic.</div>
+    </div>
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Authentication</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">It's a web app — it needs to verify who the user is. Check if Spring Security is configured. If endpoints have no auth, that's a finding.</div>
+    </div>
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Authorization</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">Even after login, users need proper access controls. A regular user shouldn't hit admin endpoints. Look for @PreAuthorize or role checks.</div>
+    </div>
+    <div class="area-card skip" onclick="revealArea(this)">
+      <div class="area-name">Cryptography</div>
+      <div class="area-tag no">less applicable</div>
+      <div class="area-reason">Less central here unless the app stores passwords or transmits sensitive data. Mention briefly if passwords aren't hashed.</div>
+    </div>
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Error Handling</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">Stack traces leaking to the client give attackers a roadmap. Look for bare e.printStackTrace() or exception messages returned directly in responses.</div>
+    </div>
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Data Protection</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">Any sensitive data the app handles needs protection. Hardcoded credentials in source code are a critical data protection failure.</div>
+    </div>
+    <div class="area-card relevant" onclick="revealArea(this)">
+      <div class="area-name">Code Quality</div>
+      <div class="area-tag yes">✓ relevant</div>
+      <div class="area-reason">Deprecated APIs, unused imports, sloppy patterns — these signal areas where vulnerabilities hide. Spring 2.6.5 itself is a code quality issue (outdated dependency).</div>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--text3);margin-top:0.5rem">Tip: for each relevant area, write 2–3 sentences explaining WHY it matters for this specific Spring app — that's where the rubric points are.</p>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(2)">← Back</button>
+    <span class="slide-counter">4 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(4)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 4: VULNERABILITIES -->
+<section class="slide" id="slide-4">
+  <div class="eyebrow">Concept 4 of 6</div>
+  <h2>What to find in the code — vulnerabilities explained</h2>
+  <p>When you open the code base in Eclipse, here's exactly what you're hunting for. <strong style="color:var(--text)">Tap each one</strong> to see the full explanation + how to fix it.</p>
+
+  <div class="vuln-list">
+    <div class="vuln-card" onclick="this.classList.toggle('open')">
+      <div class="vuln-head">
+        <span class="sev critical">CRITICAL</span>
+        <span class="vuln-name">SpEL Injection (CVE-2022-22963)</span>
+        <span class="vuln-arrow">▶</span>
+      </div>
+      <div class="vuln-body">
+        <p>Spring Expression Language gets evaluated on user-supplied input without sanitization. An attacker can send a crafted request that executes arbitrary code on the server — think "the attacker just got a terminal on your machine."</p>
+        <p><strong style="color:var(--text)">Look for:</strong> <code>ExpressionParser</code>, <code>SpelExpressionParser</code>, <code>StandardEvaluationContext</code> being used with request parameters.</p>
+        <div class="fix-row">
+          <span class="fix-label">Fix</span>
+          <span class="fix-text">Use <code>SimpleEvaluationContext</code> instead (restricts what expressions can access), or better — remove SpEL evaluation of user input entirely. Validate/whitelist all inputs before they touch any expression evaluator.</span>
+        </div>
+      </div>
+    </div>
+    <div class="vuln-card" onclick="this.classList.toggle('open')">
+      <div class="vuln-head">
+        <span class="sev high">HIGH</span>
+        <span class="vuln-name">Missing input validation on endpoints</span>
+        <span class="vuln-arrow">▶</span>
+      </div>
+      <div class="vuln-body">
+        <p>Endpoints accept <code>@RequestParam</code> or <code>@PathVariable</code> values and use them directly in business logic with no null checks, length limits, or format validation.</p>
+        <p><strong style="color:var(--text)">Look for:</strong> Methods annotated <code>@GetMapping</code> / <code>@PostMapping</code> that use request parameters without any <code>if</code> checks or validation annotations.</p>
+        <div class="fix-row">
+          <span class="fix-label">Fix</span>
+          <span class="fix-text">Add Java Bean Validation annotations: <code>@NotNull</code>, <code>@Size(max=50)</code>, <code>@Pattern(regexp="...")</code>. Trigger them with <code>@Valid</code> on method parameters. Spring auto-validates and returns 400 on failure.</span>
+        </div>
+      </div>
+    </div>
+    <div class="vuln-card medium" onclick="this.classList.toggle('open medium')">
+      <div class="vuln-head">
+        <span class="sev medium">MEDIUM</span>
+        <span class="vuln-name">Improper error handling</span>
+        <span class="vuln-arrow">▶</span>
+      </div>
+      <div class="vuln-body">
+        <p>Catch blocks that call <code>e.printStackTrace()</code> or return the raw exception message to the HTTP response. This leaks class names, file paths, and internal details — a roadmap for attackers.</p>
+        <p><strong style="color:var(--text)">Look for:</strong> <code>catch (Exception e) { e.printStackTrace(); }</code> or <code>return e.getMessage();</code> anywhere in the code.</p>
+        <div class="fix-row">
+          <span class="fix-label">Fix</span>
+          <span class="fix-text">Use <code>@ControllerAdvice</code> to create a global exception handler. Return generic error messages to clients (<code>"An error occurred"</code>), log details server-side only with SLF4J / Log4j.</span>
+        </div>
+      </div>
+    </div>
+    <div class="vuln-card" onclick="this.classList.toggle('open')">
+      <div class="vuln-head">
+        <span class="sev high">HIGH</span>
+        <span class="vuln-name">Outdated vulnerable dependency (spring-data-rest-webmvc 2.6.5)</span>
+        <span class="vuln-arrow">▶</span>
+      </div>
+      <div class="vuln-body">
+        <p>The scenario explicitly tells you the version: <code>spring-data-rest-webmvc 2.6.5</code>. This version is in the CVE database. Your app inherits that vulnerability even if your own code is perfect.</p>
+        <p><strong style="color:var(--text)">Look for it in:</strong> <code>pom.xml</code> — find the <code>&lt;dependency&gt;</code> block with this artifact and check the version tag.</p>
+        <div class="fix-row">
+          <span class="fix-label">Fix</span>
+          <span class="fix-text">Look up the CVE on nvd.nist.gov to find the patched version. Update the version number in <code>pom.xml</code>. Run <code>mvn dependency:tree</code> to confirm no transitive dependency still pulls in the old version.</span>
+        </div>
+      </div>
+    </div>
+    <div class="vuln-card" onclick="this.classList.toggle('open')">
+      <div class="vuln-head">
+        <span class="sev high">HIGH</span>
+        <span class="vuln-name">Hardcoded credentials or secrets</span>
+        <span class="vuln-arrow">▶</span>
+      </div>
+      <div class="vuln-body">
+        <p>Passwords, API keys, or tokens written directly as string literals in Java files. Anyone who can read the source code — or the compiled JAR — gets them instantly.</p>
+        <p><strong style="color:var(--text)">Look for:</strong> String literals that look like passwords, anything assigned to a variable named <code>password</code>, <code>secret</code>, <code>apiKey</code>, <code>token</code>, etc.</p>
+        <div class="fix-row">
+          <span class="fix-label">Fix</span>
+          <span class="fix-text">Move secrets to environment variables or a config file excluded from version control. Reference them via Spring's <code>@Value("${'{'}db.password{'}'}")</code> pointing to <code>application.properties</code> or environment-level config.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(3)">← Back</button>
+    <span class="slide-counter">5 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(5)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 5: THE WORKFLOW -->
+<section class="slide" id="slide-5">
+  <div class="eyebrow">Concept 5 of 6</div>
+  <h2>The vulnerability assessment process flow</h2>
+  <p>The assignment references a specific flow diagram. This is the mental process you follow when reviewing code. Here it is made simple — <strong style="color:var(--text)">click each step</strong> to light it up.</p>
+
+  <div style="margin:1.5rem 0">
+    <div class="flow">
+      <div class="flow-row">
+        <div class="flow-box" id="flow0" onclick="lightFlow(0)">1. Architecture review — what kind of app is this?</div>
+      </div>
+      <div class="flow-arrow down">↓</div>
+      <div class="flow-row">
+        <div class="flow-box" id="flow1" onclick="lightFlow(1)">2. Identify relevant security areas (the 7 areas)</div>
+      </div>
+      <div class="flow-arrow down">↓</div>
+      <div class="flow-row">
+        <div class="flow-box" id="flow2" onclick="lightFlow(2)">3. Manual code review — scan for each area's vulnerabilities</div>
+      </div>
+      <div class="flow-arrow down">↓</div>
+      <div class="flow-row">
+        <div class="flow-box" id="flow3" onclick="lightFlow(3)">4. Look up CVEs for anything suspicious (nvd.nist.gov)</div>
+      </div>
+      <div class="flow-arrow down">↓</div>
+      <div class="flow-row">
+        <div class="flow-box" id="flow4" onclick="lightFlow(4)">5. Document findings + write mitigation plan</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-border">
+    <h3 class="accent-text">For this assignment, steps 1–5 map directly to the template sections:</h3>
+    <p style="font-size:13.5px;margin-top:0.75rem">Step 1–2 → <strong style="color:var(--text)">Areas of Security section</strong> (list + justify the 6 relevant areas)<br>
+    Step 3–4 → <strong style="color:var(--text)">Code Review Summary section</strong> (what you found and where)<br>
+    Step 5 → <strong style="color:var(--text)">Mitigation Plan section</strong> (how to fix each one)</p>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(4)">← Back</button>
+    <span class="slide-counter">6 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(6)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 6: TEMPLATE GUIDE -->
+<section class="slide" id="slide-6">
+  <div class="eyebrow">Concept 6 of 6 — Assignment Time</div>
+  <h2>How to fill in the template</h2>
+  <p>The Word template has 3 sections. Here's exactly what to write in each one, with examples.</p>
+
+  <div class="template-builder">
+    <div class="tb-tabs">
+      <div class="tb-tab active" onclick="switchTab(this,'tab1')">Areas of Security</div>
+      <div class="tb-tab" onclick="switchTab(this,'tab2')">Code Review</div>
+      <div class="tb-tab" onclick="switchTab(this,'tab3')">Mitigation Plan</div>
+    </div>
+    <div class="tb-content active" id="tab1">
+      <div class="tb-field">
+        <span class="tb-label">Format to use</span>
+        <div class="tb-example">1–2 sentences per relevant area. Always tie it back to <strong>this specific Spring app</strong> — not generic definitions.</div>
+      </div>
+      <div class="tb-field">
+        <span class="tb-label">Example — input validation</span>
+        <div class="tb-example"><strong>Input Validation</strong> is applicable because the application uses Spring Expression Language (SpEL) to process user-supplied input, which creates a critical risk of expression injection if that input is not validated before evaluation. Without strict input validation on all request parameters, an attacker could craft a malicious expression that executes arbitrary code on the server.</div>
+      </div>
+      <div class="tb-field">
+        <span class="tb-label">Do this for:</span>
+        <div class="tb-example">Input Validation · Authentication · Authorization · Error Handling · Data Protection · Code Quality<br><span style="color:var(--text3);font-size:12px">(skip Cryptography or address briefly)</span></div>
+      </div>
+    </div>
+    <div class="tb-content" id="tab2">
+      <div class="tb-field">
+        <span class="tb-label">Format to use</span>
+        <div class="tb-example">Be <strong>specific</strong>: name the class, method, and what exactly is wrong. Reference the CVE number if there is one. One paragraph per vulnerability found.</div>
+      </div>
+      <div class="tb-field">
+        <span class="tb-label">Example — SpEL finding</span>
+        <div class="tb-example">In <strong>UserController.java</strong>, the <strong>greet()</strong> method passes the raw @RequestParam value directly into <strong>SpelExpressionParser.parseExpression()</strong> without any sanitization or validation. This is consistent with CVE-2022-22963, a critical SpEL injection vulnerability affecting Spring Cloud Function. An attacker could supply a crafted expression via the request parameter to execute arbitrary system commands on the server.</div>
+      </div>
+      <div class="tb-field">
+        <span class="tb-label">Also document:</span>
+        <div class="tb-example">Any missing input validation, bare e.printStackTrace() calls, hardcoded strings that look like credentials, and the spring-data-rest-webmvc 2.6.5 version in pom.xml.</div>
+      </div>
+    </div>
+    <div class="tb-content" id="tab3">
+      <div class="tb-field">
+        <span class="tb-label">Format to use</span>
+        <div class="tb-example">One short paragraph per vulnerability. Tell the dev team <strong>exactly what to change</strong>. Cite NVD, OWASP, or the textbook at the end in APA format.</div>
+      </div>
+      <div class="tb-field">
+        <span class="tb-label">Example — SpEL mitigation</span>
+        <div class="tb-example">To mitigate the SpEL injection vulnerability in <strong>UserController.java</strong>, replace <strong>StandardEvaluationContext</strong> with <strong>SimpleEvaluationContext</strong>, which restricts the expression context to prevent reflection and class loading. Additionally, all user-supplied inputs should be validated using a strict whitelist pattern (e.g., @Pattern annotation) before reaching any expression evaluator. OWASP recommends never directly evaluating user input as code (OWASP Input Validation Cheat Sheet, 2023).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(5)">← Back</button>
+    <span class="slide-counter">7 of 8</span>
+    <button class="btn btn-primary" onclick="goTo(7)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 7: CHECKLIST -->
+<section class="slide" id="slide-7">
+  <div class="eyebrow">You're ready — let's go</div>
+  <h2>Pre-submission checklist</h2>
+  <p>Check off each item as you complete it. This is everything needed to submit a full-credit assignment.</p>
+
+  <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progLabel">0 of 8 complete</div>
+
+  <div class="checklist" style="margin-top:1.5rem">
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Downloaded the Module 2 Written Assignment Code Base ZIP from SNHU course → Supporting Materials</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Downloaded the Module 2 Written Assignment Template (Word doc) from What to Submit section</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Imported the code base into Eclipse as a Maven project and can browse the files</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Opened nvd.nist.gov and searched for "spring-data-rest-webmvc 2.6.5" to find the relevant CVE</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Reviewed the Vulnerability Assessment Process Flow Diagram (also in Supporting Materials)</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Template Section 1 complete: all 6 relevant areas listed with justification tied to this Spring app</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Template Section 2 complete: each vulnerability named with class/method location and CVE reference where applicable</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text">Template Section 3 complete: mitigation paragraph per vulnerability, at least one APA-cited source included</span>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(6)">← Back</button>
+    <span class="slide-counter">8 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(8)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 8: STEP BY STEP — SETUP -->
+<section class="slide" id="slide-8">
+  <div class="eyebrow">Assignment Walkthrough · Step 1 of 4</div>
+  <h2>Get set up: download files &amp; open the code</h2>
+  <p>Before you can find anything, you need the actual code open in front of you. Do these steps in order — don't skip ahead.</p>
+
+  <div class="step-walk">
+    <div class="sw-item" onclick="markStep(this)">
+      <div class="sw-num">1</div>
+      <div class="sw-body">
+        <div class="sw-title">Go to your SNHU course page for CS 305</div>
+        <div class="sw-desc">Click <strong>Assignment Information</strong> in the left sidebar, then find <strong>Module Two</strong>. You need two things from the Supporting Materials section: the <strong>Module Two Written Assignment Code Base</strong> (ZIP file) and the <strong>Vulnerability Assessment Process Flow Diagram</strong>. Also grab the <strong>Module Two Written Assignment Template</strong> from the "What to Submit" section.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="markStep(this)">
+      <div class="sw-num">2</div>
+      <div class="sw-body">
+        <div class="sw-title">Open Eclipse — import the ZIP as a Maven project</div>
+        <div class="sw-desc">In Eclipse: <strong>File → Import → Maven → Existing Maven Projects → Browse</strong>. Point it at the unzipped folder. Eclipse will read the <code>pom.xml</code> and set everything up. You should see a project appear in the left panel with folders like <code>src/main/java</code>.</div>
+        <div class="sw-tip">If Eclipse asks to download dependencies, click Yes — Maven is pulling the libraries listed in pom.xml.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="markStep(this)">
+      <div class="sw-num">3</div>
+      <div class="sw-body">
+        <div class="sw-title">Get familiar with the file structure before touching anything</div>
+        <div class="sw-desc">Expand the project tree. You're looking for Java files inside <code>src/main/java</code> — these are the classes you'll review. Also open <code>pom.xml</code> at the root level — this is where the dependency versions live. Don't change anything yet, just look.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="markStep(this)">
+      <div class="sw-num">4</div>
+      <div class="sw-body">
+        <div class="sw-title">Open nvd.nist.gov in a browser tab</div>
+        <div class="sw-desc">You'll use this to look up CVE details as you find vulnerabilities. Keep it open in the background. Also open the <strong>Written Assignment Template</strong> in Word so you can fill it out as you go — don't wait until the end.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(7)">← Back</button>
+    <span class="slide-counter">9 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(9)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 9: STEP BY STEP — CODE HUNT -->
+<section class="slide" id="slide-9">
+  <div class="eyebrow">Assignment Walkthrough · Step 2 of 4</div>
+  <h2>Hunt for vulnerabilities — exactly what to search for</h2>
+  <p>You don't need to read every line. Use <strong style="color:var(--accent)">Ctrl+H</strong> (Find in Files) in Eclipse to search the whole project at once. Here's your hit list:</p>
+
+  <div class="hunt-list">
+    <div class="hunt-item">
+      <div class="hunt-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="hunt-left">
+          <span class="hunt-num">Search 1</span>
+          <span class="hunt-term">SpelExpressionParser</span>
+        </div>
+        <div class="hunt-sev critical">CRITICAL</div>
+        <span class="hunt-arrow">▶</span>
+      </div>
+      <div class="hunt-body">
+        <p><strong style="color:var(--text)">What you're looking for:</strong> Any file that imports or uses <code>SpelExpressionParser</code> or <code>ExpressionParser</code> with <code>parseExpression()</code> being called on a variable that came from a user request.</p>
+        <p><strong style="color:var(--text)">What makes it vulnerable:</strong> If the argument to <code>parseExpression()</code> is a <code>@RequestParam</code>, <code>@PathVariable</code>, or anything from the HTTP request — that's the vulnerability. User input should never be evaluated as an expression.</p>
+        <div class="hunt-found">
+          <span class="hunt-found-label">When you find it, note:</span>
+          Filename, method name, and line number. Write it down — you'll reference it in Section 2 of the template.
+        </div>
+      </div>
+    </div>
+
+    <div class="hunt-item">
+      <div class="hunt-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="hunt-left">
+          <span class="hunt-num">Search 2</span>
+          <span class="hunt-term">spring-data-rest-webmvc</span>
+        </div>
+        <div class="hunt-sev high">HIGH</div>
+        <span class="hunt-arrow">▶</span>
+      </div>
+      <div class="hunt-body">
+        <p><strong style="color:var(--text)">Where to look:</strong> Open <code>pom.xml</code> directly. Do Ctrl+F inside the file and search for <code>spring-data-rest-webmvc</code>. Find the <code>&lt;version&gt;</code> tag next to it.</p>
+        <p><strong style="color:var(--text)">What to do:</strong> Copy that version number, go to <strong>nvd.nist.gov</strong>, search for it. You'll find CVEs associated with that version. Note the CVE ID, severity score (CVSS), and the recommended patched version.</p>
+        <div class="hunt-found">
+          <span class="hunt-found-label">When you find it, note:</span>
+          The version number in pom.xml, the CVE ID from NVD, and what version fixes it.
+        </div>
+      </div>
+    </div>
+
+    <div class="hunt-item">
+      <div class="hunt-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="hunt-left">
+          <span class="hunt-num">Search 3</span>
+          <span class="hunt-term">printStackTrace</span>
+        </div>
+        <div class="hunt-sev medium">MEDIUM</div>
+        <span class="hunt-arrow">▶</span>
+      </div>
+      <div class="hunt-body">
+        <p><strong style="color:var(--text)">What you're looking for:</strong> Any <code>catch</code> block that calls <code>e.printStackTrace()</code> or returns <code>e.getMessage()</code> directly back in a response. This leaks internal class names and stack details to whoever made the request.</p>
+        <p><strong style="color:var(--text)">Also search for:</strong> <code>return e.getMessage()</code> and <code>ResponseEntity(e.getMessage()</code>.</p>
+        <div class="hunt-found">
+          <span class="hunt-found-label">When you find it, note:</span>
+          Which class and method has the bad error handling. One instance is enough to report.
+        </div>
+      </div>
+    </div>
+
+    <div class="hunt-item">
+      <div class="hunt-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="hunt-left">
+          <span class="hunt-num">Search 4</span>
+          <span class="hunt-term">password  /  secret  /  apiKey</span>
+        </div>
+        <div class="hunt-sev high">HIGH</div>
+        <span class="hunt-arrow">▶</span>
+      </div>
+      <div class="hunt-body">
+        <p><strong style="color:var(--text)">What you're looking for:</strong> String variables or constants with names like <code>password</code>, <code>secret</code>, <code>apiKey</code>, <code>token</code>, <code>credentials</code> that are assigned a hardcoded string value like <code>"myPassword123"</code>.</p>
+        <p><strong style="color:var(--text)">Also look at:</strong> <code>application.properties</code> — if credentials are in there and that file could be committed to git, that's also a finding.</p>
+        <div class="hunt-found">
+          <span class="hunt-found-label">When you find it, note:</span>
+          The variable name, its value (partially), and which file it's in.
+        </div>
+      </div>
+    </div>
+
+    <div class="hunt-item">
+      <div class="hunt-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="hunt-left">
+          <span class="hunt-num">Search 5</span>
+          <span class="hunt-term">@RequestParam / @PathVariable with no @Valid</span>
+        </div>
+        <div class="hunt-sev high">HIGH</div>
+        <span class="hunt-arrow">▶</span>
+      </div>
+      <div class="hunt-body">
+        <p><strong style="color:var(--text)">What you're looking for:</strong> Methods that take <code>@RequestParam String ...</code> or <code>@PathVariable String ...</code> but have no <code>@Valid</code>, <code>@NotNull</code>, <code>@Size</code>, or <code>@Pattern</code> annotations anywhere in sight. This means inputs go into logic completely unchecked.</p>
+        <p><strong style="color:var(--text)">How to spot it fast:</strong> Any controller method (annotated with <code>@GetMapping</code>/<code>@PostMapping</code>) where the parameters are plain <code>String</code> or <code>int</code> with no validation annotations is a finding.</p>
+        <div class="hunt-found">
+          <span class="hunt-found-label">When you find it, note:</span>
+          The endpoint path (like <code>/users/greet</code>), the method name, and what parameters are unvalidated.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(8)">← Back</button>
+    <span class="slide-counter">10 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(10)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 10: STEP BY STEP — WRITE IT UP -->
+<section class="slide" id="slide-10">
+  <div class="eyebrow">Assignment Walkthrough · Step 3 of 4</div>
+  <h2>Write up every section — copy-paste starter text</h2>
+  <p>Use these as starting points. <strong style="color:var(--text)">Replace the bold placeholders</strong> with what you actually found in the code. Every blank in brackets needs to be filled in with real info.</p>
+
+  <div class="writeup-tabs">
+    <div class="wt-tabs">
+      <div class="wt-tab active" onclick="switchWTab(this,'wt1')">Section 1: Areas</div>
+      <div class="wt-tab" onclick="switchWTab(this,'wt2')">Section 2: Code Review</div>
+      <div class="wt-tab" onclick="switchWTab(this,'wt3')">Section 3: Mitigations</div>
+    </div>
+
+    <div class="wt-content active" id="wt1">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:1rem">Write one entry per relevant area. These are ready to paste — just make sure they match what you actually found.</p>
+      <div class="starter-block">
+        <div class="starter-label">Input Validation</div>
+        <div class="starter-text">Input validation is applicable to this application because it processes user-supplied data through Spring request parameters that are directly used in business logic, including in expression evaluation contexts. Without proper input validation, an attacker could supply malicious input that bypasses expected application behavior or triggers a code execution vulnerability.</div>
+      </div>
+      <div class="starter-block">
+        <div class="starter-label">Authentication</div>
+        <div class="starter-text">Authentication is relevant because the application exposes HTTP endpoints to users and must verify the identity of each requester before granting access to functionality or data. A lack of authentication controls on any endpoint could allow unauthenticated users to access privileged operations.</div>
+      </div>
+      <div class="starter-block">
+        <div class="starter-label">Authorization</div>
+        <div class="starter-text">Authorization is applicable because, beyond authenticating users, the application must enforce access controls that restrict what each authenticated user is permitted to do. Without role-based access controls, a regular user could access or modify data or operations reserved for administrators.</div>
+      </div>
+      <div class="starter-block">
+        <div class="starter-label">Error Handling</div>
+        <div class="starter-text">Error handling is relevant because improperly handled exceptions can expose internal implementation details — such as class names, stack traces, and file paths — to the client. This information can assist an attacker in mapping the application's internals and crafting targeted exploits.</div>
+      </div>
+      <div class="starter-block">
+        <div class="starter-label">Data Protection</div>
+        <div class="starter-text">Data protection is applicable because the application may handle or store sensitive information such as credentials or user data. Hardcoded credentials in source code or configuration files represent a critical data protection failure, as they can be extracted by anyone with access to the codebase.</div>
+      </div>
+      <div class="starter-block">
+        <div class="starter-label">Code Quality</div>
+        <div class="starter-text">Code quality is relevant because the use of outdated or deprecated dependencies introduces known vulnerabilities into the application even if the custom code is otherwise secure. The use of spring-data-rest-webmvc version 2.6.5 is a code quality concern as this version has documented CVEs in the National Vulnerability Database.</div>
+      </div>
+    </div>
+
+    <div class="wt-content" id="wt2">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:1rem">Fill in each <span style="color:var(--warn)">[BRACKET]</span> with what you actually found in the code. Be specific — class name, method name, line number if possible.</p>
+      <div class="starter-block warn">
+        <div class="starter-label">Finding 1 — SpEL Injection</div>
+        <div class="starter-text">In <span class="fill">[FILENAME.java]</span>, the method <span class="fill">[methodName()]</span> passes the value of a <code>@RequestParam</code> parameter directly into <code>SpelExpressionParser.parseExpression()</code> without any prior sanitization or validation. This pattern is consistent with CVE-2022-22963, a critical Spring Expression Language injection vulnerability. An attacker could exploit this by supplying a crafted expression as input, potentially executing arbitrary commands on the server with the application's process privileges.</div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">Finding 2 — Outdated Dependency</div>
+        <div class="starter-text">The project's <code>pom.xml</code> declares a dependency on <code>spring-data-rest-webmvc</code> version <span class="fill">[VERSION]</span>. According to the National Vulnerability Database, this version is associated with <span class="fill">[CVE-ID]</span>, which has a CVSS severity score of <span class="fill">[SCORE]</span>. This vulnerability is inherited by the entire application regardless of the quality of custom code written on top of it.</div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">Finding 3 — Improper Error Handling</div>
+        <div class="starter-text">In <span class="fill">[FILENAME.java]</span>, the catch block in method <span class="fill">[methodName()]</span> calls <code>e.printStackTrace()</code>, which outputs a full stack trace to the standard error stream and may be included in HTTP responses. This exposes internal class names, method names, and file paths to the client, providing an attacker with detailed information about the application's architecture.</div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">Finding 4 — Missing Input Validation</div>
+        <div class="starter-text">The endpoint <span class="fill">[/path/endpoint]</span> in <span class="fill">[FILENAME.java]</span> accepts a <code>@RequestParam</code> of type String with no accompanying validation constraints such as <code>@NotNull</code>, <code>@Size</code>, or <code>@Pattern</code>. This means user-supplied data flows directly into application logic without any format or length checks, creating a broad attack surface for injection and unexpected behavior.</div>
+      </div>
+    </div>
+
+    <div class="wt-content" id="wt3">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:1rem">One paragraph per finding. These are complete — just verify they match what you found. Add your APA citations at the bottom of the Word doc.</p>
+      <div class="starter-block green">
+        <div class="starter-label">Mitigation 1 — SpEL Injection</div>
+        <div class="starter-text">To mitigate the SpEL injection vulnerability, the development team should replace any use of <code>StandardEvaluationContext</code> with <code>SimpleEvaluationContext</code>, which restricts the expression engine from accessing reflection, class instantiation, and static methods. More broadly, user-supplied input should never be passed directly to an expression parser. All <code>@RequestParam</code> and <code>@PathVariable</code> values should be validated against a strict allowlist using <code>@Pattern(regexp="...")</code> before reaching any expression context. OWASP recommends treating all user input as untrusted and applying input validation at every entry point (OWASP Foundation, 2023).</div>
+      </div>
+      <div class="starter-block green">
+        <div class="starter-label">Mitigation 2 — Outdated Dependency</div>
+        <div class="starter-text">The development team should upgrade <code>spring-data-rest-webmvc</code> from version <span class="fill">[VERSION]</span> to the latest patched release identified on the National Vulnerability Database entry for <span class="fill">[CVE-ID]</span>. The version number should be updated in <code>pom.xml</code> and the project rebuilt to confirm the vulnerability is no longer present. Running <code>mvn dependency:tree</code> afterward can confirm no transitive dependency re-introduces the vulnerable version (National Institute of Standards and Technology, <span class="fill">[YEAR]</span>).</div>
+      </div>
+      <div class="starter-block green">
+        <div class="starter-label">Mitigation 3 — Error Handling</div>
+        <div class="starter-text">To address improper error handling, the team should implement a centralized exception handler using Spring's <code>@ControllerAdvice</code> annotation. This handler should catch all unhandled exceptions, log their full details server-side using SLF4J or Log4j2, and return only a generic error message to the client such as "An unexpected error occurred." Removing all <code>e.printStackTrace()</code> calls from production code ensures that internal application details are never exposed through HTTP responses (Manico &amp; Detlefsen, 2015).</div>
+      </div>
+      <div class="starter-block green">
+        <div class="starter-label">Mitigation 4 — Input Validation</div>
+        <div class="starter-text">All controller endpoints that accept <code>@RequestParam</code> or <code>@PathVariable</code> parameters should be updated to include Java Bean Validation constraints. Adding <code>@NotNull</code>, <code>@Size(max=100)</code>, and <code>@Pattern(regexp="[a-zA-Z0-9]+")</code> annotations to method parameters, combined with <code>@Valid</code> or <code>@Validated</code> on the method signature, will cause Spring to automatically reject malformed requests with a 400 Bad Request response before they reach any business logic (OWASP Foundation, 2023).</div>
+      </div>
+      <div class="starter-block" style="margin-top:1.5rem;border-color:rgba(124,58,237,0.3)">
+        <div class="starter-label" style="color:var(--accent2)">APA Citations to include at the bottom</div>
+        <div class="starter-text" style="font-size:12px">Manico, J., &amp; Detlefsen, A. (2015). <em>Iron-clad Java: Building secure web applications.</em> McGraw-Hill Education.<br><br>
+National Institute of Standards and Technology. (n.d.). <em>National Vulnerability Database.</em> https://nvd.nist.gov<br><br>
+OWASP Foundation. (2023). <em>Input validation cheat sheet.</em> https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(9)">← Back</button>
+    <span class="slide-counter">11 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(11)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 11: FINAL CHECKLIST -->
+<section class="slide" id="slide-11">
+  <div class="eyebrow">Assignment Walkthrough · Step 4 of 4</div>
+  <h2>Final review — don't submit until all of these are green</h2>
+  <p>Go through this together before she hits submit. Each item is a real rubric point.</p>
+
+  <div class="progress-track"><div class="progress-fill" id="progFill2" style="width:0%"></div></div>
+  <div class="progress-label" id="progLabel2" style="margin-bottom:1.5rem">0 of 10 complete</div>
+
+  <div class="checklist">
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 1:</strong> All 6 relevant security areas are listed (Input Validation, Auth, Authorization, Error Handling, Data Protection, Code Quality)</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 1:</strong> Each area has a justification tied to THIS Spring app — not a generic definition</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 2:</strong> SpEL injection finding includes the actual filename and method name from the code</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 2:</strong> Outdated dependency finding includes the real CVE ID from NVD (not just "there's a CVE")</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 2:</strong> At least 3 vulnerabilities documented total (SpEL, dependency, error handling, and/or input validation)</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 3:</strong> Every vulnerability in Section 2 has a matching mitigation in Section 3</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Section 3:</strong> Mitigations are specific (name the Spring class/annotation to use, not just "fix the code")</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Citations:</strong> At least one APA source cited — NVD, OWASP, or the Iron-Clad Java textbook</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Length:</strong> Document is 1–2 pages (not a wall of text, not a bullet list — proper paragraphs)</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck2(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Submitted</strong> as a Word doc (.docx) to the SNHU assignment portal before the deadline</span>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(10)">← Back</button>
+    <span class="slide-counter">12 of 12</span>
+    <button class="btn btn-primary" style="background:var(--accent3)">Assignment complete! 🎉</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+let currentSlide = 0;
+const totalSlides = 12;
+
+function buildNav() {
+  const nav = document.getElementById('navDots');
+  nav.innerHTML = '';
+  for (let i = 0; i < totalSlides; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === currentSlide ? ' active' : '') + (i < currentSlide ? ' done' : '');
+    d.textContent = i + 1;
+    d.onclick = () => goTo(i);
+    nav.appendChild(d);
+  }
+}
+
+function goTo(n) {
+  if (n < 0 || n >= totalSlides) return;
+  document.getElementById('slide-' + currentSlide).classList.remove('active');
+  currentSlide = n;
+  document.getElementById('slide-' + currentSlide).classList.add('active');
+  buildNav();
+  window.scrollTo(0, 0);
+}
+
+buildNav();
+
+function revealCheck(el, msg) {
+  el.classList.toggle('revealed');
+  el.querySelector('.hc-toggle').textContent = el.classList.contains('revealed') ? msg : '';
+}
+
+function simulateSpEL(val) {
+  const out = document.getElementById('spel-output');
+  const inp = document.getElementById('spel-input');
+  const dangerous = val.toLowerCase().includes('runtime') || val.toLowerCase().includes('exec') || val.toLowerCase().includes('class') || val.toLowerCase().includes('system') || val.toLowerCase().includes('process') || val.includes('T(');
+  if (dangerous) {
+    out.className = 'inject-output hacked';
+    out.textContent = '💀 ATTACK EXECUTED — Server compromised. Attacker has shell access.';
+    inp.className = 'inject-input danger';
+  } else if (val.trim() === '') {
+    out.className = 'inject-output safe';
+    out.textContent = 'Server response: Hello, ';
+    inp.className = 'inject-input';
+  } else {
+    out.className = 'inject-output safe';
+    out.textContent = 'Server response: Hello, ' + val;
+    inp.className = 'inject-input';
+  }
+}
+
+function revealArea(el) {
+  el.classList.toggle('revealed');
+}
+
+function lightFlow(n) {
+  for (let i = 0; i <= n; i++) {
+    document.getElementById('flow' + i).classList.add('lit');
+  }
+}
+
+function switchTab(tab, contentId) {
+  document.querySelectorAll('.tb-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tb-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  updateProgress();
+}
+
+function updateProgress() {
+  const items = document.querySelectorAll('#slide-7 .cl-item');
+  const checked = document.querySelectorAll('#slide-7 .cl-item.checked').length;
+  const pct = Math.round((checked / items.length) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = checked + ' of ' + items.length + ' complete';
+}
+
+function markStep(el) {
+  el.classList.toggle('done');
+}
+
+function switchWTab(tab, contentId) {
+  document.querySelectorAll('.wt-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.wt-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+function toggleCheck2(el) {
+  el.classList.toggle('checked');
+  const items = document.querySelectorAll('#slide-11 .cl-item');
+  const checked = document.querySelectorAll('#slide-11 .cl-item.checked').length;
+  const pct = Math.round((checked / items.length) * 100);
+  document.getElementById('progFill2').style.width = pct + '%';
+  document.getElementById('progLabel2').textContent = checked + ' of ' + items.length + ' complete';
+}
+</script>
+</body>
+</html>
