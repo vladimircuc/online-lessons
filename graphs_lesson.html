@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph Mania — CS161 Section 5</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060910;
+  --surface: #0d1117;
+  --surface2: #131920;
+  --border: #1e2730;
+  --border2: #253040;
+  --blue: #4ea8ff;
+  --green: #3dd68c;
+  --orange: #ffb347;
+  --red: #ff6b6b;
+  --purple: #b39ddb;
+  --teal: #40e0d0;
+  --text: #dce8f0;
+  --muted: #5a7080;
+  --muted2: #3a5060;
+  --code-bg: #080c10;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;}
+
+/* HERO */
+.hero{
+  min-height:320px;
+  background:linear-gradient(160deg,#060910 0%,#0a1520 50%,#060f1a 100%);
+  border-bottom:1px solid var(--border);
+  padding:64px 48px 56px;
+  position:relative;overflow:hidden;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:40px 40px;
+  opacity:.3;
+}
+.hero-glow{
+  position:absolute;top:-80px;right:-80px;
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(78,168,255,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-tag{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--blue);
+  margin-bottom:16px;display:block;
+}
+.hero h1{
+  font-family:'Fraunces',serif;font-size:clamp(2.2rem,5vw,3.8rem);
+  font-weight:900;line-height:1.05;color:#fff;max-width:680px;margin-bottom:16px;
+}
+.hero h1 em{font-style:italic;color:var(--blue);}
+.hero-sub{color:var(--muted);max-width:540px;font-size:.95rem;margin-bottom:36px;}
+.nav-row{display:flex;gap:8px;flex-wrap:wrap;}
+.npill{
+  font-family:'DM Mono',monospace;font-size:11px;
+  padding:6px 14px;border-radius:20px;
+  border:1px solid var(--border2);background:var(--surface);
+  color:var(--muted);text-decoration:none;transition:all .2s;cursor:pointer;
+}
+.npill:hover{border-color:var(--blue);color:var(--blue);}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:56px 32px;}
+
+/* SECTION HEADERS */
+.sec-head{display:flex;align-items:center;gap:14px;margin:64px 0 32px;}
+.sec-head:first-child{margin-top:0;}
+.sec-tag{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--orange);
+  background:rgba(255,179,71,.08);border:1px solid rgba(255,179,71,.2);
+  padding:4px 12px;border-radius:4px;white-space:nowrap;
+}
+.sec-line{flex:1;height:1px;background:var(--border);}
+.sec-pts{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* TYPOGRAPHY */
+h2{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;color:#fff;margin-bottom:14px;}
+h3{font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:10px;}
+h4{font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+p{margin-bottom:14px;}
+ul,ol{padding-left:22px;margin-bottom:14px;}
+li{margin-bottom:5px;}
+strong{color:#fff;}
+em{color:var(--blue);}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:20px;}
+.card-blue{border-left:3px solid var(--blue);}
+.card-green{border-left:3px solid var(--green);}
+.card-orange{border-left:3px solid var(--orange);}
+.card-red{border-left:3px solid var(--red);}
+.card-purple{border-left:3px solid var(--purple);}
+.card-teal{border-left:3px solid var(--teal);}
+
+/* PROBLEM BLOCK */
+.problem-block{
+  background:var(--code-bg);border:1px solid var(--border2);
+  border-radius:10px;padding:22px 26px;margin-bottom:24px;
+}
+.problem-block .qlabel{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--blue);margin-bottom:8px;display:block;
+}
+
+/* CODE */
+pre,code{font-family:'DM Mono',monospace;}
+pre{
+  background:var(--code-bg);border:1px solid var(--border);
+  border-radius:8px;padding:18px 22px;overflow-x:auto;
+  line-height:1.75;margin:14px 0;font-size:.8rem;
+}
+code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;font-size:.83em;}
+.kw{color:#c792ea;}.fn{color:var(--green);}.cm{color:var(--muted);font-style:italic;}.nu{color:var(--orange);}.va{color:#89ddff;}.st{color:var(--teal);}
+
+/* CALLOUT */
+.callout{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border-radius:8px;padding:14px 18px;margin:16px 0;}
+.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+.callout p{margin:0;font-size:.9rem;}
+
+/* BADGE */
+.badge{
+  display:inline-block;font-family:'DM Mono',monospace;font-size:.78rem;
+  padding:4px 12px;border-radius:4px;margin:2px;
+}
+.badge-blue{background:rgba(78,168,255,.12);border:1px solid rgba(78,168,255,.3);color:var(--blue);}
+.badge-green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--green);}
+.badge-orange{background:rgba(255,179,71,.12);border:1px solid rgba(255,179,71,.3);color:var(--orange);}
+.badge-red{background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.3);color:var(--red);}
+
+/* BUTTONS */
+.btn{
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;
+  padding:8px 18px;border-radius:6px;border:none;cursor:pointer;transition:all .18s;
+}
+.btn-blue{background:var(--blue);color:#000;}
+.btn-blue:hover{background:#7ac0ff;}
+.btn-ghost{background:var(--surface);border:1px solid var(--border2);color:var(--text);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-green{background:rgba(61,214,140,.15);border:1px solid var(--green);color:var(--green);}
+.btn-green:hover{background:rgba(61,214,140,.3);}
+.btn-orange{background:rgba(255,179,71,.15);border:1px solid var(--orange);color:var(--orange);}
+.btn-red{background:rgba(255,107,107,.15);border:1px solid var(--red);color:var(--red);}
+
+/* INTERACTIVE BOX */
+.ibox{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:26px;margin:24px 0;}
+.ibox-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.ibox-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:18px;letter-spacing:.05em;}
+
+/* STEP LOG */
+.steplog{
+  background:var(--code-bg);border:1px solid var(--border);border-radius:8px;
+  padding:12px 16px;font-family:'DM Mono',monospace;font-size:.78rem;
+  color:var(--green);min-height:44px;line-height:1.75;margin:12px 0;
+}
+
+/* ACCORDION */
+.acc{margin:10px 0;}
+.acc-h{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:12px 16px;cursor:pointer;user-select:none;transition:all .18s;
+  font-size:.92rem;font-weight:600;color:#fff;
+}
+.acc-h:hover{border-color:var(--blue);}
+.acc-icon{color:var(--blue);font-size:.9rem;transition:transform .2s;}
+.acc-h.open .acc-icon{transform:rotate(90deg);}
+.acc-b{display:none;background:var(--code-bg);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:18px 22px;font-size:.9rem;}
+.acc-b.open{display:block;}
+
+/* GRAPH CANVAS */
+.graph-wrap{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:14px 0;position:relative;}
+canvas{display:block;}
+
+/* TABLE */
+.dtable{width:100%;border-collapse:collapse;font-size:.85rem;margin:12px 0;}
+.dtable th{font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.dtable td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-family:'DM Mono',monospace;}
+.dtable tr:last-child td{border-bottom:none;}
+.dtable tr.hl-blue td{background:rgba(78,168,255,.08);}
+.dtable tr.hl-green td{background:rgba(61,214,140,.08);}
+.dtable tr.hl-orange td{background:rgba(255,179,71,.08);}
+
+/* MATH */
+.math{font-family:'DM Mono',monospace;font-style:italic;color:var(--orange);font-size:.9em;}
+.block-math{font-family:'DM Mono',monospace;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 18px;margin:12px 0;color:var(--orange);text-align:center;font-size:.88rem;}
+
+/* FW MATRIX */
+.matrix-grid{display:grid;gap:3px;margin:12px 0;}
+.mx-cell{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:.78rem;border-radius:5px;
+  background:var(--surface);border:1px solid var(--border);
+  transition:all .35s;position:relative;cursor:default;
+}
+.mx-cell.header{background:transparent;border:none;color:var(--muted);font-size:.7rem;}
+.mx-cell.active{background:rgba(78,168,255,.2);border-color:var(--blue);color:var(--blue);}
+.mx-cell.updated{background:rgba(61,214,140,.2);border-color:var(--green);color:var(--green);}
+.mx-cell.pivot{background:rgba(255,179,71,.2);border-color:var(--orange);color:var(--orange);}
+.mx-cell.inf{color:var(--muted2);}
+
+/* PROGRESS BAR */
+.pbar{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--teal));transform-origin:left;z-index:100;}
+
+/* BFS VIZ */
+.bfs-queue{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+.bfs-qitem{
+  font-family:'DM Mono',monospace;font-size:.78rem;
+  padding:5px 12px;border-radius:5px;
+  border:1px solid var(--border2);background:var(--surface);
+  transition:all .3s;
+}
+.bfs-qitem.current{border-color:var(--orange);background:rgba(255,179,71,.1);color:var(--orange);}
+.bfs-qitem.visited{opacity:.4;text-decoration:line-through;}
+
+/* SCC colors */
+.scc-legend{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;}
+.scc-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:4px;}
+
+/* PROOF STEP */
+.pstep{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+.pnum{
+  width:26px;height:26px;border-radius:50%;background:var(--blue);
+  color:#000;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;
+}
+.pbody{flex:1;}
+
+/* two-col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0;}
+@media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--border);margin:40px 0;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:28px 32px;text-align:center;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.08em;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp .5s ease both;}
+</style>
+</head>
+<body>
+
+<div class="pbar" id="pbar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <span class="hero-tag">CS161 · Winter 2024 · Section 5 · Final Exam Prep</span>
+  <h1>Graph <em>Mania</em></h1>
+  <p class="hero-sub">From zero — graphs, BFS, Dijkstra, Floyd-Warshall, SCCs, and how to solve all three exam problems from scratch.</p>
+  <div class="nav-row">
+    <a class="npill" href="#foundations">Graph Foundations</a>
+    <a class="npill" href="#algorithms">Core Algorithms</a>
+    <a class="npill" href="#p51">5.1 Diameter</a>
+    <a class="npill" href="#p52">5.2 Closest Reachable</a>
+    <a class="npill" href="#p53">5.3 Somewhat-Connected</a>
+    <a class="npill" href="#summary">Summary</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════
+     FOUNDATIONS
+     ═══════════════════════════════════════════ -->
+<div id="foundations">
+  <div class="sec-head">
+    <span class="sec-tag">Part 0</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">Foundations — Start Here</span>
+  </div>
+
+  <h2>What Even Is a Graph?</h2>
+
+  <p>Before touching any exam problem, let's build from the ground up. A <strong>graph</strong> is just a way to represent <em>relationships between things</em>. Think of cities connected by roads, or websites linked to each other, or friends on a social network.</p>
+
+  <div class="two-col">
+    <div class="card card-blue">
+      <h3>The Two Ingredients</h3>
+      <p><strong>Vertices (nodes)</strong> — the "things". Could be cities, people, web pages, computers — anything.</p>
+      <p><strong>Edges</strong> — the "connections" between things. A road between cities. A friendship. A hyperlink.</p>
+      <div class="block-math">G = (V, E)   where V = vertices, E = edges</div>
+    </div>
+    <div class="card card-green">
+      <h3>Two Flavors</h3>
+      <p><strong>Undirected:</strong> edges go both ways. If A connects to B, then B connects to A. (Friendships, roads)</p>
+      <p><strong>Directed:</strong> edges have arrows. A→B doesn't mean B→A. (Web links, one-way streets, Twitter follows)</p>
+      <p>All of Section 5 uses <strong>directed graphs</strong>.</p>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE GRAPH INTRO -->
+  <div class="ibox">
+    <div class="ibox-title">🗺️ Interactive: Build Your First Graph</div>
+    <div class="ibox-sub">Click empty space to add nodes · Click two nodes to add an edge · Drag nodes to move them</div>
+    <div class="graph-wrap">
+      <canvas id="introCanvas" width="860" height="300"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-ghost" onclick="introMode('add')">➕ Add Node</button>
+      <button class="btn btn-ghost" onclick="introMode('edge')">🔗 Add Edge</button>
+      <button class="btn btn-ghost" onclick="introMode('drag')">✋ Drag</button>
+      <button class="btn btn-red" onclick="introClear()">🗑 Clear</button>
+      <button class="btn btn-ghost" onclick="introLoad('directed')">Load: Directed Example</button>
+      <button class="btn btn-ghost" onclick="introLoad('weighted')">Load: Weighted Example</button>
+    </div>
+    <div class="steplog" id="introLog">Click "Load: Directed Example" to see a sample graph, or build your own!</div>
+  </div>
+
+  <div class="card card-orange">
+    <h3>Weighted Graphs</h3>
+    <p>Many problems attach a <strong>weight</strong> (cost, distance, time) to each edge. In Section 5, problems 5.1 and 5.2 use weighted/unweighted edges. The weight is just a number on the arrow.</p>
+    <p>Example: cities A, B, C. Edge A→B has weight 4 (4 km road). Edge B→C has weight 2. The <em>path cost</em> from A to C via B is 4+2=6.</p>
+  </div>
+
+  <h2 style="margin-top:36px;">Key Concepts You Must Know</h2>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>Path & Distance</h4>
+      <p>A <strong>path</strong> from u to v is a sequence of vertices u→a→b→...→v following edges. The <strong>distance</strong> (or shortest path cost) is the minimum total edge weight over all paths from u to v.</p>
+      <p>If no path exists, distance = ∞.</p>
+    </div>
+    <div class="card">
+      <h4>Reachability</h4>
+      <p>Vertex v is <strong>reachable</strong> from u if there exists any directed path u→...→v. In an undirected graph, if any vertex is reachable from any other, the graph is <strong>connected</strong>.</p>
+    </div>
+    <div class="card">
+      <h4>Strongly Connected Components (SCC)</h4>
+      <p>In a directed graph, an SCC is a maximal set of vertices where <em>every vertex can reach every other vertex</em>. Two cities A,B are in the same SCC if you can drive from A to B AND from B to A.</p>
+    </div>
+    <div class="card">
+      <h4>Condensation DAG</h4>
+      <p>If you collapse each SCC into a single "super-node", the result is always a <strong>DAG</strong> (directed acyclic graph — no cycles). This is called the <em>condensation</em> of the graph.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CORE ALGORITHMS
+     ═══════════════════════════════════════════ -->
+<div id="algorithms">
+  <div class="sec-head">
+    <span class="sec-tag">Part 1</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">The 4 Algorithms You Need</span>
+  </div>
+
+  <h2>Algorithms From Scratch</h2>
+
+  <!-- BFS -->
+  <div class="card card-blue" style="margin-bottom:0;border-radius:12px 12px 0 0;border-bottom:none;">
+    <h3>🔵 BFS — Breadth-First Search   <span class="badge badge-blue">O(n + m)</span></h3>
+    <p><strong>What it does:</strong> explores a graph level by level, starting from a source vertex. Like ripples in water — first visits all neighbors, then their neighbors, etc.</p>
+    <p><strong>Finds:</strong> shortest paths in <em>unweighted</em> graphs (or graphs where all edges have weight 1). Finds all reachable vertices.</p>
+    <p><strong>How it works:</strong> uses a <strong>queue</strong> (first-in first-out). Start by putting the source in the queue. Repeatedly dequeue a vertex, look at all its neighbors, enqueue any not yet visited.</p>
+  </div>
+
+  <!-- BFS INTERACTIVE -->
+  <div class="ibox" style="border-radius:0 0 14px 14px;border-top:none;margin-top:0;">
+    <div class="ibox-title">▶ BFS Step-Through</div>
+    <div class="ibox-sub">Watch BFS explore a graph level by level from vertex S</div>
+    <div class="graph-wrap">
+      <canvas id="bfsCanvas" width="860" height="280"></canvas>
+    </div>
+    <div style="margin:10px 0;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">QUEUE:</span>
+      <div class="bfs-queue" id="bfsQueue"></div>
+    </div>
+    <div style="margin:6px 0;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">DISTANCES FROM S:</span>
+      <div id="bfsDists" style="font-family:'DM Mono';font-size:.8rem;margin-top:4px;"></div>
+    </div>
+    <div class="steplog" id="bfsLog">Press Step to start BFS from vertex S.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-blue" onclick="bfsStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="bfsReset()">↺ Reset</button>
+      <button class="btn btn-green" onclick="bfsRunAll()">Run All ▶▶</button>
+    </div>
+  </div>
+
+  <!-- DIJKSTRA -->
+  <div class="card card-orange" style="margin-top:24px;margin-bottom:0;border-radius:12px 12px 0 0;border-bottom:none;">
+    <h3>🟠 Dijkstra's Algorithm   <span class="badge badge-orange">O((n+m) log n)</span></h3>
+    <p><strong>What it does:</strong> finds shortest paths from one source vertex to ALL other vertices in a <em>weighted</em> graph.</p>
+    <p><strong>Key constraint:</strong> only works when all edge weights are <strong>non-negative</strong>. If there are negative edges, it can give wrong answers.</p>
+    <p><strong>How it works:</strong> like BFS but uses a <strong>priority queue</strong> (min-heap) instead of a regular queue. Always processes the currently closest unvisited vertex next — the "greedy" choice.</p>
+    <div class="callout">
+      <div class="callout-icon">⚠️</div>
+      <p><strong>Remember:</strong> Dijkstra fails on negative edges. This is critical for Problem 5.1 where edges CAN be negative. That's why we need Floyd-Warshall instead.</p>
+    </div>
+  </div>
+
+  <div class="ibox" style="border-radius:0 0 14px 14px;border-top:none;margin-top:0;">
+    <div class="ibox-title">▶ Dijkstra Step-Through</div>
+    <div class="ibox-sub">Watch Dijkstra expand shortest paths outward from source S</div>
+    <div class="graph-wrap">
+      <canvas id="dijkCanvas" width="860" height="280"></canvas>
+    </div>
+    <div style="margin:10px 0;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">PRIORITY QUEUE (vertex: dist):</span>
+      <div class="bfs-queue" id="dijkQueue"></div>
+    </div>
+    <div style="margin:6px 0;">
+      <span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">SHORTEST DISTANCES FROM S:</span>
+      <div id="dijkDists" style="font-family:'DM Mono';font-size:.8rem;margin-top:4px;"></div>
+    </div>
+    <div class="steplog" id="dijkLog">Press Step to start Dijkstra from vertex S.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-orange" onclick="dijkStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="dijkReset()">↺ Reset</button>
+      <button class="btn btn-green" onclick="dijkRunAll()">Run All ▶▶</button>
+    </div>
+  </div>
+
+  <!-- FLOYD-WARSHALL -->
+  <div class="card card-purple" style="margin-top:24px;margin-bottom:0;border-radius:12px 12px 0 0;border-bottom:none;">
+    <h3>🟣 Floyd-Warshall   <span class="badge" style="background:rgba(179,157,219,.12);border:1px solid rgba(179,157,219,.3);color:var(--purple);">O(n³)</span></h3>
+    <p><strong>What it does:</strong> computes shortest paths between <em>every pair</em> of vertices — called "All-Pairs Shortest Paths" (APSP). It handles <strong>negative edge weights</strong> (but not negative cycles).</p>
+    <p><strong>The DP idea:</strong> for each intermediate vertex <em>k</em>, ask: "Can I improve the path from i to j by going through k?" If dist[i][k] + dist[k][j] &lt; dist[i][j], update it.</p>
+    <div class="block-math">dist[i][j] = min(dist[i][j],  dist[i][k] + dist[k][j])   for each k</div>
+    <p><strong>Why O(n³):</strong> three nested loops — for each k (n choices), for each i (n choices), for each j (n choices).</p>
+    <p><strong>The diameter connection:</strong> once Floyd-Warshall fills in all-pairs shortest paths, the <em>diameter</em> is just the maximum value in the matrix! One pass to find it.</p>
+  </div>
+
+  <div class="ibox" style="border-radius:0 0 14px 14px;border-top:none;margin-top:0;">
+    <div class="ibox-title">▶ Floyd-Warshall Matrix Animation</div>
+    <div class="ibox-sub">Watch the distance matrix fill in as we loop through intermediate vertices k</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.1em;">GRAPH</div>
+        <div class="graph-wrap" style="width:300px;">
+          <canvas id="fwGraphCanvas" width="300" height="220"></canvas>
+        </div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.1em;">DISTANCE MATRIX  <span id="fwKLabel" style="color:var(--orange);"></span></div>
+        <div id="fwMatrix"></div>
+      </div>
+    </div>
+    <div class="steplog" id="fwLog">Press Step to begin Floyd-Warshall. Orange = pivot k. Blue = cell being checked. Green = cell just improved.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn" style="background:var(--purple);color:#000;" onclick="fwStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="fwReset()">↺ Reset</button>
+      <button class="btn btn-green" onclick="fwRunAll()">Run All ▶▶</button>
+    </div>
+    <div id="fwDiameter" style="font-family:'DM Mono';font-size:.85rem;margin-top:10px;color:var(--teal);"></div>
+  </div>
+
+  <!-- DFS / SCC -->
+  <div class="card card-teal" style="margin-top:24px;">
+    <h3>🩵 DFS + Kosaraju's SCC Algorithm   <span class="badge badge-green">O(n + m)</span></h3>
+    <p><strong>DFS (Depth-First Search)</strong> dives as deep as possible before backtracking. Like exploring a maze — always go deeper until you hit a dead end, then backtrack and try another way.</p>
+    <p><strong>Strongly Connected Components (SCC)</strong> decompose a directed graph into maximal clusters where every vertex can reach every other. Kosaraju's algorithm finds all SCCs in O(n+m) using two DFS passes:</p>
+    <ol>
+      <li>Run DFS on original graph G; push vertices to a stack in <em>finish time</em> order.</li>
+      <li>Transpose G (reverse all edges) to get G<sup>T</sup>.</li>
+      <li>Run DFS on G<sup>T</sup> in the order of the stack. Each DFS tree is one SCC.</li>
+    </ol>
+    <div class="callout">
+      <div class="callout-icon">💡</div>
+      <p><strong>Why this works:</strong> if vertex A can reach B in G, then B can reach A in G<sup>T</sup>. The finish-time ordering ensures we always start a new DFS from an SCC that has no incoming edges from unvisited SCCs — so each DFS tree stays within one SCC.</p>
+    </div>
+  </div>
+
+  <!-- SCC INTERACTIVE -->
+  <div class="ibox">
+    <div class="ibox-title">🔍 SCC Visualizer</div>
+    <div class="ibox-sub">Nodes of the same color belong to the same SCC. Watch the condensation DAG form.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">ORIGINAL GRAPH</div>
+        <div class="graph-wrap">
+          <canvas id="sccCanvas" width="420" height="280"></canvas>
+        </div>
+      </div>
+      <div style="flex:1;min-width:280px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">CONDENSATION DAG</div>
+        <div class="graph-wrap">
+          <canvas id="dagCanvas" width="420" height="280"></canvas>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="sccLoad('ex1')">Example 1</button>
+      <button class="btn btn-ghost" onclick="sccLoad('ex2')">Example 2 (P5.3 style)</button>
+      <button class="btn btn-teal" onclick="computeSCC()" style="background:rgba(64,224,208,.15);border:1px solid var(--teal);color:var(--teal);">Compute SCCs →</button>
+    </div>
+    <div class="steplog" id="sccLog">Load an example then click "Compute SCCs" to see the decomposition.</div>
+    <div class="scc-legend" id="sccLegend"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PROBLEM 5.1
+     ═══════════════════════════════════════════ -->
+<div id="p51">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 5.1</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">10 pts — Graph Diameter</span>
+  </div>
+
+  <h2>Finding the Diameter of a Graph</h2>
+
+  <div class="problem-block">
+    <span class="qlabel">The Question</span>
+    <p>Given a <strong>weighted strongly connected directed graph G</strong> that may have <strong>negative edges</strong> (but no negative cycles), find the <strong>diameter</strong> — the largest shortest-path distance between any two vertices — in <strong>O(n³) time</strong>.</p>
+    <div class="block-math">diameter(G) = max{ distance(u,v) | u,v ∈ V }</div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-icon">🤔</div>
+    <p><strong>Let's think before coding.</strong> What does "diameter" mean intuitively? It's asking: among all pairs of vertices, what's the longest <em>shortest</em> path? The "worst case" travel distance in the graph.</p>
+  </div>
+
+  <h3>Step 1: Identify What You Need</h3>
+  <p>To find the maximum over all pairs, you first need the <em>shortest path for every pair</em>. That's All-Pairs Shortest Paths (APSP).</p>
+
+  <div class="two-col">
+    <div class="card card-red">
+      <h4>Why Not Dijkstra n Times?</h4>
+      <p>Running Dijkstra from every vertex would give APSP in <span class="math">O(n(n+m) log n)</span>. But <strong>Dijkstra fails on negative edges!</strong> The problem says edges can be negative.</p>
+      <p>So Dijkstra is out.</p>
+    </div>
+    <div class="card card-green">
+      <h4>Why Floyd-Warshall?</h4>
+      <p>Floyd-Warshall handles negative edges (just not negative cycles, which we're told don't exist). Its runtime is exactly <span class="math">O(n³)</span> — which matches what the problem asks for.</p>
+      <p>Perfect fit. ✓</p>
+    </div>
+  </div>
+
+  <h3>Step 2: The Algorithm</h3>
+
+  <pre><span class="fn">DIAMETER</span>(G):
+  <span class="cm">// Step 1: Run Floyd-Warshall to get all-pairs shortest paths</span>
+  dist ← <span class="nu">n×n</span> matrix, <span class="kw">initialized</span> as:
+    dist[i][i] = <span class="nu">0</span>  <span class="cm">// distance from v to itself = 0</span>
+    dist[i][j] = weight(i→j)  <span class="cm">// if edge exists</span>
+    dist[i][j] = ∞             <span class="cm">// if no direct edge</span>
+
+  <span class="kw">for</span> k = <span class="nu">1</span> to n:          <span class="cm">// try each vertex as intermediate</span>
+    <span class="kw">for</span> i = <span class="nu">1</span> to n:
+      <span class="kw">for</span> j = <span class="nu">1</span> to n:
+        <span class="kw">if</span> dist[i][k] + dist[k][j] &lt; dist[i][j]:
+          dist[i][j] = dist[i][k] + dist[k][j]
+
+  <span class="cm">// Step 2: Find the maximum over all pairs</span>
+  diameter ← -∞
+  <span class="kw">for</span> i = <span class="nu">1</span> to n:
+    <span class="kw">for</span> j = <span class="nu">1</span> to n:
+      diameter = <span class="fn">max</span>(diameter, dist[i][j])
+
+  <span class="kw">return</span> diameter</pre>
+
+  <h3>Step 3: Understand Why It's Correct</h3>
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Why does Floyd-Warshall give correct distances even with negative edges?</div>
+    <div class="acc-b">
+      <p>Floyd-Warshall uses dynamic programming, not a greedy approach like Dijkstra. It considers <em>all possible intermediate vertices</em> systematically. At step k, dist[i][j] holds the shortest path from i to j using only vertices {1, 2, ..., k} as intermediates.</p>
+      <p>This correctness doesn't depend on edge signs — it works as long as there's no negative cycle (otherwise the "shortest path" would be -∞ because you'd loop forever). The problem guarantees no negative cycles, so we're safe.</p>
+    </div>
+  </div>
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Why can we just take the max of the dist matrix?</div>
+    <div class="acc-b">
+      <p>After Floyd-Warshall, dist[i][j] holds the <em>shortest path distance</em> from i to j for every pair (i,j). The diameter is defined as max{distance(u,v) | u,v ∈ V}. So we just scan all entries of the matrix and take the maximum. This final scan is O(n²), which is dominated by the O(n³) Floyd-Warshall step.</p>
+      <p>The graph is <em>strongly connected</em>, so no dist[i][j] entry will be ∞ — every vertex can reach every other. If the graph weren't strongly connected, we'd need to handle ∞ entries carefully.</p>
+    </div>
+  </div>
+
+  <h3>Step 4: Runtime Analysis</h3>
+  <div class="card card-blue">
+    <table class="dtable">
+      <thead><tr><th>Step</th><th>Operation</th><th>Runtime</th></tr></thead>
+      <tbody>
+        <tr class="hl-orange"><td>1</td><td>Initialize dist matrix</td><td>O(n² + m)</td></tr>
+        <tr class="hl-blue"><td>2</td><td>Floyd-Warshall triple loop</td><td><strong>O(n³)</strong></td></tr>
+        <tr class="hl-orange"><td>3</td><td>Find max in matrix</td><td>O(n²)</td></tr>
+        <tr class="hl-green"><td>—</td><td><strong>Total</strong></td><td><strong>O(n³)</strong> ✓</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.88rem;color:var(--muted);">O(n³) dominates O(n²) and O(n²+m), so the total is O(n³) — exactly what the problem requires.</p>
+  </div>
+
+  <!-- INTERACTIVE 5.1 -->
+  <div class="ibox">
+    <div class="ibox-title">🎯 Problem 5.1 — Live Diameter Demo</div>
+    <div class="ibox-sub">Run Floyd-Warshall on a weighted graph with negative edges, then find the diameter</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">WEIGHTED GRAPH (with negative edge)</div>
+        <div class="graph-wrap">
+          <canvas id="diamCanvas" width="380" height="260"></canvas>
+        </div>
+        <div id="diamLegend" style="font-family:'DM Mono';font-size:.75rem;margin-top:6px;color:var(--muted);line-height:1.8;"></div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">ALL-PAIRS SHORTEST PATHS MATRIX</div>
+        <div id="diamMatrix"></div>
+        <div id="diamResult" style="font-family:'DM Mono';font-size:.88rem;margin-top:10px;"></div>
+      </div>
+    </div>
+    <div class="steplog" id="diamLog">Click "Run Floyd-Warshall" to compute all-pairs shortest paths, then find the diameter.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-blue" onclick="runDiamFW()">Run Floyd-Warshall</button>
+      <button class="btn btn-ghost" onclick="resetDiam()">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="card card-green" style="margin-top:8px;">
+    <h3>📝 Exam Answer Template</h3>
+    <p><strong>Algorithm:</strong> Run Floyd-Warshall on G to compute all-pairs shortest paths in O(n³). Then scan the resulting dist[i][j] matrix to find the maximum value; this is the diameter. Total time: O(n³).</p>
+    <p><strong>Why Floyd-Warshall and not Dijkstra:</strong> G may have negative edge weights, and Dijkstra's algorithm is not correct on graphs with negative edges. Floyd-Warshall handles negative edges correctly as long as there are no negative cycles (which we are guaranteed).</p>
+    <p><strong>Why the max is the diameter:</strong> After Floyd-Warshall, dist[i][j] = shortest path from i to j for all i,j. The diameter is by definition max{dist(u,v)} over all pairs, so we simply take the max over all entries.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PROBLEM 5.2
+     ═══════════════════════════════════════════ -->
+<div id="p52">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 5.2</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">13 pts — Closest Reachable Vertex</span>
+  </div>
+
+  <h2>The Closest Vertex Reachable by Both x and y</h2>
+
+  <div class="problem-block">
+    <span class="qlabel">The Question</span>
+    <p>Unweighted directed graph (all edges weight 1). Given distinct vertices <strong>x</strong> and <strong>y</strong>, find the vertex <em>v</em> such that:</p>
+    <ul>
+      <li>v is reachable from x</li>
+      <li>v is also reachable by y (y can reach v)</li>
+      <li>Among all such v, the distance from x to v is <strong>minimized</strong></li>
+    </ul>
+    <p>Runtime must be <strong>O(m)</strong>. (m = number of edges)</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-icon">🤔</div>
+    <p><strong>Read carefully.</strong> The problem says v must be reachable FROM x (x→v), and reachable BY y (y→v). So both x and y have paths <em>to</em> v. We want the v closest to x that y can also reach.</p>
+  </div>
+
+  <h3>Breaking It Down — What Do We Need?</h3>
+
+  <div class="two-col">
+    <div class="card card-blue">
+      <h4>Condition 1: Reachable from x</h4>
+      <p>We need all vertices reachable from x, and their distances. Since the graph is unweighted (weight 1 per edge), <strong>BFS from x</strong> gives us this in O(n+m) = O(m).</p>
+    </div>
+    <div class="card card-teal">
+      <h4>Condition 2: Reachable by y</h4>
+      <p>We need all vertices that y can reach. That's: run <strong>BFS from y</strong> on the original graph. Any vertex v in this BFS result is reachable from y, so y can "reach" v.</p>
+    </div>
+  </div>
+
+  <h3>The Key Insight: BFS Order Gives Us the Answer</h3>
+
+  <div class="card card-orange">
+    <h3>Why BFS Order Matters</h3>
+    <p>BFS from x visits vertices in <em>non-decreasing order of distance from x</em>. That means the first vertex we encounter that satisfies both conditions (reachable from x AND reachable from y) is automatically the <em>closest</em> such vertex to x.</p>
+    <p>This is the magic of BFS for unweighted graphs — the order of discovery IS the order of distance.</p>
+  </div>
+
+  <h3>The Algorithm</h3>
+
+  <pre><span class="fn">CLOSEST_REACHABLE</span>(G, x, y):
+  <span class="cm">// Step 1: BFS from y — find all vertices y can reach</span>
+  reachableByY ← <span class="fn">BFS</span>(G, y)  <span class="cm">// returns set of reachable vertices</span>
+
+  <span class="cm">// Step 2: BFS from x — visit vertices in order of distance</span>
+  <span class="cm">// The FIRST vertex we see that's also in reachableByY is the answer</span>
+  queue ← [x]
+  visited ← {x}
+  <span class="kw">while</span> queue <span class="kw">not empty</span>:
+    v ← <span class="fn">dequeue</span>(queue)
+    <span class="kw">if</span> v <span class="kw">in</span> reachableByY:
+      <span class="kw">return</span> v          <span class="cm">// closest vertex reachable by both!</span>
+    <span class="kw">for</span> neighbor w <span class="kw">of</span> v:
+      <span class="kw">if</span> w <span class="kw">not in</span> visited:
+        visited.<span class="fn">add</span>(w)
+        <span class="fn">enqueue</span>(queue, w)
+
+  <span class="kw">return</span> null  <span class="cm">// problem guarantees this won't happen</span></pre>
+
+  <div class="callout">
+    <div class="callout-icon">💡</div>
+    <p><strong>Note:</strong> x itself might be the answer — if y can reach x, then x is distance 0 from itself, which is minimal. The problem tells us to handle this case.</p>
+  </div>
+
+  <h3>Runtime Analysis</h3>
+  <div class="card card-blue">
+    <table class="dtable">
+      <thead><tr><th>Step</th><th>Operation</th><th>Runtime</th></tr></thead>
+      <tbody>
+        <tr class="hl-blue"><td>1</td><td>BFS from y → find reachableByY</td><td>O(n + m)</td></tr>
+        <tr class="hl-orange"><td>2</td><td>BFS from x → scan in distance order</td><td>O(n + m)</td></tr>
+        <tr class="hl-green"><td>—</td><td><strong>Total</strong></td><td><strong>O(n + m) = O(m)</strong> ✓</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.88rem;color:var(--muted);">Since m ≥ n-1 in a connected graph (and m > 0 is given), O(n+m) = O(m).</p>
+  </div>
+
+  <!-- INTERACTIVE 5.2 -->
+  <div class="ibox">
+    <div class="ibox-title">🎯 Problem 5.2 — Interactive Demo</div>
+    <div class="ibox-sub">Choose x and y, then watch the two BFS passes find the closest shared vertex</div>
+    <div class="graph-wrap">
+      <canvas id="p52Canvas" width="860" height="300"></canvas>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;align-items:center;">
+      <span style="font-family:'DM Mono';font-size:.8rem;color:var(--muted);">Source x:</span>
+      <select id="p52x" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-family:'DM Mono';font-size:.8rem;"></select>
+      <span style="font-family:'DM Mono';font-size:.8rem;color:var(--muted);">Source y:</span>
+      <select id="p52y" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-family:'DM Mono';font-size:.8rem;"></select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+      <button class="btn btn-teal" onclick="runP52Step1()" style="background:rgba(64,224,208,.15);border:1px solid var(--teal);color:var(--teal);">Step 1: BFS from y</button>
+      <button class="btn btn-blue" onclick="runP52Step2()">Step 2: BFS from x →</button>
+      <button class="btn btn-ghost" onclick="resetP52()">↺ Reset</button>
+    </div>
+    <div class="steplog" id="p52Log">Select x and y, then run Step 1 (BFS from y to find what y can reach).</div>
+    <div id="p52Result" style="font-family:'DM Mono';font-size:.85rem;margin-top:8px;color:var(--green);"></div>
+  </div>
+
+  <div class="card card-green" style="margin-top:8px;">
+    <h3>📝 Exam Answer Template</h3>
+    <p><strong>Algorithm:</strong></p>
+    <ol style="font-size:.9rem;">
+      <li>Run BFS from y on G. Record all vertices reachable from y in a set R_y. This takes O(n+m).</li>
+      <li>Run BFS from x on G. Process vertices in BFS order (i.e., non-decreasing distance from x). Return the first vertex v encountered such that v ∈ R_y. This takes O(n+m).</li>
+    </ol>
+    <p><strong>Correctness:</strong> BFS from x visits vertices in non-decreasing order of distance from x (since the graph is unweighted). The first vertex seen that's also in R_y is the closest vertex to x that y can also reach. Checking membership in R_y takes O(1) with a hash set or boolean array.</p>
+    <p><strong>Runtime:</strong> Two BFS passes, each O(n+m) = O(m). Total O(m). ✓</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PROBLEM 5.3
+     ═══════════════════════════════════════════ -->
+<div id="p53">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 5.3</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">17 pts — Somewhat-Connected</span>
+  </div>
+
+  <h2>Is the Graph "Somewhat-Connected"?</h2>
+
+  <div class="problem-block">
+    <span class="qlabel">The Question</span>
+    <p>A directed graph G is <strong>"somewhat-connected"</strong> if for every pair of vertices u,v, either there's a path from u to v, OR a path from v to u (or both). Check this in <strong>O(m + n)</strong>.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-icon">🤔</div>
+    <p><strong>Understand the definition first.</strong> "Somewhat-connected" means no pair of vertices is completely isolated from each other. For any u,v, at least one of them can reach the other. It's weaker than "strongly connected" (where both must reach each other) but stronger than nothing.</p>
+  </div>
+
+  <h3>Step 1: Build Intuition With Examples</h3>
+
+  <div class="two-col">
+    <div class="card card-green">
+      <h4>✅ Somewhat-Connected</h4>
+      <p>A→B→C→D. For any pair: A can reach B,C,D. B can reach C,D. C can reach D. For the pair (D,A): D can't reach A, but A can reach D. ✓</p>
+      <p>A simple directed path through all vertices is always somewhat-connected.</p>
+    </div>
+    <div class="card card-red">
+      <h4>❌ NOT Somewhat-Connected</h4>
+      <p>A→B and C→D (two separate components). The pair (B,C): B can't reach C, and C can't reach B. ✗</p>
+      <p>Any two vertices with no path in either direction = NOT somewhat-connected.</p>
+    </div>
+  </div>
+
+  <h3>Step 2: The SCC Insight</h3>
+
+  <div class="card card-teal">
+    <h3>Key Observation</h3>
+    <p>Collapse each SCC to a single node. You get the <strong>condensation DAG</strong>. The original graph is somewhat-connected if and only if the condensation DAG is somewhat-connected.</p>
+    <p>Why? Because all vertices within the same SCC can reach each other (that's the definition of SCC). So for any pair (u,v) within the same SCC, both can reach each other. The only pairs we need to worry about are those in <em>different</em> SCCs.</p>
+  </div>
+
+  <h3>Step 3: When Is a DAG Somewhat-Connected?</h3>
+
+  <div class="card card-orange">
+    <h3>The Topological Order Observation</h3>
+    <p>A DAG has a topological ordering — a linear ordering of vertices where all edges go "forward" (left to right). The DAG is somewhat-connected if and only if this topological ordering forms a <strong>Hamiltonian path</strong> — meaning there's an edge between every consecutive pair in the ordering.</p>
+    <div class="block-math">DAG is somewhat-connected  ⟺  topological order is: v₁→v₂→v₃→...→vₙ (with direct edges)</div>
+    <p>In other words: the condensation DAG is somewhat-connected iff its topological ordering has an edge from each node to the next one. If any consecutive pair is missing an edge, those two SCC-nodes have no path between them.</p>
+  </div>
+
+  <h3>Step 4: The Algorithm</h3>
+
+  <pre><span class="fn">SOMEWHAT_CONNECTED</span>(G):
+  <span class="cm">// Step 1: Find all SCCs using Kosaraju's (or Tarjan's)</span>
+  SCCs ← <span class="fn">KOSARAJU</span>(G)   <span class="cm">// O(n+m)</span>
+
+  <span class="cm">// Step 2: Build the condensation DAG</span>
+  condDAG ← <span class="fn">BUILD_CONDENSATION</span>(G, SCCs)  <span class="cm">// O(n+m)</span>
+
+  <span class="cm">// Step 3: Topological sort the condensation DAG</span>
+  topoOrder ← <span class="fn">TOPO_SORT</span>(condDAG)  <span class="cm">// O(b + edges_in_DAG) = O(n+m)</span>
+
+  <span class="cm">// Step 4: Check if consecutive nodes in topo order have a direct edge</span>
+  <span class="kw">for</span> i = <span class="nu">0</span> to len(topoOrder) - <span class="nu">2</span>:
+    u ← topoOrder[i]
+    v ← topoOrder[i+1]
+    <span class="kw">if</span> edge (u→v) <span class="kw">not in</span> condDAG:
+      <span class="kw">return</span> <span class="st">false</span>   <span class="cm">// this pair has no path in either direction!</span>
+
+  <span class="kw">return</span> <span class="st">true</span></pre>
+
+  <div class="acc" style="margin-top:16px;">
+    <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> Why does checking consecutive topo-order pairs work?</div>
+    <div class="acc-b">
+      <p>In a topological ordering of a DAG, edges can only go "forward" (from earlier to later in the order). For any pair (u,v) where u comes before v in the ordering: u can reach v IF AND ONLY IF there's a forward path u→...→v in the DAG.</p>
+      <p>For "somewhat-connected", we need: for every pair (u,v), either u can reach v or v can reach u. In the topological order, if u comes before v, we need u to be able to reach v (v can't reach u since edges only go forward).</p>
+      <p>If u and v are consecutive in the topological order (no vertex between them), the ONLY way u can reach v is if there's a direct edge u→v. If that edge is missing, no forward path exists either (since there's no intermediate vertex to route through). So u can't reach v, and v can't reach u → NOT somewhat-connected.</p>
+      <p>This argument works because we're checking ALL consecutive pairs in the topological order — which covers all possible "gaps" in reachability.</p>
+    </div>
+  </div>
+
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)"><span class="acc-icon">▶</span> What about non-consecutive pairs in the topo order?</div>
+    <div class="acc-b">
+      <p>If every consecutive pair (v_i, v_{i+1}) has a direct edge, then by transitivity: v_1 can reach v_2, v_2 can reach v_3, so v_1 can reach v_3, etc. All earlier vertices can reach all later vertices. So all pairs are covered. ✓</p>
+    </div>
+  </div>
+
+  <h3>Runtime Analysis</h3>
+  <div class="card card-blue">
+    <table class="dtable">
+      <thead><tr><th>Step</th><th>Operation</th><th>Runtime</th></tr></thead>
+      <tbody>
+        <tr class="hl-orange"><td>1</td><td>Kosaraju's SCC algorithm</td><td>O(n + m)</td></tr>
+        <tr class="hl-blue"><td>2</td><td>Build condensation DAG</td><td>O(n + m)</td></tr>
+        <tr class="hl-orange"><td>3</td><td>Topological sort the DAG</td><td>O(b + edges in DAG) ≤ O(n + m)</td></tr>
+        <tr class="hl-blue"><td>4</td><td>Check consecutive edges</td><td>O(b) ≤ O(n)</td></tr>
+        <tr class="hl-green"><td>—</td><td><strong>Total</strong></td><td><strong>O(n + m)</strong> ✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- INTERACTIVE 5.3 -->
+  <div class="ibox">
+    <div class="ibox-title">🎯 Problem 5.3 — Somewhat-Connected Checker</div>
+    <div class="ibox-sub">See the SCC decomposition, condensation DAG, and topological order check in action</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-ghost" onclick="p53Load('yes')">✅ Example: IS somewhat-connected</button>
+      <button class="btn btn-ghost" onclick="p53Load('no')">❌ Example: NOT somewhat-connected</button>
+      <button class="btn btn-ghost" onclick="p53Load('chain')">Chain graph</button>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">ORIGINAL GRAPH (colored by SCC)</div>
+        <div class="graph-wrap"><canvas id="p53Canvas" width="420" height="270"></canvas></div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'DM Mono';font-size:10px;color:var(--muted);margin-bottom:6px;">CONDENSATION DAG + TOPO ORDER</div>
+        <div class="graph-wrap"><canvas id="p53DagCanvas" width="420" height="270"></canvas></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
+      <button class="btn btn-blue" onclick="runP53()">Run Algorithm →</button>
+      <button class="btn btn-ghost" onclick="resetP53()">↺ Reset</button>
+    </div>
+    <div class="steplog" id="p53Log">Load an example, then click Run Algorithm.</div>
+    <div id="p53Result" style="font-family:'DM Mono';font-size:1rem;font-weight:700;margin-top:8px;"></div>
+  </div>
+
+  <div class="card card-green" style="margin-top:8px;">
+    <h3>📝 Exam Answer Template</h3>
+    <p><strong>Algorithm:</strong></p>
+    <ol style="font-size:.9rem;">
+      <li>Compute all SCCs of G using Kosaraju's algorithm in O(n+m). Build the condensation DAG C.</li>
+      <li>Compute a topological ordering of C in O(b + |edges of C|) ≤ O(n+m).</li>
+      <li>Check whether every consecutive pair in the topological ordering has a direct edge. If yes, return true (somewhat-connected). If any consecutive pair has no edge, return false.</li>
+    </ol>
+    <p><strong>Correctness:</strong> Vertices within the same SCC can always reach each other. For vertices in different SCCs, we need at least one direction of reachability. In the condensation DAG, the topological ordering places all reachable vertices "after" their predecessors. G is somewhat-connected iff the condensation DAG has a Hamiltonian path, which in a DAG is equivalent to every consecutive pair in the topological ordering being connected by a direct edge.</p>
+    <p><strong>Runtime:</strong> All steps are O(n+m). Total O(n+m). ✓</p>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div class="sec-head" style="margin-top:60px;">
+    <span class="sec-tag">Summary</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">Everything on One Page</span>
+  </div>
+
+  <h2>Section 5 — Complete Cheat Sheet</h2>
+
+  <table class="dtable" style="margin-bottom:24px;">
+    <thead><tr><th>Problem</th><th>Key Idea</th><th>Algorithm Used</th><th>Runtime</th></tr></thead>
+    <tbody>
+      <tr class="hl-blue"><td><strong>5.1 Diameter</strong></td><td>Max of all-pairs shortest paths</td><td>Floyd-Warshall → find max in matrix</td><td>O(n³)</td></tr>
+      <tr class="hl-orange"><td><strong>5.2 Closest</strong></td><td>BFS from y finds what y reaches; BFS from x finds first overlap</td><td>2× BFS</td><td>O(m)</td></tr>
+      <tr class="hl-green"><td><strong>5.3 Somewhat</strong></td><td>SCCs collapse to DAG; check if DAG is a chain</td><td>Kosaraju + Topo Sort</td><td>O(n+m)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="card card-blue">
+      <h4>Algorithm Selection Guide</h4>
+      <p><strong>Unweighted, 1 source:</strong> BFS → O(n+m)</p>
+      <p><strong>Weighted ≥ 0, 1 source:</strong> Dijkstra → O((n+m)logn)</p>
+      <p><strong>Weighted (neg ok), all pairs:</strong> Floyd-Warshall → O(n³)</p>
+      <p><strong>Reachability, SCCs:</strong> DFS/Kosaraju → O(n+m)</p>
+    </div>
+    <div class="card card-orange">
+      <h4>Common Mistakes</h4>
+      <p>❌ Using Dijkstra when there are negative edges</p>
+      <p>❌ Using Floyd-Warshall when asked for O(m) or O(n+m)</p>
+      <p>❌ Forgetting BFS gives shortest paths only for unweighted graphs</p>
+      <p>❌ Not building the condensation DAG for SCC problems</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<footer>CS161 · Winter 2024 · Section 5 Graph Mania · Prepared for exam tutoring session</footer>
+
+<script>
+// ═══════════════════════════════════════════
+// PROGRESS BAR
+// ═══════════════════════════════════════════
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  document.getElementById('pbar').style.transform=`scaleX(${p})`;
+});
+
+// ═══════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════
+function toggleAcc(h){
+  const b=h.nextElementSibling;
+  h.classList.toggle('open');
+  b.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════
+// CANVAS UTILITIES
+// ═══════════════════════════════════════════
+const COLORS={
+  node:'#1e2d3d', nodeStroke:'#4ea8ff', text:'#dce8f0',
+  edge:'#3a5060', edgeActive:'#4ea8ff', edgeVisited:'#3dd68c',
+  visited:'rgba(61,214,140,0.2)', current:'rgba(255,179,71,0.3)',
+  sourceNode:'rgba(78,168,255,0.3)', highlight:'rgba(255,107,107,0.3)',
+  sccColors:['#4ea8ff','#3dd68c','#ffb347','#ff6b6b','#b39ddb','#40e0d0','#f9a8d4','#fde68a']
+};
+
+function drawArrow(ctx,x1,y1,x2,y2,color='#3a5060',width=1.5,r=22){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1)return;
+  const ux=dx/len,uy=dy/len;
+  const sx=x1+ux*r,sy=y1+uy*r,ex=x2-ux*r,ey=y2-uy*r;
+  const alen=10,awidth=6;
+  const ax=ex-ux*alen,ay=ey-uy*alen;
+  const px=-uy,py=ux;
+  ctx.beginPath();
+  ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
+  ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(ex,ey);
+  ctx.lineTo(ax+px*awidth,ay+py*awidth);
+  ctx.lineTo(ax-px*awidth,ay-py*awidth);
+  ctx.closePath();ctx.fillStyle=color;ctx.fill();
+}
+
+function drawNode(ctx,x,y,label,fillColor='#1e2d3d',strokeColor='#4ea8ff',textColor='#dce8f0',r=22){
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=fillColor;ctx.fill();
+  ctx.strokeStyle=strokeColor;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=textColor;ctx.font='bold 13px DM Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,x,y);
+}
+
+function drawWeightLabel(ctx,x1,y1,x2,y2,w,color='#ffb347'){
+  const mx=(x1+x2)/2,my=(y1+y2)/2;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  const px=-dy/len*10,py=dx/len*10;
+  ctx.fillStyle=color;ctx.font='11px DM Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(w,mx+px,my+py);
+}
+
+// ═══════════════════════════════════════════
+// INTRO GRAPH BUILDER
+// ═══════════════════════════════════════════
+let introNodes=[], introEdges=[], introSelected=null, introDragging=null, iMode='drag';
+const introC=document.getElementById('introCanvas');
+const introCtx=introC.getContext('2d');
+
+function introMode(m){iMode=m;introSelected=null;renderIntro();}
+function introClear(){introNodes=[];introEdges=[];introSelected=null;renderIntro();document.getElementById('introLog').textContent='Canvas cleared. Add nodes or load an example.';}
+function introLoad(type){
+  if(type==='directed'){
+    introNodes=[{x:120,y:140,label:'A'},{x:280,y:80,label:'B'},{x:450,y:140,label:'C'},{x:280,y:220,label:'D'},{x:620,y:100,label:'E'},{x:620,y:220,label:'F'}];
+    introEdges=[[0,1],[1,2],[0,3],[3,2],[2,4],[2,5],[4,5],[1,3]];
+  } else {
+    introNodes=[{x:120,y:150,label:'A'},{x:300,y:80,label:'B'},{x:480,y:150,label:'C'},{x:300,y:220,label:'D'}];
+    introEdges=[[0,1,4],[1,2,2],[0,3,1],[3,2,6],[1,3,-3]];
+  }
+  renderIntro();
+  document.getElementById('introLog').textContent=type==='directed'?'Directed graph: arrows show one-way connections. A→B means you can go from A to B but not necessarily B to A.':'Weighted directed graph: numbers on edges are costs/distances. Notice the edge B→D has weight -3 (negative!)';
+}
+
+function renderIntro(){
+  const ctx=introCtx,c=introC;
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#080c10';ctx.fillRect(0,0,c.width,c.height);
+  introEdges.forEach(e=>{
+    const a=introNodes[e[0]],b=introNodes[e[1]];
+    if(!a||!b)return;
+    const color=e===introSelected?COLORS.edgeActive:COLORS.edge;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,color);
+    if(e[2]!==undefined)drawWeightLabel(ctx,a.x,a.y,b.x,b.y,e[2]);
+  });
+  introNodes.forEach((n,i)=>{
+    const sel=introSelected===i;
+    drawNode(ctx,n.x,n.y,n.label,sel?'rgba(78,168,255,0.3)':'#1e2d3d',sel?'#fff':COLORS.nodeStroke);
+  });
+}
+
+introC.addEventListener('click',e=>{
+  const r=introC.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(iMode==='add'){
+    introNodes.push({x:mx,y:my,label:String.fromCharCode(65+introNodes.length)});
+    renderIntro();return;
+  }
+  if(iMode==='edge'){
+    let hit=-1;
+    introNodes.forEach((n,i)=>{if(Math.hypot(n.x-mx,n.y-my)<24)hit=i;});
+    if(hit>=0){
+      if(introSelected===null){introSelected=hit;document.getElementById('introLog').textContent=`Selected ${introNodes[hit].label}. Now click another node to draw an edge.`;}
+      else if(introSelected!==hit){introEdges.push([introSelected,hit]);introSelected=null;renderIntro();}
+    }
+    return;
+  }
+  renderIntro();
+});
+
+let dragIdx=-1,dragOX=0,dragOY=0;
+introC.addEventListener('mousedown',e=>{
+  if(iMode!=='drag')return;
+  const r=introC.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  introNodes.forEach((n,i)=>{if(Math.hypot(n.x-mx,n.y-my)<24){dragIdx=i;dragOX=mx-n.x;dragOY=my-n.y;}});
+});
+introC.addEventListener('mousemove',e=>{
+  if(dragIdx<0||iMode!=='drag')return;
+  const r=introC.getBoundingClientRect();
+  introNodes[dragIdx].x=e.clientX-r.left-dragOX;
+  introNodes[dragIdx].y=e.clientY-r.top-dragOY;
+  renderIntro();
+});
+introC.addEventListener('mouseup',()=>{dragIdx=-1;});
+introLoad('directed');
+
+// ═══════════════════════════════════════════
+// BFS VISUALIZER
+// ═══════════════════════════════════════════
+const BFS_G={
+  nodes:[{x:80,y:140,label:'S'},{x:220,y:70,label:'A'},{x:220,y:210,label:'B'},{x:370,y:70,label:'C'},{x:370,y:210,label:'D'},{x:500,y:140,label:'E'},{x:650,y:140,label:'F'}],
+  edges:[[0,1],[0,2],[1,3],[1,4],[2,4],[3,5],[4,5],[5,6]]
+};
+let bfsState={queue:[],visited:{},dist:{},parent:{},step:0,done:false,current:-1};
+
+function bfsReset(){
+  bfsState={queue:[],visited:{},dist:{},parent:{},step:0,done:false,current:-1};
+  renderBFS();
+  document.getElementById('bfsQueue').innerHTML='';
+  document.getElementById('bfsDists').textContent='';
+  document.getElementById('bfsLog').textContent='Press Step to start BFS from vertex S.';
+}
+
+function renderBFS(){
+  const ctx=document.getElementById('bfsCanvas').getContext('2d');
+  const c=document.getElementById('bfsCanvas');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle='#080c10';ctx.fillRect(0,0,c.width,c.height);
+  BFS_G.edges.forEach(e=>{
+    const a=BFS_G.nodes[e[0]],b=BFS_G.nodes[e[1]];
+    const inPath=bfsState.parent[e[1]]===e[0]||bfsState.parent[e[0]]===e[1];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,inPath?'#3dd68c':COLORS.edge,inPath?2.5:1.5);
+  });
+  BFS_G.nodes.forEach((n,i)=>{
+    let fill='#1e2d3d',stroke=COLORS.nodeStroke;
+    if(i===0){fill='rgba(78,168,255,0.3)';stroke='#4ea8ff';}
+    if(bfsState.visited[i]){fill='rgba(61,214,140,0.25)';stroke='#3dd68c';}
+    if(bfsState.current===i){fill='rgba(255,179,71,0.35)';stroke='#ffb347';}
+    const d=bfsState.dist[i]!==undefined?bfsState.dist[i]:'?';
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke);
+    if(bfsState.dist[i]!==undefined){
+      ctx.fillStyle='#ffb347';ctx.font='10px DM Mono,monospace';
+      ctx.textAlign='center';ctx.fillText('d='+d,n.x,n.y+34);
+    }
+  });
+}
+
+function bfsStep(){
+  if(bfsState.done){document.getElementById('bfsLog').textContent='BFS complete!';return;}
+  if(bfsState.step===0){
+    bfsState.queue=[0];bfsState.visited[0]=true;bfsState.dist[0]=0;
+    bfsState.step=1;renderBFS();
+    document.getElementById('bfsLog').textContent='Initialize: put S in queue with distance 0.';
+    renderBFSQueue();renderBFSDists();return;
+  }
+  if(bfsState.queue.length===0){bfsState.done=true;document.getElementById('bfsLog').textContent='✅ BFS complete! All reachable vertices visited.';return;}
+  const v=bfsState.queue.shift();bfsState.current=v;
+  const neighbors=BFS_G.edges.filter(e=>e[0]===v).map(e=>e[1]);
+  const newNodes=[];
+  neighbors.forEach(w=>{
+    if(!bfsState.visited[w]){
+      bfsState.visited[w]=true;
+      bfsState.dist[w]=bfsState.dist[v]+1;
+      bfsState.parent[w]=v;
+      bfsState.queue.push(w);
+      newNodes.push(BFS_G.nodes[w].label);
+    }
+  });
+  renderBFS();renderBFSQueue();renderBFSDists();
+  document.getElementById('bfsLog').textContent=`Dequeued ${BFS_G.nodes[v].label} (dist=${bfsState.dist[v]}). `+(newNodes.length?`Added neighbors: ${newNodes.join(', ')}.`:'No new neighbors.');
+}
+
+function renderBFSQueue(){
+  const el=document.getElementById('bfsQueue');
+  el.innerHTML=bfsState.queue.map(i=>`<div class="bfs-qitem">${BFS_G.nodes[i].label}(d=${bfsState.dist[i]})</div>`).join('');
+}
+function renderBFSDists(){
+  const d=bfsState.dist;
+  document.getElementById('bfsDists').textContent=BFS_G.nodes.map((n,i)=>d[i]!==undefined?`${n.label}:${d[i]}`:'').filter(Boolean).join('  ');
+}
+function bfsRunAll(){while(!bfsState.done&&bfsState.step<20)bfsStep();}
+bfsReset();
+
+// ═══════════════════════════════════════════
+// DIJKSTRA VISUALIZER
+// ═══════════════════════════════════════════
+const DIJK_G={
+  nodes:[{x:80,y:140,label:'S'},{x:230,y:70,label:'A'},{x:230,y:210,label:'B'},{x:380,y:70,label:'C'},{x:380,y:210,label:'D'},{x:530,y:140,label:'E'},{x:670,y:140,label:'F'}],
+  edges:[[0,1,4],[0,2,2],[1,3,5],[1,2,1],[2,4,8],[2,3,9],[3,5,2],[4,3,6],[4,5,3],[5,6,1]]
+};
+let dijkState={dist:{},prev:{},visited:{},pq:[],step:0,done:false,current:-1};
+
+function dijkReset(){
+  dijkState={dist:{},prev:{},visited:{},pq:[],step:0,done:false,current:-1};
+  renderDijk();
+  document.getElementById('dijkQueue').innerHTML='';
+  document.getElementById('dijkDists').textContent='';
+  document.getElementById('dijkLog').textContent='Press Step to start Dijkstra from vertex S.';
+}
+
+function renderDijk(){
+  const ctx=document.getElementById('dijkCanvas').getContext('2d');
+  const c=document.getElementById('dijkCanvas');
+  ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#080c10';ctx.fillRect(0,0,c.width,c.height);
+  DIJK_G.edges.forEach(e=>{
+    const a=DIJK_G.nodes[e[0]],b=DIJK_G.nodes[e[1]];
+    const inSP=dijkState.prev[e[1]]===e[0];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,inSP?'#3dd68c':COLORS.edge,inSP?2.5:1.5);
+    drawWeightLabel(ctx,a.x,a.y,b.x,b.y,e[2]);
+  });
+  DIJK_G.nodes.forEach((n,i)=>{
+    let fill='#1e2d3d',stroke=COLORS.nodeStroke;
+    if(i===0){fill='rgba(78,168,255,0.25)';stroke='#4ea8ff';}
+    if(dijkState.visited[i]){fill='rgba(61,214,140,0.2)';stroke='#3dd68c';}
+    if(dijkState.current===i){fill='rgba(255,179,71,0.3)';stroke='#ffb347';}
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke);
+    const d=dijkState.dist[i];
+    if(d!==undefined){
+      ctx.fillStyle=dijkState.visited[i]?'#3dd68c':'#ffb347';
+      ctx.font='10px DM Mono,monospace';ctx.textAlign='center';
+      ctx.fillText(d===Infinity?'∞':d,n.x,n.y+34);
+    }
+  });
+}
+
+function dijkStep(){
+  if(dijkState.done)return;
+  if(dijkState.step===0){
+    DIJK_G.nodes.forEach((_,i)=>dijkState.dist[i]=Infinity);
+    dijkState.dist[0]=0;
+    dijkState.pq=DIJK_G.nodes.map((_,i)=>i);
+    dijkState.step=1;renderDijk();
+    document.getElementById('dijkLog').textContent='Initialize: dist[S]=0, all others=∞. Add all vertices to priority queue.';
+    renderDijkQueue();renderDijkDists();return;
+  }
+  if(dijkState.pq.length===0){dijkState.done=true;document.getElementById('dijkLog').textContent='✅ Dijkstra complete!';return;}
+  dijkState.pq.sort((a,b)=>dijkState.dist[a]-dijkState.dist[b]);
+  const u=dijkState.pq.shift();
+  if(dijkState.dist[u]===Infinity){dijkState.done=true;document.getElementById('dijkLog').textContent='✅ Remaining vertices unreachable.';return;}
+  dijkState.visited[u]=true;dijkState.current=u;
+  const updates=[];
+  DIJK_G.edges.filter(e=>e[0]===u).forEach(e=>{
+    const v=e[1],w=e[2];
+    if(!dijkState.visited[v]&&dijkState.dist[u]+w<dijkState.dist[v]){
+      dijkState.dist[v]=dijkState.dist[u]+w;
+      dijkState.prev[v]=u;
+      updates.push(`${DIJK_G.nodes[v].label}→${dijkState.dist[v]}`);
+    }
+  });
+  renderDijk();renderDijkQueue();renderDijkDists();
+  document.getElementById('dijkLog').textContent=`Process ${DIJK_G.nodes[u].label} (dist=${dijkState.dist[u]}). `+(updates.length?`Updated: ${updates.join(', ')}.`:'No improvements.');
+}
+
+function renderDijkQueue(){
+  const el=document.getElementById('dijkQueue');
+  el.innerHTML=dijkState.pq.slice(0,8).map(i=>`<div class="bfs-qitem ${i===dijkState.current?'current':''}">${DIJK_G.nodes[i].label}:${dijkState.dist[i]===Infinity?'∞':dijkState.dist[i]}</div>`).join('');
+}
+function renderDijkDists(){
+  document.getElementById('dijkDists').textContent=DIJK_G.nodes.map((n,i)=>{const d=dijkState.dist[i];return d!==undefined?`${n.label}:${d===Infinity?'∞':d}`:''}).filter(Boolean).join('  ');
+}
+function dijkRunAll(){while(!dijkState.done&&dijkState.step<30)dijkStep();}
+dijkReset();
+
+// ═══════════════════════════════════════════
+// FLOYD-WARSHALL
+// ═══════════════════════════════════════════
+const FW_G={
+  nodes:[{x:90,y:80,label:'A'},{x:210,y:80,label:'B'},{x:210,y:200,label:'C'},{x:90,y:200,label:'D'}],
+  edges:[[0,1,3],[1,2,1],[2,3,2],[0,3,7],[3,1,-2],[0,2,8]]
+};
+const INF=99999;
+let fwDist,fwK,fwI,fwJ,fwDone=false,fwStarted=false;
+
+function fwReset(){
+  const n=FW_G.nodes.length;
+  fwDist=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?0:INF));
+  FW_G.edges.forEach(e=>{fwDist[e[0]][e[1]]=e[2];});
+  fwK=0;fwI=0;fwJ=0;fwDone=false;fwStarted=false;
+  renderFWGraph(-1,-1);renderFWMatrix(-1,-1,-1);
+  document.getElementById('fwLog').textContent='Press Step to begin Floyd-Warshall.';
+  document.getElementById('fwKLabel').textContent='';
+  document.getElementById('fwDiameter').textContent='';
+}
+
+function renderFWGraph(activeK,activeI,activeJ){
+  const ctx=document.getElementById('fwGraphCanvas').getContext('2d');
+  const c=document.getElementById('fwGraphCanvas');
+  ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#080c10';ctx.fillRect(0,0,c.width,c.height);
+  FW_G.edges.forEach(e=>{
+    const a=FW_G.nodes[e[0]],b=FW_G.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,COLORS.edge);
+    drawWeightLabel(ctx,a.x,a.y,b.x,b.y,e[2]);
+  });
+  FW_G.nodes.forEach((n,i)=>{
+    let fill='#1e2d3d',stroke='#4ea8ff';
+    if(i===activeK){fill='rgba(255,179,71,0.3)';stroke='#ffb347';}
+    if(i===activeI||i===activeJ){fill='rgba(78,168,255,0.2)';stroke='#4ea8ff';}
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke);
+  });
+}
+
+function renderFWMatrix(k,ci,cj){
+  const n=FW_G.nodes.length;
+  const labels=FW_G.nodes.map(nd=>nd.label);
+  let html=`<div class="matrix-grid" style="grid-template-columns:repeat(${n+1},44px);">`;
+  html+=`<div class="mx-cell header"></div>`;
+  labels.forEach(l=>html+=`<div class="mx-cell header">${l}</div>`);
+  labels.forEach((rl,i)=>{
+    html+=`<div class="mx-cell header">${rl}</div>`;
+    for(let j=0;j<n;j++){
+      let cls='mx-cell';
+      if(i===k&&j===k)cls+=' pivot';
+      else if(i===ci&&j===cj)cls+=' active';
+      else if(i===k||j===k)cls+=' ';
+      const v=fwDist[i][j];
+      const disp=v===INF?'∞':(v===0&&i!==j?'∞':v);
+      if(v===INF)cls+=' inf';
+      html+=`<div class="${cls}">${disp}</div>`;
+    }
+  });
+  html+='</div>';
+  document.getElementById('fwMatrix').innerHTML=html;
+}
+
+let fwUpdates=[];
+function fwStep(){
+  if(fwDone){document.getElementById('fwLog').textContent='✅ Floyd-Warshall complete! Check diameter below.';findDiameter();return;}
+  if(!fwStarted){
+    fwStarted=true;
+    document.getElementById('fwLog').textContent='Initialized matrix with direct edge weights. ∞ = no direct edge yet.';
+    renderFWMatrix(-1,-1,-1);return;
+  }
+  const n=FW_G.nodes.length;
+  if(fwK>=n){fwDone=true;fwStep();return;}
+  const prev=fwDist[fwI][fwJ];
+  const newVal=fwDist[fwI][fwK]+fwDist[fwK][fwJ];
+  const improved=newVal<fwDist[fwI][fwJ];
+  if(improved)fwDist[fwI][fwJ]=newVal;
+  document.getElementById('fwKLabel').textContent=`k=${FW_G.nodes[fwK].label}`;
+  renderFWGraph(fwK,fwI,fwJ);
+  const cells=document.querySelectorAll('.mx-cell:not(.header)');
+  // Re-render matrix highlighting current cell
+  renderFWMatrix(fwK,fwI,fwJ);
+  if(improved){
+    document.getElementById('fwLog').textContent=`k=${FW_G.nodes[fwK].label}: dist[${FW_G.nodes[fwI].label}][${FW_G.nodes[fwJ].label}] improved: ${prev===INF?'∞':prev} → ${newVal} ✅`;
+  } else {
+    document.getElementById('fwLog').textContent=`k=${FW_G.nodes[fwK].label}: dist[${FW_G.nodes[fwI].label}][${FW_G.nodes[fwJ].label}] = ${prev===INF?'∞':prev}, via k=${FW_G.nodes[fwK].label}=${newVal===INF?'∞':newVal}. No improvement.`;
+  }
+  // Advance
+  fwJ++;
+  if(fwJ>=n){fwJ=0;fwI++;}
+  if(fwI>=n){fwI=0;fwK++;}
+}
+
+function fwRunAll(){
+  const n=FW_G.nodes.length;
+  if(!fwStarted)fwStep();
+  for(let k=0;k<n;k++)for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const nv=fwDist[i][k]+fwDist[k][j];
+    if(nv<fwDist[i][j])fwDist[i][j]=nv;
+  }
+  fwK=n;fwDone=true;
+  renderFWMatrix(-1,-1,-1);
+  document.getElementById('fwLog').textContent='✅ Floyd-Warshall complete!';
+  document.getElementById('fwKLabel').textContent='Done';
+  findDiameter();
+}
+
+function findDiameter(){
+  let diam=-INF,pi=-1,pj=-1;
+  for(let i=0;i<FW_G.nodes.length;i++)for(let j=0;j<FW_G.nodes.length;j++)
+    if(i!==j&&fwDist[i][j]<INF&&fwDist[i][j]>diam){diam=fwDist[i][j];pi=i;pj=j;}
+  if(pi>=0)document.getElementById('fwDiameter').textContent=`Diameter = ${diam}  (from ${FW_G.nodes[pi].label} to ${FW_G.nodes[pj].label})`;
+}
+fwReset();
+
+// ═══════════════════════════════════════════
+// SCC VISUALIZER
+// ═══════════════════════════════════════════
+let sccGraph={nodes:[],edges:[]},sccColors={};
+function sccLoad(ex){
+  if(ex==='ex1'){
+    sccGraph={
+      nodes:[{x:80,y:140,label:'A'},{x:200,y:80,label:'B'},{x:200,y:200,label:'C'},{x:320,y:140,label:'D'},{x:200,y:140,label:'E'}],
+      edges:[[0,1],[1,2],[2,0],[1,3],[3,4],[4,3]]
+    };
+  } else {
+    sccGraph={
+      nodes:[{x:70,y:140,label:'A'},{x:180,y:70,label:'B'},{x:290,y:140,label:'C'},{x:180,y:210,label:'D'},{x:390,y:70,label:'E'},{x:390,y:210,label:'F'}],
+      edges:[[0,1],[1,0],[1,2],[2,3],[3,0],[2,4],[4,5],[5,4]]
+    };
+  }
+  sccColors={};
+  renderSCCGraphs();
+  document.getElementById('dagCanvas').getContext('2d').clearRect(0,0,420,280);
+  document.getElementById('sccLog').textContent='Click "Compute SCCs" to find and color the strongly connected components.';
+  document.getElementById('sccLegend').innerHTML='';
+}
+
+function renderSCCGraphs(){
+  const ctx=document.getElementById('sccCanvas').getContext('2d');
+  ctx.clearRect(0,0,420,280);ctx.fillStyle='#080c10';ctx.fillRect(0,0,420,280);
+  sccGraph.edges.forEach(e=>{
+    const a=sccGraph.nodes[e[0]],b=sccGraph.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,COLORS.edge);
+  });
+  sccGraph.nodes.forEach((n,i)=>{
+    const col=sccColors[i]||COLORS.sccColors[0];
+    const fill=sccColors[i]?col+'33':('#1e2d3d');
+    drawNode(ctx,n.x,n.y,n.label,fill,sccColors[i]||'#4ea8ff','#fff');
+  });
+}
+
+function computeSCC(){
+  const n=sccGraph.nodes.length;
+  const adj=Array.from({length:n},()=>[]);
+  const radj=Array.from({length:n},()=>[]);
+  sccGraph.edges.forEach(e=>{adj[e[0]].push(e[1]);radj[e[1]].push(e[0]);});
+  const visited=new Array(n).fill(false);
+  const order=[];
+  function dfs1(v){visited[v]=true;adj[v].forEach(u=>{if(!visited[u])dfs1(u);});order.push(v);}
+  for(let i=0;i<n;i++)if(!visited[i])dfs1(i);
+  const comp=new Array(n).fill(-1);let c=0;
+  function dfs2(v,c){comp[v]=c;radj[v].forEach(u=>{if(comp[u]===-1)dfs2(u,c);});}
+  for(let i=n-1;i>=0;i--){const v=order[i];if(comp[v]===-1){dfs2(v,c);c++;}}
+  // Assign colors
+  for(let i=0;i<n;i++)sccColors[i]=COLORS.sccColors[comp[i]%COLORS.sccColors.length];
+  renderSCCGraphs();
+  // Build condensation
+  const dagNodes=[];
+  for(let i=0;i<c;i++){
+    const members=sccGraph.nodes.filter((_,j)=>comp[j]===i).map(nd=>nd.label);
+    const xs=sccGraph.nodes.filter((_,j)=>comp[j]===i).map(nd=>nd.x);
+    const ys=sccGraph.nodes.filter((_,j)=>comp[j]===i).map(nd=>nd.y);
+    dagNodes.push({x:xs.reduce((a,b)=>a+b,0)/xs.length,y:ys.reduce((a,b)=>a+b,0)/ys.length,label:`SCC${i+1}`,members,color:COLORS.sccColors[i%COLORS.sccColors.length]});
+  }
+  const dagEdgesSet=new Set();const dagEdges=[];
+  sccGraph.edges.forEach(e=>{
+    const a=comp[e[0]],b=comp[e[1]];
+    if(a!==b){const key=a+'-'+b;if(!dagEdgesSet.has(key)){dagEdgesSet.add(key);dagEdges.push([a,b]);}}
+  });
+  // Layout DAG nicely
+  const spread=360/(c||1);
+  dagNodes.forEach((nd,i)=>{nd.x=80+i*(300/Math.max(c-1,1));nd.y=140+((i%2===0)?-50:50);});
+  const dagCtx=document.getElementById('dagCanvas').getContext('2d');
+  dagCtx.clearRect(0,0,420,280);dagCtx.fillStyle='#080c10';dagCtx.fillRect(0,0,420,280);
+  dagEdges.forEach(e=>drawArrow(dagCtx,dagNodes[e[0]].x,dagNodes[e[0]].y,dagNodes[e[1]].x,dagNodes[e[1]].y,'#3a5060'));
+  dagNodes.forEach(nd=>drawNode(dagCtx,nd.x,nd.y,nd.label,'#1e2d3d',nd.color,'#fff',26));
+  // Legend
+  const leg=document.getElementById('sccLegend');
+  leg.innerHTML=dagNodes.map(nd=>`<div style="display:flex;align-items:center;gap:6px;font-family:'DM Mono';font-size:.75rem;"><span class="scc-dot" style="background:${nd.color}"></span>${nd.label}: {${nd.members.join(',')}}</div>`).join('');
+  document.getElementById('sccLog').textContent=`Found ${c} SCC(s). Each color = one SCC. Right: condensation DAG (arrows show SCC reachability).`;
+}
+sccLoad('ex1');
+
+// ═══════════════════════════════════════════
+// DIAMETER DEMO (5.1)
+// ═══════════════════════════════════════════
+const DIAM_G={
+  nodes:[{x:80,y:130,label:'A'},{x:200,y:60,label:'B'},{x:310,y:130,label:'C'},{x:200,y:200,label:'D'}],
+  edges:[[0,1,2],[1,2,3],[0,3,4],[3,2,1],[2,0,6],[1,3,-1]]
+};
+
+function resetDiam(){
+  renderDiamGraph([]);
+  document.getElementById('diamMatrix').innerHTML='';
+  document.getElementById('diamResult').textContent='';
+  document.getElementById('diamLog').textContent='Click "Run Floyd-Warshall" to compute all-pairs shortest paths, then find the diameter.';
+  document.getElementById('diamLegend').innerHTML=DIAM_G.edges.map(e=>`${DIAM_G.nodes[e[0]].label}→${DIAM_G.nodes[e[1]].label}: ${e[2]}`).join(' | ');
+}
+
+function renderDiamGraph(highlighted){
+  const ctx=document.getElementById('diamCanvas').getContext('2d');
+  ctx.clearRect(0,0,380,260);ctx.fillStyle='#080c10';ctx.fillRect(0,0,380,260);
+  DIAM_G.edges.forEach(e=>{
+    const hl=highlighted.includes(e[0]+'-'+e[1]);
+    const a=DIAM_G.nodes[e[0]],b=DIAM_G.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,hl?'#3dd68c':COLORS.edge,hl?2.5:1.5);
+    drawWeightLabel(ctx,a.x,a.y,b.x,b.y,e[2]);
+  });
+  DIAM_G.nodes.forEach(n=>drawNode(ctx,n.x,n.y,n.label));
+}
+
+function runDiamFW(){
+  const n=DIAM_G.nodes.length;
+  let d=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?0:INF));
+  DIAM_G.edges.forEach(e=>{d[e[0]][e[1]]=e[2];});
+  for(let k=0;k<n;k++)for(let i=0;i<n;i++)for(let j=0;j<n;j++)
+    if(d[i][k]+d[k][j]<d[i][j])d[i][j]=d[i][k]+d[k][j];
+  // Render matrix
+  const labels=DIAM_G.nodes.map(nd=>nd.label);
+  let diam=-INF,pi=-1,pj=-1;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)
+    if(i!==j&&d[i][j]<INF&&d[i][j]>diam){diam=d[i][j];pi=i;pj=j;}
+  let html=`<div class="matrix-grid" style="grid-template-columns:repeat(${n+1},44px);">`;
+  html+=`<div class="mx-cell header"></div>`;
+  labels.forEach(l=>html+=`<div class="mx-cell header">${l}</div>`);
+  labels.forEach((rl,i)=>{
+    html+=`<div class="mx-cell header">${rl}</div>`;
+    for(let j=0;j<n;j++){
+      const isMax=i===pi&&j===pj;
+      const cls='mx-cell'+(isMax?' pivot':'');
+      const v=d[i][j];
+      html+=`<div class="${cls}" title="${labels[i]}→${labels[j]}">${v===INF?'∞':v}</div>`;
+    }
+  });
+  html+='</div>';
+  document.getElementById('diamMatrix').innerHTML=html;
+  document.getElementById('diamLog').textContent=`Floyd-Warshall complete! All-pairs shortest paths computed. Orange cell = maximum entry.`;
+  document.getElementById('diamResult').innerHTML=`<span style="color:var(--teal);">Diameter = ${diam}</span>  (longest shortest path: ${DIAM_G.nodes[pi].label} → ${DIAM_G.nodes[pj].label})<br><span style="color:var(--muted);font-size:.75rem;">Note: edge B→D has weight -1 (negative). Dijkstra would fail here — Floyd-Warshall handles it.</span>`;
+  renderDiamGraph([]);
+}
+resetDiam();
+
+// ═══════════════════════════════════════════
+// PROBLEM 5.2 INTERACTIVE
+// ═══════════════════════════════════════════
+const P52_G={
+  nodes:[{x:70,y:150,label:'0'},{x:180,y:80,label:'1'},{x:180,y:220,label:'2'},{x:300,y:80,label:'3'},{x:300,y:220,label:'4'},{x:420,y:150,label:'5'},{x:540,y:80,label:'6'},{x:540,y:220,label:'7'},{x:660,y:150,label:'8'}],
+  edges:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5],[5,6],[5,7],[6,8],[7,8],[3,4]]
+};
+
+function initP52(){
+  const xSel=document.getElementById('p52x'),ySel=document.getElementById('p52y');
+  xSel.innerHTML='';ySel.innerHTML='';
+  P52_G.nodes.forEach((n,i)=>{
+    xSel.innerHTML+=`<option value="${i}">${n.label}</option>`;
+    ySel.innerHTML+=`<option value="${i}">${n.label}</option>`;
+  });
+  xSel.value='0';ySel.value='8';
+  resetP52();
+}
+
+let p52ReachY=new Set(),p52BFSXDone=false;
+function resetP52(){
+  p52ReachY=new Set();p52BFSXDone=false;
+  renderP52([],[]);
+  document.getElementById('p52Log').textContent='Select x and y, then run Step 1 (BFS from y to find what y can reach).';
+  document.getElementById('p52Result').textContent='';
+}
+
+function renderP52(reachY, visitedX, answer=-1){
+  const ctx=document.getElementById('p52Canvas').getContext('2d');
+  ctx.clearRect(0,0,860,300);ctx.fillStyle='#080c10';ctx.fillRect(0,0,860,300);
+  const x=parseInt(document.getElementById('p52x').value);
+  const y=parseInt(document.getElementById('p52y').value);
+  P52_G.edges.forEach(e=>{
+    const a=P52_G.nodes[e[0]],b=P52_G.nodes[e[1]];
+    drawArrow(ctx,a.x,a.y,b.x,b.y,COLORS.edge);
+  });
+  P52_G.nodes.forEach((n,i)=>{
+    let fill='#1e2d3d',stroke='#4ea8ff';
+    if(i===y){fill='rgba(64,224,208,0.2)';stroke='#40e0d0';}
+    if(reachY.has(i)){fill='rgba(64,224,208,0.15)';stroke='#40e0d0';}
+    if(i===x){fill='rgba(78,168,255,0.3)';stroke='#4ea8ff';}
+    if(visitedX.includes(i)){fill='rgba(78,168,255,0.2)';stroke='#4ea8ff';}
+    if(i===answer){fill='rgba(255,179,71,0.4)';stroke='#ffb347';}
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    // Labels
+    if(i===x)ctx.fillStyle='#4ea8ff',ctx.font='10px DM Mono',ctx.textAlign='center',ctx.fillText('x',n.x,n.y+34);
+    if(i===y)ctx.fillStyle='#40e0d0',ctx.font='10px DM Mono',ctx.textAlign='center',ctx.fillText('y',n.x,n.y+34);
+    if(reachY.has(i)&&i!==y){ctx.fillStyle='rgba(64,224,208,0.6)';ctx.font='9px DM Mono';ctx.textAlign='center';ctx.fillText('y→',n.x,n.y-30);}
+  });
+}
+
+function bfsFrom(g,start){
+  const visited=new Set([start]);const queue=[start];
+  while(queue.length){
+    const v=queue.shift();
+    g.edges.filter(e=>e[0]===v).forEach(e=>{if(!visited.has(e[1])){visited.add(e[1]);queue.push(e[1]);}});
+  }
+  return visited;
+}
+
+function runP52Step1(){
+  const y=parseInt(document.getElementById('p52y').value);
+  p52ReachY=bfsFrom(P52_G,y);
+  renderP52(p52ReachY,[]);
+  document.getElementById('p52Log').textContent=`BFS from y (node ${P52_G.nodes[y].label}) complete. Teal nodes = reachable from y. Now run Step 2.`;
+}
+
+function runP52Step2(){
+  if(p52ReachY.size===0){document.getElementById('p52Log').textContent='Run Step 1 first!';return;}
+  const x=parseInt(document.getElementById('p52x').value);
+  const queue=[x];const visited=new Set([x]);let ans=-1;
+  while(queue.length){
+    const v=queue.shift();
+    if(p52ReachY.has(v)){ans=v;break;}
+    P52_G.edges.filter(e=>e[0]===v).forEach(e=>{if(!visited.has(e[1])){visited.add(e[1]);queue.push(e[1]);}});
+  }
+  renderP52(p52ReachY,[...visited],ans);
+  if(ans>=0){
+    document.getElementById('p52Log').textContent=`BFS from x (node ${P52_G.nodes[x].label}) found first overlap at node ${P52_G.nodes[ans].label} (orange). This is the answer!`;
+    document.getElementById('p52Result').textContent=`✅ Answer: vertex ${P52_G.nodes[ans].label} — closest vertex to x that y can also reach.`;
+  } else {
+    document.getElementById('p52Log').textContent='No common vertex found (problem guarantees this won\'t happen).';
+  }
+}
+initP52();
+
+// ═══════════════════════════════════════════
+// PROBLEM 5.3 INTERACTIVE
+// ═══════════════════════════════════════════
+const P53_GRAPHS={
+  yes:{
+    nodes:[{x:80,y:140,label:'A'},{x:200,y:80,label:'B'},{x:200,y:200,label:'C'},{x:320,y:140,label:'D'},{x:200,y:140,label:'E'}],
+    edges:[[0,1],[1,0],[1,3],[2,3],[0,2],[3,2]]
+  },
+  no:{
+    nodes:[{x:80,y:100,label:'A'},{x:200,y:100,label:'B'},{x:80,y:200,label:'C'},{x:200,y:200,label:'D'},{x:320,y:150,label:'E'}],
+    edges:[[0,1],[1,0],[2,3],[3,2],[1,4]]
+  },
+  chain:{
+    nodes:[{x:60,y:140,label:'A'},{x:170,y:140,label:'B'},{x:280,y:140,label:'C'},{x:390,y:140,label:'D'}],
+    edges:[[0,1],[1,2],[2,3]]
+  }
+};
+let p53G={nodes:[],edges:[]};
+function p53Load(ex){
+  p53G=JSON.parse(JSON.stringify(P53_GRAPHS[ex]));
+  renderP53Graph({},'#080c10');
+  document.getElementById('p53DagCanvas').getContext('2d').clearRect(0,0,420,270);
+  document.getElementById('p53Log').textContent=`Loaded ${ex} example. Click "Run Algorithm" to check somewhat-connectedness.`;
+  document.getElementById('p53Result').textContent='';
+}
+
+function renderP53Graph(colorMap){
+  const ctx=document.getElementById('p53Canvas').getContext('2d');
+  ctx.clearRect(0,0,420,270);ctx.fillStyle='#080c10';ctx.fillRect(0,0,420,270);
+  p53G.edges.forEach(e=>{const a=p53G.nodes[e[0]],b=p53G.nodes[e[1]];drawArrow(ctx,a.x,a.y,b.x,b.y,COLORS.edge);});
+  p53G.nodes.forEach((n,i)=>{
+    const c=colorMap[i]||'#4ea8ff';
+    drawNode(ctx,n.x,n.y,n.label,colorMap[i]?c+'33':'#1e2d3d',c,'#fff');
+  });
+}
+
+function runP53(){
+  const n=p53G.nodes.length;
+  if(!n)return;
+  const adj=Array.from({length:n},()=>[]);
+  const radj=Array.from({length:n},()=>[]);
+  p53G.edges.forEach(e=>{adj[e[0]].push(e[1]);radj[e[1]].push(e[0]);});
+  // Kosaraju
+  const visited=new Array(n).fill(false);const order=[];
+  function dfs1(v){visited[v]=true;adj[v].forEach(u=>{if(!visited[u])dfs1(u);});order.push(v);}
+  for(let i=0;i<n;i++)if(!visited[i])dfs1(i);
+  const comp=new Array(n).fill(-1);let nc=0;
+  function dfs2(v,c){comp[v]=c;radj[v].forEach(u=>{if(comp[u]===-1)dfs2(u,c);});}
+  for(let i=n-1;i>=0;i--){if(comp[order[i]]===-1){dfs2(order[i],nc);nc++;}}
+  // Color nodes
+  const colorMap={};
+  for(let i=0;i<n;i++)colorMap[i]=COLORS.sccColors[comp[i]%COLORS.sccColors.length];
+  renderP53Graph(colorMap);
+  // Build condensation
+  const dagAdj=Array.from({length:nc},()=>new Set());
+  p53G.edges.forEach(e=>{const a=comp[e[0]],b=comp[e[1]];if(a!==b)dagAdj[a].add(b);});
+  // Topo sort (Kahn's)
+  const inDeg=new Array(nc).fill(0);
+  dagAdj.forEach((s,u)=>s.forEach(v=>inDeg[v]++));
+  const tq=[],topo=[];
+  for(let i=0;i<nc;i++)if(inDeg[i]===0)tq.push(i);
+  while(tq.length){const u=tq.shift();topo.push(u);dagAdj[u].forEach(v=>{inDeg[v]--;if(inDeg[v]===0)tq.push(v);});}
+  // Check consecutive
+  let somewhatConn=true,failAt=-1;
+  for(let i=0;i<topo.length-1;i++){
+    if(!dagAdj[topo[i]].has(topo[i+1])){somewhatConn=false;failAt=i;break;}
+  }
+  // Draw DAG
+  const dagCtx=document.getElementById('p53DagCanvas').getContext('2d');
+  dagCtx.clearRect(0,0,420,270);dagCtx.fillStyle='#080c10';dagCtx.fillRect(0,0,420,270);
+  const dagNodePos=topo.map((scc,pos)=>({x:60+pos*(300/Math.max(nc-1,1)),y:140+(pos%2===0?-40:40),scc,color:COLORS.sccColors[scc%COLORS.sccColors.length]}));
+  // edges
+  dagAdj.forEach((s,u)=>s.forEach(v=>{
+    const a=dagNodePos.find(d=>d.scc===u),b=dagNodePos.find(d=>d.scc===v);
+    const isConsec=topo.indexOf(u)>=0&&topo.indexOf(v)===topo.indexOf(u)+1;
+    drawArrow(dagCtx,a.x,a.y,b.x,b.y,isConsec?'#3dd68c':COLORS.edge,isConsec?2.5:1.5);
+  }));
+  // missing consecutive edges (show dashed)
+  for(let i=0;i<topo.length-1;i++){
+    if(!dagAdj[topo[i]].has(topo[i+1])){
+      const a=dagNodePos.find(d=>d.scc===topo[i]),b=dagNodePos.find(d=>d.scc===topo[i+1]);
+      dagCtx.save();dagCtx.setLineDash([4,4]);
+      drawArrow(dagCtx,a.x,a.y,b.x,b.y,'#ff6b6b',1.5);
+      dagCtx.restore();
+      dagCtx.fillStyle='#ff6b6b';dagCtx.font='10px DM Mono';dagCtx.textAlign='center';
+      dagCtx.fillText('MISSING',(a.x+b.x)/2,(a.y+b.y)/2-16);
+    }
+  }
+  // nodes
+  dagNodePos.forEach((d,i)=>{
+    const isFailNode=!somewhatConn&&(i===failAt||i===failAt+1);
+    const members=p53G.nodes.filter((_,j)=>comp[j]===d.scc).map(nd=>nd.label);
+    drawNode(dagCtx,d.x,d.y,`{${members.join(',')}}`,isFailNode?'rgba(255,107,107,0.2)':'#1e2d3d',isFailNode?'#ff6b6b':d.color,'#fff',28);
+    dagCtx.fillStyle='#ffb347';dagCtx.font='9px DM Mono';dagCtx.textAlign='center';
+    dagCtx.fillText(`t${i+1}`,d.x,d.y+40);
+  });
+  // Result
+  document.getElementById('p53Log').textContent=`SCCs found: ${nc}. Topological order: ${topo.map(s=>`{${p53G.nodes.filter((_,j)=>comp[j]===s).map(nd=>nd.label).join(',')}}`).join(' → ')}. `+(somewhatConn?'All consecutive pairs have edges ✅':'Missing edge between consecutive pair ❌');
+  const res=document.getElementById('p53Result');
+  if(somewhatConn){res.style.color='var(--green)';res.textContent='✅ SOMEWHAT-CONNECTED';}
+  else{res.style.color='var(--red)';res.textContent='❌ NOT SOMEWHAT-CONNECTED';}
+}
+function resetP53(){document.getElementById('p53Result').textContent='';document.getElementById('p53Log').textContent='Load an example, then click Run Algorithm.';}
+p53Load('yes');
+</script>
+</body>
+</html>

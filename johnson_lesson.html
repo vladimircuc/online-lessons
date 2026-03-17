@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Johnson's Algorithm — CS161 Section 4</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inconsolata:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090e;--surf:#0d1119;--surf2:#131a24;--border:#1c2535;--border2:#253045;
+  --teal:#00e5cc;--yellow:#ffe566;--pink:#ff5fa0;--violet:#a78bfa;--green:#4ade80;--orange:#fb923c;
+  --text:#d4e0f0;--muted:#4a6075;--muted2:#2a3a50;--code:#060912;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px;}
+
+.pbar{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--violet));transform-origin:left;z-index:100;}
+
+/* HERO */
+.hero{background:var(--bg);border-bottom:1px solid var(--border);padding:64px 48px 52px;position:relative;overflow:hidden;min-height:300px;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);background-size:36px 36px;opacity:.35;}
+.hero-glow{position:absolute;top:-60px;right:-60px;width:520px;height:400px;background:radial-gradient(ellipse,rgba(0,229,204,.07) 0%,transparent 65%);pointer-events:none;}
+.hero-badge{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);background:rgba(0,229,204,.07);border:1px solid rgba(0,229,204,.2);padding:4px 14px;border-radius:20px;display:inline-block;margin-bottom:18px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.06;color:#fff;max-width:760px;margin-bottom:14px;}
+.hero h1 em{font-style:italic;color:var(--teal);}
+.hero-sub{color:var(--muted);max-width:560px;font-size:.95rem;margin-bottom:32px;}
+.nav-row{display:flex;gap:8px;flex-wrap:wrap;}
+.np{font-family:'Inconsolata',monospace;font-size:11px;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--surf);color:var(--muted);text-decoration:none;transition:all .2s;cursor:pointer;}
+.np:hover{border-color:var(--teal);color:var(--teal);}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:52px 32px;}
+
+/* SECTION HEADS */
+.sec-head{display:flex;align-items:center;gap:14px;margin:64px 0 28px;}
+.sec-head:first-child{margin-top:0;}
+.sec-tag{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--yellow);background:rgba(255,229,102,.07);border:1px solid rgba(255,229,102,.2);padding:4px 12px;border-radius:4px;white-space:nowrap;}
+.sec-line{flex:1;height:1px;background:var(--border);}
+.sec-pts{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* TYPE */
+h2{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:12px;}
+h3{font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:8px;}
+h4{font-family:'Inconsolata',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+p{margin-bottom:13px;}
+ul,ol{padding-left:22px;margin-bottom:13px;}
+li{margin-bottom:5px;}
+strong{color:#fff;font-weight:600;}
+em{color:var(--teal);}
+
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:18px;}
+.card-teal{border-left:3px solid var(--teal);}
+.card-yellow{border-left:3px solid var(--yellow);}
+.card-pink{border-left:3px solid var(--pink);}
+.card-green{border-left:3px solid var(--green);}
+.card-violet{border-left:3px solid var(--violet);}
+.card-orange{border-left:3px solid var(--orange);}
+
+/* PROBLEM BLOCK */
+.pb{background:var(--code);border:1px solid var(--border2);border-radius:10px;padding:20px 24px;margin-bottom:22px;}
+.pb .ql{font-family:'Inconsolata',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:7px;display:block;}
+
+/* CODE */
+pre,code{font-family:'Inconsolata',monospace;}
+pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:16px 20px;overflow-x:auto;line-height:1.8;margin:12px 0;font-size:.8rem;}
+code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;font-size:.84em;}
+.kw{color:#c792ea;}.fn{color:var(--green);}.cm{color:var(--muted);font-style:italic;}.nu{color:var(--yellow);}.va{color:#89ddff;}
+
+/* CALLOUT */
+.callout{display:flex;gap:12px;align-items:flex-start;background:var(--surf2);border-radius:8px;padding:13px 17px;margin:14px 0;}
+.ci{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+.callout p{margin:0;font-size:.9rem;}
+
+/* BADGE */
+.badge{display:inline-block;font-family:'Inconsolata',monospace;font-size:.76rem;padding:3px 10px;border-radius:4px;margin:2px;}
+.bt{background:rgba(0,229,204,.1);border:1px solid rgba(0,229,204,.3);color:var(--teal);}
+.by{background:rgba(255,229,102,.1);border:1px solid rgba(255,229,102,.3);color:var(--yellow);}
+.bv{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:var(--violet);}
+.bg{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--green);}
+.bp{background:rgba(255,95,160,.1);border:1px solid rgba(255,95,160,.3);color:var(--pink);}
+
+/* BUTTONS */
+.btn{font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;padding:8px 18px;border-radius:7px;border:none;cursor:pointer;transition:all .18s;}
+.btn-t{background:var(--teal);color:#000;}
+.btn-t:hover{background:#33ead5;}
+.btn-ghost{background:var(--surf);border:1px solid var(--border2);color:var(--text);}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+.btn-g{background:rgba(74,222,128,.15);border:1px solid var(--green);color:var(--green);}
+.btn-g:hover{background:rgba(74,222,128,.3);}
+.btn-v{background:rgba(167,139,250,.15);border:1px solid var(--violet);color:var(--violet);}
+.btn-y{background:rgba(255,229,102,.15);border:1px solid var(--yellow);color:var(--yellow);}
+.btn-p{background:rgba(255,95,160,.15);border:1px solid var(--pink);color:var(--pink);}
+
+/* INTERACTIVE BOX */
+.ibox{background:var(--surf2);border:1px solid var(--border2);border-radius:14px;padding:24px;margin:22px 0;}
+.ibox-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.ibox-sub{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);margin-bottom:16px;letter-spacing:.04em;}
+
+/* STEPLOG */
+.steplog{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:11px 15px;font-family:'Inconsolata',monospace;font-size:.78rem;color:var(--green);min-height:42px;line-height:1.75;margin:10px 0;}
+
+/* ACCORDION */
+.acc{margin:8px 0;}
+.acc-h{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:11px 15px;cursor:pointer;user-select:none;transition:all .18s;font-size:.91rem;font-weight:600;color:#fff;}
+.acc-h:hover{border-color:var(--teal);}
+.acc-icon{color:var(--teal);font-size:.85rem;transition:transform .2s;}
+.acc-h.open .acc-icon{transform:rotate(90deg);}
+.acc-b{display:none;background:var(--code);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;font-size:.9rem;}
+.acc-b.open{display:block;}
+
+/* CANVAS */
+.gc{background:var(--code);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+canvas{display:block;}
+
+/* TABLES */
+.dt{width:100%;border-collapse:collapse;font-size:.84rem;margin:10px 0;}
+.dt th{font-family:'Inconsolata',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);}
+.dt td{padding:8px 11px;border-bottom:1px solid rgba(255,255,255,.03);font-family:'Inconsolata',monospace;}
+.dt tr:last-child td{border-bottom:none;}
+.hl-t td{background:rgba(0,229,204,.07);}
+.hl-y td{background:rgba(255,229,102,.07);}
+.hl-g td{background:rgba(74,222,128,.07);}
+.hl-p td{background:rgba(255,95,160,.07);}
+
+/* MATH */
+.math{font-family:'Inconsolata',monospace;font-style:italic;color:var(--yellow);font-size:.9em;}
+.bmath{font-family:'Inconsolata',monospace;background:var(--code);border:1px solid var(--border);border-radius:6px;padding:10px 16px;margin:10px 0;color:var(--yellow);text-align:center;font-size:.86rem;}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0;}
+@media(max-width:620px){.two{grid-template-columns:1fr;}}
+
+/* PROOF STEPS */
+.pstep{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+.pnum{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#000;font-family:'Inconsolata',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.pbody{flex:1;}
+
+/* WEIGHT MATRIX */
+.wm-grid{display:grid;gap:3px;margin:10px 0;}
+.wm-cell{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:'Inconsolata',monospace;font-size:.8rem;border-radius:5px;background:var(--surf);border:1px solid var(--border);transition:all .35s;}
+.wm-cell.header{background:transparent;border:none;color:var(--muted);font-size:.7rem;}
+.wm-cell.active{background:rgba(0,229,204,.2);border-color:var(--teal);color:var(--teal);}
+.wm-cell.changed{background:rgba(74,222,128,.2);border-color:var(--green);color:var(--green);}
+.wm-cell.neg{color:var(--pink);}
+.wm-cell.pos{color:var(--green);}
+.wm-cell.zero{color:var(--muted);}
+.wm-cell.inf{color:var(--muted2);}
+
+/* ANSWER TEMPLATE */
+.answer{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:18px 22px;margin:14px 0;}
+.answer h4{color:var(--green);margin-bottom:10px;}
+
+/* PIPE viz */
+.pipe-row{display:flex;align-items:center;gap:0;margin:6px 0;font-family:'Inconsolata',monospace;font-size:.82rem;}
+.pipe-node{width:48px;height:36px;border-radius:6px;border:2px solid var(--border2);background:var(--surf);display:flex;align-items:center;justify-content:center;font-weight:700;transition:all .3s;}
+.pipe-node.star{border-color:var(--yellow);background:rgba(255,229,102,.1);color:var(--yellow);}
+.pipe-node.active{border-color:var(--teal);background:rgba(0,229,204,.15);color:var(--teal);}
+.pipe-node.settled{border-color:var(--green);background:rgba(74,222,128,.1);color:var(--green);}
+.pipe-edge{display:flex;flex-direction:column;align-items:center;min-width:48px;}
+.pipe-line{height:2px;width:100%;background:var(--border2);}
+.pipe-line.active{background:var(--teal);}
+.pipe-label{font-size:.7rem;color:var(--muted);}
+.pipe-label.neg{color:var(--pink);}
+
+hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+footer{border-top:1px solid var(--border);padding:26px 32px;text-align:center;font-family:'Inconsolata',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.08em;}
+</style>
+</head>
+<body>
+<div class="pbar" id="pbar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <span class="hero-badge">CS161 · Winter 2023 · Section 4 · Final Exam Prep</span>
+  <h1>Johnson's Algorithm<br><em>Built From Scratch</em></h1>
+  <p class="hero-sub">Six connected proofs that together build one of the most elegant algorithms in graph theory — all-pairs shortest paths on graphs with negative edges, faster than Floyd-Warshall.</p>
+  <div class="nav-row">
+    <a class="np" href="#big-picture">Big Picture</a>
+    <a class="np" href="#p41">4.1 Computing h(x)</a>
+    <a class="np" href="#p42">4.2 Triangle Inequality</a>
+    <a class="np" href="#p43">4.3 Reweighting</a>
+    <a class="np" href="#p44">4.4 Non-Negative Weights</a>
+    <a class="np" href="#p45">4.5 Shortest Paths Preserved</a>
+    <a class="np" href="#p46">4.6 Full Algorithm</a>
+    <a class="np" href="#summary">Summary</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- BIG PICTURE -->
+<div id="big-picture">
+  <div class="sec-head">
+    <span class="sec-tag">Overview</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">Read This First</span>
+  </div>
+
+  <h2>Why Does This Problem Exist?</h2>
+
+  <p>We want <strong>All-Pairs Shortest Paths (APSP)</strong> — the shortest path between every pair of vertices in a directed weighted graph that <strong>may have negative edges</strong>.</p>
+
+  <div class="two">
+    <div class="card card-pink">
+      <h4>Floyd-Warshall</h4>
+      <p>Handles negative edges, gives APSP. But runs in <strong style="color:var(--pink)">O(n³)</strong>. For large sparse graphs this is terrible.</p>
+    </div>
+    <div class="card card-teal">
+      <h4>Dijkstra from every vertex</h4>
+      <p>Runs in <strong style="color:var(--teal)">O((n+m) log n)</strong> per source, so O(mn log n + n² log n) total. Much faster on sparse graphs — but <strong>fails on negative edges</strong>.</p>
+    </div>
+  </div>
+
+  <div class="card card-yellow">
+    <h3>Johnson's Idea</h3>
+    <p>What if we could <strong>reweight all edges to be non-negative</strong>, run Dijkstra from every vertex, then <strong>undo the reweighting</strong> to recover the true distances? That's exactly what Johnson's algorithm does.</p>
+    <p>The trick: find a function <span class="math">h(v)</span> for every vertex, then define new weights <span class="math">w'(x,y) = w(x,y) + h(x) - h(y)</span>. This section proves step by step that this works correctly.</p>
+  </div>
+
+  <div class="ibox">
+    <div class="ibox-title">🗺️ The Road Map — How the 6 Parts Connect</div>
+    <div class="ibox-sub">Each part builds on the previous ones. Understanding the flow makes each proof obvious.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:8px 0;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--teal);color:#000;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.1</div>
+        <div><strong>Define and compute h(x)</strong> — the shortest distance from <em>any</em> vertex to x. Use a dummy node + Bellman-Ford. Also detects negative cycles.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--yellow);color:#000;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.2</div>
+        <div><strong>Triangle inequality for h</strong> — prove l(p) + h(a) ≥ h(b). This is the key property that makes reweighting work.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--violet);color:#fff;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.3</div>
+        <div><strong>Reweighting formula</strong> — prove that l'(p) = l(p) + h(a) - h(b). The change in path length only depends on endpoints, not the path taken.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--green);color:#000;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.4</div>
+        <div><strong>All new weights ≥ 0</strong> — follows immediately from 4.2 applied to a single edge. Now Dijkstra is safe to use.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--orange);color:#000;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.5</div>
+        <div><strong>Shortest paths preserved</strong> — follows from 4.3. If p is shortest in G, it's also shortest in G'. Running Dijkstra on G' gives correct relative orderings.</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="background:var(--pink);color:#fff;font-family:'Inconsolata',monospace;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;margin-top:2px;">4.6</div>
+        <div><strong>Full Johnson's algorithm</strong> — put it all together: h(x) + reweight + n×Dijkstra + undo reweighting. O(mn + n² log n).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4.1 -->
+<div id="p41">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.1</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">4 pts — Computing h(x)</span>
+  </div>
+
+  <h2>Computing h(x) for All Vertices</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>For each vertex x, define <span class="math">h(x) = min<sub>z∈V</sub> d(z, x)</span> — the shortest distance to x from <em>any</em> vertex (including x itself). Compute h(x) for all x in <strong>O(mn) time</strong>. If G has a negative cycle, return False.</p>
+  </div>
+
+  <div class="callout"><div class="ci">🤔</div>
+    <p><strong>Think about what h(x) means.</strong> It's not the shortest path from one fixed source — it's the shortest path to x from <em>the best possible starting point</em>. How do you compute "shortest path from anywhere to x" efficiently?</p>
+  </div>
+
+  <h3>The Dummy Node Trick</h3>
+  <p>The insight: add a fake "super-source" node <span class="math">s*</span> with a <strong>zero-weight edge to every vertex</strong>. Now the shortest path from <span class="math">s*</span> to any vertex x equals h(x).</p>
+
+  <div class="two">
+    <div class="card card-teal">
+      <h4>Why does d(s*, x) = h(x)?</h4>
+      <p>From s*, you can reach any vertex z in one hop for free (cost 0), then take the shortest path from z to x. So d(s*, x) = min over all z of d(z, x) = h(x). ✓</p>
+      <p>The zero-weight edges don't create shortcuts between existing vertices, so they don't change any existing distances.</p>
+    </div>
+    <div class="card card-yellow">
+      <h4>Why Bellman-Ford?</h4>
+      <p>Graph has negative edges. Dijkstra would fail. Bellman-Ford handles negative edges correctly and also detects negative cycles — which we need to report as False. Runtime from one source: O(mn). ✓</p>
+    </div>
+  </div>
+
+  <h3>The Algorithm</h3>
+  <pre><span class="fn">COMPUTE_H</span>(G):
+  <span class="cm">// Add dummy super-source s* with zero edges to all vertices</span>
+  G' ← copy of G
+  add node s* to G'
+  <span class="kw">for</span> each vertex v <span class="kw">in</span> V:
+    add edge (s* → v) with weight <span class="nu">0</span>
+
+  <span class="cm">// Run Bellman-Ford from s* on the augmented graph</span>
+  dist ← <span class="fn">BELLMAN_FORD</span>(G', s*)
+
+  <span class="cm">// If negative cycle detected, return False</span>
+  <span class="kw">if</span> dist = False: <span class="kw">return</span> False
+
+  <span class="cm">// h(x) = shortest distance from s* to x</span>
+  <span class="kw">for</span> each vertex x <span class="kw">in</span> V:
+    h[x] ← dist[x]
+
+  <span class="kw">return</span> h</pre>
+
+  <div class="callout"><div class="ci">⚡</div>
+    <p><strong>Runtime:</strong> Adding s* adds n+1 vertices and n edges to G. Bellman-Ford on a graph with n+1 vertices and m+n edges runs in O((n+1)(m+n)) = O(mn + n²) = <strong>O(mn)</strong> since m ≥ n-1 for a connected graph. ✓</p>
+  </div>
+
+  <!-- INTERACTIVE 4.1 -->
+  <div class="ibox">
+    <div class="ibox-title">🌟 Interactive: Dummy Node + Bellman-Ford</div>
+    <div class="ibox-sub">Watch s* get added, then Bellman-Ford compute h(x) for all vertices</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-ghost" onclick="loadG('ex1')">Example 1 (no neg cycle)</button>
+      <button class="btn btn-ghost" onclick="loadG('negcycle')">Example 2 (negative cycle)</button>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">GRAPH (s* shown in yellow after adding)</div>
+        <div class="gc"><canvas id="mainCanvas" width="420" height="280"></canvas></div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">BELLMAN-FORD DIST TABLE</div>
+        <div id="bfDistTable"></div>
+        <div style="margin-top:10px;font-family:'Inconsolata';font-size:10px;color:var(--muted);">h(x) RESULTS:</div>
+        <div id="hResults" style="font-family:'Inconsolata';font-size:.82rem;margin-top:4px;color:var(--teal);line-height:1.9;"></div>
+      </div>
+    </div>
+    <div class="steplog" id="mainLog">Load an example graph, then step through the algorithm.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-t" onclick="stepH()">Step →</button>
+      <button class="btn btn-ghost" onclick="resetH()">↺ Reset</button>
+      <button class="btn btn-g" onclick="runAllH()">Run All ▶▶</button>
+    </div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Algorithm:</strong> Add a new vertex s* to G with a zero-weight directed edge from s* to every vertex v ∈ V. Run Bellman-Ford from s* on the augmented graph. If Bellman-Ford detects a negative cycle, return False. Otherwise, set h(x) = dist(s*, x) for all x.</p>
+    <p><strong>Correctness:</strong> Since s* has a zero-weight edge to every vertex, the shortest path from s* to x is min over all z of (0 + d(z,x)) = min over z of d(z,x) = h(x). The zero-weight edges do not create new paths between existing vertices.</p>
+    <p><strong>Runtime:</strong> Bellman-Ford on n+1 vertices, m+n edges: O((n+1)(m+n)) = O(mn). ✓</p>
+  </div>
+</div>
+
+<!-- 4.2 -->
+<div id="p42">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.2</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">3 pts — Triangle Inequality for h</span>
+  </div>
+
+  <h2>Proving l(p) + h(a) ≥ h(b)</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>Let p be any path from a to b. Prove that <span class="math">l(p) + h(a) ≥ h(b)</span>, assuming G has no negative cycles.</p>
+  </div>
+
+  <div class="callout"><div class="ci">💡</div>
+    <p><strong>What does this say intuitively?</strong> The best you can ever do to get to b is: go to a as cheaply as possible (cost h(a)), then take path p (cost l(p)). So the total cost h(a) + l(p) must be at least h(b) — because h(b) is already the cheapest way to reach b from anywhere.</p>
+  </div>
+
+  <h3>Formal Proof</h3>
+
+  <div class="card card-teal">
+    <div class="pstep">
+      <div class="pnum">1</div>
+      <div class="pbody"><strong>Recall the definition:</strong> h(b) = min over all vertices z of d(z, b). This is the length of the shortest path to b, starting from the best possible vertex.</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">2</div>
+      <div class="pbody"><strong>Construct a specific path to b:</strong> There exists some vertex z* that achieves h(a) — i.e., d(z*, a) = h(a). Consider the combined path: z* →<sup>(shortest)</sup>→ a →<sup>p</sup>→ b. This path has length d(z*, a) + l(p) = h(a) + l(p).</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">3</div>
+      <div class="pbody"><strong>Apply the definition of h(b):</strong> h(b) is the <em>minimum</em> path length to b over all starting vertices. The path we constructed (from z* to b) has length h(a) + l(p). Therefore: <div class="bmath">h(b) ≤ h(a) + l(p)</div></div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">4</div>
+      <div class="pbody"><strong>Rearrange:</strong> h(b) ≤ h(a) + l(p) directly gives us l(p) + h(a) ≥ h(b). <span style="color:var(--green)">∎</span></div>
+    </div>
+  </div>
+
+  <div class="callout"><div class="ci">⚠️</div>
+    <p><strong>Wait — is step 2 valid?</strong> We concatenated a shortest path with an arbitrary path p. The resulting path may not be simple (it could revisit vertices), but path length is still well-defined. Since G has no negative cycles, this concatenated walk still has finite length h(a) + l(p), and h(b) ≤ any walk length to b.</p>
+  </div>
+
+  <!-- INTERACTIVE 4.2 -->
+  <div class="ibox">
+    <div class="ibox-title">📐 Visualizing the Triangle Inequality</div>
+    <div class="ibox-sub">See concretely why h(a) + l(p) ≥ h(b) on a specific graph</div>
+    <div class="gc"><canvas id="triCanvas" width="860" height="260"></canvas></div>
+    <div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap;align-items:center;">
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">Pick path from</span>
+      <select id="triA" style="background:var(--surf);border:1px solid var(--border2);color:var(--yellow);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">to</span>
+      <select id="triB" style="background:var(--surf);border:1px solid var(--border2);color:var(--teal);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-t" onclick="showTri()">Show Inequality →</button>
+      <button class="btn btn-ghost" onclick="resetTri()">↺ Reset</button>
+    </div>
+    <div class="steplog" id="triLog">Select a and b, then click Show Inequality.</div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p>By definition, h(b) = min<sub>z∈V</sub> d(z, b). Let z* be the vertex achieving h(a), so d(z*, a) = h(a). Concatenating the shortest path from z* to a with the path p gives a walk from z* to b of length h(a) + l(p). Since h(b) is the minimum over all starting vertices, h(b) ≤ h(a) + l(p), which rearranges to l(p) + h(a) ≥ h(b). ∎</p>
+  </div>
+</div>
+
+<!-- 4.3 -->
+<div id="p43">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.3</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">4 pts — The Reweighting Formula</span>
+  </div>
+
+  <h2>Proving l'(p) = l(p) + h(x₁) − h(xᵢ)</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>In G', edge weights are defined as <span class="math">w'(x,y) = w(x,y) + h(x) - h(y)</span>. For a path <span class="math">p = [x₁, x₂, ..., xᵢ]</span>, prove that <span class="math">l'(p) = l(p) + h(x₁) - h(xᵢ)</span>.</p>
+  </div>
+
+  <div class="callout"><div class="ci">🔭</div>
+    <p><strong>This is the magical telescoping property.</strong> The reweighting formula looks complicated, but when you sum it over an entire path, almost everything cancels. The change in path length only depends on the <em>first and last vertex</em> — not the intermediate vertices or the specific path taken.</p>
+  </div>
+
+  <h3>Proof by Telescoping Sum</h3>
+
+  <div class="card card-violet">
+    <div class="pstep">
+      <div class="pnum">1</div>
+      <div class="pbody">
+        <strong>Expand l'(p) using the definition of w':</strong>
+        <div class="bmath">l'(p) = Σ<sub>j=1..i-1</sub> w'(x<sub>j</sub>, x<sub>j+1</sub>) = Σ<sub>j=1..i-1</sub> [w(x<sub>j</sub>, x<sub>j+1</sub>) + h(x<sub>j</sub>) - h(x<sub>j+1</sub>)]</div>
+      </div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">2</div>
+      <div class="pbody">
+        <strong>Split into two sums:</strong>
+        <div class="bmath">= Σ w(x<sub>j</sub>, x<sub>j+1</sub>) + Σ [h(x<sub>j</sub>) - h(x<sub>j+1</sub>)]</div>
+        The first sum is l(p). The second sum telescopes!
+      </div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">3</div>
+      <div class="pbody">
+        <strong>The telescoping sum:</strong> Write out the h terms explicitly:
+        <div class="bmath">[h(x₁)-h(x₂)] + [h(x₂)-h(x₃)] + ... + [h(x<sub>i-1</sub>)-h(x<sub>i</sub>)]</div>
+        Every middle term cancels: +h(x₂) and -h(x₂), etc. Only the first and last survive.
+        <div class="bmath">= h(x₁) - h(x<sub>i</sub>)</div>
+      </div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">4</div>
+      <div class="pbody">
+        <strong>Combine:</strong>
+        <div class="bmath">l'(p) = l(p) + h(x₁) - h(x<sub>i</sub>) &nbsp;&nbsp; ∎</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE TELESCOPE -->
+  <div class="ibox">
+    <div class="ibox-title">🔭 Watch the Telescoping in Action</div>
+    <div class="ibox-sub">Pick a path and see each h term cancel out step by step</div>
+    <div class="gc"><canvas id="teleCanvas" width="860" height="220"></canvas></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0;">
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">Path:</span>
+      <select id="telePath" style="background:var(--surf);border:1px solid var(--border2);color:var(--teal);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+    </div>
+    <div id="teleExpand" style="font-family:'Inconsolata';font-size:.82rem;line-height:2.2;margin:10px 0;"></div>
+    <button class="btn btn-t" onclick="showTelescope()">Show Telescoping →</button>
+    <div class="steplog" id="teleLog">Select a path to see the telescoping sum.</div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p>l'(p) = Σ<sub>j=1..i-1</sub> w'(x<sub>j</sub>, x<sub>j+1</sub>) = Σ<sub>j=1..i-1</sub> [w(x<sub>j</sub>, x<sub>j+1</sub>) + h(x<sub>j</sub>) - h(x<sub>j+1</sub>)] = l(p) + Σ<sub>j=1..i-1</sub> [h(x<sub>j</sub>) - h(x<sub>j+1</sub>)]. The sum Σ[h(x<sub>j</sub>) - h(x<sub>j+1</sub>)] telescopes to h(x₁) - h(x<sub>i</sub>). Therefore l'(p) = l(p) + h(x₁) - h(x<sub>i</sub>). ∎</p>
+  </div>
+</div>
+
+<!-- 4.4 -->
+<div id="p44">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.4</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">3 pts — All Weights Non-Negative</span>
+  </div>
+
+  <h2>All Edge Weights in G' are Non-Negative</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>Using the result from 4.2, prove that <span class="math">w'(x,y) ≥ 0</span> for every edge (x,y) in G'.</p>
+  </div>
+
+  <div class="callout"><div class="ci">💡</div>
+    <p><strong>This is a one-liner once you see it.</strong> Apply 4.2 to the "path" consisting of a single edge (x→y). A single edge is a valid path of length w(x,y).</p>
+  </div>
+
+  <div class="card card-green">
+    <div class="pstep">
+      <div class="pnum">1</div>
+      <div class="pbody"><strong>Apply 4.2 with p = single edge (x→y), a = x, b = y:</strong><br>Path length l(p) = w(x,y). By 4.2: l(p) + h(x) ≥ h(y), so w(x,y) + h(x) ≥ h(y).</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">2</div>
+      <div class="pbody"><strong>Rearrange:</strong> w(x,y) + h(x) - h(y) ≥ 0.</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">3</div>
+      <div class="pbody"><strong>Substitute the definition:</strong> w'(x,y) = w(x,y) + h(x) - h(y) ≥ 0. <span style="color:var(--green)">∎</span></div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE REWEIGHT VIZ -->
+  <div class="ibox">
+    <div class="ibox-title">🎨 Before and After: Edge Weight Reweighting</div>
+    <div class="ibox-sub">See how negative edges become non-negative after applying w'(x,y) = w(x,y) + h(x) - h(y)</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:240px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">ORIGINAL GRAPH G (negative edges in red)</div>
+        <div class="gc"><canvas id="rwOrigCanvas" width="380" height="240"></canvas></div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">REWEIGHTED GRAPH G' (all weights ≥ 0)</div>
+        <div class="gc"><canvas id="rwNewCanvas" width="380" height="240"></canvas></div>
+      </div>
+    </div>
+    <div id="rwTable" style="margin-top:14px;"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-t" onclick="showReweight()">Compute Reweighting →</button>
+      <button class="btn btn-ghost" onclick="resetReweight()">↺ Reset</button>
+    </div>
+    <div class="steplog" id="rwLog">Click "Compute Reweighting" to apply w'(x,y) = w(x,y) + h(x) - h(y).</div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p>Apply 4.2 to the path p consisting of the single edge (x→y), with a=x and b=y. Since p is a valid path of length w(x,y), 4.2 gives w(x,y) + h(x) ≥ h(y). Rearranging: w(x,y) + h(x) - h(y) ≥ 0. By definition w'(x,y) = w(x,y) + h(x) - h(y), so w'(x,y) ≥ 0 for all edges. ∎</p>
+  </div>
+</div>
+
+<!-- 4.5 -->
+<div id="p45">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.5</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">4 pts — Shortest Paths Preserved</span>
+  </div>
+
+  <h2>Shortest Paths in G Remain Shortest in G'</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>Show that if p is a shortest path from a to b in G, then p is also a shortest path from a to b in G'.</p>
+  </div>
+
+  <div class="callout"><div class="ci">🔑</div>
+    <p><strong>This is why the whole algorithm works.</strong> We run Dijkstra on G' (because G' has no negative edges). This tells us shortest paths in G'. If those same paths are also shortest in G, then we've correctly found shortest paths in the original graph.</p>
+  </div>
+
+  <div class="card card-orange">
+    <div class="pstep">
+      <div class="pnum">1</div>
+      <div class="pbody"><strong>By 4.3:</strong> for any path q from a to b: l'(q) = l(q) + h(a) - h(b). This applies to <em>every</em> path from a to b, because the h(a) - h(b) term depends only on the endpoints.</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">2</div>
+      <div class="pbody"><strong>In particular for p:</strong> l'(p) = l(p) + h(a) - h(b).</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">3</div>
+      <div class="pbody"><strong>Compare p to any other path q from a to b:</strong><br>l'(p) - l'(q) = [l(p) + h(a) - h(b)] - [l(q) + h(a) - h(b)] = l(p) - l(q).<br>The h terms cancel completely.</div>
+    </div>
+    <div class="pstep">
+      <div class="pnum">4</div>
+      <div class="pbody"><strong>Since p is shortest in G:</strong> l(p) ≤ l(q) for all paths q. Therefore l'(p) ≤ l'(q) for all paths q. So p is also shortest in G'. <span style="color:var(--green)">∎</span></div>
+    </div>
+  </div>
+
+  <div class="callout"><div class="ci">⭐</div>
+    <p><strong>The key insight:</strong> reweighting shifts all path lengths from a to b by the same constant h(a) - h(b). Shifting all values by the same constant doesn't change which one is smallest. It's like adding $100 to everyone's salary — the person who earned the least still earns the least.</p>
+  </div>
+
+  <!-- INTERACTIVE SHIFT VIZ -->
+  <div class="ibox">
+    <div class="ibox-title">⚖️ All Paths Shift by the Same Constant</div>
+    <div class="ibox-sub">Pick a source and destination — see how ALL paths between them shift by exactly h(a) - h(b)</div>
+    <div class="gc"><canvas id="shiftCanvas" width="860" height="260"></canvas></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0;">
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">From</span>
+      <select id="shiftA" style="background:var(--surf);border:1px solid var(--border2);color:var(--yellow);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+      <span style="font-family:'Inconsolata';font-size:.82rem;color:var(--muted);">to</span>
+      <select id="shiftB" style="background:var(--surf);border:1px solid var(--border2);color:var(--teal);padding:5px 10px;border-radius:5px;font-family:'Inconsolata';font-size:.8rem;"></select>
+    </div>
+    <button class="btn btn-t" onclick="showShift()">Show Path Comparison →</button>
+    <div class="steplog" id="shiftLog">Select source and destination to compare paths in G vs G'.</div>
+    <div id="shiftTable" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p>By 4.3, for any path q from a to b: l'(q) = l(q) + h(a) - h(b). The term h(a) - h(b) is the same constant for all paths from a to b. Therefore for any two paths p and q from a to b: l'(p) ≤ l'(q) iff l(p) ≤ l(q). Since p is shortest in G (l(p) ≤ l(q) for all q), it is also shortest in G' (l'(p) ≤ l'(q) for all q). ∎</p>
+  </div>
+</div>
+
+<!-- 4.6 -->
+<div id="p46">
+  <div class="sec-head">
+    <span class="sec-tag">Problem 4.6</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">5 pts — Full Johnson's Algorithm</span>
+  </div>
+
+  <h2>Putting It All Together — Full Johnson's Algorithm</h2>
+
+  <div class="pb">
+    <span class="ql">The Question</span>
+    <p>Using the results from all previous parts, describe an algorithm that computes all-pairs shortest paths on G in <strong>O(mn + n² log n)</strong> time if G has no negative cycles, and returns False otherwise.</p>
+  </div>
+
+  <h3>The Full Algorithm</h3>
+
+  <pre><span class="fn">JOHNSON_APSP</span>(G):
+  <span class="cm">// Step 1: Compute h(x) for all vertices using dummy node + Bellman-Ford</span>
+  h ← <span class="fn">COMPUTE_H</span>(G)           <span class="cm">// O(mn) — from part 4.1</span>
+  <span class="kw">if</span> h = False: <span class="kw">return</span> False  <span class="cm">// negative cycle detected</span>
+
+  <span class="cm">// Step 2: Build reweighted graph G' using w'(x,y) = w(x,y) + h(x) - h(y)</span>
+  G' ← copy of G with edge weights:
+    <span class="kw">for</span> each edge (x,y): w'(x,y) ← w(x,y) + h[x] - h[y]  <span class="cm">// O(m)</span>
+
+  <span class="cm">// Step 3: Run Dijkstra from every vertex in G'</span>
+  <span class="cm">// (safe because all weights in G' are ≥ 0, by 4.4)</span>
+  <span class="kw">for</span> each vertex u <span class="kw">in</span> V:
+    d'[u] ← <span class="fn">DIJKSTRA</span>(G', u)   <span class="cm">// O((n+m) log n) per source</span>
+
+  <span class="cm">// Step 4: Recover true distances by undoing the reweighting</span>
+  <span class="cm">// By 4.3: l'(p) = l(p) + h(a) - h(b), so l(p) = l'(p) - h(a) + h(b)</span>
+  <span class="kw">for</span> each pair (u, v):
+    dist[u][v] ← d'[u][v] - h[u] + h[v]   <span class="cm">// O(1) per pair, O(n²) total</span>
+
+  <span class="kw">return</span> dist</pre>
+
+  <h3>Runtime Analysis</h3>
+  <div class="card card-teal">
+    <table class="dt">
+      <thead><tr><th>Step</th><th>Operation</th><th>Cost</th><th>Count</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr class="hl-y"><td>1</td><td>Compute h(x): Bellman-Ford on augmented G</td><td>O(mn)</td><td>once</td><td>O(mn)</td></tr>
+        <tr class="hl-t"><td>2</td><td>Build G' — reweight all edges</td><td>O(1) per edge</td><td>m edges</td><td>O(m)</td></tr>
+        <tr class="hl-t"><td>3</td><td>Dijkstra from each vertex in G'</td><td>O((n+m) log n)</td><td>n times</td><td>O(mn log n + n² log n)</td></tr>
+        <tr class="hl-t"><td>4</td><td>Recover true distances</td><td>O(1) per pair</td><td>n² pairs</td><td>O(n²)</td></tr>
+        <tr class="hl-g"><td></td><td><strong>Total</strong></td><td></td><td></td><td><strong>O(mn + n² log n)</strong></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:8px;">Step 3 dominates for dense graphs but for sparse graphs (m ≪ n²) this is much faster than Floyd-Warshall's O(n³).</p>
+  </div>
+
+  <h3>Correctness</h3>
+  <div class="card card-violet">
+    <p><strong>Why do we recover d(u,v) = d'(u,v) - h(u) + h(v)?</strong></p>
+    <p>By 4.3: for any path p from u to v, l'(p) = l(p) + h(u) - h(v). So l(p) = l'(p) - h(u) + h(v).</p>
+    <p>By 4.5: the shortest path in G' is the same as in G. So d'(u,v) is achieved by the same path that achieves d(u,v). Therefore d(u,v) = d'(u,v) - h(u) + h(v). ✓</p>
+  </div>
+
+  <!-- FULL JOHNSON INTERACTIVE -->
+  <div class="ibox">
+    <div class="ibox-title">🚀 Full Johnson's Algorithm — Step Through All 4 Stages</div>
+    <div class="ibox-sub">Watch all four steps execute on a concrete graph with negative edges</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-ghost" onclick="johnsonLoad('ex1')">Example Graph</button>
+      <button class="btn btn-ghost" onclick="johnsonLoad('negcycle')">Negative Cycle (→ False)</button>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div id="johnsonGraphLabel" style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">CURRENT GRAPH</div>
+        <div class="gc"><canvas id="johnsonCanvas" width="380" height="250"></canvas></div>
+        <div id="hValuesDisplay" style="font-family:'Inconsolata';font-size:.78rem;margin-top:8px;color:var(--yellow);line-height:1.9;"></div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-family:'Inconsolata';font-size:10px;color:var(--muted);margin-bottom:6px;">APSP DISTANCE MATRIX d(u,v)</div>
+        <div id="johnsonMatrix"></div>
+        <div id="johnsonStage" style="font-family:'Inconsolata';font-size:.75rem;color:var(--muted);margin-top:8px;"></div>
+      </div>
+    </div>
+    <div class="steplog" id="johnsonLog">Load a graph, then walk through Johnson's algorithm step by step.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-t" onclick="johnsonStep()">Step →</button>
+      <button class="btn btn-ghost" onclick="johnsonReset()">↺ Reset</button>
+      <button class="btn btn-g" onclick="johnsonRunAll()">Run All ▶▶</button>
+    </div>
+  </div>
+
+  <div class="answer">
+    <h4>📝 EXAM ANSWER</h4>
+    <p><strong>Algorithm:</strong> (1) Run COMPUTE_H from 4.1 to get h(x) for all x in O(mn); return False if negative cycle. (2) Build G' with w'(x,y) = w(x,y)+h(x)-h(y) for all edges in O(m). (3) Run Dijkstra from every vertex u in G', giving d'(u,v) for all v, in O(n(n+m)logn) = O(mn logn + n² logn). (4) Recover d(u,v) = d'(u,v) - h(u) + h(v) for all pairs in O(n²).</p>
+    <p><strong>Correctness:</strong> By 4.4, all weights in G' are ≥ 0, so Dijkstra is correct. By 4.5, shortest paths in G' match those in G. By 4.3, l(p) = l'(p) - h(u) + h(v), so d(u,v) = d'(u,v) - h(u) + h(v).</p>
+    <p><strong>Runtime:</strong> Steps 1+2+4 are O(mn) + O(m) + O(n²) = O(mn). Step 3 is O(n(n+m)logn). Total: <strong>O(mn + n² logn)</strong>. ✓</p>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div class="sec-head" style="margin-top:60px;">
+    <span class="sec-tag">Summary</span>
+    <div class="sec-line"></div>
+    <span class="sec-pts">Everything on One Page</span>
+  </div>
+
+  <h2>Johnson's Algorithm — Complete Picture</h2>
+
+  <div class="card card-teal" style="margin-bottom:20px;">
+    <h3>The Chain of Reasoning</h3>
+    <p>4.1 gives us h(x) → 4.2 proves the triangle inequality → 4.4 uses 4.2 to prove all w' ≥ 0 → 4.3 proves telescoping → 4.5 uses 4.3 to prove shortest paths preserved → 4.6 combines everything into the algorithm.</p>
+    <div class="bmath">O(mn) [BF] + O(m) [reweight] + O(mn log n + n² log n) [n × Dijkstra] + O(n²) [undo] = O(mn + n² log n)</div>
+  </div>
+
+  <table class="dt" style="margin-bottom:20px;">
+    <thead><tr><th>Part</th><th>What You Prove</th><th>Key Technique</th></tr></thead>
+    <tbody>
+      <tr class="hl-t"><td>4.1</td><td>h(x) computable in O(mn)</td><td>Dummy node s* + Bellman-Ford</td></tr>
+      <tr class="hl-y"><td>4.2</td><td>l(p) + h(a) ≥ h(b)</td><td>h(b) is the minimum — any path can't beat it</td></tr>
+      <tr><td>4.3</td><td>l'(p) = l(p) + h(x₁) - h(xᵢ)</td><td>Telescoping sum — all middle terms cancel</td></tr>
+      <tr class="hl-g"><td>4.4</td><td>w'(x,y) ≥ 0 for all edges</td><td>Apply 4.2 to a single-edge path</td></tr>
+      <tr><td>4.5</td><td>Shortest paths same in G and G'</td><td>All paths shift by same constant h(a)-h(b)</td></tr>
+      <tr class="hl-t"><td>4.6</td><td>APSP in O(mn + n² log n)</td><td>Combine all parts + n runs of Dijkstra</td></tr>
+    </tbody>
+  </table>
+
+  <div class="two">
+    <div class="card card-yellow">
+      <h4>vs Floyd-Warshall</h4>
+      <p>Floyd-Warshall: O(n³), always. Johnson's: O(mn + n² log n). For sparse graphs where m = O(n), Johnson's is O(n² log n) vs O(n³) — massively faster.</p>
+    </div>
+    <div class="card card-pink">
+      <h4>Common Exam Mistakes</h4>
+      <p>❌ Forgetting to subtract h(u) + h(v) when recovering distances<br>❌ Applying Dijkstra directly on G (negative edges!)<br>❌ Not proving the dummy node doesn't change existing distances<br>❌ Forgetting to check for negative cycles before reweighting</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<footer>CS161 · Winter 2023 · Section 4 · Johnson's Algorithm · Prepared for exam tutoring session</footer>
+
+<script>
+// ═══ UTILITIES ═══
+window.addEventListener('scroll',function(){
+  var p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  document.getElementById('pbar').style.transform='scaleX('+p+')';
+});
+function toggleAcc(h){h.classList.toggle('open');h.nextElementSibling.classList.toggle('open');}
+function setText(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
+function setHTML(id,h){var e=document.getElementById(id);if(e)e.innerHTML=h;}
+
+var INF=999999;
+
+// ═══ CANVAS UTILS ═══
+function clearC(id,w,h){
+  var c=document.getElementById(id),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,w,h);ctx.fillStyle='#060912';ctx.fillRect(0,0,w,h);
+  return ctx;
+}
+
+function drawArrow(ctx,x1,y1,x2,y2,col,lw,r){
+  col=col||'#253045';lw=lw||1.5;r=r||22;
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<2)return;
+  var ux=dx/len,uy=dy/len;
+  var sx=x1+ux*r,sy=y1+uy*r,ex=x2-ux*r,ey=y2-uy*r;
+  var al=9,aw=5;
+  var ax=ex-ux*al,ay=ey-uy*al,px=-uy,py=ux;
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
+  ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ex,ey);
+  ctx.lineTo(ax+px*aw,ay+py*aw);ctx.lineTo(ax-px*aw,ay-py*aw);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();
+}
+
+function drawNode(ctx,x,y,label,fill,stroke,tc,r){
+  fill=fill||'#0d1119';stroke=stroke||'#00e5cc';tc=tc||'#d4e0f0';r=r||22;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=fill;ctx.fill();
+  ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=tc;ctx.font='bold 12px Inconsolata,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,x,y);
+}
+
+function drawWL(ctx,x1,y1,x2,y2,w,col){
+  col=col||'#ffe566';
+  var mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,l=Math.sqrt(dx*dx+dy*dy);
+  var px=-dy/l*13,py=dx/l*13;
+  ctx.fillStyle=col;ctx.font='11px Inconsolata,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String(w),mx+px,my+py);
+}
+
+// ═══ EXAMPLE GRAPHS ═══
+// G with 4 nodes A,B,C,D and negative edges
+var GRAPHS={
+  ex1:{
+    nodes:[{x:90,y:140,label:'A'},{x:210,y:70,label:'B'},{x:330,y:70,label:'C'},{x:210,y:210,label:'D'},{x:330,y:210,label:'E'}],
+    edges:[[0,1,3],[0,3,8],[1,2,1],[1,3,-4],[2,4,2],[3,2,5],[3,4,-1],[4,0,6]]
+  },
+  negcycle:{
+    nodes:[{x:100,y:140,label:'A'},{x:240,y:70,label:'B'},{x:240,y:210,label:'C'},{x:360,y:140,label:'D'}],
+    edges:[[0,1,2],[1,2,-4],[2,0,1],[1,3,3],[3,2,-2]]
+  }
+};
+
+// ═══════════════════════════════
+// 4.1 INTERACTIVE — h(x) via BF
+// ═══════════════════════════════
+var hG=null,hDist=[],hRound=0,hEdgeIdx=0,hDone=false,hStarted=false,hShowStar=false;
+
+function loadG(name){
+  hG=JSON.parse(JSON.stringify(GRAPHS[name]));
+  resetH();
+}
+
+function resetH(){
+  if(!hG)return;
+  hShowStar=false;
+  hDist=hG.nodes.map(function(_,i){return i===0?0:INF;});
+  hRound=0;hEdgeIdx=0;hDone=false;hStarted=false;
+  renderMainGraph(false,-1);
+  setHTML('bfDistTable','');
+  setHTML('hResults','');
+  setText('mainLog','Graph loaded. Press Step to add dummy node s* and run Bellman-Ford.');
+}
+
+function renderMainGraph(showStar,activeEdgeIdx){
+  var ctx=clearC('mainCanvas',420,280);
+  if(!hG)return;
+  var nodes=hG.nodes.slice();
+  var edges=hG.edges.slice();
+  if(showStar){
+    var sx=60,sy=140;
+    // draw s* edges first
+    nodes.forEach(function(n,i){
+      drawArrow(ctx,sx,sy,n.x,n.y,'rgba(255,229,102,.4)',1);
+      drawWL(ctx,sx,sy,n.x,n.y,'0','rgba(255,229,102,.6)');
+    });
+    // draw s* node
+    drawNode(ctx,sx,sy,'s*','rgba(255,229,102,.15)','#ffe566','#ffe566',20);
+  }
+  edges.forEach(function(e,i){
+    var a=nodes[e[0]],b=nodes[e[1]];
+    var neg=e[2]<0;
+    var hl=i===activeEdgeIdx;
+    var col=hl?'#00e5cc':(neg?'#ff5fa0':'#253045');
+    var lw=hl?2.5:1.5;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,lw);
+    var wcol=neg?'#ff5fa0':'#ffe566';
+    drawWL(ctx,a.x,a.y,b.x,b.y,e[2],wcol);
+  });
+  nodes.forEach(function(n,i){
+    var d=hDist[i];
+    var settled=d<INF&&d>-INF;
+    var fill=settled?'rgba(0,229,204,.15)':'#0d1119';
+    var stroke=settled?'#00e5cc':'#253045';
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    if(d<INF){
+      ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+      ctx.textAlign='center';ctx.fillText('h='+d,n.x,n.y+34);
+    }
+  });
+}
+
+function renderBFTable(){
+  if(!hG)return;
+  var html='<table class="dt"><thead><tr><th>Vertex</th><th>h(x) = dist(s*,x)</th></tr></thead><tbody>';
+  hG.nodes.forEach(function(n,i){
+    var d=hDist[i];
+    var cls=d<INF?'hl-t':'';
+    html+='<tr class="'+cls+'"><td>'+n.label+'</td><td>'+(d===INF?'∞':d)+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  setHTML('bfDistTable',html);
+}
+
+function stepH(){
+  if(!hG||hDone)return;
+  var n=hG.nodes.length;
+  if(!hStarted){
+    hStarted=true;hShowStar=true;
+    renderMainGraph(true,-1);
+    setText('mainLog','Added dummy node s* with 0-weight edges to all vertices. Now running Bellman-Ford from s*. dist[A]=0 (s*→A=0), all others=∞ temporarily... initializing.');
+    // Initialize: all nodes reachable from s* with cost 0
+    hDist=hG.nodes.map(function(){return 0;});
+    renderBFTable();
+    setHTML('hResults','Initialized: all h(x)=0 (direct edge from s* costs 0)');
+    return;
+  }
+  // Run full BF relaxation rounds
+  var allEdges=[];
+  hG.edges.forEach(function(e){allEdges.push(e);});
+  var improved=false;
+  allEdges.forEach(function(e){
+    var u=e[0],v=e[1],w=e[2];
+    if(hDist[u]!==INF&&hDist[u]+w<hDist[v]){
+      hDist[v]=hDist[u]+w;improved=true;
+    }
+  });
+  hRound++;
+  renderMainGraph(true,-1);
+  renderBFTable();
+  if(hRound===n-1){
+    // Detection round
+    var negCycle=false;
+    allEdges.forEach(function(e){
+      if(hDist[e[0]]!==INF&&hDist[e[0]]+e[2]<hDist[e[1]])negCycle=true;
+    });
+    if(negCycle){
+      hDone=true;
+      setText('mainLog','❌ Negative cycle detected in round '+hRound+'! Return False.');
+      setHTML('hResults','<span style="color:var(--pink)">NEGATIVE CYCLE — return False</span>');
+    } else {
+      hDone=true;
+      setText('mainLog','✅ Bellman-Ford complete after '+(n-1)+' rounds. h(x) values are the final distances from s*.');
+      var res='';
+      hG.nodes.forEach(function(n,i){res+=n.label+': h='+hDist[i]+'  ';});
+      setHTML('hResults',res);
+    }
+    return;
+  }
+  setText('mainLog','Round '+hRound+'/'+n+': '+(improved?'Some distances improved.':'No improvements this round.'));
+  var res='';
+  hG.nodes.forEach(function(nd,i){res+=nd.label+': h='+hDist[i]+'&nbsp;&nbsp;';});
+  setHTML('hResults',res);
+}
+
+function runAllH(){
+  if(!hG)return;
+  if(!hStarted)stepH();
+  var n=hG.nodes.length;
+  hDist=hG.nodes.map(function(){return 0;});
+  for(var r=0;r<n;r++){
+    hG.edges.forEach(function(e){
+      if(hDist[e[0]]!==INF&&hDist[e[0]]+e[2]<hDist[e[1]])hDist[e[1]]=hDist[e[0]]+e[2];
+    });
+  }
+  var negCycle=false;
+  hG.edges.forEach(function(e){if(hDist[e[0]]!==INF&&hDist[e[0]]+e[2]<hDist[e[1]])negCycle=true;});
+  hDone=true;hShowStar=true;
+  renderMainGraph(true,-1);renderBFTable();
+  if(negCycle){
+    setText('mainLog','❌ Negative cycle detected! Return False.');
+    setHTML('hResults','<span style="color:var(--pink)">NEGATIVE CYCLE — return False</span>');
+  } else {
+    setText('mainLog','✅ h(x) computed for all vertices.');
+    var res='';
+    hG.nodes.forEach(function(nd,i){res+=nd.label+': h='+hDist[i]+'&nbsp;&nbsp;';});
+    setHTML('hResults',res);
+  }
+}
+
+// ═══════════════════════════════
+// 4.2 TRIANGLE INEQUALITY VIZ
+// ═══════════════════════════════
+var triG=null,triH=[];
+
+function initTri(){
+  triG=JSON.parse(JSON.stringify(GRAPHS['ex1']));
+  // compute h values using BF
+  triH=triG.nodes.map(function(){return 0;});
+  for(var r=0;r<triG.nodes.length;r++){
+    triG.edges.forEach(function(e){
+      if(triH[e[0]]!==INF&&triH[e[0]]+e[2]<triH[e[1]])triH[e[1]]=triH[e[0]]+e[2];
+    });
+  }
+  // populate selects
+  var as=document.getElementById('triA'),bs=document.getElementById('triB');
+  as.innerHTML='';bs.innerHTML='';
+  triG.nodes.forEach(function(n,i){
+    as.innerHTML+='<option value="'+i+'">'+n.label+'</option>';
+    bs.innerHTML+='<option value="'+i+'">'+n.label+'</option>';
+  });
+  as.value='0';bs.value='2';
+  renderTriGraph(-1,-1,[]);
+  setText('triLog','Select a and b, then click Show Inequality.');
+}
+
+function renderTriGraph(ai,bi,pathEdges){
+  var ctx=clearC('triCanvas',860,260);
+  if(!triG)return;
+  triG.edges.forEach(function(e,i){
+    var a=triG.nodes[e[0]],b=triG.nodes[e[1]];
+    var onPath=pathEdges.indexOf(i)>=0;
+    var neg=e[2]<0;
+    var col=onPath?'#00e5cc':(neg?'#ff5fa0':'#253045');
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,onPath?2.5:1.5);
+    drawWL(ctx,a.x,a.y,b.x,b.y,e[2],neg?'#ff5fa0':'#ffe566');
+  });
+  triG.nodes.forEach(function(n,i){
+    var isA=i===ai,isB=i===bi;
+    var fill=isA?'rgba(255,229,102,.2)':(isB?'rgba(0,229,204,.2)':'#0d1119');
+    var stroke=isA?'#ffe566':(isB?'#00e5cc':'#253045');
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+    ctx.textAlign='center';ctx.fillText('h='+triH[i],n.x,n.y+34);
+    if(isA){ctx.fillStyle='#ffe566';ctx.fillText('a',n.x,n.y-34);}
+    if(isB){ctx.fillStyle='#00e5cc';ctx.fillText('b',n.x,n.y-34);}
+  });
+}
+
+// Simple shortest path using Dijkstra (all non-negative after shift, but let's use BF)
+function shortestPath(g,src,dst){
+  var n=g.nodes.length;
+  var dist=new Array(n).fill(INF);
+  var prev=new Array(n).fill(-1);
+  dist[src]=0;
+  for(var r=0;r<n-1;r++){
+    g.edges.forEach(function(e){
+      if(dist[e[0]]!==INF&&dist[e[0]]+e[2]<dist[e[1]]){
+        dist[e[1]]=dist[e[0]]+e[2];prev[e[1]]=e[0];
+      }
+    });
+  }
+  if(dist[dst]===INF)return{len:INF,path:[],edges:[]};
+  var path=[dst],cur=dst;
+  while(prev[cur]!==-1){path.unshift(prev[cur]);cur=prev[cur];}
+  var edges=[];
+  for(var i=0;i<path.length-1;i++){
+    var u=path[i],v2=path[i+1];
+    g.edges.forEach(function(e,ei){if(e[0]===u&&e[1]===v2)edges.push(ei);});
+  }
+  return{len:dist[dst],path:path,edges:edges};
+}
+
+function showTri(){
+  if(!triG)return;
+  var ai=parseInt(document.getElementById('triA').value);
+  var bi=parseInt(document.getElementById('triB').value);
+  var sp=shortestPath(triG,ai,bi);
+  renderTriGraph(ai,bi,sp.edges);
+  var ha=triH[ai],hb=triH[bi],lp=sp.len;
+  var holds=lp+ha>=hb;
+  var msg='Path '+triG.nodes[ai].label+'→'+triG.nodes[bi].label+': l(p)='+lp
+    +', h('+triG.nodes[ai].label+')='+ha+', h('+triG.nodes[bi].label+')='+hb
+    +'. Check: l(p)+h(a) = '+lp+'+'+ha+'='+(lp+ha)+' ≥ h(b)='+hb+'? '+(holds?'✅ YES':'❌');
+  setText('triLog',msg);
+}
+
+function resetTri(){renderTriGraph(-1,-1,[]);setText('triLog','Select a and b, then click Show Inequality.');}
+
+// ═══════════════════════════════
+// 4.3 TELESCOPE VIZ
+// ═══════════════════════════════
+var teleG=null,teleH=[];
+var PATHS=[
+  {label:'A→B→C',nodes:[0,1,2]},
+  {label:'A→B→C→E',nodes:[0,1,2,4]},
+  {label:'A→D→C→E',nodes:[0,3,2,4]},
+  {label:'A→D→E',nodes:[0,3,4]}
+];
+
+function initTele(){
+  teleG=JSON.parse(JSON.stringify(GRAPHS['ex1']));
+  teleH=teleG.nodes.map(function(){return 0;});
+  for(var r=0;r<teleG.nodes.length;r++){
+    teleG.edges.forEach(function(e){
+      if(teleH[e[0]]!==INF&&teleH[e[0]]+e[2]<teleH[e[1]])teleH[e[1]]=teleH[e[0]]+e[2];
+    });
+  }
+  var sel=document.getElementById('telePath');
+  sel.innerHTML='';
+  PATHS.forEach(function(p,i){sel.innerHTML+='<option value="'+i+'">'+p.label+'</option>';});
+  renderTeleGraph([]);
+  setHTML('teleExpand','');
+  setText('teleLog','Select a path to see the telescoping sum.');
+}
+
+function renderTeleGraph(highlightNodes){
+  var ctx=clearC('teleCanvas',860,220);
+  if(!teleG)return;
+  teleG.edges.forEach(function(e){
+    var a=teleG.nodes[e[0]],b=teleG.nodes[e[1]];
+    var neg=e[2]<0;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,neg?'#ff5fa0':'#253045',1.5);
+    drawWL(ctx,a.x,a.y,b.x,b.y,e[2],neg?'#ff5fa0':'#ffe566');
+  });
+  teleG.nodes.forEach(function(n,i){
+    var hl=highlightNodes.indexOf(i)>=0;
+    var fill=hl?'rgba(0,229,204,.2)':'#0d1119';
+    var stroke=hl?'#00e5cc':'#253045';
+    drawNode(ctx,n.x,n.y,n.label,fill,stroke,'#fff');
+    ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+    ctx.textAlign='center';ctx.fillText('h='+teleH[i],n.x,n.y+34);
+  });
+}
+
+function showTelescope(){
+  if(!teleG)return;
+  var pi=parseInt(document.getElementById('telePath').value);
+  var p=PATHS[pi];
+  renderTeleGraph(p.nodes);
+  // Compute l(p)
+  var lp=0;
+  var edgeWeights=[];
+  for(var i=0;i<p.nodes.length-1;i++){
+    var u=p.nodes[i],v=p.nodes[i+1];
+    var w=0;
+    teleG.edges.forEach(function(e){if(e[0]===u&&e[1]===v)w=e[2];});
+    lp+=w;edgeWeights.push(w);
+  }
+  // Build display
+  var html='<div style="color:var(--muted);margin-bottom:6px;">Expanding l\'(p) for path '+p.label+':</div>';
+  html+='<div style="line-height:2.2;">';
+  // Show each w'(xj,xj+1) = w + h(xj) - h(xj+1)
+  var termParts=[];
+  for(var i=0;i<p.nodes.length-1;i++){
+    var u=p.nodes[i],v=p.nodes[i+1];
+    var lbl=teleG.nodes[u].label+'→'+teleG.nodes[v].label;
+    termParts.push('<span style="color:#89ddff;">w\'('+lbl+')</span>'
+      +' = <span style="color:var(--yellow);">'+edgeWeights[i]+'</span>'
+      +' + <span style="color:var(--teal)">h('+teleG.nodes[u].label+')</span>'
+      +' - <span style="color:var(--pink)">h('+teleG.nodes[v].label+')</span>');
+  }
+  html+=termParts.join('<br>');
+  html+='<br><br>';
+  // Show sum with cancellations highlighted
+  html+='<span style="color:var(--muted);">Sum = l(p) + ';
+  var hTerms=[];
+  for(var i=0;i<p.nodes.length;i++){
+    var n=teleG.nodes[p.nodes[i]];
+    if(i===0){hTerms.push('<span style="color:var(--teal);font-weight:700;">+h('+n.label+')</span>');}
+    else if(i===p.nodes.length-1){hTerms.push('<span style="color:var(--pink);font-weight:700;">-h('+n.label+')</span>');}
+    else{hTerms.push('<span style="color:var(--muted2);text-decoration:line-through;">+h('+n.label+') -h('+n.label+')</span> <span style="font-size:.7rem;color:var(--muted);">[cancels]</span>');}
+  }
+  html+=hTerms.join(' ')+'</span>';
+  html+='<br>';
+  var x1=p.nodes[0],xi=p.nodes[p.nodes.length-1];
+  var lprime=lp+teleH[x1]-teleH[xi];
+  html+='<span style="color:var(--green);font-weight:700;">= '+lp+' + h('+teleG.nodes[x1].label+') - h('+teleG.nodes[xi].label+') = '+lp+' + '+teleH[x1]+' - '+teleH[xi]+' = '+lprime+'</span>';
+  html+='</div>';
+  setHTML('teleExpand',html);
+  setText('teleLog','l(p)='+lp+', h(x1)='+teleH[x1]+', h(xi)='+teleH[xi]+'. Result: l\'(p)='+lprime+'. Only endpoints matter — middle h values cancelled.');
+}
+
+// ═══════════════════════════════
+// 4.4 REWEIGHTING VIZ
+// ═══════════════════════════════
+var rwG=null,rwH=[];
+function initReweight(){
+  rwG=JSON.parse(JSON.stringify(GRAPHS['ex1']));
+  rwH=rwG.nodes.map(function(){return 0;});
+  for(var r=0;r<rwG.nodes.length;r++){
+    rwG.edges.forEach(function(e){
+      if(rwH[e[0]]!==INF&&rwH[e[0]]+e[2]<rwH[e[1]])rwH[e[1]]=rwH[e[0]]+e[2];
+    });
+  }
+  renderRWOrig();
+  clearC('rwNewCanvas',380,240);
+  setHTML('rwTable','');
+  setText('rwLog','Click "Compute Reweighting" to see w\'(x,y) = w(x,y)+h(x)-h(y) for all edges.');
+}
+
+function renderRWOrig(){
+  var ctx=clearC('rwOrigCanvas',380,240);
+  if(!rwG)return;
+  rwG.edges.forEach(function(e){
+    var a=rwG.nodes[e[0]],b=rwG.nodes[e[1]];
+    var neg=e[2]<0;
+    drawArrow(ctx,a.x,a.y,b.x,b.y,neg?'#ff5fa0':'#253045',neg?2:1.5);
+    drawWL(ctx,a.x,a.y,b.x,b.y,e[2],neg?'#ff5fa0':'#ffe566');
+  });
+  rwG.nodes.forEach(function(n,i){
+    drawNode(ctx,n.x,n.y,n.label,'#0d1119','#253045','#fff');
+    ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+    ctx.textAlign='center';ctx.fillText('h='+rwH[i],n.x,n.y+34);
+  });
+}
+
+function showReweight(){
+  if(!rwG)return;
+  var ctx=clearC('rwNewCanvas',380,240);
+  var newWeights=rwG.edges.map(function(e){
+    return e[2]+rwH[e[0]]-rwH[e[1]];
+  });
+  rwG.edges.forEach(function(e,i){
+    var a=rwG.nodes[e[0]],b=rwG.nodes[e[1]];
+    var nw=newWeights[i];
+    var col=nw===0?'#ffe566':'#4ade80';
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,2);
+    drawWL(ctx,a.x,a.y,b.x,b.y,nw,col);
+  });
+  rwG.nodes.forEach(function(n,i){
+    drawNode(ctx,n.x,n.y,n.label,'#0d1119','#00e5cc','#fff');
+    ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+    ctx.textAlign='center';ctx.fillText('h='+rwH[i],n.x,n.y+34);
+  });
+  var html='<table class="dt"><thead><tr><th>Edge</th><th>w(x,y)</th><th>h(x)</th><th>h(y)</th><th>w\'(x,y)</th><th>≥ 0?</th></tr></thead><tbody>';
+  rwG.edges.forEach(function(e,i){
+    var nw=newWeights[i];
+    var ok=nw>=0;
+    html+='<tr class="'+(ok?'hl-g':'hl-p')+'">'
+      +'<td>'+rwG.nodes[e[0]].label+'→'+rwG.nodes[e[1]].label+'</td>'
+      +'<td>'+(e[2]<0?'<span style="color:var(--pink)">'+e[2]+'</span>':e[2])+'</td>'
+      +'<td>'+rwH[e[0]]+'</td>'
+      +'<td>'+rwH[e[1]]+'</td>'
+      +'<td style="font-weight:700;color:'+(ok?'var(--green)':'var(--pink)')+'">'+nw+'</td>'
+      +'<td>'+(ok?'✓':'✗')+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  setHTML('rwTable',html);
+  var allOk=newWeights.every(function(w){return w>=0;});
+  setText('rwLog',allOk?'✅ All edges in G\' have non-negative weights! Dijkstra is now safe to use.':'❌ Some negative weights remain — something went wrong.');
+}
+
+function resetReweight(){
+  renderRWOrig();
+  clearC('rwNewCanvas',380,240);
+  setHTML('rwTable','');
+  setText('rwLog','Click "Compute Reweighting" to apply w\'(x,y) = w(x,y) + h(x) - h(y).');
+}
+
+// ═══════════════════════════════
+// 4.5 SHIFT VIZ
+// ═══════════════════════════════
+var shiftG=null,shiftH=[],shiftNewW=[];
+function initShift(){
+  shiftG=JSON.parse(JSON.stringify(GRAPHS['ex1']));
+  shiftH=shiftG.nodes.map(function(){return 0;});
+  for(var r=0;r<shiftG.nodes.length;r++){
+    shiftG.edges.forEach(function(e){
+      if(shiftH[e[0]]!==INF&&shiftH[e[0]]+e[2]<shiftH[e[1]])shiftH[e[1]]=shiftH[e[0]]+e[2];
+    });
+  }
+  shiftNewW=shiftG.edges.map(function(e){return e[2]+shiftH[e[0]]-shiftH[e[1]];});
+  var as=document.getElementById('shiftA'),bs=document.getElementById('shiftB');
+  as.innerHTML='';bs.innerHTML='';
+  shiftG.nodes.forEach(function(n,i){
+    as.innerHTML+='<option value="'+i+'">'+n.label+'</option>';
+    bs.innerHTML+='<option value="'+i+'">'+n.label+'</option>';
+  });
+  as.value='0';bs.value='4';
+  renderShiftGraph(-1,-1,[],[]);
+  setText('shiftLog','Select source and destination to compare paths in G vs G\'.');
+  setHTML('shiftTable','');
+}
+
+function renderShiftGraph(ai,bi,hlPathG,hlPathGp){
+  var ctx=clearC('shiftCanvas',860,260);
+  if(!shiftG)return;
+  // Draw G on left half, G' on right half
+  var offsets=[0,440];
+  var labels=['G (original)','G\' (reweighted)'];
+  offsets.forEach(function(ox,gi){
+    ctx.fillStyle='#4a6075';ctx.font='12px Inconsolata,monospace';ctx.textAlign='center';
+    ctx.fillText(labels[gi],ox+190,20);
+    var hl=gi===0?hlPathG:hlPathGp;
+    shiftG.edges.forEach(function(e,i){
+      var a=shiftG.nodes[e[0]],b=shiftG.nodes[e[1]];
+      var onPath=hl.indexOf(i)>=0;
+      var w=gi===0?e[2]:shiftNewW[i];
+      var neg=w<0;
+      var col=onPath?'#00e5cc':(neg?'#ff5fa0':'#253045');
+      drawArrow(ctx,a.x+ox,a.y,b.x+ox,b.y,col,onPath?2.5:1.5);
+      drawWL(ctx,a.x+ox,a.y,b.x+ox,b.y,w,neg?'#ff5fa0':'#ffe566');
+    });
+    shiftG.nodes.forEach(function(n,i){
+      var isA=i===ai,isB=i===bi;
+      var fill=isA?'rgba(255,229,102,.2)':(isB?'rgba(0,229,204,.2)':'#0d1119');
+      var stroke=isA?'#ffe566':(isB?'#00e5cc':'#253045');
+      drawNode(ctx,n.x+ox,n.y,n.label,fill,stroke,'#fff');
+    });
+  });
+}
+
+function findAllPaths(g,src,dst,maxLen){
+  var results=[];
+  function dfs(cur,path,edges,cost){
+    if(path.length>maxLen)return;
+    if(cur===dst&&path.length>1){results.push({path:path.slice(),edges:edges.slice(),cost:cost});return;}
+    g.edges.forEach(function(e,ei){
+      if(e[0]===cur&&path.indexOf(e[1])<0){
+        path.push(e[1]);edges.push(ei);
+        dfs(e[1],path,edges,cost+e[2]);
+        path.pop();edges.pop();
+      }
+    });
+  }
+  dfs(src,[src],[],0);
+  return results;
+}
+
+function showShift(){
+  if(!shiftG)return;
+  var ai=parseInt(document.getElementById('shiftA').value);
+  var bi=parseInt(document.getElementById('shiftB').value);
+  if(ai===bi){setText('shiftLog','Pick different source and destination.');return;}
+  var paths=findAllPaths(shiftG,ai,bi,shiftG.nodes.length);
+  if(paths.length===0){setText('shiftLog','No paths found between these vertices.');return;}
+  var shift=shiftH[ai]-shiftH[bi];
+  // Sort by cost
+  paths.sort(function(a,b){return a.cost-b.cost;});
+  var shortest=paths[0];
+  // New weights for G'
+  var pathsGp=paths.map(function(p){
+    var newCost=0;
+    p.edges.forEach(function(ei){newCost+=shiftNewW[ei];});
+    return{path:p.path,edges:p.edges,cost:newCost};
+  });
+  pathsGp.sort(function(a,b){return a.cost-b.cost;});
+  renderShiftGraph(ai,bi,shortest.edges,pathsGp[0].edges);
+  var html='<table class="dt"><thead><tr><th>Path</th><th>l(p) in G</th><th>l\'(p) in G\'</th><th>Difference</th></tr></thead><tbody>';
+  paths.forEach(function(p,i){
+    var gpCost=pathsGp.find(function(q){return q.path.join()===p.path.join();});
+    var diff=gpCost?gpCost.cost-p.cost:0;
+    var isMin=i===0;
+    html+='<tr class="'+(isMin?'hl-t':'')+'">'
+      +'<td>'+p.path.map(function(i){return shiftG.nodes[i].label;}).join('→')+(isMin?' ★':'')+'</td>'
+      +'<td>'+p.cost+'</td>'
+      +'<td>'+(gpCost?gpCost.cost:'—')+'</td>'
+      +'<td style="color:var(--teal);">'+diff+' = h('+shiftG.nodes[ai].label+')-h('+shiftG.nodes[bi].label+')='+shift+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  setHTML('shiftTable',html);
+  setText('shiftLog','All paths from '+shiftG.nodes[ai].label+' to '+shiftG.nodes[bi].label+' shift by exactly h(a)-h(b) = '+shift+'. The shortest path in G (★) is also shortest in G\'.');
+}
+
+// ═══════════════════════════════
+// 4.6 FULL JOHNSON INTERACTIVE
+// ═══════════════════════════════
+var jG=null,jH=[],jNewW=[],jDist=[],jStage=0,jDone=false;
+
+function johnsonLoad(name){
+  jG=JSON.parse(JSON.stringify(GRAPHS[name]));
+  johnsonReset();
+}
+
+function johnsonReset(){
+  if(!jG)return;
+  jH=[];jNewW=[];jDist=[];jStage=0;jDone=false;
+  renderJohnsonGraph('#253045',-1);
+  setHTML('johnsonMatrix','');
+  setHTML('hValuesDisplay','');
+  setText('johnsonGraphLabel','ORIGINAL GRAPH G');
+  setText('johnsonStage','');
+  setText('johnsonLog','Press Step to walk through Johnson\'s algorithm.');
+}
+
+function renderJohnsonGraph(edgeCol,negCol){
+  var ctx=clearC('johnsonCanvas',380,250);
+  if(!jG)return;
+  jG.edges.forEach(function(e,i){
+    var a=jG.nodes[e[0]],b=jG.nodes[e[1]];
+    var w=jNewW.length?jNewW[i]:e[2];
+    var neg=w<0;
+    var col=neg?'#ff5fa0':'#253045';
+    drawArrow(ctx,a.x,a.y,b.x,b.y,col,neg?2:1.5);
+    drawWL(ctx,a.x,a.y,b.x,b.y,w,neg?'#ff5fa0':'#ffe566');
+  });
+  jG.nodes.forEach(function(n,i){
+    var fill=jDist[i]!==undefined?'rgba(0,229,204,.12)':'#0d1119';
+    drawNode(ctx,n.x,n.y,n.label,fill,'#253045','#fff');
+    if(jH.length){
+      ctx.fillStyle='#4ade80';ctx.font='9px Inconsolata,monospace';
+      ctx.textAlign='center';ctx.fillText('h='+jH[i],n.x,n.y+34);
+    }
+  });
+}
+
+function renderJohnsonMatrix(dist){
+  var n=jG.nodes.length;
+  var html='<div style="display:grid;grid-template-columns:repeat('+(n+1)+',40px);gap:2px;">';
+  html+='<div class="wm-cell header"></div>';
+  jG.nodes.forEach(function(nd){html+='<div class="wm-cell header">'+nd.label+'</div>';});
+  jG.nodes.forEach(function(nd,i){
+    html+='<div class="wm-cell header">'+nd.label+'</div>';
+    for(var j=0;j<n;j++){
+      var v=dist[i][j];
+      var cls='wm-cell'+(v===0?' zero':(v===INF?' inf':(v<0?' neg':' pos')));
+      html+='<div class="'+cls+'">'+(v===INF?'∞':v)+'</div>';
+    }
+  });
+  html+='</div>';
+  setHTML('johnsonMatrix',html);
+}
+
+function dijkstraSP(g,weights,src){
+  var n=g.nodes.length;
+  var dist=new Array(n).fill(INF);
+  var visited=new Array(n).fill(false);
+  dist[src]=0;
+  for(var iter=0;iter<n;iter++){
+    var u=-1;
+    for(var i=0;i<n;i++){if(!visited[i]&&(u===-1||dist[i]<dist[u]))u=i;}
+    if(u===-1||dist[u]===INF)break;
+    visited[u]=true;
+    g.edges.forEach(function(e,ei){
+      if(e[0]===u&&!visited[e[1]]){
+        var w=weights[ei];
+        if(dist[u]+w<dist[e[1]])dist[e[1]]=dist[u]+w;
+      }
+    });
+  }
+  return dist;
+}
+
+function johnsonStep(){
+  if(!jG||jDone)return;
+  if(jStage===0){
+    // Step 1: compute h
+    jH=jG.nodes.map(function(){return 0;});
+    for(var r=0;r<jG.nodes.length;r++){
+      jG.edges.forEach(function(e){
+        if(jH[e[0]]!==INF&&jH[e[0]]+e[2]<jH[e[1]])jH[e[1]]=jH[e[0]]+e[2];
+      });
+    }
+    var negCycle=false;
+    jG.edges.forEach(function(e){if(jH[e[0]]!==INF&&jH[e[0]]+e[2]<jH[e[1]])negCycle=true;});
+    if(negCycle){
+      jDone=true;
+      setText('johnsonLog','❌ Negative cycle detected! Return False.');
+      return;
+    }
+    renderJohnsonGraph('#253045',-1);
+    var hStr='';
+    jG.nodes.forEach(function(n,i){hStr+=n.label+': h='+jH[i]+'  ';});
+    setHTML('hValuesDisplay',hStr);
+    setText('johnsonLog','Step 1 ✅: h(x) computed via Bellman-Ford. See green labels on nodes.');
+    setText('johnsonStage','Stage 1/4: Computed h(x)');
+    jStage=1;return;
+  }
+  if(jStage===1){
+    // Step 2: reweight
+    jNewW=jG.edges.map(function(e){return e[2]+jH[e[0]]-jH[e[1]];});
+    renderJohnsonGraph('#4ade80',-1);
+    setText('johnsonGraphLabel','REWEIGHTED GRAPH G\'');
+    setText('johnsonLog','Step 2 ✅: Edge weights reweighted. All w\'(x,y) = w(x,y)+h(x)-h(y) ≥ 0. Dijkstra is now safe!');
+    setText('johnsonStage','Stage 2/4: Built G\'');
+    jStage=2;return;
+  }
+  if(jStage===2){
+    // Step 3: run Dijkstra from every vertex in G'
+    var n=jG.nodes.length;
+    var dprime=[];
+    for(var u=0;u<n;u++){dprime.push(dijkstraSP(jG,jNewW,u));}
+    // Recover true distances: d(u,v) = d'(u,v) - h(u) + h(v)
+    jDist=[];
+    for(var u=0;u<n;u++){
+      jDist.push([]);
+      for(var v=0;v<n;v++){
+        var dp=dprime[u][v];
+        jDist[u].push(dp===INF?INF:dp-jH[u]+jH[v]);
+      }
+    }
+    renderJohnsonMatrix(jDist);
+    setText('johnsonLog','Steps 3+4 ✅: Ran Dijkstra from every vertex in G\', then recovered d(u,v) = d\'(u,v) - h(u) + h(v). Matrix shows all-pairs shortest paths!');
+    setText('johnsonStage','Stage 3+4/4: Dijkstra × n + recover distances');
+    jDone=true;return;
+  }
+}
+
+function johnsonRunAll(){if(!jG)return;while(!jDone&&jStage<5)johnsonStep();}
+
+// ═══════════════════════════════
+// INIT ALL
+// ═══════════════════════════════
+loadG('ex1');
+initTri();
+initTele();
+initReweight();
+initShift();
+johnsonLoad('ex1');
+</script>
+</body>
+</html>
