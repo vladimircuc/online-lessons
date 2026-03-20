@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS 305 — Module 2 Coding Assignment: Dependency Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'Lato', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,14,26,0.93); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+  }
+  .nav-logo { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--warn); letter-spacing: 0.1em; text-transform: uppercase; }
+  .nav-steps { display: flex; gap: 4px; }
+  .nav-dot { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); background: transparent; cursor: pointer; font-family: var(--font-head); font-size: 11px; font-weight: 700; color: var(--text3); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .nav-dot:hover { border-color: var(--warn); color: var(--warn); }
+  .nav-dot.active { background: var(--warn); border-color: var(--warn); color: #0a0e1a; }
+  .nav-dot.done { background: rgba(16,185,129,0.15); border-color: var(--accent3); color: var(--accent3); }
+
+  main { padding-top: 56px; }
+  .slide { min-height: 100vh; display: none; flex-direction: column; justify-content: center; padding: 4rem 2rem; max-width: 900px; margin: 0 auto; position: relative; }
+  .slide.active { display: flex; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .slide > * { position: relative; z-index: 1; }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--warn); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  h1 { font-family: var(--font-head); font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
+  h2 { font-family: var(--font-head); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.2; margin-bottom: 1.2rem; }
+  h3 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  p { color: var(--text2); line-height: 1.8; font-size: 1.05rem; margin-bottom: 1rem; }
+  .warn-text { color: var(--warn); }
+  .accent-text { color: var(--accent); }
+  .green-text { color: var(--accent3); }
+  .danger-text { color: var(--danger); }
+
+  .slide-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .btn { font-family: var(--font-head); font-size: 13px; font-weight: 700; letter-spacing: 0.05em; padding: 10px 24px; border-radius: 6px; cursor: pointer; transition: all 0.2s; border: none; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--warn); color: var(--warn); }
+  .btn-ghost:disabled { opacity: 0.2; cursor: default; }
+  .btn-primary { background: var(--warn); color: #0a0e1a; }
+  .btn-primary:hover { background: #fbbf24; }
+  .slide-counter { font-family: var(--font-mono); font-size: 12px; color: var(--text3); }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .card.warn-border { border-color: rgba(245,158,11,0.35); }
+  .card.green-border { border-color: rgba(16,185,129,0.3); }
+  .card.blue-border { border-color: rgba(0,212,255,0.3); }
+  .card.red-border { border-color: rgba(239,68,68,0.3); }
+
+  .analogy { background: rgba(124,58,237,0.1); border-left: 3px solid var(--accent2); border-radius: 0 8px 8px 0; padding: 1.2rem 1.5rem; margin: 1.5rem 0; }
+  .analogy-label { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .analogy p { color: var(--text2); margin: 0; }
+
+  .code-block { background: #0d1117; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 1rem 0; }
+  .code-header { background: var(--bg3); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .code-filename { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+  .code-body { padding: 1.2rem 1.5rem; overflow-x: auto; }
+  .code-body pre { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.8; color: #e2e8f0; white-space: pre; }
+  .hl-key { color: #7dd3fc; }
+  .hl-val { color: #fbbf24; }
+  .hl-tag { color: #f9a8d4; }
+  .hl-comment { color: #475569; }
+  .hl-add { background: rgba(16,185,129,0.15); color: #6ee7b7; border-radius: 3px; }
+  .hl-bad { background: rgba(239,68,68,0.15); color: #fca5a5; border-radius: 3px; }
+
+  .pill { display: inline-block; font-family: var(--font-mono); font-size: 11px; padding: 3px 10px; border-radius: 100px; margin-right: 6px; margin-bottom: 4px; }
+  .pill.warn { background: rgba(245,158,11,0.1); color: var(--warn); border: 1px solid rgba(245,158,11,0.2); }
+  .pill.green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+  .pill.red { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+  .pill.blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+
+  /* CONCEPT CARDS */
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 1.5rem 0; }
+  .concept-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; cursor: pointer; transition: all 0.2s; }
+  .concept-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .concept-card.open { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.04); }
+  .cc-icon { font-size: 22px; margin-bottom: 8px; }
+  .cc-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .cc-sub { font-size: 12px; color: var(--text3); }
+  .cc-body { font-size: 13px; color: var(--text2); line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: none; }
+  .concept-card.open .cc-body { display: block; }
+
+  /* DEPENDENCY FLOW DEMO */
+  .dep-demo { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+  .dep-flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; margin: 1rem 0; }
+  .dep-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-family: var(--font-head); font-size: 12px; font-weight: 600; text-align: center; transition: all 0.3s; cursor: pointer; }
+  .dep-box.your-code { border-color: rgba(0,212,255,0.4); color: var(--accent); }
+  .dep-box.library { border-color: var(--border2); color: var(--text2); }
+  .dep-box.library.vuln { border-color: rgba(239,68,68,0.5); color: #fca5a5; background: rgba(239,68,68,0.07); }
+  .dep-box.library.safe { border-color: rgba(16,185,129,0.4); color: var(--accent3); background: rgba(16,185,129,0.05); }
+  .dep-arrow { color: var(--text3); font-size: 18px; padding: 0 8px; }
+  .dep-note { font-size: 12px; color: var(--text3); text-align: center; margin-top: 0.5rem; font-family: var(--font-mono); }
+
+  /* POM INTERACTIVE */
+  .pom-demo { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 1.5rem 0; }
+  .pom-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .pom-tab { padding: 10px 18px; font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .pom-tab:hover { color: var(--text); }
+  .pom-tab.active { color: var(--warn); border-bottom-color: var(--warn); }
+  .pom-content { display: none; }
+  .pom-content.active { display: block; }
+
+  /* REPORT SIMULATOR */
+  .report-sim { background: #fff; border-radius: 10px; overflow: hidden; margin: 1.5rem 0; border: 1px solid var(--border2); }
+  .report-header { background: #1a3a5c; color: #fff; padding: 1rem 1.5rem; }
+  .report-header h3 { font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .report-meta { font-size: 11px; color: rgba(255,255,255,0.6); font-family: var(--font-mono); }
+  .report-body { padding: 1rem 1.5rem; }
+  .report-summary { display: flex; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .report-stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 14px; text-align: center; flex: 1; min-width: 80px; }
+  .report-stat .rs-num { font-size: 22px; font-weight: 700; font-family: var(--font-head); color: #1a3a5c; }
+  .report-stat .rs-num.red { color: #dc2626; }
+  .report-stat .rs-num.amber { color: #d97706; }
+  .report-stat .rs-num.blue { color: #2563eb; }
+  .report-stat .rs-label { font-size: 10px; color: #64748b; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; }
+  .report-dep { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+  .report-dep:hover { border-color: #f87171; }
+  .report-dep .rd-name { font-size: 13px; font-weight: 700; color: #1a3a5c; font-family: 'Lato', sans-serif; }
+  .report-dep .rd-cve { font-size: 11px; color: #dc2626; font-family: var(--font-mono); margin-top: 2px; }
+  .report-dep .rd-detail { font-size: 12px; color: #475569; margin-top: 8px; line-height: 1.6; display: none; border-top: 1px solid #fecaca; padding-top: 8px; }
+  .report-dep.open .rd-detail { display: block; }
+  .report-dep-safe { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 14px; margin-bottom: 6px; }
+  .report-dep-safe .rd-name { font-size: 12px; color: #166534; font-family: 'Lato', sans-serif; font-weight: 600; }
+
+  /* STEP WALKTHROUGH */
+  .step-walk { display: flex; flex-direction: column; gap: 12px; margin: 1.5rem 0; }
+  .sw-item { display: flex; gap: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; cursor: pointer; transition: all 0.2s; }
+  .sw-item:hover { border-color: var(--border2); }
+  .sw-item.done { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3); }
+  .sw-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: var(--warn); font-family: var(--font-head); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .sw-item.done .sw-num { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--accent3); }
+  .sw-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .sw-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .sw-tip { font-size: 12px; color: var(--warn); background: rgba(245,158,11,0.07); border-left: 2px solid var(--warn); border-radius: 0 4px 4px 0; padding: 6px 10px; margin-top: 8px; }
+  .sw-code { background: #0d1117; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 8px; font-family: var(--font-mono); font-size: 12px; color: #e2e8f0; overflow-x: auto; }
+
+  /* WRITEUP */
+  .writeup-tabs { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 1.5rem 0; }
+  .wt-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .wt-tab { padding: 11px 18px; font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .wt-tab:hover { color: var(--text); }
+  .wt-tab.active { color: var(--warn); border-bottom-color: var(--warn); }
+  .wt-content { display: none; padding: 1.5rem; }
+  .wt-content.active { display: block; }
+  .starter-block { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 10px; }
+  .starter-block.warn { border-color: rgba(245,158,11,0.25); }
+  .starter-block.green { border-color: rgba(16,185,129,0.25); }
+  .starter-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .starter-text { font-size: 13px; color: var(--text2); line-height: 1.75; }
+  .starter-text code { font-family: var(--font-mono); font-size: 12px; background: var(--bg2); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
+  .fill { color: var(--warn); font-style: italic; }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; margin: 1.5rem 0; }
+  .cl-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .cl-item:hover { border-color: var(--border2); }
+  .cl-item.checked { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3); }
+  .cl-box { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border2); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .cl-item.checked .cl-box { background: var(--accent3); border-color: var(--accent3); }
+  .cl-checkmark { display: none; color: #0a0e1a; font-size: 12px; font-weight: 700; }
+  .cl-item.checked .cl-checkmark { display: block; }
+  .cl-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+  .cl-item.checked .cl-text { color: #6ee7b7; }
+  .progress-track { width: 100%; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 0.5rem; }
+  .progress-fill { height: 100%; background: var(--accent3); transition: width 0.5s ease; border-radius: 2px; }
+  .progress-label { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 1.5rem; }
+
+  /* FALSE POSITIVE DEMO */
+  .fp-demo { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+  .fp-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .fp-item:last-child { border-bottom: none; }
+  .fp-badge { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+  .fp-badge.real { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .fp-badge.false { background: rgba(100,116,139,0.2); color: var(--text3); }
+  .fp-name { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .fp-reason { font-size: 12px; color: var(--text3); line-height: 1.5; }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .nav-steps { gap: 2px; }
+    .nav-dot { width: 22px; height: 22px; font-size: 10px; }
+    .slide { padding: 2rem 1rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .concept-grid { grid-template-columns: 1fr 1fr; }
+    .dep-flow { gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">CS 305 · Mod 2 Coding</div>
+  <div class="nav-steps" id="navDots"></div>
+</nav>
+
+<main>
+
+<!-- SLIDE 0: INTRO -->
+<section class="slide active" id="slide-0">
+  <div class="eyebrow">Module 2 · Coding Assignment</div>
+  <h1>Dependency checks — <span class="warn-text">finding the holes you didn't dig.</span></h1>
+  <p>Your code can be perfect. But if the libraries it uses have security holes, your app is still vulnerable. This lesson teaches you how to find those holes automatically — then document what you found.</p>
+  <div class="card-grid" style="margin-top:2rem">
+    <div class="card warn-border">
+      <h3 class="warn-text">What you'll understand</h3>
+      <p style="font-size:13px;margin-top:0.5rem">What Maven and pom.xml actually are, what a dependency check does, how to read the HTML report, and what false positives are.</p>
+    </div>
+    <div class="card green-border">
+      <h3 class="green-text">What you'll do</h3>
+      <p style="font-size:13px;margin-top:0.5rem">Add the OWASP plugin to pom.xml, run the scan inside Eclipse, screenshot the report, and fill out the template with your findings.</p>
+    </div>
+    <div class="card blue-border">
+      <h3 class="accent-text">No Java coding needed</h3>
+      <p style="font-size:13px;margin-top:0.5rem">You're editing one XML config file and running one Maven command. The tool does the heavy lifting — you just interpret and document the results.</p>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="btn btn-ghost" disabled>← Back</button>
+    <span class="slide-counter">1 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(1)">Let's go →</button>
+  </div>
+</section>
+
+<!-- SLIDE 1: WHAT IS MAVEN -->
+<section class="slide" id="slide-1">
+  <div class="eyebrow">Concept 1 of 6</div>
+  <h2>What is Maven — and what is pom.xml?</h2>
+  <p>Every Java project needs libraries — other people's code that handles things like web requests, database connections, or security. <strong style="color:var(--text)">Maven is the tool that manages all of those for you</strong> so you don't have to download and organize them manually.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">analogy</div>
+    <p>Think of Maven like a shopping list manager. Instead of going to the store yourself to buy every ingredient, you write a shopping list (pom.xml) and Maven goes and gets everything for you automatically. If you need a new ingredient, you add it to the list and Maven fetches it.</p>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card" onclick="this.classList.toggle('open')">
+      <div class="cc-icon">📄</div>
+      <div class="cc-title">pom.xml</div>
+      <div class="cc-sub">Tap to expand</div>
+      <div class="cc-body">Stands for "Project Object Model." It's an XML config file that lives at the root of the project. It tells Maven: what libraries the app needs (dependencies), what version of Java to use, what plugins to run. You never run pom.xml — Maven reads it automatically when you build.</div>
+    </div>
+    <div class="concept-card" onclick="this.classList.toggle('open')">
+      <div class="cc-icon">📦</div>
+      <div class="cc-title">Dependency</div>
+      <div class="cc-sub">Tap to expand</div>
+      <div class="cc-body">A library your project relies on. Declared as a &lt;dependency&gt; block in pom.xml with a group ID, artifact ID, and version. Maven downloads it from a central repository automatically. Example: Spring itself is a dependency — you don't write Spring, you use it.</div>
+    </div>
+    <div class="concept-card" onclick="this.classList.toggle('open')">
+      <div class="cc-icon">🔌</div>
+      <div class="cc-title">Plugin</div>
+      <div class="cc-sub">Tap to expand</div>
+      <div class="cc-body">A tool that plugs into Maven's build process. For this assignment, you're adding the OWASP Dependency-Check plugin — it runs as part of Maven and scans all your dependencies against a database of known vulnerabilities (CVEs). You add it once to pom.xml and Maven knows to run it.</div>
+    </div>
+    <div class="concept-card" onclick="this.classList.toggle('open')">
+      <div class="cc-icon">🏗️</div>
+      <div class="cc-title">Build lifecycle</div>
+      <div class="cc-sub">Tap to expand</div>
+      <div class="cc-body">Maven runs in phases: compile → test → package → verify → install. Plugins hook into these phases. The dependency-check plugin hooks into "verify" — so when you run "mvn verify" it compiles your code AND runs the security scan, producing the HTML report.</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">pom.xml — what a dependency block looks like</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="hl-tag">&lt;dependencies&gt;</span>
+  <span class="hl-tag">&lt;dependency&gt;</span>
+    <span class="hl-tag">&lt;groupId&gt;</span><span class="hl-key">org.springframework.data</span><span class="hl-tag">&lt;/groupId&gt;</span>
+    <span class="hl-tag">&lt;artifactId&gt;</span><span class="hl-key">spring-data-rest-webmvc</span><span class="hl-tag">&lt;/artifactId&gt;</span>
+    <span class="hl-tag">&lt;version&gt;</span><span class="hl-bad">2.6.5.RELEASE</span><span class="hl-tag">&lt;/version&gt;</span>  <span class="hl-comment">&lt;!-- this version has known CVEs --&gt;</span>
+  <span class="hl-tag">&lt;/dependency&gt;</span>
+<span class="hl-tag">&lt;/dependencies&gt;</span></pre>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(0)">← Back</button>
+    <span class="slide-counter">2 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 2: WHAT IS A DEPENDENCY CHECK -->
+<section class="slide" id="slide-2">
+  <div class="eyebrow">Concept 2 of 6</div>
+  <h2>What does a dependency check actually do?</h2>
+  <p>Even if your own code is flawless, your app inherits every vulnerability in every library it uses. A dependency check scans your library versions against a public database of known security holes.</p>
+
+  <div class="dep-demo">
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem">Click each library to toggle its status</p>
+    <div class="dep-flow">
+      <div class="dep-box your-code">Your app code</div>
+      <div class="dep-arrow">→</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="dep-box library vuln" onclick="toggleDep(this)" title="spring-data-rest-webmvc 2.6.5 — CVE-2022-22963">spring-data-rest 2.6.5 ⚠</div>
+        <div class="dep-box library safe" onclick="toggleDep(this)">jackson-databind 2.14 ✓</div>
+        <div class="dep-box library vuln" onclick="toggleDep(this)" title="log4j 2.14.0 — CVE-2021-44228 Log4Shell">log4j 2.14.0 ⚠</div>
+        <div class="dep-box library safe" onclick="toggleDep(this)">spring-core 5.3.18 ✓</div>
+      </div>
+      <div class="dep-arrow">→</div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+        <div class="dep-box" style="border-color:rgba(245,158,11,0.4);color:var(--warn);font-size:11px;padding:8px 12px">OWASP<br>Dependency<br>Check</div>
+        <div class="dep-arrow" style="transform:rotate(90deg)">→</div>
+        <div class="dep-box" style="border-color:rgba(239,68,68,0.4);color:#fca5a5;font-size:11px;padding:8px 12px">HTML<br>Report</div>
+      </div>
+    </div>
+    <div class="dep-note" id="depNote">Click the library boxes to see what the tool flags</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">analogy</div>
+    <p>Imagine the government publishes a list of recalled car parts. A dependency check is like a mechanic running your car's VIN against that list — it cross-references every library version in your pom.xml against the National Vulnerability Database (NVD) and flags any matches. Your job isn't to find the vulnerabilities yourself — the tool does that. You just have to understand and document what it found.</p>
+  </div>
+
+  <div class="card warn-border">
+    <h3 class="warn-text">Static testing — no code runs</h3>
+    <p style="font-size:13.5px;margin-top:0.5rem">This is called <strong style="color:var(--text)">static testing</strong> because it analyzes the code and its dependencies without actually running the app. You don't start a server, you don't send requests — the tool just reads files and compares version numbers against known CVEs.</p>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+    <span class="slide-counter">3 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 3: THE OWASP PLUGIN -->
+<section class="slide" id="slide-3">
+  <div class="eyebrow">Concept 3 of 6</div>
+  <h2>The OWASP plugin — what you're adding to pom.xml</h2>
+  <p>OWASP (Open Web Application Security Project) makes a free Maven plugin that does the dependency scan. You add one XML block to pom.xml — that's it. No installation, no separate download — Maven fetches the plugin automatically when it sees it in the config.</p>
+
+  <div class="pom-demo">
+    <div class="pom-tabs">
+      <div class="pom-tab active" onclick="switchPomTab(this,'pom1')">Before (no plugin)</div>
+      <div class="pom-tab" onclick="switchPomTab(this,'pom2')">After (plugin added)</div>
+      <div class="pom-tab" onclick="switchPomTab(this,'pom3')">What each line means</div>
+    </div>
+    <div class="pom-content active" id="pom1">
+      <div class="code-body" style="background:#0d1117;padding:1.2rem 1.5rem">
+        <pre><span class="hl-tag">&lt;project&gt;</span>
+  <span class="hl-tag">&lt;groupId&gt;</span><span class="hl-key">com.snhu.sslserver</span><span class="hl-tag">&lt;/groupId&gt;</span>
+  <span class="hl-tag">&lt;artifactId&gt;</span><span class="hl-key">ssl-server</span><span class="hl-tag">&lt;/artifactId&gt;</span>
+  <span class="hl-tag">&lt;version&gt;</span><span class="hl-key">0.0.1-SNAPSHOT</span><span class="hl-tag">&lt;/version&gt;</span>
+
+  <span class="hl-tag">&lt;dependencies&gt;</span>
+    <span class="hl-comment">&lt;!-- existing dependencies here --&gt;</span>
+  <span class="hl-tag">&lt;/dependencies&gt;</span>
+
+  <span class="hl-comment">&lt;!-- no &lt;build&gt; section yet --&gt;</span>
+
+<span class="hl-tag">&lt;/project&gt;</span></pre>
+      </div>
+    </div>
+    <div class="pom-content" id="pom2">
+      <div class="code-body" style="background:#0d1117;padding:1.2rem 1.5rem">
+        <pre><span class="hl-tag">&lt;project&gt;</span>
+  <span class="hl-tag">&lt;groupId&gt;</span><span class="hl-key">com.snhu.sslserver</span><span class="hl-tag">&lt;/groupId&gt;</span>
+  <span class="hl-tag">&lt;artifactId&gt;</span><span class="hl-key">ssl-server</span><span class="hl-tag">&lt;/artifactId&gt;</span>
+  <span class="hl-tag">&lt;version&gt;</span><span class="hl-key">0.0.1-SNAPSHOT</span><span class="hl-tag">&lt;/version&gt;</span>
+
+  <span class="hl-tag">&lt;dependencies&gt;</span>
+    <span class="hl-comment">&lt;!-- existing dependencies here --&gt;</span>
+  <span class="hl-tag">&lt;/dependencies&gt;</span>
+
+  <span class="hl-add">&lt;build&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.owasp&lt;/groupId&gt;
+        &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
+        &lt;version&gt;8.4.0&lt;/version&gt;
+        &lt;executions&gt;
+          &lt;execution&gt;
+            &lt;goals&gt;
+              &lt;goal&gt;check&lt;/goal&gt;
+            &lt;/goals&gt;
+          &lt;/execution&gt;
+        &lt;/executions&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/build&gt;</span>
+
+<span class="hl-tag">&lt;/project&gt;</span></pre>
+      </div>
+    </div>
+    <div class="pom-content" id="pom3">
+      <div style="padding:1.2rem 1.5rem;display:flex;flex-direction:column;gap:10px">
+        <div class="starter-block">
+          <div class="starter-label">groupId: org.owasp</div>
+          <div class="starter-text">Who made the plugin. OWASP = Open Web Application Security Project, the nonprofit that makes this tool.</div>
+        </div>
+        <div class="starter-block">
+          <div class="starter-label">artifactId: dependency-check-maven</div>
+          <div class="starter-text">The specific plugin name. Maven uses groupId + artifactId together to look it up in the central repository and download it.</div>
+        </div>
+        <div class="starter-block">
+          <div class="starter-label">version: 8.4.0</div>
+          <div class="starter-text">Which version of the plugin to use. 8.4.0 is a recent stable version — the course tutorial may specify a different version, use whatever the tutorial says.</div>
+        </div>
+        <div class="starter-block">
+          <div class="starter-label">goal: check</div>
+          <div class="starter-text">The specific action to run. "check" tells the plugin to scan dependencies and generate the report. This runs automatically when you do "mvn verify".</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(2)">← Back</button>
+    <span class="slide-counter">4 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(4)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 4: READING THE REPORT -->
+<section class="slide" id="slide-4">
+  <div class="eyebrow">Concept 4 of 6</div>
+  <h2>Reading the HTML report — what everything means</h2>
+  <p>After the scan runs, Maven generates an HTML file you open in a browser. Here's a simulated version of what it looks like. <strong style="color:var(--text)">Click the red dependency rows</strong> to see the details you need to document.</p>
+
+  <div class="report-sim">
+    <div class="report-header">
+      <h3>Dependency-Check Report</h3>
+      <div class="report-meta">Project: ssl-server &nbsp;|&nbsp; Scan date: [today's date] &nbsp;|&nbsp; OWASP Dependency-Check 8.4.0</div>
+    </div>
+    <div class="report-body">
+      <div class="report-summary">
+        <div class="report-stat"><div class="rs-num red">3</div><div class="rs-label">Critical</div></div>
+        <div class="report-stat"><div class="rs-num amber">2</div><div class="rs-label">High</div></div>
+        <div class="report-stat"><div class="rs-num blue">1</div><div class="rs-label">Medium</div></div>
+        <div class="report-stat"><div class="rs-num" style="color:#16a34a">8</div><div class="rs-label">Safe</div></div>
+      </div>
+      <p style="font-size:12px;color:#475569;margin-bottom:0.75rem;font-family:'Lato',sans-serif">Vulnerable dependencies — click to expand:</p>
+      <div class="report-dep" onclick="this.classList.toggle('open')">
+        <div class="rd-name">spring-data-rest-webmvc-2.6.5.RELEASE.jar</div>
+        <div class="rd-cve">CVE-2022-22963 · CVSS 9.8 (Critical)</div>
+        <div class="rd-detail">
+          <strong>Description:</strong> Spring Cloud Function versions prior to 3.1.7 and 3.2.x prior to 3.2.3 are vulnerable to a remote code execution (RCE) attack when the routing functionality is used. A specially crafted Spring Expression can evaluate untrusted input.<br><br>
+          <strong>What to document:</strong> The dependency name, the CVE ID, the CVSS score, and the description above.<br><br>
+          <strong>Fix:</strong> Upgrade to a patched version. Check NVD for the recommended version → nvd.nist.gov/vuln/detail/CVE-2022-22963
+        </div>
+      </div>
+      <div class="report-dep" onclick="this.classList.toggle('open')">
+        <div class="rd-name">snakeyaml-1.28.jar</div>
+        <div class="rd-cve">CVE-2022-25857 · CVSS 7.5 (High)</div>
+        <div class="rd-detail">
+          <strong>Description:</strong> The package org.yaml:snakeyaml from 0 and before 1.31 is vulnerable to Denial of Service (DoS) due to missing to nested depth limitation for collections.<br><br>
+          <strong>What to document:</strong> Name, CVE ID, score, description — same format as above.<br><br>
+          <strong>Fix:</strong> Upgrade snakeyaml to version 1.32 or later.
+        </div>
+      </div>
+      <div class="report-dep" onclick="this.classList.toggle('open')">
+        <div class="rd-name">tomcat-embed-core-9.0.56.jar</div>
+        <div class="rd-cve">CVE-2022-23181 · CVSS 7.0 (High) — possible false positive</div>
+        <div class="rd-detail">
+          <strong>Why this might be a false positive:</strong> The CVE affects Tomcat in a very specific configuration (local privilege escalation requiring local filesystem access). If this is a Spring Boot embedded server with no such configuration, this finding may not actually apply.<br><br>
+          <strong>How to verify:</strong> Click the CVE link → read the description → check if the vulnerable configuration matches yours. If it doesn't, this is a false positive — document it as such and explain why.
+        </div>
+      </div>
+      <p style="font-size:12px;color:#475569;margin:0.75rem 0;font-family:'Lato',sans-serif">Safe dependencies (no known CVEs):</p>
+      <div class="report-dep-safe"><div class="rd-name">spring-core-5.3.18.jar — No known vulnerabilities</div></div>
+      <div class="report-dep-safe"><div class="rd-name">jackson-databind-2.14.0.jar — No known vulnerabilities</div></div>
+      <div class="report-dep-safe"><div class="rd-name">slf4j-api-1.7.36.jar — No known vulnerabilities</div></div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(3)">← Back</button>
+    <span class="slide-counter">5 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(5)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 5: FALSE POSITIVES -->
+<section class="slide" id="slide-5">
+  <div class="eyebrow">Concept 5 of 6</div>
+  <h2>False positives — when the tool gets it wrong</h2>
+  <p>The dependency-check tool flags anything that <em>might</em> be vulnerable based on version numbers. But sometimes a CVE only applies in very specific configurations — and your app doesn't use that configuration. Those are <strong style="color:var(--text)">false positives</strong>.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">analogy</div>
+    <p>Imagine a metal detector at an airport beeping because you have a knee replacement — it detects metal, but that metal isn't a threat. The alarm is technically triggered but it's not a real problem. A false positive in dependency scanning is the same — the tool flags a version but the specific vulnerability doesn't apply to how you're using that library.</p>
+  </div>
+
+  <div class="fp-demo">
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem">Examples — real vulnerability vs false positive</p>
+    <div class="fp-item">
+      <div>
+        <span class="fp-badge real">REAL</span>
+      </div>
+      <div>
+        <div class="fp-name">spring-data-rest-webmvc 2.6.5 → CVE-2022-22963</div>
+        <div class="fp-reason">This CVE affects SpEL expression evaluation — which this app actually uses. The vulnerability directly applies. This is a real finding, document it and mitigate it.</div>
+      </div>
+    </div>
+    <div class="fp-item">
+      <div>
+        <span class="fp-badge false">FALSE+</span>
+      </div>
+      <div>
+        <div class="fp-name">tomcat-embed-core 9.0.56 → CVE-2022-23181</div>
+        <div class="fp-reason">This CVE requires local filesystem write access to exploit — it's a local privilege escalation, not a remote attack. If the app runs in a normal container environment without special OS permissions, this vulnerability cannot be triggered. It's a false positive.</div>
+      </div>
+    </div>
+    <div class="fp-item">
+      <div>
+        <span class="fp-badge false">FALSE+</span>
+      </div>
+      <div>
+        <div class="fp-name">spring-core 5.3.x → CVE for a different Spring module</div>
+        <div class="fp-reason">Sometimes a CVE is associated with a jar file by name but actually only affects a specific class or submodule that your app never imports or uses. If you can confirm your code doesn't touch the affected class, it's a false positive.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card warn-border">
+    <h3 class="warn-text">What to write in the template about false positives</h3>
+    <p style="font-size:13.5px;margin-top:0.5rem">The assignment specifically asks you to discuss why you should filter false positives. The answer: <strong style="color:var(--text)">so the dev team focuses on real threats</strong>. If every flagged item gets treated as critical, teams waste time fixing things that aren't problems — and might miss the ones that are. Good security practice means reading each CVE description and confirming it actually applies before acting on it.</p>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(4)">← Back</button>
+    <span class="slide-counter">6 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(6)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 6: CONCEPT 6 — SCREENSHOT + SCAN INFO -->
+<section class="slide" id="slide-6">
+  <div class="eyebrow">Concept 6 of 6</div>
+  <h2>The screenshot requirement — what exactly to capture</h2>
+  <p>The rubric says: <em>"Include a screenshot of the resulting HTML report. Make certain the screenshot includes the scan information at the top of the dependency-check report."</em></p>
+  <p>That "scan information at the top" means the header section — here's exactly what it needs to show:</p>
+
+  <div class="report-sim" style="margin:1.5rem 0">
+    <div class="report-header" style="position:relative">
+      <div style="position:absolute;top:8px;right:12px;background:rgba(245,158,11,0.9);color:#0a0e1a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;font-family:var(--font-mono)">← SCREENSHOT MUST INCLUDE THIS</div>
+      <h3>Dependency-Check Report</h3>
+      <div class="report-meta">
+        Project: ssl-server &nbsp;|&nbsp; Version: 0.0.1-SNAPSHOT<br>
+        Report generated: March 16, 2026 8:02:14 PM CDT<br>
+        Scanner version: OWASP Dependency-Check 8.4.0<br>
+        Dependencies scanned: 14 &nbsp;|&nbsp; Vulnerable: 3
+      </div>
+    </div>
+    <div class="report-body" style="padding:0.75rem 1.5rem">
+      <p style="color:#475569;font-size:12px;font-family:'Lato',sans-serif">...rest of the report follows below...</p>
+    </div>
+  </div>
+
+  <div class="card green-border">
+    <h3 class="green-text">Screenshot tip</h3>
+    <p style="font-size:13.5px;margin-top:0.5rem">Open the HTML report file in Chrome or Firefox. Use <strong style="color:var(--text)">Windows Snipping Tool</strong> (Win + Shift + S) to capture just the top portion of the page. Make sure the project name, scan date, and OWASP version are all visible. Paste it directly into the Word template.</p>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(5)">← Back</button>
+    <span class="slide-counter">7 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(7)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 7: SETUP STEPS -->
+<section class="slide" id="slide-7">
+  <div class="eyebrow">Assignment Walkthrough · Step 1 of 4</div>
+  <h2>Get set up — download, import, open</h2>
+  <p>Do these in order. Click each step when you've completed it.</p>
+
+  <div class="step-walk">
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">1</div>
+      <div class="sw-body">
+        <div class="sw-title">Download the coding assignment code base ZIP</div>
+        <div class="sw-desc">Go to SNHU course page → Assignment Information → Module Two → Supporting Materials. Download the <strong>Module Two Coding Assignment Code Base</strong> ZIP file. Also download the <strong>Module Two Coding Assignment Template</strong> (Word doc) from the What to Submit section. Unzip the ZIP file to your Desktop or Documents folder.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">2</div>
+      <div class="sw-body">
+        <div class="sw-title">Import the project into Eclipse</div>
+        <div class="sw-desc">Open Eclipse → <strong>File → Import → Maven → Existing Maven Projects → Browse</strong>. Navigate to the unzipped folder. You should see pom.xml listed. Click Finish. Eclipse will download dependencies — this takes 1–3 minutes the first time.</div>
+        <div class="sw-tip">If Eclipse shows errors in red, right-click the project → Maven → Update Project → OK. Most errors resolve this way.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">3</div>
+      <div class="sw-body">
+        <div class="sw-title">Open pom.xml and find the &lt;build&gt; section</div>
+        <div class="sw-desc">In the Eclipse Project Explorer (left panel), expand the project and double-click <strong>pom.xml</strong>. It opens in an XML editor. Look for the <code>&lt;build&gt;</code> tag. If it doesn't exist yet, you'll add it. If it already exists, you'll add the plugin inside the existing <code>&lt;plugins&gt;</code> tag.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">4</div>
+      <div class="sw-body">
+        <div class="sw-title">Read the Integrating the Maven Dependency-Check Plugin Tutorial</div>
+        <div class="sw-desc">This tutorial is linked in the Supporting Materials section of the assignment. Read it fully before doing anything — it shows the exact pom.xml XML to add, which may be slightly different from what's shown here. Follow the tutorial's exact XML, not a guess.</div>
+        <div class="sw-tip">The tutorial is the source of truth for the exact plugin version and configuration the grader expects to see.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(6)">← Back</button>
+    <span class="slide-counter">8 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(8)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 8: ADD PLUGIN + RUN -->
+<section class="slide" id="slide-8">
+  <div class="eyebrow">Assignment Walkthrough · Step 2 of 4</div>
+  <h2>Add the plugin and run the scan</h2>
+  <p>This is the only "coding" in this assignment — pasting an XML block. Then you run one Maven command.</p>
+
+  <div class="step-walk">
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">1</div>
+      <div class="sw-body">
+        <div class="sw-title">Add the OWASP plugin block to pom.xml</div>
+        <div class="sw-desc">Inside the <code>&lt;build&gt;&lt;plugins&gt;</code> section, add this block. If there's no <code>&lt;build&gt;</code> section, add the whole thing before the closing <code>&lt;/project&gt;</code> tag:</div>
+        <div class="sw-code">&lt;build&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+      &lt;groupId&gt;org.owasp&lt;/groupId&gt;
+      &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;
+      &lt;version&gt;8.4.0&lt;/version&gt;
+      &lt;executions&gt;
+        &lt;execution&gt;
+          &lt;goals&gt;
+            &lt;goal&gt;check&lt;/goal&gt;
+          &lt;/goals&gt;
+        &lt;/execution&gt;
+      &lt;/executions&gt;
+    &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/build&gt;</div>
+        <div class="sw-tip">Use the exact XML from the course tutorial — this is just a reference. The version number might differ.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">2</div>
+      <div class="sw-body">
+        <div class="sw-title">Save pom.xml and update the Maven project</div>
+        <div class="sw-desc">Press <strong>Ctrl+S</strong> to save pom.xml. Then right-click the project → <strong>Maven → Update Project → OK</strong>. Eclipse re-reads the pom.xml and downloads the OWASP plugin. You'll see it downloading in the bottom status bar.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">3</div>
+      <div class="sw-body">
+        <div class="sw-title">Run the dependency check</div>
+        <div class="sw-desc">Right-click the project → <strong>Run As → Maven build...</strong>. In the Goals field, type: <code>verify</code>. Click Run. The Console tab at the bottom will show Maven downloading CVE data and scanning. This takes <strong>5–15 minutes</strong> the first time — it has to download the entire NVD database.</div>
+        <div class="sw-tip">Do NOT close Eclipse or cancel — let it finish. You'll see "BUILD SUCCESS" in the console when it's done. If you see "BUILD FAILURE," check the error message — usually it's a network issue or wrong plugin version.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">4</div>
+      <div class="sw-body">
+        <div class="sw-title">Find and open the HTML report</div>
+        <div class="sw-desc">After the build succeeds, the report is at: <code>target/dependency-check-report.html</code> inside your project folder. Navigate to that folder in Windows Explorer, then double-click the HTML file to open it in your browser. You should see the full vulnerability report.</div>
+        <div class="sw-tip">If you can't find the file: right-click the project in Eclipse → Refresh. Then expand the "target" folder in the Project Explorer — the report should appear there.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(7)">← Back</button>
+    <span class="slide-counter">9 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(9)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 9: READ + SCREENSHOT -->
+<section class="slide" id="slide-9">
+  <div class="eyebrow">Assignment Walkthrough · Step 3 of 4</div>
+  <h2>Read the report and take the screenshot</h2>
+  <p>The report is open in your browser. Now you extract the information you need for the template.</p>
+
+  <div class="step-walk">
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">1</div>
+      <div class="sw-body">
+        <div class="sw-title">Screenshot the top of the report (scan information)</div>
+        <div class="sw-desc">The report header shows: project name, scan date, OWASP version, number of dependencies scanned. Press <strong>Win + Shift + S</strong> → drag to select the top portion of the browser. Paste into your Word template. The rubric specifically requires the scan info to be visible.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">2</div>
+      <div class="sw-body">
+        <div class="sw-title">For each vulnerable dependency — click it and record all details</div>
+        <div class="sw-desc">Click each red/flagged dependency in the report. It expands to show: dependency name and version, CVE ID(s), CVSS score, description of the vulnerability, and links to NVD. Record all of this. You need the <strong>dependency name, CVE ID, CVSS score, and description</strong> for each one in the template.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">3</div>
+      <div class="sw-body">
+        <div class="sw-title">Click through to NVD for each CVE to get the best solution</div>
+        <div class="sw-desc">In the report, click the CVE link → it takes you to nvd.nist.gov. On the NVD page: read the description, check the CVSS score, look for the "References" section which often links to the fix or patched version. Copy the CVE ID and recommended fix version into your notes.</div>
+      </div>
+    </div>
+    <div class="sw-item" onclick="this.classList.toggle('done')">
+      <div class="sw-num">4</div>
+      <div class="sw-body">
+        <div class="sw-title">Identify which findings are false positives</div>
+        <div class="sw-desc">For each flagged dependency: read the CVE description carefully. Ask: does this specific vulnerability apply to how this app uses the library? If the CVE requires a specific config or usage pattern your app doesn't have — it's a false positive. Note it with your reason.</div>
+        <div class="sw-tip">When in doubt, assume it's real — it's better to over-report than to miss something in an academic assignment.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(8)">← Back</button>
+    <span class="slide-counter">10 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(10)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 10: WRITE IT UP -->
+<section class="slide" id="slide-10">
+  <div class="eyebrow">Assignment Walkthrough · Step 4 of 4</div>
+  <h2>Fill out the template — starter text for every section</h2>
+  <p>Replace every <span class="warn-text" style="font-style:italic">[BRACKET]</span> with what you actually found in the report. These are ready to paste into the Word template.</p>
+
+  <div class="writeup-tabs">
+    <div class="wt-tabs">
+      <div class="wt-tab active" onclick="switchWTab(this,'wt1')">Screenshot section</div>
+      <div class="wt-tab" onclick="switchWTab(this,'wt2')">Dependency results</div>
+      <div class="wt-tab" onclick="switchWTab(this,'wt3')">Analysis + solutions</div>
+      <div class="wt-tab" onclick="switchWTab(this,'wt4')">False positives</div>
+    </div>
+
+    <div class="wt-content active" id="wt1">
+      <div class="starter-block">
+        <div class="starter-label">Caption text to write under the screenshot</div>
+        <div class="starter-text">Figure 1. OWASP Dependency-Check report for the ssl-server project, generated on <span class="fill">[date]</span>. The scan identified <span class="fill">[number]</span> dependencies, of which <span class="fill">[number]</span> contained known vulnerabilities based on CVE data from the National Vulnerability Database.</div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">If asked to describe the scan info section</div>
+        <div class="starter-text">The scan information at the top of the report confirms the project name (ssl-server), the date and time the scan was executed, the version of OWASP Dependency-Check used (<span class="fill">[version]</span>), and the total number of dependencies analyzed. This information verifies that the scan was performed on the correct code base and provides a traceable record of when the assessment was conducted.</div>
+      </div>
+    </div>
+
+    <div class="wt-content" id="wt2">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:1rem">One block per vulnerable dependency. Copy this format for each one you found.</p>
+      <div class="starter-block warn">
+        <div class="starter-label">Dependency finding — template (repeat for each one)</div>
+        <div class="starter-text">
+          <strong style="color:var(--text)">Dependency:</strong> <span class="fill">[dependency-name-version.jar]</span><br><br>
+          <strong style="color:var(--text)">CVE ID:</strong> <span class="fill">[CVE-YYYY-XXXXX]</span><br><br>
+          <strong style="color:var(--text)">CVSS Score:</strong> <span class="fill">[score]</span> (<span class="fill">[Critical / High / Medium / Low]</span>)<br><br>
+          <strong style="color:var(--text)">Description:</strong> <span class="fill">[Paste or paraphrase the CVE description from NVD — 1–2 sentences on what the vulnerability is and how it can be exploited.]</span>
+        </div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">Example filled in (spring-data-rest)</div>
+        <div class="starter-text">
+          <strong style="color:var(--text)">Dependency:</strong> spring-data-rest-webmvc-2.6.5.RELEASE.jar<br><br>
+          <strong style="color:var(--text)">CVE ID:</strong> CVE-2022-22963<br><br>
+          <strong style="color:var(--text)">CVSS Score:</strong> 9.8 (Critical)<br><br>
+          <strong style="color:var(--text)">Description:</strong> A remote code execution vulnerability exists in Spring Cloud Function when the routing functionality is used. An attacker can exploit this by sending a specially crafted Spring Expression Language expression as a routing header, allowing arbitrary code execution on the server without authentication.
+        </div>
+      </div>
+    </div>
+
+    <div class="wt-content" id="wt3">
+      <p style="font-size:13px;color:var(--text3);margin-bottom:1rem">The "summarize your findings" and "best solutions" section. Write this as one connected summary, not a list.</p>
+      <div class="starter-block green">
+        <div class="starter-label">Summary paragraph</div>
+        <div class="starter-text">The dependency-check scan of the ssl-server code base identified <span class="fill">[number]</span> vulnerable dependencies with a combined total of <span class="fill">[number]</span> CVEs. The most critical finding is <span class="fill">[dependency name]</span>, which is associated with <span class="fill">[CVE ID]</span> and carries a CVSS score of <span class="fill">[score]</span>, indicating a <span class="fill">[critical/high]</span> risk of remote exploitation. The remaining findings include <span class="fill">[brief mention of other vulns]</span>. All identified vulnerabilities are documented in the CVE and NVD databases, which provide additional technical detail and recommended remediation steps.</div>
+      </div>
+      <div class="starter-block green">
+        <div class="starter-label">Best solutions paragraph</div>
+        <div class="starter-text">The recommended approach for addressing the identified dependency vulnerabilities is to upgrade each affected library to the patched version specified in its corresponding NVD entry. For <span class="fill">[dependency 1]</span>, upgrading to version <span class="fill">[patched version]</span> resolves <span class="fill">[CVE ID]</span>. For <span class="fill">[dependency 2]</span>, upgrading to version <span class="fill">[patched version]</span> addresses the reported vulnerability. Version updates should be made in the project's pom.xml file, followed by a fresh Maven build and a second dependency-check scan to confirm no vulnerabilities remain. In cases where a patched version is not yet available, additional controls such as input validation, network segmentation, or temporary feature disablement should be considered as interim mitigations (National Institute of Standards and Technology, n.d.).</div>
+      </div>
+    </div>
+
+    <div class="wt-content" id="wt4">
+      <div class="starter-block">
+        <div class="starter-label">Why filter false positives — required discussion</div>
+        <div class="starter-text">Filtering false positives from dependency-check results is essential to maintaining an effective security workflow. Dependency-check tools operate by matching library version numbers against CVE records in the National Vulnerability Database. However, a CVE associated with a particular library version may only apply under specific conditions — such as a particular usage pattern, operating system configuration, or application architecture — that may not be present in every project using that version. If all flagged items are treated as confirmed vulnerabilities without verification, development teams risk expending significant time and resources addressing issues that pose no actual threat to their specific application. This can also obscure genuinely critical vulnerabilities by burying them among low-priority alerts, a problem commonly known as "alert fatigue." By evaluating each finding against the application's actual configuration, teams can prioritize real risks and allocate remediation effort more efficiently (OWASP Foundation, 2023).</div>
+      </div>
+      <div class="starter-block warn">
+        <div class="starter-label">If you found an actual false positive in the report</div>
+        <div class="starter-text">One finding identified in this scan — <span class="fill">[dependency name]</span> associated with <span class="fill">[CVE ID]</span> — appears to be a false positive. The CVE description indicates that exploitation requires <span class="fill">[specific condition, e.g., local filesystem write access / a specific usage pattern]</span>, which is not present in this application's configuration. As a result, this vulnerability is assessed as not applicable to the current deployment and has been excluded from the list of required remediations. This conclusion is consistent with the NVD entry for <span class="fill">[CVE ID]</span>, which notes that <span class="fill">[brief reason from NVD]</span>.</div>
+      </div>
+      <div class="starter-block" style="border-color:rgba(124,58,237,0.3)">
+        <div class="starter-label" style="color:var(--accent2)">APA Citations</div>
+        <div class="starter-text" style="font-size:12px">National Institute of Standards and Technology. (n.d.). <em>National Vulnerability Database.</em> https://nvd.nist.gov<br><br>
+OWASP Foundation. (2023). <em>Dependency-Check.</em> https://owasp.org/www-project-dependency-check/<br><br>
+Manico, J., &amp; Detlefsen, A. (2015). <em>Iron-clad Java: Building secure web applications.</em> McGraw-Hill Education.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(9)">← Back</button>
+    <span class="slide-counter">11 of 12</span>
+    <button class="btn btn-primary" onclick="goTo(11)">Next →</button>
+  </div>
+</section>
+
+<!-- SLIDE 11: FINAL CHECKLIST -->
+<section class="slide" id="slide-11">
+  <div class="eyebrow">Final review</div>
+  <h2>Don't submit until all of these are checked</h2>
+  <p>Each item maps to a real rubric criterion. Go through together before she submits.</p>
+
+  <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progLabel">0 of 10 complete</div>
+
+  <div class="checklist">
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Plugin added:</strong> OWASP dependency-check-maven plugin is in pom.xml inside &lt;build&gt;&lt;plugins&gt;</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Scan ran successfully:</strong> Console showed "BUILD SUCCESS" and the HTML report exists in the target/ folder</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Screenshot included:</strong> The HTML report screenshot is in the template AND it shows the scan info at the top (project name, date, OWASP version)</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Dependencies documented:</strong> Every vulnerable dependency is listed with its name, CVE ID, CVSS score, and description</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">NVD used:</strong> At least one CVE was looked up on nvd.nist.gov and its NVD details are referenced in the write-up</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Best solutions summarized:</strong> For each vulnerable dependency, a specific upgrade version or mitigation is recommended</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">False positives discussed:</strong> There is a paragraph explaining why false positives should be filtered and what they are</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">False positives identified:</strong> If any were found in the report, they are named and the reason they're false positives is explained</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">APA citations:</strong> At least NVD and OWASP are cited. Sources appear at the end of the Word doc in APA format</span>
+    </div>
+    <div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-checkmark">✓</span></div>
+      <span class="cl-text"><strong style="color:var(--text)">Length and format:</strong> Document is 1–2 pages, written in proper paragraphs (not just bullet points), submitted as .docx</span>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" onclick="goTo(10)">← Back</button>
+    <span class="slide-counter">12 of 12</span>
+    <button class="btn btn-primary" style="background:var(--accent3)">Assignment complete! 🎉</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+let currentSlide = 0;
+const totalSlides = 12;
+
+function buildNav() {
+  const nav = document.getElementById('navDots');
+  nav.innerHTML = '';
+  for (let i = 0; i < totalSlides; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === currentSlide ? ' active' : '') + (i < currentSlide ? ' done' : '');
+    d.textContent = i + 1;
+    d.onclick = () => goTo(i);
+    nav.appendChild(d);
+  }
+}
+
+function goTo(n) {
+  if (n < 0 || n >= totalSlides) return;
+  document.getElementById('slide-' + currentSlide).classList.remove('active');
+  currentSlide = n;
+  document.getElementById('slide-' + currentSlide).classList.add('active');
+  buildNav();
+  window.scrollTo(0, 0);
+}
+
+buildNav();
+
+function toggleDep(el) {
+  const isVuln = el.classList.contains('vuln');
+  const isSafe = el.classList.contains('safe');
+  if (isVuln) {
+    el.classList.remove('vuln'); el.classList.add('safe');
+    el.textContent = el.textContent.replace('⚠', '✓');
+    document.getElementById('depNote').textContent = 'Fixed — upgrading a vulnerable dependency removes it from the report.';
+  } else if (isSafe) {
+    el.classList.remove('safe'); el.classList.add('vuln');
+    el.textContent = el.textContent.replace('✓', '⚠');
+    document.getElementById('depNote').textContent = 'Flagged — this version has a known CVE. The tool picks it up automatically.';
+  }
+}
+
+function switchPomTab(tab, contentId) {
+  document.querySelectorAll('.pom-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pom-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+function switchWTab(tab, contentId) {
+  document.querySelectorAll('.wt-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.wt-content').forEach(c => c.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const items = document.querySelectorAll('.cl-item');
+  const checked = document.querySelectorAll('.cl-item.checked').length;
+  const pct = Math.round((checked / items.length) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = checked + ' of ' + items.length + ' complete';
+}
+</script>
+</body>
+</html>
