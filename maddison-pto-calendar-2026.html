@@ -143,7 +143,10 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#3
   </div>
 </div>
 
-<div class="footer">Made for Maddison · Pearson PTO Planner 2026 · Click any day to edit</div>
+<div class="footer">
+  Made for Maddison · Pearson PTO Planner 2026 · Changes auto-saved in browser ·
+  <button onclick="resetToDefaults()" style="background:none;border:none;color:#555;cursor:pointer;font-size:.7rem;text-decoration:underline;font-family:inherit;padding:0">Reset to defaults</button>
+</div>
 
 <script>
 // ─── Budget per type (hrs) ─────────────────────────────────────────
@@ -448,6 +451,7 @@ function openEditModal(ds, isEdit) {
       e.note = document.getElementById(`note-${i}`)?.value || e.note;
     });
     P[_editDs] = {entries: JSON.parse(JSON.stringify(entries))};
+    saveToStorage();
     closeModal();
     renderCalendar();
     renderBalanceBar();
@@ -460,6 +464,7 @@ function openEditModal(ds, isEdit) {
 function deleteDay(ds) {
   if (confirm('Remove all PTO for this day?')) {
     delete P[ds];
+    saveToStorage();
     closeModal();
     renderCalendar();
     renderBalanceBar();
@@ -479,7 +484,30 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
+// ─── localStorage persistence ──────────────────────────────────────
+const STORAGE_KEY = 'maddison_pto_2026';
+
+function saveToStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(P));
+}
+
+function loadFromStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try { P = JSON.parse(saved); return true; } catch(e) {}
+  }
+  return false;
+}
+
+function resetToDefaults() {
+  if (confirm('Reset all changes and restore the original calendar?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
 // ─── Init ──────────────────────────────────────────────────────────
+loadFromStorage();
 renderCalendar();
 renderBalanceBar();
 </script>
