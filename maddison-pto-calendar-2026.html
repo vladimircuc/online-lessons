@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maddison's PTO Calendar 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;color:#e0e0e0;padding:20px}
+.header{text-align:center;padding:30px 0 10px}
+.header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(90deg,#f7971e,#ffd200);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.header p{color:#aaa;font-size:.95rem;font-weight:300}
+.legend{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:20px auto 25px;max-width:900px}
+.legend-item{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.06);padding:7px 13px;border-radius:20px;font-size:.8rem;font-weight:500;border:1px solid rgba(255,255,255,.08)}
+.legend-emoji{font-size:1.15rem}
+
+/* Balance Bar */
+.balance-bar{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 auto 25px;max-width:900px}
+.balance-chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 14px;text-align:center;min-width:120px;transition:all .3s}
+.balance-chip .lbl{font-size:.65rem;color:#999;text-transform:uppercase;letter-spacing:1px}
+.balance-chip .val{font-size:1rem;font-weight:700;margin-top:2px;color:#4ade80}
+.balance-chip.over{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1)}
+.balance-chip.over .val{color:#f87171}
+.balance-chip.ok .val{color:#4ade80}
+.balance-chip.under .val{color:#fbbf24}
+
+/* Calendar */
+.calendar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:1100px;margin:0 auto}
+@media(max-width:800px){.calendar-grid{grid-template-columns:1fr}}
+.month-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;backdrop-filter:blur(10px);transition:transform .2s}
+.month-card:hover{transform:translateY(-2px)}
+.month-name{text-align:center;font-size:1.05rem;font-weight:700;margin-bottom:12px;color:#fff;letter-spacing:1px}
+.day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
+.day-header{text-align:center;font-size:.6rem;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:1px;padding:3px 0}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.day-cell{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.day-cell.empty{background:none;cursor:default;pointer-events:none}
+.day-cell:not(.empty):not(.pto){background:rgba(255,255,255,.03);color:#666}
+.day-cell:not(.empty):not(.pto):hover{background:rgba(255,255,255,.1);color:#bbb;border-color:rgba(255,255,255,.15)}
+.day-cell.pto:hover{transform:scale(1.18);z-index:10;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.day-cell .day-num{font-size:.72rem;line-height:1}
+.day-cell .day-emoji{font-size:.85rem;line-height:1;margin-top:1px}
+.day-cell.sick{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.day-cell.sick:hover{background:rgba(239,68,68,.35)}
+.day-cell.volunteer{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.4);color:#93c5fd}
+.day-cell.volunteer:hover{background:rgba(59,130,246,.35)}
+.day-cell.personal{background:rgba(168,85,247,.2);border-color:rgba(168,85,247,.4);color:#d8b4fe}
+.day-cell.personal:hover{background:rgba(168,85,247,.35)}
+.day-cell.vacation{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4);color:#86efac}
+.day-cell.vacation:hover{background:rgba(34,197,94,.35)}
+.day-cell.holiday{background:rgba(251,191,36,.2);border-color:rgba(251,191,36,.4);color:#fde68a}
+.day-cell.holiday:hover{background:rgba(251,191,36,.35)}
+.day-cell.combo{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(59,130,246,.2));border-color:rgba(200,100,200,.4);color:#e0b0ff}
+.day-cell.combo:hover{background:linear-gradient(135deg,rgba(239,68,68,.35),rgba(59,130,246,.35))}
+.day-cell.weekend:not(.pto){color:#444}
+.day-cell.today{box-shadow:0 0 0 2px #ffd200 inset}
+
+/* Tooltip */
+.tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 13px;font-size:.7rem;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:100;box-shadow:0 8px 25px rgba(0,0,0,.5);color:#ddd}
+.day-cell:hover .tooltip{opacity:1}
+.tooltip .tt-type{font-weight:700;font-size:.75rem;margin-bottom:2px}
+.tooltip .tt-hrs{color:#ffd200;font-weight:600}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:linear-gradient(145deg,#1a1a2e,#16213e);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:28px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.1);border:none;color:#aaa;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:rgba(255,255,255,.2);color:#fff}
+.modal-emoji{font-size:2.5rem;margin-bottom:6px}
+.modal-date{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:4px}
+.modal-type{font-size:.8rem;font-weight:600;margin-bottom:10px;padding:4px 12px;border-radius:20px;display:inline-block}
+.modal-type.sick{background:rgba(239,68,68,.25);color:#fca5a5}
+.modal-type.volunteer{background:rgba(59,130,246,.25);color:#93c5fd}
+.modal-type.personal{background:rgba(168,85,247,.25);color:#d8b4fe}
+.modal-type.vacation{background:rgba(34,197,94,.25);color:#86efac}
+.modal-type.holiday{background:rgba(251,191,36,.25);color:#fde68a}
+.modal-type.combo{background:rgba(200,100,200,.25);color:#e0b0ff}
+.modal-hours{font-size:1.7rem;font-weight:800;color:#ffd200;margin:8px 0}
+.modal-hours span{font-size:.8rem;font-weight:400;color:#999}
+.modal-desc{font-size:.8rem;color:#bbb;line-height:1.6;margin-top:6px}
+.modal-desc strong{color:#fff}
+.modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s;font-family:inherit}
+.btn-edit{background:rgba(255,210,0,.15);color:#ffd200;border:1px solid rgba(255,210,0,.3)}
+.btn-edit:hover{background:rgba(255,210,0,.25)}
+.btn-add{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.btn-add:hover{background:rgba(34,197,94,.25)}
+.btn-delete{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.btn-delete:hover{background:rgba(239,68,68,.25)}
+.btn-save{background:rgba(255,210,0,.2);color:#ffd200;border:1px solid rgba(255,210,0,.4)}
+.btn-save:hover{background:rgba(255,210,0,.35)}
+.btn-cancel{background:rgba(255,255,255,.08);color:#aaa;border:1px solid rgba(255,255,255,.15)}
+.btn-cancel:hover{background:rgba(255,255,255,.15);color:#fff}
+.btn-add-entry{background:rgba(255,255,255,.05);color:#888;border:1px solid rgba(255,255,255,.12);width:100%;margin-top:4px;padding:6px}
+.btn-add-entry:hover{background:rgba(255,255,255,.1);color:#ccc}
+.btn-remove-entry{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:4px 8px;font-size:.7rem;margin-left:auto}
+
+/* Edit Form */
+.edit-form-title{font-size:1rem;font-weight:700;color:#fff;margin-bottom:16px}
+.edit-form-date{font-size:.85rem;color:#ffd200;margin-bottom:16px;font-weight:600}
+.entry-block{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:10px}
+.entry-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:.75rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:.65rem;color:#888;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.form-input,.form-select,.form-textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#e0e0e0;padding:7px 10px;font-size:.8rem;font-family:inherit;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(255,210,0,.5);background:rgba(255,255,255,.1)}
+.form-select option{background:#1a1a2e;color:#e0e0e0}
+.form-textarea{resize:vertical;min-height:60px}
+.budget-warning{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:.75rem;color:#f87171;margin-top:8px;display:none}
+.budget-warning.visible{display:block}
+.footer{text-align:center;margin-top:35px;padding:18px;color:#555;font-size:.7rem}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Maddison's PTO Calendar 2026</h1>
+  <p id="headerSub">Loading...</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-emoji">🤒</span> Sick Leave</div>
+  <div class="legend-item"><span class="legend-emoji">🌿</span> Volunteer (4–8 PM)</div>
+  <div class="legend-item"><span class="legend-emoji">💜</span> Personal Day</div>
+  <div class="legend-item"><span class="legend-emoji">✈️</span> Vacation</div>
+  <div class="legend-item"><span class="legend-emoji">🎉</span> Employee Holiday</div>
+  <div class="legend-item"><span class="legend-emoji">🔀</span> Combo Day</div>
+</div>
+
+<div class="balance-bar" id="balanceBar"></div>
+
+<div class="calendar-grid" id="calGrid"></div>
+
+<!-- View / Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalInner">
+    <button class="modal-close" id="modalClose">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="footer">Made for Maddison · Pearson PTO Planner 2026 · Click any day to edit</div>
+
+<script>
+// ─── Budget per type (hrs) ─────────────────────────────────────────
+const BUDGETS = {vacation:13, sick:68.64, personal:40, volunteer:40, holiday:16};
+
+// ─── Type metadata ─────────────────────────────────────────────────
+const TYPES = {
+  sick:      {label:'Sick Leave',         emoji:'🤒', cls:'sick'},
+  volunteer: {label:'Volunteer (4-8 PM)', emoji:'🌿', cls:'volunteer'},
+  personal:  {label:'Personal Day',       emoji:'💜', cls:'personal'},
+  vacation:  {label:'Vacation',           emoji:'✈️',  cls:'vacation'},
+  holiday:   {label:'Employee Holiday',   emoji:'🎉', cls:'holiday'}
+};
+
+// ─── PTO Data ──────────────────────────────────────────────────────
+// Each date key holds { entries: [{type, hours, time, note}] }
+// hours: numeric. 0 = marked but no PTO deducted (e.g. Memorial Day, Vlad trips)
+let P = {
+  '2026-03-23': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA flare-up.</strong> Doctor\'s note on file. Full day off.'}]},
+  '2026-03-27': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>Houston Food Bank</strong> Spring Hunger Relief Drive — Easter weekend.'}]},
+  '2026-04-02': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>Holy Thursday</strong> dinner at Star of Hope Mission.'}]},
+  '2026-04-03': {entries:[{type:'personal',  hours:8,    time:'Full day off', note:'<strong>Good Friday</strong> — religious/cultural holiday. Requested.'}]},
+  '2026-04-09': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>Houston SPCA</strong> Spring adoption weekend setup.'}]},
+  '2026-04-10': {entries:[{type:'personal',  hours:8,    time:'Full day off', note:'Personal/family obligation. <strong>4-day weekend</strong> with Apr 9.'}]},
+  '2026-04-15': {entries:[{type:'holiday',   hours:8,    time:'Full day off', note:'<strong>Friend\'s Birthday Trip</strong> — floating employee holiday.'}]},
+  '2026-04-16': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>HAWC</strong> spring fundraiser prep evening shift.'}]},
+  '2026-04-17': {entries:[{type:'personal',  hours:8,    time:'Full day off', note:'Requested — early plans <strong>Saturday April 18</strong>. 4-day break!'}]},
+  '2026-04-22': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>EARTH DAY</strong> — Houston Parks Board citywide cleanup.'}]},
+  '2026-04-23': {entries:[{type:'vacation',  hours:5,    time:'4 PM – 9 PM (partial off)', note:'Remaining vacation balance. <strong>Leaves 9 PM</strong> instead of midnight.'}]},
+  '2026-04-24': {entries:[{type:'holiday',   hours:8,    time:'Full day off', note:'<strong>Floating holiday</strong> — company benefit. 3-day weekend!'}]},
+  '2026-04-27': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM', note:'Volunteer event.'}]},
+  '2026-04-28': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA flare-up.</strong> Doctor\'s note on file.'}]},
+  '2026-04-29': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA flare Day 2.</strong> Multi-day flare, doctor\'s note covers.'}]},
+  '2026-04-30': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>NAMI</strong> Mental Health Month kickoff prep.'}]},
+  '2026-05-01': {entries:[{type:'vacation',  hours:8,    time:'Full day off', note:'<strong>May Day</strong> long weekend. 4-day break with Apr 30 volunteer.'}]},
+  '2026-05-04': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA flare recurrence</strong> — Monday flare after weekend.'}]},
+  '2026-05-05': {entries:[{type:'sick',      hours:4.64, time:'4 PM – 8:38 PM (partial)', note:'<strong>JIA continuing</strong> from Monday — partial recovery day.'}]},
+  '2026-05-06': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>Nurses Week</strong> — Memorial Hermann care packages.'}]},
+  '2026-05-07': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'<strong>Vlad trip</strong> (already counted in vacation balance).'}]},
+  '2026-05-08': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip (already counted).'}]},
+  '2026-05-11': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip week.'}]},
+  '2026-05-12': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip week.'}]},
+  '2026-05-13': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip week.'}]},
+  '2026-05-14': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip week.'}]},
+  '2026-05-15': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'Vlad trip week.'}]},
+  '2026-05-18': {entries:[{type:'vacation',  hours:0,    time:'Full day off', note:'<strong>Vlad trip final day</strong> (already counted).'}]},
+  '2026-05-19': {entries:[{type:'personal',  hours:8,    time:'Full day off', note:'<strong>Post-trip recovery.</strong> Unpack and readjust.'}]},
+  '2026-05-20': {entries:[{type:'personal',  hours:8,    time:'Full day off', note:'Personal mid-week. <strong>May 11–20 = 10 days off!</strong>'}]},
+  '2026-05-21': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>Houston Food Bank</strong> pre-Memorial Day drive.'}]},
+  '2026-05-22': {entries:[{type:'volunteer', hours:4,    time:'4 PM – 8 PM (leaves early)', note:'<strong>United Way</strong> Day of Action. 5-day Memorial stretch!'}]},
+  '2026-05-25': {entries:[{type:'holiday',   hours:0,    time:'Company-wide day off', note:'<strong>Memorial Day</strong> — National Holiday, no PTO needed.'}]},
+  '2026-05-26': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA full week off.</strong> Doctor\'s note covers May 26–29.'}]},
+  '2026-05-27': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>JIA Week</strong> full sick day.'}]},
+  '2026-05-28': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'JIA Week Day 3.'}]},
+  '2026-05-29': {entries:[{type:'sick',      hours:8,    time:'4 PM – 12 AM (full shift)', note:'<strong>Final JIA Week day.</strong> 🎉'}]}
+};
+
+const MONTHS = [{n:'March',y:2026,m:2},{n:'April',y:2026,m:3},{n:'May',y:2026,m:4}];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ─── Compute totals ────────────────────────────────────────────────
+function computeTotals() {
+  const totals = {vacation:0, sick:0, personal:0, volunteer:0, holiday:0};
+  Object.values(P).forEach(day => {
+    day.entries.forEach(e => {
+      if (totals[e.type] !== undefined) totals[e.type] += e.hours;
+    });
+  });
+  return totals;
+}
+
+function totalHrs(day) {
+  return day.entries.reduce((s, e) => s + e.hours, 0);
+}
+
+function fmtHrs(n) {
+  if (n === 0) return '0';
+  return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
+}
+
+// ─── Balance Bar ───────────────────────────────────────────────────
+function renderBalanceBar() {
+  const totals = computeTotals();
+  const grandTotal = Object.values(totals).reduce((s, v) => s + v, 0);
+  document.getElementById('headerSub').textContent =
+    `${fmtHrs(grandTotal)} hrs planned · Click any day to add or edit PTO`;
+
+  const bar = document.getElementById('balanceBar');
+  bar.innerHTML = '';
+  Object.entries(BUDGETS).forEach(([type, budget]) => {
+    const used = totals[type] || 0;
+    const diff = used - budget;
+    const chip = document.createElement('div');
+    chip.className = 'balance-chip ' + (diff > 0.001 ? 'over' : diff < -0.001 ? 'under' : 'ok');
+    const usedStr = fmtHrs(used);
+    const budgetStr = fmtHrs(budget);
+    const check = Math.abs(diff) < 0.01 ? ' ✓' : diff > 0 ? ` (+${fmtHrs(diff)} OVER)` : ` (${fmtHrs(diff)})`;
+    chip.innerHTML = `<div class="lbl">${TYPES[type].emoji} ${type.charAt(0).toUpperCase()+type.slice(1)}</div>
+      <div class="val">${usedStr}/${budgetStr}${check}</div>`;
+    bar.appendChild(chip);
+  });
+}
+
+// ─── Calendar Render ───────────────────────────────────────────────
+function renderCalendar() {
+  const g = document.getElementById('calGrid');
+  g.innerHTML = '';
+  MONTHS.forEach(mo => {
+    const card = document.createElement('div');
+    card.className = 'month-card';
+    let h = `<div class="month-name">${mo.n} 2026</div><div class="day-headers">`;
+    DAY_NAMES.forEach(d => h += `<div class="day-header">${d}</div>`);
+    h += '</div><div class="days-grid">';
+    const firstDow = new Date(mo.y, mo.m, 1).getDay();
+    const daysInMonth = new Date(mo.y, mo.m + 1, 0).getDate();
+    for (let i = 0; i < firstDow; i++) h += '<div class="day-cell empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${mo.y}-${String(mo.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayData = P[ds];
+      const dow = new Date(mo.y, mo.m, d).getDay();
+      const isWe = dow === 0 || dow === 6;
+      const isToday = ds === '2026-03-21';
+      let cls = 'day-cell';
+      if (isWe) cls += ' weekend';
+      if (isToday) cls += ' today';
+      if (dayData) {
+        cls += ' pto';
+        const types = dayData.entries.map(e => e.type);
+        const uniqueTypes = [...new Set(types)];
+        cls += uniqueTypes.length > 1 ? ' combo' : ` ${uniqueTypes[0]}`;
+        const emoji = uniqueTypes.length > 1 ? '🔀' : TYPES[uniqueTypes[0]].emoji;
+        const hrs = totalHrs(dayData);
+        const hrsStr = dayData.entries.map(e => `${fmtHrs(e.hours)} hrs ${e.type}`).join(' + ');
+        const label = uniqueTypes.length > 1
+          ? uniqueTypes.map(t => TYPES[t].label).join(' + ')
+          : TYPES[uniqueTypes[0]].label;
+        h += `<div class="${cls}" data-date="${ds}">
+          <span class="day-num">${d}</span>
+          <span class="day-emoji">${emoji}</span>
+          <div class="tooltip">
+            <div class="tt-type">${label}</div>
+            <div class="tt-hrs">${hrs > 0 ? hrsStr : 'No PTO deducted'}</div>
+            <div>${dayData.entries[0].time}</div>
+          </div>
+        </div>`;
+      } else {
+        h += `<div class="${cls}" data-date="${ds}">
+          <span class="day-num">${d}</span>
+          <div class="tooltip"><div class="tt-type">No PTO</div><div class="tt-hrs">Click to add</div></div>
+        </div>`;
+      }
+    }
+    h += '</div>';
+    card.innerHTML = h;
+    g.appendChild(card);
+  });
+
+  // Click listeners
+  document.querySelectorAll('.day-cell:not(.empty)').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const ds = cell.dataset.date;
+      if (P[ds]) openViewModal(ds);
+      else openEditModal(ds, false);
+    });
+  });
+}
+
+// ─── View Modal ────────────────────────────────────────────────────
+function openViewModal(ds) {
+  const dayData = P[ds];
+  const dt = new Date(ds + 'T12:00:00');
+  const fmt = dt.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  const types = [...new Set(dayData.entries.map(e => e.type))];
+  const isCombo = types.length > 1;
+  const primaryType = types[0];
+  const emoji = isCombo ? '🔀' : TYPES[primaryType].emoji;
+  const label = isCombo ? types.map(t => TYPES[t].label).join(' + ') : TYPES[primaryType].label;
+  const typeClass = isCombo ? 'combo' : primaryType;
+  const hrsDisplay = dayData.entries
+    .map(e => e.hours > 0 ? `${fmtHrs(e.hours)} hrs ${e.type}` : `${e.type} (no PTO deducted)`)
+    .join(', ');
+
+  let c = `<div class="modal-emoji">${emoji}</div>`;
+  c += `<div class="modal-date">${fmt}</div>`;
+  c += `<div class="modal-type ${typeClass}">${label}</div>`;
+  c += `<div class="modal-hours">${hrsDisplay} <span>of PTO</span></div>`;
+  dayData.entries.forEach(e => {
+    c += `<div class="modal-desc"><strong>Schedule:</strong> ${e.time}</div>`;
+    if (e.note) c += `<div class="modal-desc" style="margin-top:6px">${e.note}</div>`;
+  });
+  c += `<div class="modal-actions">
+    <button class="btn btn-edit" onclick="openEditModal('${ds}', true)">✏️ Edit</button>
+    <button class="btn btn-delete" onclick="deleteDay('${ds}')">🗑 Remove PTO</button>
+  </div>`;
+
+  document.getElementById('modalContent').innerHTML = c;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+// ─── Edit / Add Modal ──────────────────────────────────────────────
+let _editDs = null;
+
+function openEditModal(ds, isEdit) {
+  _editDs = ds;
+  const dt = new Date(ds + 'T12:00:00');
+  const fmt = dt.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  const existing = isEdit ? P[ds] : null;
+  const entries = existing ? JSON.parse(JSON.stringify(existing.entries)) : [{type:'sick', hours:8, time:'', note:''}];
+
+  function renderForm() {
+    const totals = computeTotals();
+    // Temporarily exclude this day's hours to get "other" usage
+    const dayHrsBefore = existing ? {} : {};
+    if (existing) {
+      existing.entries.forEach(e => {
+        dayHrsBefore[e.type] = (dayHrsBefore[e.type] || 0) + e.hours;
+      });
+    }
+
+    let c = `<div class="edit-form-title">${isEdit ? '✏️ Edit PTO' : '➕ Add PTO'}</div>`;
+    c += `<div class="edit-form-date">${fmt}</div>`;
+
+    entries.forEach((entry, i) => {
+      const otherUsage = totals[entry.type] || 0;
+      const thisHrs = dayHrsBefore[entry.type] || 0;
+      const projectedUsage = otherUsage - thisHrs + entry.hours;
+      const budget = BUDGETS[entry.type];
+      const overBudget = projectedUsage > budget + 0.001;
+
+      c += `<div class="entry-block" id="entry-block-${i}">
+        <div class="entry-block-header">
+          Entry ${i+1}
+          ${entries.length > 1 ? `<button class="btn btn-remove-entry" onclick="removeEntry(${i})">✕ Remove</button>` : ''}
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">PTO Type</label>
+            <select class="form-select" id="type-${i}" onchange="updateEntryType(${i})">
+              ${Object.entries(TYPES).map(([k,v]) => `<option value="${k}" ${entry.type===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hours</label>
+            <input class="form-input" type="number" id="hours-${i}" min="0" step="0.01" value="${entry.hours}" onchange="updateEntryHours(${i})">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label class="form-label">Time / Schedule</label>
+            <input class="form-input" type="text" id="time-${i}" value="${entry.time}" placeholder="e.g. 4 PM – 8 PM" onchange="updateEntryField(${i},'time')">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label class="form-label">Note</label>
+            <textarea class="form-textarea" id="note-${i}" placeholder="Optional note..." onchange="updateEntryField(${i},'note')">${entry.note||''}</textarea>
+          </div>
+        </div>
+        <div class="budget-warning ${overBudget?'visible':''}" id="warn-${i}">
+          ⚠️ This would put ${entry.type} at ${fmtHrs(projectedUsage)} hrs — ${fmtHrs(projectedUsage - budget)} hrs over budget of ${fmtHrs(budget)} hrs.
+        </div>
+      </div>`;
+    });
+
+    c += `<button class="btn btn-add-entry" onclick="addEntry()">+ Add another PTO type (combo day)</button>`;
+    c += `<div class="modal-actions" style="margin-top:14px">
+      <button class="btn btn-save" onclick="saveDay()">💾 Save</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>`;
+
+    document.getElementById('modalContent').innerHTML = c;
+    document.getElementById('modalOverlay').classList.add('active');
+  }
+
+  // Expose helpers to inline handlers
+  window._editEntries = entries;
+  window.updateEntryType = (i) => {
+    entries[i].type = document.getElementById(`type-${i}`).value;
+    renderForm();
+  };
+  window.updateEntryHours = (i) => {
+    entries[i].hours = parseFloat(document.getElementById(`hours-${i}`).value) || 0;
+    renderForm();
+  };
+  window.updateEntryField = (i, field) => {
+    entries[i][field] = document.getElementById(`${field}-${i}`).value;
+  };
+  window.removeEntry = (i) => {
+    entries.splice(i, 1);
+    renderForm();
+  };
+  window.addEntry = () => {
+    entries.push({type:'volunteer', hours:4, time:'4 PM – 8 PM', note:''});
+    renderForm();
+  };
+  window.saveDay = () => {
+    // Pull latest values from inputs
+    entries.forEach((e, i) => {
+      e.type = document.getElementById(`type-${i}`)?.value || e.type;
+      e.hours = parseFloat(document.getElementById(`hours-${i}`)?.value) || 0;
+      e.time = document.getElementById(`time-${i}`)?.value || e.time;
+      e.note = document.getElementById(`note-${i}`)?.value || e.note;
+    });
+    P[_editDs] = {entries: JSON.parse(JSON.stringify(entries))};
+    closeModal();
+    renderCalendar();
+    renderBalanceBar();
+  };
+
+  renderForm();
+}
+
+// ─── Delete ────────────────────────────────────────────────────────
+function deleteDay(ds) {
+  if (confirm('Remove all PTO for this day?')) {
+    delete P[ds];
+    closeModal();
+    renderCalendar();
+    renderBalanceBar();
+  }
+}
+
+// ─── Modal close ───────────────────────────────────────────────────
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── Init ──────────────────────────────────────────────────────────
+renderCalendar();
+renderBalanceBar();
+</script>
+</body>
+</html>
