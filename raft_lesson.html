@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raft in Go, Lesson Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface2: #1e2230;
+  --border: #2a2e3d;
+  --text: #e2e4ea;
+  --text-dim: #8b8fa3;
+  --accent: #4ae68a;
+  --accent-dim: #2a8a52;
+  --accent2: #4a9de6;
+  --accent3: #e6a44a;
+  --danger: #e64a6a;
+  --code-bg: #131620;
+  --success: #4ae68a;
+  --warning: #e6a44a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* NAV */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+.nav-header {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.nav-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.nav-header p {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.nav-section {
+  padding: 8px 16px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.nav a {
+  display: block;
+  padding: 8px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+.nav a:hover, .nav a.active {
+  color: var(--text);
+  background: var(--surface2);
+  border-left-color: var(--accent);
+}
+.nav a .ch-num {
+  color: var(--accent-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+/* MAIN */
+.main {
+  margin-left: 280px;
+  max-width: 860px;
+  padding: 48px 48px 120px;
+}
+
+/* CHAPTERS */
+.chapter {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+.chapter.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.chapter-subtitle {
+  color: var(--text-dim);
+  font-size: 16px;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 36px 0 16px;
+  color: var(--text);
+}
+h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 28px 0 12px;
+  color: var(--accent2);
+}
+
+p { margin-bottom: 16px; font-weight: 300; font-size: 15.5px; }
+strong { font-weight: 600; color: var(--text); }
+em { color: var(--accent3); font-style: normal; font-weight: 500; }
+
+ul, ol { margin: 0 0 16px 20px; }
+li { margin-bottom: 6px; font-weight: 300; font-size: 15px; }
+
+/* CODE */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 16px 0 24px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #c8ccd8;
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* SPECIAL BLOCKS */
+.info-box {
+  background: var(--surface2);
+  border-left: 4px solid var(--accent2);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.info-box.warning {
+  border-left-color: var(--warning);
+}
+.info-box.danger {
+  border-left-color: var(--danger);
+}
+.info-box .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.info-box.warning .label { color: var(--warning); }
+.info-box.danger .label { color: var(--danger); }
+.info-box .label { color: var(--accent2); }
+
+/* INTERACTIVE EXERCISES */
+.exercise {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+}
+.exercise-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.exercise-badge {
+  background: var(--accent-dim);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+.exercise-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.exercise textarea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--code-bg);
+  color: #c8ccd8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  margin: 8px 0;
+}
+.exercise textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.exercise button {
+  background: var(--accent-dim);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+.exercise button:hover { background: var(--accent); color: var(--bg); }
+.exercise .result {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+}
+.exercise .result.show { display: block; }
+.exercise .result.correct { background: #1a3328; border: 1px solid var(--accent-dim); color: var(--accent); }
+.exercise .result.incorrect { background: #331a22; border: 1px solid #8a2a3a; color: var(--danger); }
+.exercise .result.info { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+/* DIAGRAM */
+.diagram {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+  text-align: center;
+}
+.diagram svg { max-width: 100%; }
+.server-box {
+  rx: 8;
+  ry: 8;
+}
+
+/* NAV BUTTONS */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--surface);
+}
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-btn.primary { background: var(--accent-dim); border-color: var(--accent-dim); color: #fff; }
+.nav-btn.primary:hover { background: var(--accent); color: var(--bg); }
+
+/* QUIZ */
+.quiz-option {
+  display: block;
+  padding: 12px 16px;
+  margin: 6px 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+.quiz-option:hover { border-color: var(--accent); }
+.quiz-option.selected { border-color: var(--accent2); background: #1a2233; }
+.quiz-option.correct-answer { border-color: var(--accent); background: #1a3328; }
+.quiz-option.wrong-answer { border-color: var(--danger); background: #331a22; }
+
+/* Comparison Table */
+.comparison {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+.comparison th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  color: var(--accent2);
+}
+.comparison td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 300;
+}
+.comparison tr:hover td { background: var(--surface2); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .nav { transform: translateX(-100%); }
+  .nav.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 24px 20px 80px; }
+  .mobile-toggle {
+    display: block !important;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 200;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+}
+.mobile-toggle { display: none; }
+
+/* Step through animation */
+.step-container { margin: 20px 0; }
+.step {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 8px 0;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.step.visible { display: block; }
+.step-num {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 8px;
+}
+.step-controls {
+  margin-top: 12px;
+}
+.step-controls button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: all 0.2s;
+}
+.step-controls button:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" onclick="document.querySelector('.nav').classList.toggle('open')">☰</button>
+
+<nav class="nav" id="nav">
+  <div class="nav-header">
+    <h2>Raft in Go</h2>
+    <p>Part 3A, Leader Election</p>
+  </div>
+  <div class="nav-section">Foundations</div>
+  <a href="#" data-ch="0" class="active"><span class="ch-num">00</span> What is Raft?</a>
+  <a href="#" data-ch="1"><span class="ch-num">01</span> Go Quick Review</a>
+  <a href="#" data-ch="2"><span class="ch-num">02</span> Pointers & Structs</a>
+  <a href="#" data-ch="3"><span class="ch-num">03</span> Goroutines & Channels</a>
+  <a href="#" data-ch="4"><span class="ch-num">04</span> Mutexes & Locking</a>
+  <div class="nav-section">The Project</div>
+  <a href="#" data-ch="5"><span class="ch-num">05</span> Project Overview</a>
+  <a href="#" data-ch="6"><span class="ch-num">06</span> The Raft Struct</a>
+  <a href="#" data-ch="7"><span class="ch-num">07</span> Election Flow</a>
+  <a href="#" data-ch="8"><span class="ch-num">08</span> Building the Code</a>
+  <a href="#" data-ch="9"><span class="ch-num">09</span> Common Pitfalls</a>
+  <a href="#" data-ch="10"><span class="ch-num">10</span> Testing & Debugging</a>
+</nav>
+
+<div class="main">
+
+<!-- ============ CH 0: WHAT IS RAFT ============ -->
+<div class="chapter active" id="ch0">
+  <h1>What is Raft?</h1>
+  <p class="chapter-subtitle">Understanding the problem before writing a single line of code</p>
+
+  <h2>The Problem</h2>
+  <p>Imagine you run a bank with one server storing all account balances. If that server crashes, everything is lost. So you run <strong>3 servers</strong> that all keep the same copy of the data. Now if one dies, the other two still have everything.</p>
+  <p>But this creates a new problem: if a customer sends "deposit $100," which server handles it? What if two servers process different requests in different orders? Now they have different data, and you're in trouble.</p>
+
+  <h2>Raft's Solution</h2>
+  <p><strong>Raft</strong> is a set of rules (a protocol) that solves this. The core idea is simple:</p>
+  <ol>
+    <li>One server is elected as the <em>leader</em></li>
+    <li>ALL client requests go through the leader</li>
+    <li>The leader tells all other servers (<em>followers</em>) what to do, in what order</li>
+    <li>If the leader dies, the remaining servers hold an <em>election</em> and pick a new leader</li>
+  </ol>
+
+  <div class="diagram">
+    <svg width="600" height="200" viewBox="0 0 600 200">
+      <rect x="20" y="60" width="120" height="70" fill="#2a8a52" stroke="#4ae68a" stroke-width="2" class="server-box"/>
+      <text x="80" y="90" text-anchor="middle" fill="#fff" font-family="Outfit" font-size="14" font-weight="700">Server 0</text>
+      <text x="80" y="112" text-anchor="middle" fill="#4ae68a" font-family="JetBrains Mono" font-size="12">LEADER</text>
+
+      <rect x="240" y="60" width="120" height="70" fill="#1e2230" stroke="#2a2e3d" stroke-width="2" class="server-box"/>
+      <text x="300" y="90" text-anchor="middle" fill="#e2e4ea" font-family="Outfit" font-size="14" font-weight="600">Server 1</text>
+      <text x="300" y="112" text-anchor="middle" fill="#8b8fa3" font-family="JetBrains Mono" font-size="12">FOLLOWER</text>
+
+      <rect x="460" y="60" width="120" height="70" fill="#1e2230" stroke="#2a2e3d" stroke-width="2" class="server-box"/>
+      <text x="520" y="90" text-anchor="middle" fill="#e2e4ea" font-family="Outfit" font-size="14" font-weight="600">Server 2</text>
+      <text x="520" y="112" text-anchor="middle" fill="#8b8fa3" font-family="JetBrains Mono" font-size="12">FOLLOWER</text>
+
+      <line x1="140" y1="85" x2="240" y2="85" stroke="#4ae68a" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="140" y1="100" x2="240" y2="100" stroke="#4ae68a" stroke-width="2" marker-end="url(#arr)" stroke-dasharray="6"/>
+      <text x="190" y="78" text-anchor="middle" fill="#8b8fa3" font-family="JetBrains Mono" font-size="10">heartbeat</text>
+
+      <line x1="360" y1="95" x2="460" y2="95" stroke="#4ae68a" stroke-width="2" stroke-dasharray="6"/>
+      <text x="410" y="88" text-anchor="middle" fill="#8b8fa3" font-family="JetBrains Mono" font-size="10">heartbeat</text>
+
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#4ae68a"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h2>Three Server States</h2>
+  <table class="comparison">
+    <tr><th>State</th><th>What it does</th><th>When</th></tr>
+    <tr><td><strong>Follower</strong></td><td>Listens to the leader, does what it says</td><td>Default state, where everyone starts</td></tr>
+    <tr><td><strong>Candidate</strong></td><td>Trying to become leader, asks others for votes</td><td>When a follower's election timer expires</td></tr>
+    <tr><td><strong>Leader</strong></td><td>Sends heartbeats, handles all client requests</td><td>After winning an election with majority votes</td></tr>
+  </table>
+
+  <h2>Terms (Election Rounds)</h2>
+  <p>Raft divides time into <em>terms</em>, numbered 1, 2, 3, etc. Each term starts with an election. If a leader is elected, it serves for the rest of that term. If the election fails (split vote), a new term starts immediately.</p>
+  <p>Terms are crucial because they prevent old leaders from causing problems. If server 0 was leader in term 3, then crashed and came back, but server 1 is now leader in term 5, server 0 sees the higher term and immediately steps down.</p>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Quick Check</span>
+      <span class="exercise-title">Do you understand the basics?</span>
+    </div>
+    <p>You have 5 servers. The leader (server 2) crashes. How many votes does a candidate need to become the new leader?</p>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">A) 2 votes (just needs more than the crashed server)</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">B) 4 votes (all remaining servers)</button>
+    <button class="quiz-option" onclick="checkQuiz(this, true)">C) 3 votes (majority of 5, including itself)</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">D) 5 votes (all servers must agree)</button>
+    <div class="result" id="quiz0"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <span></span>
+    <button class="nav-btn primary" onclick="goTo(1)">Next: Go Quick Review →</button>
+  </div>
+</div>
+
+<!-- ============ CH 1: GO QUICK REVIEW ============ -->
+<div class="chapter" id="ch1">
+  <h1>Go Quick Review</h1>
+  <p class="chapter-subtitle">The essentials you'll use in this project, mapped to Python and Java</p>
+
+  <h2>Variables</h2>
+  <p>Go gives you two ways to declare variables. The short form <code>:=</code> is used inside functions. The long form <code>var</code> is used for struct fields or package-level variables.</p>
+<pre><code>// Short form (type inferred, like Python)
+x := 5
+name := "Andrew"
+isLeader := true
+
+// Long form (explicit type, like Java)
+var x int = 5
+var name string = "Andrew"</code></pre>
+
+  <h2>Functions</h2>
+  <p>Return type comes <strong>after</strong> the parameters. Go can return <strong>multiple values</strong>, which is used heavily in Raft.</p>
+<pre><code>// Single return
+func add(a int, b int) int {
+    return a + b
+}
+
+// Multiple returns (used by GetState, Start, etc.)
+func GetState() (int, bool) {
+    return 5, true
+}
+
+// Calling it:
+term, isLeader := GetState()</code></pre>
+
+  <h2>For Loops</h2>
+  <p>Go only has <code>for</code>. No <code>while</code> keyword. But <code>for</code> can do everything:</p>
+<pre><code>// Classic (like Java)
+for i := 0; i < 10; i++ {
+    fmt.Println(i)
+}
+
+// While-style (just a condition)
+for x < 100 {
+    x = x * 2
+}
+
+// Infinite loop
+for {
+    // runs forever, like while(true)
+}
+
+// Range loop (like Python's "for i in range")
+for i, val := range mySlice {
+    fmt.Println(i, val)
+}</code></pre>
+
+  <h2>If/Else</h2>
+  <p>Same as Java but <strong>no parentheses</strong> around the condition. Braces are mandatory.</p>
+<pre><code>if term > currentTerm {
+    currentTerm = term
+    state = 0  // become follower
+} else if term == currentTerm {
+    // same term
+} else {
+    // stale term, ignore
+}</code></pre>
+
+  <h2>Slices (Dynamic Arrays)</h2>
+  <p>Like <code>ArrayList</code> in Java or <code>list</code> in Python.</p>
+<pre><code>nums := []int{1, 2, 3}
+nums = append(nums, 4)     // [1, 2, 3, 4]
+fmt.Println(len(nums))     // 4
+fmt.Println(nums[0])       // 1</code></pre>
+
+  <h2>Maps</h2>
+  <p>Like <code>HashMap</code> in Java or <code>dict</code> in Python.</p>
+<pre><code>ages := map[string]int{
+    "Alice": 25,
+    "Bob":   30,
+}
+ages["Charlie"] = 22
+val, exists := ages["Alice"]  // exists is true/false</code></pre>
+
+  <h2>make()</h2>
+  <p><code>make</code> creates three things: channels, slices, and maps.</p>
+<pre><code>ch := make(chan bool)          // channel
+nums := make([]int, 5)        // slice of 5 zeros
+ages := make(map[string]int)  // empty map</code></pre>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Practice</span>
+      <span class="exercise-title">Write a function that returns multiple values</span>
+    </div>
+    <p>Write a Go function called <code>divide</code> that takes two <code>float64</code> parameters and returns both the result (<code>float64</code>) and an <code>error</code> string. If the divisor is 0, return 0 and "cannot divide by zero".</p>
+    <textarea id="ex1" spellcheck="false">func divide(a float64, b float64) (float64, string) {
+    // your code here
+}</textarea>
+    <button onclick="checkEx1()">Check</button>
+    <div class="result" id="ex1-result"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(0)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(2)">Next: Pointers & Structs →</button>
+  </div>
+</div>
+
+<!-- ============ CH 2: POINTERS & STRUCTS ============ -->
+<div class="chapter" id="ch2">
+  <h1>Pointers & Structs</h1>
+  <p class="chapter-subtitle">How Go organizes data, and why pointers matter for Raft</p>
+
+  <h2>Structs (Go's version of classes)</h2>
+  <p>Go doesn't have classes. Instead, it has <strong>structs</strong>, which are just collections of fields. Then you attach methods to them separately.</p>
+<pre><code>// Define a struct (like a class without methods)
+type Server struct {
+    Name    string
+    Term    int
+    IsAlive bool
+}
+
+// Create one
+s := Server{Name: "alpha", Term: 1, IsAlive: true}
+fmt.Println(s.Name)    // "alpha"
+s.Term = 2             // modify a field</code></pre>
+  <p>In the Raft project, the <code>Raft</code> struct holds all the state for one server: its current term, who it voted for, whether it's the leader, its log, etc.</p>
+
+  <h2>Methods on Structs</h2>
+  <p>In Java, methods live inside the class. In Go, you define them separately with a <em>receiver</em>:</p>
+<pre><code>// Java style:
+// class Server {
+//     public String status() { return this.Name; }
+// }
+
+// Go style:
+func (s *Server) status() string {
+    return s.Name    // s is like "this" in Java or "self" in Python
+}</code></pre>
+  <p>The <code>(s *Server)</code> part is the receiver. It says "this method belongs to Server, and <code>s</code> is the instance."</p>
+
+  <h2>Pointers: The & and *</h2>
+  <p>In Java, when you do <code>Dog d = new Dog()</code>, <code>d</code> is automatically a reference (pointer). You're already using pointers, Java just hides the syntax.</p>
+  <p>Go makes it explicit:</p>
+<pre><code>x := 5          // x is an int, value is 5
+p := &x         // p is a pointer to x (&amp; = "address of")
+fmt.Println(*p) // *p = "value at this address" = 5
+*p = 10         // change the value through the pointer
+fmt.Println(x)  // x is now 10</code></pre>
+
+  <table class="comparison">
+    <tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td><code>*int</code></td><td>Type: "pointer to an int"</td><td><code>var p *int</code></td></tr>
+    <tr><td><code>&x</code></td><td>Get the address of x</td><td><code>p = &x</code></td></tr>
+    <tr><td><code>*p</code></td><td>Get the value p points to</td><td><code>fmt.Println(*p)</code></td></tr>
+  </table>
+
+  <h2>Why *Raft in method receivers?</h2>
+<pre><code>func (rf *Raft) GetState() (int, bool) {
+    return rf.currentTerm, rf.state == 2
+}</code></pre>
+  <p>The <code>*Raft</code> means "rf is a pointer to a Raft struct." This lets the method <strong>read and modify</strong> the actual server's data. Without the <code>*</code>, Go would give you a <strong>copy</strong>, and any changes wouldn't affect the original.</p>
+
+  <div class="info-box">
+    <div class="label">Key Insight</div>
+    <p>Every time you see <code>rf.currentTerm</code> or <code>rf.state</code> in the Raft code, it's accessing the real server's data through a pointer. <code>rf</code> = <code>this</code> in Java = <code>self</code> in Python.</p>
+  </div>
+
+  <h2>Why &args and &reply in RPCs?</h2>
+<pre><code>reply := RequestVoteReply{}                          // create empty struct
+ok := rf.sendRequestVote(server, &args, &reply)     // pass addresses
+// now reply.VoteGranted has the answer</code></pre>
+  <p>You create an empty reply struct, then pass its <strong>address</strong> with <code>&</code>. The RPC function fills it in. If you passed the struct directly (without <code>&</code>), the function would fill in a copy, and you'd never see the result.</p>
+  <p>Think of it as: "here's a blank form on MY desk, write the answer on it" vs "here's a photocopy, write on that" (you never see the photocopy).</p>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Quick Check</span>
+      <span class="exercise-title">Pointer comprehension</span>
+    </div>
+    <p>What does this code print?</p>
+<pre><code>a := 10
+b := &a
+*b = 20
+fmt.Println(a)</code></pre>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">A) 10</button>
+    <button class="quiz-option" onclick="checkQuiz(this, true)">B) 20</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">C) Memory address</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">D) Error</button>
+    <div class="result" id="quiz2"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(1)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(3)">Next: Goroutines & Channels →</button>
+  </div>
+</div>
+
+<!-- ============ CH 3: GOROUTINES & CHANNELS ============ -->
+<div class="chapter" id="ch3">
+  <h1>Goroutines & Channels</h1>
+  <p class="chapter-subtitle">Running code in parallel and communicating between parallel tasks</p>
+
+  <h2>Why Goroutines?</h2>
+  <p>In Raft, the leader needs to send heartbeats to all followers <strong>at the same time</strong>. If it sent them one by one, and one server was slow or dead, the whole system would stall.</p>
+<pre><code>// WITHOUT goroutines (slow, sequential)
+sendHeartbeat(server1)   // wait 100ms...
+sendHeartbeat(server2)   // wait 100ms...
+sendHeartbeat(server3)   // wait 100ms...
+// total: 300ms
+
+// WITH goroutines (fast, parallel)
+go sendHeartbeat(server1)   // fires immediately
+go sendHeartbeat(server2)   // fires immediately
+go sendHeartbeat(server3)   // fires immediately
+// total: ~100ms, all running at the same time</code></pre>
+
+  <p>The <code>go</code> keyword starts a function in the background. Your code keeps running immediately.</p>
+
+  <h3>Anonymous Goroutines</h3>
+  <p>Often you define the function right there inline instead of making a separate named function:</p>
+<pre><code>// Named function
+go sendHeartbeat(server1)
+
+// Anonymous function (same idea, just inline)
+go func() {
+    fmt.Println("running in background")
+}()   // the () at the end CALLS the function</code></pre>
+  <p>That <code>()</code> at the end is important. Without it, you're just defining the function but never running it.</p>
+
+  <h3>The (i) Pattern in Loops</h3>
+<pre><code>for i := 0; i < 5; i++ {
+    go func(server int) {
+        fmt.Println("sending to", server)
+    }(i)   // passes current value of i into "server"
+}</code></pre>
+  <p>Why pass <code>(i)</code>? Because the goroutine runs in the background, and by the time it actually starts, the loop has already moved on. The variable <code>i</code> might be 5 by then. Passing <code>(i)</code> captures the value <strong>at that moment</strong>.</p>
+
+  <div class="info-box warning">
+    <div class="label">Common Bug</div>
+    <p>Forgetting to pass <code>(i)</code> is one of the most common Go mistakes. All goroutines end up using the same (final) value of the loop variable.</p>
+  </div>
+
+  <h2>Channels</h2>
+  <p>Goroutines run in the background, but how do you get results back? You use a <strong>channel</strong>, which is a pipe between goroutines.</p>
+<pre><code>ch := make(chan bool)    // create a pipe that carries booleans
+
+// Goroutine sends a value INTO the pipe
+go func() {
+    ch &lt;- true          // send true into channel
+}()
+
+// Main code receives FROM the pipe (waits until something arrives)
+result := &lt;-ch           // result is true</code></pre>
+
+  <p>The <code>&lt;-</code> operator shows direction:</p>
+  <table class="comparison">
+    <tr><th>Syntax</th><th>Direction</th><th>What it does</th></tr>
+    <tr><td><code>ch &lt;- value</code></td><td>Send INTO channel</td><td>Puts a value into the pipe</td></tr>
+    <tr><td><code>result := &lt;-ch</code></td><td>Receive FROM channel</td><td>Waits and pulls a value out</td></tr>
+  </table>
+
+  <p><strong>Key detail:</strong> receiving from a channel <strong>blocks</strong> (waits) until someone sends. This is how goroutines synchronize.</p>
+
+  <h2>Real Raft Example: Collecting Votes</h2>
+  <p>A candidate needs to ask all peers for votes in parallel and count the results:</p>
+<pre><code>voteCh := make(chan bool)    // create the pipe
+
+// Send vote requests to all peers in parallel
+for i := range rf.peers {
+    if i != rf.me {              // skip myself
+        go func(server int) {
+            reply := RequestVoteReply{}
+            ok := rf.sendRequestVote(server, &args, &reply)
+            voteCh &lt;- (ok && reply.VoteGranted)
+        }(i)
+    }
+}
+
+// Sit and collect results
+votes := 1                           // count my own vote
+for i := 0; i < len(rf.peers)-1; i++ {
+    if &lt;-voteCh {                    // wait for next result
+        votes++
+    }
+}
+// now "votes" has the total count</code></pre>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Practice</span>
+      <span class="exercise-title">Write a goroutine with a channel</span>
+    </div>
+    <p>Create a channel of type <code>int</code>. Start a goroutine that sends the number <code>42</code> into the channel. Then receive from the channel and store it in a variable called <code>answer</code>.</p>
+    <textarea id="ex3" spellcheck="false">// Create the channel
+
+// Start a goroutine that sends 42
+
+// Receive the value
+</textarea>
+    <button onclick="checkEx3()">Check</button>
+    <div class="result" id="ex3-result"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(2)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(4)">Next: Mutexes & Locking →</button>
+  </div>
+</div>
+
+<!-- ============ CH 4: MUTEXES ============ -->
+<div class="chapter" id="ch4">
+  <h1>Mutexes & Locking</h1>
+  <p class="chapter-subtitle">Preventing goroutines from corrupting shared data</p>
+
+  <h2>The Problem</h2>
+  <p>Multiple goroutines access the same Raft struct at the same time. The ticker goroutine might be reading <code>rf.currentTerm</code> while an RPC handler is writing to it. This causes a <strong>race condition</strong>, which means unpredictable behavior.</p>
+<pre><code>// Goroutine A (election)          // Goroutine B (heartbeat received)
+rf.currentTerm = 5                  rf.currentTerm = 10
+rf.state = 1                        rf.state = 0
+// Who wins? Unknown. Data corrupted.</code></pre>
+
+  <h2>The Solution: Mutex</h2>
+  <p>A mutex (mutual exclusion) is like a bathroom lock. Only one goroutine can hold it at a time:</p>
+<pre><code>rf.mu.Lock()           // "I'm using the data, everyone else wait"
+rf.currentTerm = 5
+rf.state = 1
+rf.mu.Unlock()         // "Done, next person can go"</code></pre>
+  <p>If another goroutine tries to <code>Lock()</code> while it's already locked, it just <strong>waits</strong> until the first one calls <code>Unlock()</code>.</p>
+
+  <h2>The defer Pattern</h2>
+  <p><code>defer</code> means "run this when the function returns." It guarantees the unlock happens even if you return early:</p>
+<pre><code>func (rf *Raft) GetState() (int, bool) {
+    rf.mu.Lock()
+    defer rf.mu.Unlock()    // runs automatically when function exits
+    return rf.currentTerm, rf.state == 2
+}</code></pre>
+  <p>This is the cleanest pattern and you'll use it constantly.</p>
+
+  <div class="info-box danger">
+    <div class="label">Critical Rule</div>
+    <p><strong>Never hold the lock while sending an RPC.</strong> RPCs can take a long time or never return (dead server). If you hold the lock while waiting, no other goroutine can access the struct. Everything freezes. This is a <strong>deadlock</strong>.</p>
+  </div>
+
+<pre><code>// BAD: deadlock risk
+rf.mu.Lock()
+rf.sendRequestVote(server, &args, &reply)   // might wait forever
+rf.mu.Unlock()
+
+// GOOD: lock, copy what you need, unlock, then send
+rf.mu.Lock()
+args := RequestVoteArgs{Term: rf.currentTerm}
+rf.mu.Unlock()
+
+rf.sendRequestVote(server, &args, &reply)   // no lock held
+
+rf.mu.Lock()
+// process the reply safely
+rf.mu.Unlock()</code></pre>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Quick Check</span>
+      <span class="exercise-title">Spot the bug</span>
+    </div>
+    <p>What's wrong with this code?</p>
+<pre><code>func (rf *Raft) sendHeartbeats() {
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
+    for i := range rf.peers {
+        if i != rf.me {
+            rf.peers[i].Call("Raft.AppendEntries", &args, &reply)
+        }
+    }
+}</code></pre>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">A) Missing return statement</button>
+    <button class="quiz-option" onclick="checkQuiz(this, true)">B) Holding the lock while sending RPCs</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">C) Wrong loop syntax</button>
+    <button class="quiz-option" onclick="checkQuiz(this, false)">D) Nothing, it's correct</button>
+    <div class="result" id="quiz4"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(3)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(5)">Next: Project Overview →</button>
+  </div>
+</div>
+
+<!-- ============ CH 5: PROJECT OVERVIEW ============ -->
+<div class="chapter" id="ch5">
+  <h1>Project Overview</h1>
+  <p class="chapter-subtitle">What you're building, how it's tested, and what you edit</p>
+
+  <h2>What You're Simulating</h2>
+  <p>You're simulating a cluster of 3 to 7 Raft servers running inside a single Go program. The <code>labrpc</code> package fakes the network: it can delay messages, drop them, or completely disconnect a server (simulating a crash).</p>
+  <p>You don't set up real servers or real networks. You just write the logic, and the test framework handles the simulation.</p>
+
+  <h2>Project Structure</h2>
+<pre><code>a3-raft/
+├── raft/
+│   ├── raft.go          ← YOU EDIT THIS (and only this)
+│   ├── test_test.go     ← the tests (don't modify)
+│   ├── config.go        ← test helpers (don't modify)
+│   ├── persister.go     ← persistence helpers
+│   └── util.go          ← utilities
+├── labrpc/              ← simulated network (don't modify)
+└── labgob/              ← encoding library (don't modify)</code></pre>
+
+  <h2>How Testing Works</h2>
+  <p>You run tests from the terminal inside the <code>raft/</code> folder:</p>
+<pre><code>go test -run 3A -race</code></pre>
+  <p>This runs all tests whose names contain "3A". The <code>-race</code> flag detects race conditions (two goroutines accessing the same data without locks).</p>
+
+  <h2>The Three Part 3A Tests</h2>
+  <table class="comparison">
+    <tr><th>Test</th><th>What it checks</th></tr>
+    <tr><td><code>TestInitialElection3A</code></td><td>3 servers start up, one becomes leader, leader stays stable</td></tr>
+    <tr><td><code>TestReElection3A</code></td><td>Leader disconnects → new leader elected. No majority → no leader. Reconnect → leader again.</td></tr>
+    <tr><td><code>TestManyElections3A</code></td><td>7 servers, randomly disconnect 3 at a time, 10 rounds. Always maintains a leader.</td></tr>
+  </table>
+
+  <h2>The API You Implement</h2>
+<pre><code>// Test creates servers with:
+rf := Make(peers, me, applyCh)
+
+// Test checks who's the leader with:
+term, isLeader := rf.GetState()
+
+// (Part 3B) Test submits commands with:
+index, term, isLeader := rf.Start(command)</code></pre>
+  <p>The test calls <code>GetState()</code> on every server to find out who thinks they're the leader. Your job is to make the servers elect a leader and maintain it correctly.</p>
+
+  <div class="info-box">
+    <div class="label">What "Passing" Looks Like</div>
+<pre><code>$ go test -run 3A -race
+Test (3A): initial election ...
+  ... Passed --   4.0  3   32    9170    0
+Test (3A): election after network failure ...
+  ... Passed --   6.1  3   70   13895    0
+Test (3A): multiple elections ...
+  ... Passed --   5.8  7  188   43946    0
+PASS</code></pre>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(4)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(6)">Next: The Raft Struct →</button>
+  </div>
+</div>
+
+<!-- ============ CH 6: THE RAFT STRUCT ============ -->
+<div class="chapter" id="ch6">
+  <h1>The Raft Struct</h1>
+  <p class="chapter-subtitle">The data every Raft server needs to keep track of</p>
+
+  <h2>Starting Point (from skeleton)</h2>
+<pre><code>type Raft struct {
+    mu    sync.Mutex
+    peers []*labrpc.ClientEnd
+    me    int
+    dead  int32
+    // Your data here (3A, 3B).
+}</code></pre>
+
+  <h2>What We Need to Add</h2>
+  <p>Based on the Raft paper's Figure 2, every server needs:</p>
+
+<pre><code>type Raft struct {
+    mu    sync.Mutex
+    peers []*labrpc.ClientEnd
+    me    int
+    dead  int32
+
+    // Persistent state (Figure 2)
+    currentTerm int        // latest term this server has seen
+    votedFor    int        // who we voted for in current term (-1 = nobody)
+    log         []LogEntry // the log of commands
+
+    // Volatile state
+    commitIndex int        // highest log index known to be committed
+    lastApplied int        // highest log index applied to state machine
+
+    // Election state
+    state         int       // 0=follower, 1=candidate, 2=leader
+    lastHeartbeat time.Time // when we last heard from leader/granted vote
+
+    // Leader-only state (Part 3B)
+    nextIndex  []int        // for each peer, next log index to send
+    matchIndex []int        // for each peer, highest log index replicated
+
+    // Channel
+    applyCh chan ApplyMsg    // where to send committed entries
+}</code></pre>
+
+  <h2>What Each Field Does</h2>
+  <table class="comparison">
+    <tr><th>Field</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>currentTerm</code></td><td>Which election round we're in</td><td>Starts at 0, goes up each election</td></tr>
+    <tr><td><code>votedFor</code></td><td>Who we voted for this term</td><td>-1 means "haven't voted yet"</td></tr>
+    <tr><td><code>state</code></td><td>Am I a follower, candidate, or leader?</td><td>0, 1, or 2</td></tr>
+    <tr><td><code>log</code></td><td>List of commands in order</td><td>Minimal for 3A, full for 3B</td></tr>
+    <tr><td><code>lastHeartbeat</code></td><td>Last time we heard from the leader</td><td>Used to detect election timeout</td></tr>
+    <tr><td><code>applyCh</code></td><td>Channel to report committed commands</td><td>Test listens on this channel</td></tr>
+  </table>
+
+  <h2>The LogEntry Struct</h2>
+<pre><code>type LogEntry struct {
+    Command interface{}    // the actual command (any type)
+    Term    int            // term when the leader received it
+}</code></pre>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Practice</span>
+      <span class="exercise-title">Write GetState()</span>
+    </div>
+    <p>Using the struct above, implement <code>GetState()</code>. It should lock the mutex, read currentTerm and whether the server is a leader (state == 2), unlock, and return both values.</p>
+    <textarea id="ex6" spellcheck="false">func (rf *Raft) GetState() (int, bool) {
+    // your code here
+
+}</textarea>
+    <button onclick="checkEx6()">Check</button>
+    <div class="result" id="ex6-result"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(5)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(7)">Next: Election Flow →</button>
+  </div>
+</div>
+
+<!-- ============ CH 7: ELECTION FLOW ============ -->
+<div class="chapter" id="ch7">
+  <h1>Election Flow</h1>
+  <p class="chapter-subtitle">Step by step, how a leader gets elected</p>
+
+  <h2>The Full Sequence</h2>
+  <p>Click "Next Step" to walk through an election with 3 servers:</p>
+
+  <div class="step-container" id="election-steps">
+    <div class="step visible">
+      <span class="step-num">Step 1</span>
+      <strong>All servers start as followers.</strong> Each one sets a random election timeout (say 350ms, 420ms, 380ms). They all start sleeping in the <code>ticker()</code> loop.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 2</span>
+      <strong>Server 0's timer expires first (350ms).</strong> It hasn't heard from any leader, so it decides to run for leader. It transitions from <em>follower</em> to <em>candidate</em>.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 3</span>
+      <strong>Server 0 prepares for election.</strong> It increments <code>currentTerm</code> from 0 to 1, votes for itself (<code>votedFor = 0</code>), and resets its election timer.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 4</span>
+      <strong>Server 0 sends RequestVote RPCs</strong> to server 1 and server 2 in parallel (using goroutines). The message says: "I'm server 0, term 1, please vote for me."
+    </div>
+    <div class="step">
+      <span class="step-num">Step 5</span>
+      <strong>Server 1 receives the RequestVote.</strong> It checks: Is term 1 >= my term? Yes. Have I voted for someone else in term 1? No. So it grants the vote, updates its own term to 1, and resets its election timer.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 6</span>
+      <strong>Server 2 does the same thing.</strong> Grants the vote to server 0.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 7</span>
+      <strong>Server 0 counts votes.</strong> It has 3 votes (itself + server 1 + server 2). That's a majority of 3. Server 0 becomes the <em>leader</em>!
+    </div>
+    <div class="step">
+      <span class="step-num">Step 8</span>
+      <strong>Server 0 immediately starts sending heartbeats</strong> (empty AppendEntries RPCs) to servers 1 and 2 every ~100ms. This tells them: "I'm still alive, don't start your own election."
+    </div>
+    <div class="step">
+      <span class="step-num">Step 9</span>
+      <strong>Servers 1 and 2 receive heartbeats</strong> and reset their election timers each time. As long as heartbeats keep coming, they stay as followers. The system is stable.
+    </div>
+  </div>
+  <div class="step-controls">
+    <button onclick="stepPrev('election-steps')">← Prev Step</button>
+    <button onclick="stepNext('election-steps')">Next Step →</button>
+    <button onclick="stepReset('election-steps')">Reset</button>
+  </div>
+
+  <h2>What Happens When a Leader Dies?</h2>
+  <div class="step-container" id="reelection-steps">
+    <div class="step visible">
+      <span class="step-num">Step 1</span>
+      <strong>Server 0 (leader) gets disconnected</strong> by the test. Servers 1 and 2 stop receiving heartbeats.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 2</span>
+      <strong>Server 2's election timer expires.</strong> It becomes a candidate, increments to term 2, votes for itself.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 3</span>
+      <strong>Server 2 sends RequestVote to servers 0 and 1.</strong> Server 0 is disconnected, so that RPC fails/times out. Server 1 votes yes.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 4</span>
+      <strong>Server 2 has 2 votes out of 3</strong> (itself + server 1). That's a majority. Server 2 becomes the new leader and starts sending heartbeats.
+    </div>
+    <div class="step">
+      <span class="step-num">Step 5</span>
+      <strong>Server 0 reconnects.</strong> It still thinks it's leader of term 1. But when it receives any message with term 2, it sees the higher term and immediately steps down to follower.
+    </div>
+  </div>
+  <div class="step-controls">
+    <button onclick="stepPrev('reelection-steps')">← Prev Step</button>
+    <button onclick="stepNext('reelection-steps')">Next Step →</button>
+    <button onclick="stepReset('reelection-steps')">Reset</button>
+  </div>
+
+  <h2>The Key Rule About Terms</h2>
+  <div class="info-box danger">
+    <div class="label">Most Important Rule in Raft</div>
+    <p>If a server EVER sees a term higher than its own (in any RPC request or response), it immediately: (1) updates its term to the higher one, (2) becomes a follower, (3) resets votedFor to -1. This applies to leaders too. This is how old leaders step down.</p>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(6)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(8)">Next: Building the Code →</button>
+  </div>
+</div>
+
+<!-- ============ CH 8: BUILDING THE CODE ============ -->
+<div class="chapter" id="ch8">
+  <h1>Building the Code</h1>
+  <p class="chapter-subtitle">The functions you need to write, and what each one does</p>
+
+  <h2>Overview: 7 Things to Implement</h2>
+  <table class="comparison">
+    <tr><th>#</th><th>Function</th><th>Purpose</th></tr>
+    <tr><td>1</td><td><code>Raft struct fields</code></td><td>Add all the state variables</td></tr>
+    <tr><td>2</td><td><code>Make()</code></td><td>Initialize everything</td></tr>
+    <tr><td>3</td><td><code>GetState()</code></td><td>Return term and leader status</td></tr>
+    <tr><td>4</td><td><code>ticker()</code></td><td>Election timeout loop</td></tr>
+    <tr><td>5</td><td><code>startElection()</code></td><td>Become candidate, request votes</td></tr>
+    <tr><td>6</td><td><code>RequestVote handler</code></td><td>Decide whether to grant a vote</td></tr>
+    <tr><td>7</td><td><code>AppendEntries RPC</code></td><td>Heartbeat handler (new, not in skeleton)</td></tr>
+  </table>
+
+  <h3>1. Make() Initialization</h3>
+<pre><code>func Make(peers []*labrpc.ClientEnd, me int,
+          applyCh chan ApplyMsg) *Raft {
+    rf := &Raft{}
+    rf.peers = peers
+    rf.me = me
+
+    // Initialize state
+    rf.currentTerm = 0
+    rf.votedFor = -1
+    rf.state = 0              // start as follower
+    rf.log = []LogEntry{{}}   // dummy entry at index 0
+    rf.lastHeartbeat = time.Now()
+    rf.applyCh = applyCh
+
+    go rf.ticker()
+    return rf
+}</code></pre>
+
+  <h3>2. GetState()</h3>
+<pre><code>func (rf *Raft) GetState() (int, bool) {
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
+    return rf.currentTerm, rf.state == 2
+}</code></pre>
+
+  <h3>3. ticker()</h3>
+<pre><code>func (rf *Raft) ticker() {
+    for rf.killed() == false {
+        time.Sleep(50 * time.Millisecond)
+
+        rf.mu.Lock()
+        state := rf.state
+        elapsed := time.Since(rf.lastHeartbeat)
+        rf.mu.Unlock()
+
+        if state == 2 {
+            // Leader: send heartbeats
+            rf.sendHeartbeats()
+        } else {
+            // Check election timeout (random 300-500ms)
+            timeout := time.Duration(300+rand.Intn(200)) *
+                       time.Millisecond
+            if elapsed > timeout {
+                rf.startElection()
+            }
+        }
+    }
+}</code></pre>
+
+  <h3>4. startElection()</h3>
+  <p>This is the most complex function. The candidate must:</p>
+  <ol>
+    <li>Increment term, vote for itself, reset timer</li>
+    <li>Send RequestVote RPCs to all peers in parallel</li>
+    <li>Count votes</li>
+    <li>If majority, become leader and send immediate heartbeats</li>
+  </ol>
+
+  <h3>5. RequestVote Handler</h3>
+  <p>When another server asks you to vote:</p>
+  <ol>
+    <li>If their term &lt; your term: reject</li>
+    <li>If their term &gt; your term: update your term, become follower</li>
+    <li>If you haven't voted yet (or already voted for them): grant vote</li>
+    <li>Reset election timer when granting a vote</li>
+  </ol>
+
+  <h3>6. AppendEntries (Heartbeat)</h3>
+  <p>This RPC doesn't exist in the skeleton, you create it from scratch:</p>
+  <ol>
+    <li>Define <code>AppendEntriesArgs</code> and <code>AppendEntriesReply</code> structs</li>
+    <li>Write the handler: check term, reset election timer, reply</li>
+    <li>Write a <code>sendHeartbeats()</code> function that sends to all peers</li>
+  </ol>
+
+  <div class="exercise">
+    <div class="exercise-header">
+      <span class="exercise-badge">Practice</span>
+      <span class="exercise-title">Write the RequestVote RPC structs</span>
+    </div>
+    <p>Fill in the two structs based on the Raft paper. A vote request needs: the candidate's term, and the candidate's ID. The reply needs: the voter's current term, and whether the vote was granted.</p>
+    <textarea id="ex8" spellcheck="false">type RequestVoteArgs struct {
+    // what fields?
+}
+
+type RequestVoteReply struct {
+    // what fields?
+}</textarea>
+    <button onclick="checkEx8()">Check</button>
+    <div class="result" id="ex8-result"></div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(7)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(9)">Next: Common Pitfalls →</button>
+  </div>
+</div>
+
+<!-- ============ CH 9: COMMON PITFALLS ============ -->
+<div class="chapter" id="ch9">
+  <h1>Common Pitfalls</h1>
+  <p class="chapter-subtitle">The bugs that trip up almost every student</p>
+
+  <h2>1. Holding Lock During RPC</h2>
+  <p>This is the #1 cause of deadlocks. RPCs can take forever if the server is dead.</p>
+<pre><code>// BAD
+rf.mu.Lock()
+rf.peers[i].Call("Raft.AppendEntries", &args, &reply)
+rf.mu.Unlock()
+
+// GOOD
+rf.mu.Lock()
+args := AppendEntriesArgs{Term: rf.currentTerm, LeaderId: rf.me}
+rf.mu.Unlock()
+rf.peers[i].Call("Raft.AppendEntries", &args, &reply)
+rf.mu.Lock()
+// handle reply
+rf.mu.Unlock()</code></pre>
+
+  <h2>2. Not Checking Term After RPC Returns</h2>
+  <p>While your RPC was in flight, the world might have changed. Maybe a new election happened and your term is stale now.</p>
+<pre><code>// After any RPC returns, always check:
+rf.mu.Lock()
+if rf.currentTerm != savedTerm || rf.state != 2 {
+    rf.mu.Unlock()
+    return  // things changed while we were waiting, bail out
+}
+// ... safe to proceed
+rf.mu.Unlock()</code></pre>
+
+  <h2>3. Forgetting to Reset Election Timer</h2>
+  <p>You should <strong>only</strong> reset the election timer when:</p>
+  <ul>
+    <li>You <strong>grant</strong> a vote to a candidate</li>
+    <li>You receive a valid <strong>AppendEntries</strong> from a current leader</li>
+    <li>You start a new election (as candidate)</li>
+  </ul>
+  <p>Do <strong>NOT</strong> reset it just because you received any RPC. If you get a stale message from an old term, don't reset.</p>
+
+  <h2>4. All Servers Electing at the Same Time</h2>
+  <p>If all election timeouts are the same, all servers become candidates simultaneously, all vote for themselves, nobody gets a majority. The fix is <strong>randomization</strong>:</p>
+<pre><code>// Each check uses a DIFFERENT random timeout
+timeout := 300 + rand.Intn(200)  // 300ms to 500ms</code></pre>
+
+  <h2>5. Heartbeats Too Slow or Too Fast</h2>
+  <ul>
+    <li>Too slow: followers time out and start unnecessary elections</li>
+    <li>Too fast: the test requires no more than 10 heartbeats per second</li>
+  </ul>
+  <p>Good range: send heartbeats every <strong>100-150ms</strong>. Election timeout: <strong>300-500ms</strong>.</p>
+
+  <h2>6. Not Updating Term When You See a Higher One</h2>
+  <div class="info-box danger">
+    <div class="label">Never Forget This</div>
+    <p>In EVERY RPC handler and EVERY RPC response, check if the other server's term is higher than yours. If it is: update your term, become follower, reset votedFor to -1. Missing this check in even one place can cause split-brain (two leaders).</p>
+  </div>
+
+  <h2>7. Goroutine Loop Variable Bug</h2>
+<pre><code>// BUG: all goroutines might use same i
+for i := range rf.peers {
+    go func() {
+        sendTo(i)    // i might be wrong by now
+    }()
+}
+
+// FIXED: pass i as parameter
+for i := range rf.peers {
+    go func(server int) {
+        sendTo(server)
+    }(i)
+}</code></pre>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(8)">← Previous</button>
+    <button class="nav-btn primary" onclick="goTo(10)">Next: Testing & Debugging →</button>
+  </div>
+</div>
+
+<!-- ============ CH 10: TESTING & DEBUGGING ============ -->
+<div class="chapter" id="ch10">
+  <h1>Testing & Debugging</h1>
+  <p class="chapter-subtitle">How to run, read, and fix test failures</p>
+
+  <h2>Running Tests</h2>
+<pre><code>// Run all 3A tests
+go test -run 3A -race
+
+// Run one specific test
+go test -run TestInitialElection3A -race
+
+// Run with verbose output
+go test -run 3A -race -v
+
+// Run multiple times (useful, tests can be flaky)
+for i in {0..10}; do go test -run 3A -race; done</code></pre>
+
+  <h2>Reading Test Output</h2>
+<pre><code>Test (3A): initial election ...
+  ... Passed --   4.0  3   32    9170    0
+                  │    │   │     │       └─ log entries committed
+                  │    │   │     └── total RPC bytes
+                  │    │   └── number of RPCs sent
+                  │    └── number of servers
+                  └── seconds elapsed</code></pre>
+
+  <h2>Common Failures</h2>
+  <table class="comparison">
+    <tr><th>Error</th><th>Likely Cause</th></tr>
+    <tr><td>"expected one leader, got none"</td><td>Election isn't working. Servers aren't sending/handling RequestVote correctly.</td></tr>
+    <tr><td>"term has 2 (>1) leaders"</td><td>Two servers both think they're leader in the same term. Missing the term-update rule.</td></tr>
+    <tr><td>"warning: term changed even though there were no failures"</td><td>Unnecessary re-elections happening. Heartbeats not resetting election timer properly.</td></tr>
+    <tr><td>Test times out (120 seconds)</td><td>Deadlock (holding lock during RPC) or election timeout too long.</td></tr>
+    <tr><td>Race detector warning</td><td>Accessing struct fields without holding the mutex.</td></tr>
+  </table>
+
+  <h2>Debugging with Print Statements</h2>
+<pre><code>// Add prints to key moments
+func (rf *Raft) startElection() {
+    rf.mu.Lock()
+    rf.currentTerm++
+    rf.state = 1
+    rf.votedFor = rf.me
+    fmt.Printf("[%d] starting election for term %d\n",
+               rf.me, rf.currentTerm)
+    rf.mu.Unlock()
+    // ...
+}
+
+func (rf *Raft) RequestVote(args *RequestVoteArgs,
+                             reply *RequestVoteReply) {
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
+    fmt.Printf("[%d] got vote request from %d (term %d)\n",
+               rf.me, args.CandidateId, args.Term)
+    // ...
+}</code></pre>
+
+  <h2>The Race Detector</h2>
+  <p>The <code>-race</code> flag is your best friend. If you forgot to lock the mutex somewhere, it catches it:</p>
+<pre><code>WARNING: DATA RACE
+Write at 0x00c0000b4088 by goroutine 19:
+  raft.(*Raft).startElection()
+      raft.go:142
+
+Previous read at 0x00c0000b4088 by goroutine 22:
+  raft.(*Raft).ticker()
+      raft.go:189</code></pre>
+  <p>This tells you exactly which lines have a race condition. Add mutex locks around those accesses.</p>
+
+  <div class="info-box">
+    <div class="label">Pro Tip</div>
+    <p>Run the tests at least 10 times in a row. Concurrency bugs are often <strong>intermittent</strong>, they might pass 9 times and fail once. If it passes all 10, you're in good shape.</p>
+  </div>
+
+  <h2>You're Ready!</h2>
+  <p>You now understand everything needed for Part 3A. Let's start building the actual code. The key is to work incrementally:</p>
+  <ol>
+    <li>Add struct fields and write <code>Make()</code> + <code>GetState()</code></li>
+    <li>Write <code>ticker()</code> with election timeout detection</li>
+    <li>Write <code>RequestVote</code> structs and handler</li>
+    <li>Write <code>startElection()</code></li>
+    <li>Write <code>AppendEntries</code> structs and handler</li>
+    <li>Write <code>sendHeartbeats()</code></li>
+    <li>Test after each step!</li>
+  </ol>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="goTo(9)">← Previous</button>
+    <span></span>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// Navigation
+function goTo(n) {
+  document.querySelectorAll('.chapter').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('ch' + n).classList.add('active');
+  document.querySelector(`.nav a[data-ch="${n}"]`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Close mobile nav
+  document.querySelector('.nav').classList.remove('open');
+}
+
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    goTo(parseInt(a.dataset.ch));
+  });
+});
+
+// Quiz
+function checkQuiz(btn, correct) {
+  const parent = btn.closest('.exercise') || btn.parentElement;
+  const options = parent.querySelectorAll('.quiz-option');
+  const result = parent.querySelector('.result');
+
+  options.forEach(o => {
+    o.disabled = true;
+    o.classList.remove('selected');
+  });
+
+  if (correct) {
+    btn.classList.add('correct-answer');
+    result.textContent = '✓ Correct!';
+    result.className = 'result show correct';
+  } else {
+    btn.classList.add('wrong-answer');
+    options.forEach(o => {
+      if (o.onclick && o.onclick.toString().includes('true')) {
+        o.classList.add('correct-answer');
+      }
+    });
+    result.textContent = '✗ Not quite. The correct answer is highlighted in green.';
+    result.className = 'result show incorrect';
+  }
+}
+
+// Step through
+function stepNext(containerId) {
+  const container = document.getElementById(containerId);
+  const steps = container.querySelectorAll('.step');
+  let current = -1;
+  steps.forEach((s, i) => { if (s.classList.contains('visible')) current = i; });
+  if (current < steps.length - 1) {
+    steps[current + 1].classList.add('visible');
+  }
+}
+function stepPrev(containerId) {
+  const container = document.getElementById(containerId);
+  const steps = container.querySelectorAll('.step');
+  let last = -1;
+  steps.forEach((s, i) => { if (s.classList.contains('visible')) last = i; });
+  if (last > 0) {
+    steps[last].classList.remove('visible');
+  }
+}
+function stepReset(containerId) {
+  const container = document.getElementById(containerId);
+  const steps = container.querySelectorAll('.step');
+  steps.forEach((s, i) => {
+    if (i === 0) s.classList.add('visible');
+    else s.classList.remove('visible');
+  });
+}
+
+// Exercise checks
+function checkEx1() {
+  const code = document.getElementById('ex1').value;
+  const result = document.getElementById('ex1-result');
+  if (code.includes('b == 0') && code.includes('return') && code.includes('a / b') || code.includes('a/b')) {
+    result.textContent = '✓ Looks good! You have the zero check and the division. This pattern of returning (value, error_info) is exactly how Go handles errors, and you will see it in Raft RPC calls.';
+    result.className = 'result show correct';
+  } else {
+    result.textContent = 'Hint: check if b == 0 first and return early. Otherwise return a/b with an empty string.';
+    result.className = 'result show info';
+  }
+}
+
+function checkEx3() {
+  const code = document.getElementById('ex3').value;
+  const result = document.getElementById('ex3-result');
+  if (code.includes('make(chan') && code.includes('go func') && code.includes('<-') && code.includes('42')) {
+    result.textContent = '✓ Great! You created a channel, sent 42 from a goroutine, and received it. This is exactly the pattern used for collecting vote results in Raft.';
+    result.className = 'result show correct';
+  } else if (code.includes('make(chan') && code.includes('42')) {
+    result.textContent = 'Close! Make sure you are using "go func() { ... }()" to start the goroutine and "<-ch" to receive.';
+    result.className = 'result show info';
+  } else {
+    result.textContent = 'Hint: ch := make(chan int), then go func() { ch <- 42 }(), then answer := <-ch';
+    result.className = 'result show info';
+  }
+}
+
+function checkEx6() {
+  const code = document.getElementById('ex6').value;
+  const result = document.getElementById('ex6-result');
+  if (code.includes('mu.Lock') && code.includes('mu.Unlock') && code.includes('currentTerm') && (code.includes('state == 2') || code.includes('state==2'))) {
+    result.textContent = '✓ Perfect! Lock, read the values, unlock (preferably with defer), return. This function gets called constantly by the test framework.';
+    result.className = 'result show correct';
+  } else if (code.includes('currentTerm')) {
+    result.textContent = 'Make sure you are locking the mutex before reading and unlocking after. Use rf.mu.Lock() and defer rf.mu.Unlock().';
+    result.className = 'result show info';
+  } else {
+    result.textContent = 'Hint: rf.mu.Lock(), defer rf.mu.Unlock(), return rf.currentTerm, rf.state == 2';
+    result.className = 'result show info';
+  }
+}
+
+function checkEx8() {
+  const code = document.getElementById('ex8').value;
+  const result = document.getElementById('ex8-result');
+  const hasTerm = code.includes('Term') && (code.includes('int'));
+  const hasCandidate = code.includes('CandidateId') || code.includes('Candidate');
+  const hasGranted = code.includes('VoteGranted') || code.includes('Granted');
+  if (hasTerm && hasCandidate && hasGranted) {
+    result.textContent = '✓ Excellent! You have Term and CandidateId in the args, and Term + VoteGranted in the reply. Remember: all field names must be Capitalized for RPC to work. For Part 3B, you will add LastLogIndex and LastLogTerm to the args.';
+    result.className = 'result show correct';
+  } else {
+    result.textContent = 'Hint: Args needs Term (int) and CandidateId (int). Reply needs Term (int) and VoteGranted (bool). All field names must be Capitalized!';
+    result.className = 'result show info';
+  }
+}
+</script>
+</body>
+</html>
