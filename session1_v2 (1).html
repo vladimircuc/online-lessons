@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1 — Hardness, Reductions & Edge-Disjoint Paths</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+  :root {
+    --bg:#0f0e17;--bg2:#161523;--card:#1c1a2e;--border:#2a2840;
+    --a1:#e879f9;--a2:#34d399;--a3:#fbbf24;--a4:#60a5fa;--red:#f87171;
+    --text:#ede9fe;--muted:#6b7280;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lora',serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(232,121,249,0.05) 0%,transparent 50%),radial-gradient(ellipse at 85% 85%,rgba(52,211,153,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .container{max-width:920px;margin:0 auto;padding:46px 22px;position:relative;z-index:1;}
+
+  /* HEADER */
+  .header{margin-bottom:46px;}
+  .badge{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);border:1px solid rgba(232,121,249,0.3);background:rgba(232,121,249,0.07);padding:5px 14px;border-radius:3px;display:inline-block;margin-bottom:18px;}
+  .header h1{font-size:clamp(32px,6vw,62px);font-weight:700;line-height:1.05;margin-bottom:10px;}
+  .header h1 em{color:var(--a1);font-style:italic;}
+  .header .sub{font-size:15px;color:var(--muted);font-style:italic;max-width:540px;line-height:1.65;}
+
+  /* PROGRESS */
+  .prog{display:flex;gap:4px;margin-bottom:38px;}
+  .ps{height:3px;flex:1;background:var(--border);border-radius:99px;cursor:pointer;transition:background 0.3s;}
+  .ps.done{background:var(--a2);}
+  .ps.active{background:var(--a1);}
+  .prog-label{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;}
+
+  /* SECTIONS */
+  .section{display:none;}
+  .section.active{display:block;animation:up 0.3s ease forwards;}
+  @keyframes up{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  /* CHAPTER */
+  .chap{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:26px;display:flex;align-items:center;gap:12px;}
+  .chap::after{content:'';flex:1;height:1px;background:var(--border);}
+  .chap span{color:var(--a1);}
+
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;margin-bottom:16px;}
+  .card h2{font-size:24px;font-weight:700;margin-bottom:12px;line-height:1.15;}
+  .card h3{font-size:18px;font-weight:600;margin:18px 0 10px;color:var(--text);}
+  .card p{font-size:15px;color:#a5b4c8;line-height:1.82;margin-bottom:11px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+  .card em{color:var(--a3);font-style:italic;}
+
+  /* CALLOUTS */
+  .box{border-radius:7px;padding:14px 18px;margin:13px 0;font-size:14px;line-height:1.72;}
+  .box-p{background:rgba(232,121,249,0.08);border-left:3px solid var(--a1);color:#f0abfc;}
+  .box-g{background:rgba(52,211,153,0.08);border-left:3px solid var(--a2);color:#6ee7b7;}
+  .box-y{background:rgba(251,191,36,0.08);border-left:3px solid var(--a3);color:#fde68a;}
+  .box-b{background:rgba(96,165,250,0.08);border-left:3px solid var(--a4);color:#bfdbfe;}
+  .box-r{background:rgba(248,113,113,0.08);border-left:3px solid var(--red);color:#fecaca;}
+
+  /* GRAPH AREAS */
+  .garea{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px;margin:14px 0;}
+  .garea svg{width:100%;display:block;}
+
+  /* CONTROLS */
+  .ctrl{display:flex;gap:9px;align-items:stretch;flex-wrap:wrap;margin-top:12px;}
+  .btn{font-family:'Cousine',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.15s;}
+  .btn:hover{border-color:var(--a1);color:var(--a1);}
+  .btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-p{background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.35);color:var(--a1);}
+  .btn-p:hover{background:rgba(232,121,249,0.22);}
+  .btn-g{background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.35);color:var(--a2);}
+  .btn-r{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.3);color:var(--red);}
+  .msgbox{flex:1;min-width:180px;background:rgba(232,121,249,0.05);border:1px solid rgba(232,121,249,0.15);border-radius:6px;padding:10px 14px;font-family:'Cousine',monospace;font-size:12px;color:#d8b4fe;line-height:1.5;}
+
+  /* LAYOUT */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0;}
+  .ibox{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:13px 15px;}
+  .ibox label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .ibox .val{font-family:'Cousine',monospace;font-size:20px;font-weight:700;color:var(--a1);}
+
+  /* TABLE */
+  .tbl{width:100%;border-collapse:collapse;font-family:'Cousine',monospace;font-size:12px;margin-top:12px;}
+  .tbl th{background:rgba(232,121,249,0.1);color:var(--a1);padding:9px 13px;text-align:left;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+  .tbl td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--muted);}
+  .tbl .hi td{background:rgba(52,211,153,0.06);color:var(--text);}
+  .tbl .bad td{background:rgba(248,113,113,0.06);color:#fca5a5;}
+  .tbl .warn td{background:rgba(251,191,36,0.06);color:#fde68a;}
+
+  /* RUNTIME VIZ */
+  .runtime-bar{height:28px;border-radius:4px;display:flex;align-items:center;padding:0 10px;font-family:'Cousine',monospace;font-size:11px;font-weight:700;margin:5px 0;transition:width 0.8s ease;}
+
+  /* SAT interactive */
+  .clause-box{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin:4px;font-family:'Cousine',monospace;font-size:13px;}
+  .clause-box.sat{border-color:var(--a2);background:rgba(52,211,153,0.08);}
+  .clause-box.unsat{border-color:var(--red);background:rgba(248,113,113,0.08);}
+  .var-btn{font-family:'Cousine',monospace;font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.2s;}
+  .var-btn.true{background:rgba(52,211,153,0.2);border-color:var(--a2);color:var(--a2);}
+  .var-btn.false{background:rgba(248,113,113,0.2);border-color:var(--red);color:var(--red);}
+
+  /* reduction chain */
+  .red-chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;}
+  .red-node{padding:8px 14px;border-radius:6px;font-family:'Cousine',monospace;font-size:12px;font-weight:700;text-align:center;min-width:100px;}
+  .red-arrow{color:var(--muted);font-size:18px;flex-shrink:0;}
+
+  /* EDP path builder */
+  .path-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+  .path-legend-item{display:flex;align-items:center;gap:7px;font-family:'Cousine',monospace;font-size:11px;letter-spacing:1px;}
+  .path-dot{width:14px;height:14px;border-radius:50%;}
+
+  /* PRACTICE PROBLEMS */
+  .problem-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;}
+  .problem-header{padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;cursor:pointer;}
+  .problem-header:hover{background:rgba(232,121,249,0.03);}
+  .problem-num{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);margin-bottom:8px;}
+  .problem-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+  .problem-body{padding:0 26px 22px;}
+  .solution-toggle{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);white-space:nowrap;padding:6px 12px;border:1px solid var(--border);border-radius:5px;background:var(--bg2);cursor:pointer;transition:all 0.2s;}
+  .solution-toggle:hover{border-color:var(--a2);color:var(--a2);}
+  .solution-panel{display:none;padding:22px 26px;border-top:1px solid var(--border);background:rgba(52,211,153,0.03);}
+  .solution-panel.open{display:block;}
+  .solution-label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a2);margin-bottom:14px;}
+
+  /* NAV */
+  .nav-btns{display:flex;justify-content:space-between;margin-top:34px;padding-top:18px;border-top:1px solid var(--border);gap:12px;}
+  .nav-btn{font-family:'Lora',serif;font-size:14px;font-weight:700;padding:11px 22px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--a1);color:var(--a1);transform:translateY(-1px);}
+  .nav-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+  .nav-btn.go{background:rgba(232,121,249,0.1);border-color:rgba(232,121,249,0.4);color:var(--a1);}
+
+  /* highlight animation */
+  @keyframes dash{to{stroke-dashoffset:-16;}}
+  .animated-path{stroke-dasharray:8 4;animation:dash 0.5s linear infinite;}
+
+  @media(max-width:600px){.two,.three{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="badge">CS 6515 — Session 1 of 6 — 90 min</div>
+  <h1>Hardness, <em>Reductions</em> &<br>Edge-Disjoint Paths</h1>
+  <p class="sub">Why some problems are fundamentally different from max flow and DFS — and the mathematical tools we use to prove it.</p>
+</div>
+
+<div class="prog-label" id="progLabel">Part 1 / 8</div>
+<div class="prog" id="prog">
+  <div class="ps active" onclick="goTo(0)"></div>
+  <div class="ps" onclick="goTo(1)"></div>
+  <div class="ps" onclick="goTo(2)"></div>
+  <div class="ps" onclick="goTo(3)"></div>
+  <div class="ps" onclick="goTo(4)"></div>
+  <div class="ps" onclick="goTo(5)"></div>
+  <div class="ps" onclick="goTo(6)"></div>
+  <div class="ps" onclick="goTo(7)"></div>
+</div>
+
+<!-- ═══════════════════ PART 1: Decision Problems & P ═══════════════════ -->
+<div class="section active" id="sec0">
+  <div class="chap">Part 1 / 8 <span>— Decision Problems & What "P" Really Means</span></div>
+
+  <div class="card">
+    <h2>Everything Starts with Decision Problems</h2>
+    <p>In algorithms, a <strong>decision problem</strong> is any problem whose answer is YES or NO. This might seem restrictive — but it's not. Most optimization problems have a natural decision version:</p>
+    <table class="tbl">
+      <thead><tr><th>Optimization version</th><th>Decision version</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>Find max flow from s to t</td><td>Is there a flow of value ≥ k from s to t?</td></tr>
+        <tr class="hi"><td>Find max matching in bipartite graph</td><td>Is there a matching of size ≥ k?</td></tr>
+        <tr class="hi"><td>Find shortest path from u to v</td><td>Is there a path from u to v with ≤ k edges?</td></tr>
+        <tr class="hi"><td>Find minimum set cover</td><td>Is there a set cover of size ≤ k?</td></tr>
+      </tbody>
+    </table>
+    <div class="box box-b">
+      If you can solve the decision version efficiently, you can usually binary search on k to solve the optimization version too. So decision problems capture the full difficulty.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What Does "Polynomial Time" Actually Mean?</h2>
+    <p>We say an algorithm runs in <strong>polynomial time</strong> if its runtime is O(nᶜ) for some constant c, where n is the input size. This is the formal definition of "efficient."</p>
+    <p>Why does this matter? Let's feel the difference with real numbers. Suppose you have a graph with <strong>n = 50 vertices</strong>:</p>
+
+    <div style="margin:16px 0">
+      <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px">RUNTIME COMPARISON FOR n = 50</div>
+      <div id="runtimeBars"></div>
+    </div>
+
+    <div class="box box-g">
+      ✅ <strong>Polynomial algorithms</strong> (like DFS at O(V+E), max flow at O(VE²)) stay totally manageable even for large inputs. You ran these in previous sessions — they finished instantly.
+    </div>
+    <div class="box box-r">
+      ❌ <strong>Exponential algorithms</strong> like O(2ⁿ) or O(n!) become completely unusable beyond n≈30. For n=50, 2⁵⁰ ≈ one quadrillion operations — years on any computer.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Class P</h2>
+    <p><strong>P</strong> (Polynomial time) is the set of all decision problems that can be solved in polynomial time. These are the "tractable" problems — the ones we can actually handle in practice.</p>
+    <p>Problems you already know are in P:</p>
+    <div class="three">
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>DFS / BFS</label>
+        <div style="font-size:12px;color:#6ee7b7;line-height:1.6">O(V+E) — linear in graph size</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>Max Flow</label>
+        <div style="font-size:12px;color:#6ee7b7;line-height:1.6">O(VE²) Edmonds-Karp — polynomial</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>Max Matching</label>
+        <div style="font-size:12px;color:#6ee7b7;line-height:1.6">Reduces to max flow — polynomial</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" disabled>← Back</button>
+    <button class="nav-btn go" onclick="goTo(1)">NP and NP-Hard →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 2: NP, NP-Hard ═══════════════════ -->
+<div class="section" id="sec1">
+  <div class="chap">Part 2 / 8 <span>— NP, NP-Hard, and the Big Question</span></div>
+
+  <div class="card">
+    <h2>NP Does NOT Mean "Not Polynomial"</h2>
+    <p>This is the most common misconception. <strong>NP</strong> stands for <em>Non-deterministic Polynomial</em>. The formal definition: a problem is in NP if, given a <em>claimed solution</em>, you can <strong>verify</strong> whether it's correct in polynomial time.</p>
+    <div class="box box-p">
+      Key distinction: <strong>solving</strong> vs <strong>verifying</strong>. Verification is easy — solving might not be.
+    </div>
+    <p>Example you already know — <strong>Max Flow</strong>: If I hand you a claimed flow assignment and say "this is a valid flow of size 17," can you check it quickly? YES — just check capacity constraints on each edge and conservation at each vertex. That's O(V+E). So max flow verification is easy → max flow is in NP. (It's also in P since we can solve it.)</p>
+    <p>Now here's a harder example. Say I give you a graph G and claim "there's a way to color every vertex with 3 colors such that no two adjacent vertices share a color." Can you verify a claimed coloring quickly? YES — just check every edge. But can you <em>find</em> such a coloring efficiently? <strong>Nobody knows how.</strong></p>
+  </div>
+
+  <div class="card">
+    <h2>The Complexity Landscape</h2>
+    <p>Let's place the complexity classes carefully:</p>
+    <div style="position:relative;margin:18px 0">
+      <svg viewBox="0 0 500 260" style="width:100%;display:block;">
+        <!-- NP-Hard outer -->
+        <ellipse cx="250" cy="140" rx="240" ry="115" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.3)" stroke-width="2"/>
+        <text x="460" y="60" font-family="Cousine" font-size="12" fill="#f87171" text-anchor="end">NP-Hard</text>
+        <!-- NP -->
+        <ellipse cx="220" cy="145" rx="170" ry="88" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.3)" stroke-width="2"/>
+        <text x="370" y="80" font-family="Cousine" font-size="12" fill="#fbbf24" text-anchor="end">NP</text>
+        <!-- P -->
+        <ellipse cx="195" cy="152" rx="95" ry="52" fill="rgba(52,211,153,0.08)" stroke="rgba(52,211,153,0.4)" stroke-width="2"/>
+        <text x="195" y="155" font-family="Cousine" font-size="13" fill="#34d399" text-anchor="middle" font-weight="bold">P</text>
+        <!-- Labels inside P -->
+        <text x="170" y="148" font-family="Cousine" font-size="9" fill="#6ee7b7" text-anchor="middle">Max Flow</text>
+        <text x="210" y="162" font-family="Cousine" font-size="9" fill="#6ee7b7" text-anchor="middle">DFS/BFS</text>
+        <text x="185" y="174" font-family="Cousine" font-size="9" fill="#6ee7b7" text-anchor="middle">Matching</text>
+        <!-- NP-Complete zone label -->
+        <text x="320" y="130" font-family="Cousine" font-size="10" fill="#fbbf24" text-anchor="middle">NP-Complete</text>
+        <text x="320" y="144" font-family="Cousine" font-size="9" fill="#fde68a" text-anchor="middle">(NP-Hard ∩ NP)</text>
+        <text x="320" y="162" font-family="Cousine" font-size="9" fill="#fde68a" text-anchor="middle">3-SAT, EDP, ...</text>
+        <!-- Outside NP -->
+        <text x="130" y="40" font-family="Cousine" font-size="9" fill="#fca5a5" text-anchor="middle">Some problems</text>
+        <text x="130" y="52" font-family="Cousine" font-size="9" fill="#fca5a5" text-anchor="middle">harder than NP</text>
+        <!-- P=NP question -->
+        <text x="250" y="248" font-family="Cousine" font-size="10" fill="#6b7280" text-anchor="middle">If P = NP, the P circle expands to fill all of NP — the green swallows the yellow</text>
+      </svg>
+    </div>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>P</label>
+        <div style="font-size:13px;color:#6ee7b7;line-height:1.6">Solvable in poly time. Also verifiable (P ⊆ NP). DFS, max flow, matching all live here.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(251,191,36,0.3)">
+        <label>NP</label>
+        <div style="font-size:13px;color:#fde68a;line-height:1.6">Verifiable in poly time. Contains P. Also contains NP-complete problems — harder ones we can't solve efficiently.</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(248,113,113,0.3)">
+        <label>NP-Hard</label>
+        <div style="font-size:13px;color:#fca5a5;line-height:1.6">At least as hard as the hardest problem in NP. If you could solve an NP-hard problem fast, you could solve EVERYTHING in NP fast.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(232,121,249,0.3)">
+        <label>NP-Complete</label>
+        <div style="font-size:13px;color:#f0abfc;line-height:1.6">NP-Hard AND in NP. The "hardest" problems within NP itself. Edge-Disjoint Paths lives here.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The P vs NP Question — $1,000,000</h2>
+    <p>The most famous open problem in computer science: <strong>does P = NP?</strong></p>
+    <p>If P = NP: every problem whose solution can be quickly verified can also be quickly solved. Cryptography breaks. Drug discovery becomes trivial. AI becomes solved. Most researchers believe P ≠ NP — but nobody has proven it.</p>
+    <div class="box box-y">
+      💡 For this course, we <strong>assume P ≠ NP</strong>. Under this assumption, NP-hard problems have no polynomial-time algorithm, and we need approximation algorithms instead.
+    </div>
+    <div class="card" style="margin-top:0;background:var(--bg2)">
+      <h3 style="margin-top:0">Quick Self-Check — Click to Reveal</h3>
+      <div id="qz0" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(0)">← Decision Problems</button>
+    <button class="nav-btn go" onclick="goTo(2)">SAT — The Mother Problem →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 3: SAT ═══════════════════ -->
+<div class="section" id="sec2">
+  <div class="chap">Part 3 / 8 <span>— SAT: The Foundation of NP-Hardness</span></div>
+
+  <div class="card">
+    <h2>Why We Need SAT</h2>
+    <p>To prove a problem is NP-hard, you need a starting point — a problem that's <em>already known</em> to be NP-hard. The original one, proved by Cook and Levin in 1971, is <strong>Boolean Satisfiability (SAT)</strong>.</p>
+    <p>Everything else chains back to SAT through reductions. Understanding SAT is essential before reductions make sense.</p>
+  </div>
+
+  <div class="card">
+    <h2>What is SAT?</h2>
+    <p>You have <strong>boolean variables</strong> x₁, x₂, x₃, ... — each is either TRUE or FALSE. You also have <strong>clauses</strong> — OR combinations of variables (or their negations). The formula is an AND of all clauses.</p>
+    <p><strong>Question:</strong> Is there an assignment of TRUE/FALSE to variables that makes the entire formula TRUE?</p>
+
+    <div class="box box-p">
+      A formula is <strong>satisfiable</strong> if at least one assignment makes every clause true. The SAT problem asks: does such an assignment exist?
+    </div>
+
+    <h3>Try it — Interactive SAT Instance</h3>
+    <p>Below is a SAT formula with 3 variables. Toggle each variable TRUE/FALSE and watch the clauses light up. Can you satisfy all clauses?</p>
+
+    <div style="margin:14px 0">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+        <span style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);letter-spacing:1px">VARIABLES:</span>
+        <button class="var-btn" id="vx1" onclick="toggleVar('x1')">x₁ = ?</button>
+        <button class="var-btn" id="vx2" onclick="toggleVar('x2')">x₂ = ?</button>
+        <button class="var-btn" id="vx3" onclick="toggleVar('x3')">x₃ = ?</button>
+      </div>
+      <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">FORMULA: C₁ ∧ C₂ ∧ C₃ ∧ C₄</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div class="clause-box" id="c1"><span style="color:var(--muted)">C₁:</span> <span id="c1t">x₁</span> ∨ <span id="c1u">¬x₂</span> ∨ <span id="c1v">x₃</span></div>
+        <div class="clause-box" id="c2"><span style="color:var(--muted)">C₂:</span> <span id="c2t">¬x₁</span> ∨ <span id="c2u">x₂</span></div>
+        <div class="clause-box" id="c3"><span style="color:var(--muted)">C₃:</span> <span id="c3t">x₁</span> ∨ <span id="c3u">x₂</span> ∨ <span id="c3v">¬x₃</span></div>
+        <div class="clause-box" id="c4"><span style="color:var(--muted)">C₄:</span> <span id="c4t">¬x₁</span> ∨ <span id="c4u">¬x₂</span> ∨ <span id="c4v">¬x₃</span></div>
+      </div>
+      <div id="satVerdict" style="font-family:'Cousine',monospace;font-size:13px;color:var(--muted);padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px">
+        Set variable values to check satisfiability...
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Why is SAT Hard?</h2>
+    <p>With n variables, there are <strong>2ⁿ possible assignments</strong>. A brute-force solver checks all of them. For n=100 variables, that's 2¹⁰⁰ ≈ 10³⁰ assignments — completely intractable.</p>
+    <p>No polynomial-time algorithm for SAT is known. Cook's theorem (1971) proved SAT is NP-complete — it's in NP (verify a solution in poly time by just checking each clause), and it's NP-hard (any NP problem can be reduced to it).</p>
+    <div class="box box-r">
+      🔑 SAT is the <em>first</em> NP-complete problem. Every other NP-hardness proof ultimately traces back to SAT. If you could solve SAT fast, you'd solve all of NP fast.
+    </div>
+    <h3>3-SAT: The Restricted Version We'll Use</h3>
+    <p><strong>3-SAT</strong> is SAT where every clause has <em>exactly 3 literals</em>. It's also NP-complete (SAT reduces to 3-SAT easily). We use 3-SAT as our starting point for reductions because its structure is easier to work with in gadget constructions.</p>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(1)">← NP Landscape</button>
+    <button class="nav-btn go" onclick="goTo(3)">Reductions →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 4: Reductions ═══════════════════ -->
+<div class="section" id="sec3">
+  <div class="chap">Part 4 / 8 <span>— Reductions: The Transfer of Hardness</span></div>
+
+  <div class="card">
+    <h2>What is a Polynomial-Time Reduction?</h2>
+    <p>A <strong>polynomial-time reduction</strong> from problem A to problem B (written A ≤ₚ B) is a function f computable in polynomial time such that: <em>x is a YES-instance of A if and only if f(x) is a YES-instance of B.</em></p>
+    <p>In other words: you can solve A by converting it to B, solving B, and reading the answer back. The conversion itself must be fast (polynomial time).</p>
+    <div class="box box-p">
+      A ≤ₚ B means <strong>"A is no harder than B."</strong><br>
+      Equivalently: if B is easy (in P), then A is easy too.<br>
+      Contrapositively: if A is hard (NP-hard), then B must also be hard.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Reduction Example: Max-Flow → Bipartite Matching</h2>
+    <p>You already did this in Session 4! We reduced bipartite matching to max flow. Let's re-examine it as a formal reduction:</p>
+    <div class="garea">
+      <div id="redFlowViz" style="padding:8px">
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap">
+          <div style="text-align:center;padding:14px 18px;background:rgba(232,121,249,0.08);border:1px solid rgba(232,121,249,0.3);border-radius:8px;min-width:130px">
+            <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--a1);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Problem A</div>
+            <div style="font-size:15px;font-weight:700">Bipartite<br>Matching</div>
+            <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px">Find max matching in G</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:'Cousine',monospace;font-size:22px;color:var(--a2)">⟹</div>
+            <div style="font-family:'Cousine',monospace;font-size:9px;color:var(--muted);letter-spacing:1px">poly-time<br>reduction</div>
+          </div>
+          <div style="text-align:center;padding:14px 18px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.3);border-radius:8px;min-width:130px">
+            <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--a4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Problem B</div>
+            <div style="font-size:15px;font-weight:700">Max Flow</div>
+            <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px">Find max flow s→t in H</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;font-family:'Cousine',monospace;font-size:12px;color:#a5b4c8;line-height:1.7">
+          <strong style="color:var(--text)">The transformation f:</strong><br>
+          Given bipartite graph G = (L ∪ R, E), build flow network H:<br>
+          • Add super-source s with edges s→v for all v ∈ L (capacity 1)<br>
+          • Add super-sink t with edges v→t for all v ∈ R (capacity 1)<br>
+          • Direct all original edges L→R with capacity 1<br>
+          • Run max flow on H<br><br>
+          <strong style="color:var(--a2)">Result:</strong> max flow value = max matching size. This transformation is O(V+E) — polynomial!
+        </div>
+      </div>
+    </div>
+    <p>This shows <strong>Bipartite Matching ≤ₚ Max Flow</strong>. Since max flow is in P, bipartite matching is also in P. The reduction proves tractability here.</p>
+    <p>The same logic works in reverse for hardness: if A is hard and A ≤ₚ B, then B is hard.</p>
+  </div>
+
+  <div class="card">
+    <h2>Step-Through: How a Reduction Works as a Black Box</h2>
+    <p>Click through to see the full flow of a reduction from problem A to problem B:</p>
+    <div class="garea">
+      <svg viewBox="0 0 560 160" id="redFlowSvg" style="max-height:180px">
+        <defs><marker id="bba" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#6b7280"/></marker>
+        <marker id="bbag" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#34d399"/></marker></defs>
+        <!-- Boxes -->
+        <rect x="10" y="55" width="90" height="50" rx="6" fill="rgba(232,121,249,0.1)" stroke="rgba(232,121,249,0.4)" stroke-width="1.5"/>
+        <text x="55" y="76" text-anchor="middle" font-family="Cousine" font-size="11" fill="#e879f9">Instance</text>
+        <text x="55" y="91" text-anchor="middle" font-family="Cousine" font-size="11" fill="#e879f9">of A</text>
+        <text x="55" y="108" text-anchor="middle" font-family="Cousine" font-size="9" fill="#a855f7">(input x)</text>
+        <rect x="170" y="40" width="110" height="80" rx="6" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.35)" stroke-width="1.5" id="redBox1"/>
+        <text x="225" y="73" text-anchor="middle" font-family="Cousine" font-size="11" fill="#fbbf24">Transform</text>
+        <text x="225" y="88" text-anchor="middle" font-family="Cousine" font-size="11" fill="#fbbf24">f(x) in</text>
+        <text x="225" y="103" text-anchor="middle" font-family="Cousine" font-size="11" fill="#fbbf24">poly time</text>
+        <rect x="355" y="40" width="110" height="80" rx="6" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.35)" stroke-width="1.5" id="redBox2"/>
+        <text x="410" y="73" text-anchor="middle" font-family="Cousine" font-size="11" fill="#60a5fa">Solver</text>
+        <text x="410" y="88" text-anchor="middle" font-family="Cousine" font-size="11" fill="#60a5fa">for B</text>
+        <text x="410" y="103" text-anchor="middle" font-family="Cousine" font-size="11" fill="#60a5fa">(black box)</text>
+        <rect x="480" y="55" width="70" height="50" rx="6" fill="rgba(52,211,153,0.1)" stroke="rgba(52,211,153,0.4)" stroke-width="1.5"/>
+        <text x="515" y="76" text-anchor="middle" font-family="Cousine" font-size="11" fill="#34d399">YES/NO</text>
+        <text x="515" y="91" text-anchor="middle" font-family="Cousine" font-size="11" fill="#34d399">for A</text>
+        <!-- Arrows -->
+        <line x1="100" y1="80" x2="168" y2="80" stroke="#6b7280" stroke-width="2" marker-end="url(#bba)" id="rl1"/>
+        <line x1="280" y1="80" x2="353" y2="80" stroke="#6b7280" stroke-width="2" marker-end="url(#bba)" id="rl2"/>
+        <line x1="465" y1="80" x2="478" y2="80" stroke="#6b7280" stroke-width="2" marker-end="url(#bba)" id="rl3"/>
+        <!-- Labels above arrows -->
+        <text x="134" y="73" text-anchor="middle" font-family="Cousine" font-size="9" fill="#6b7280" id="rl1t">x</text>
+        <text x="316" y="73" text-anchor="middle" font-family="Cousine" font-size="9" fill="#6b7280" id="rl2t">f(x)</text>
+      </svg>
+      <div class="ctrl">
+        <button class="btn btn-r" onclick="resetRedFlow()">↺ Reset</button>
+        <button class="btn btn-p" onclick="stepRedFlow()" id="redFlowBtn">Animate →</button>
+        <div class="msgbox" id="redFlowMsg">A reduction turns any instance of A into an instance of B. Click to animate the flow of information.</div>
+      </div>
+    </div>
+
+    <div class="box box-y" style="margin-top:4px">
+      ⚠️ The reduction only needs to work <strong>both ways (iff)</strong>: YES-instance of A maps to YES-instance of B, and NO-instance of A maps to NO-instance of B. The answer is preserved under transformation.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The NP-Hardness Proof Template</h2>
+    <p>Every NP-hardness proof follows the same template. Memorize this:</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px;font-family:'Cousine',monospace;font-size:13px;line-height:2">
+      <span style="color:var(--a1)">To prove problem B is NP-hard:</span><br>
+      1. Choose a known NP-hard problem A<br>
+      2. Show how to transform any instance of A into an instance of B in poly time<br>
+      3. Prove the transformation is <span style="color:var(--a2)">correct</span>: x ∈ A <span style="color:var(--a3)">⟺</span> f(x) ∈ B<br>
+      4. Conclude: B is NP-hard (if B were easy, A would be easy — contradiction)
+    </div>
+    <div class="box box-g" style="margin-top:10px">
+      The chain always starts at SAT or 3-SAT (proven NP-complete by Cook-Levin). Then: 3-SAT → Independent Set → Vertex Cover → many others. Edge-Disjoint Paths is at the end of one such chain.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(2)">← SAT</button>
+    <button class="nav-btn go" onclick="goTo(4)">Edge-Disjoint Paths →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 5: EDP Definition + Max Flow Connection ═══════════════════ -->
+<div class="section" id="sec4">
+  <div class="chap">Part 5 / 8 <span>— Edge-Disjoint Paths: Definition & the Max Flow Connection</span></div>
+
+  <div class="card">
+    <h2>The k-Edge-Disjoint Paths Problem</h2>
+    <p>From your lecture notes: given a graph G = (V, E) and k pairs of vertices (s₁,t₁), (s₂,t₂), ..., (sₖ,tₖ), find k paths P₁, P₂, ..., Pₖ such that:</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(232,121,249,0.3)">
+        <label>Condition 1</label>
+        <div style="font-size:13px;color:#f0abfc;line-height:1.6">Each path Pᵢ connects sᵢ to tᵢ</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>Condition 2 — the hard part</label>
+        <div style="font-size:13px;color:#6ee7b7;line-height:1.6">No edge appears in more than one path (edge-disjoint)</div>
+      </div>
+    </div>
+    <div class="box box-b">
+      Real-world interpretation: routing k phone calls through a network where each link can only carry one call at a time. Or routing k data streams with no wire conflicts.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The k=1 Case: This is Just Max Flow!</h2>
+    <p>Before jumping to the hard general case, notice something important. When k=1 (one source-sink pair), edge-disjoint paths has a direct connection to what you already know.</p>
+    <p><strong>Question:</strong> Does there exist at least 2 edge-disjoint paths from s to t in graph G?</p>
+    <p>This is equivalent to asking: is the <strong>max flow</strong> from s to t (with all capacities = 1) at least 2?</p>
+
+    <div class="garea">
+      <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">Click STEP to see how 2 edge-disjoint s→t paths = max flow of 2</p>
+      <svg viewBox="0 0 520 200" id="mfedpSvg">
+        <defs>
+          <marker id="mfa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="mfag" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#34d399"/></marker>
+          <marker id="mfao" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#fbbf24"/></marker>
+        </defs>
+        <line x1="70" y1="100" x2="190" y2="50" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_sA"/>
+        <line x1="70" y1="100" x2="190" y2="150" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_sB"/>
+        <line x1="210" y1="50" x2="330" y2="50" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_AC"/>
+        <line x1="210" y1="150" x2="330" y2="150" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_BD"/>
+        <line x1="210" y1="55" x2="210" y2="138" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_AB"/>
+        <line x1="350" y1="50" x2="450" y2="100" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_Ct"/>
+        <line x1="350" y1="150" x2="450" y2="100" stroke="#2d3748" stroke-width="2" marker-end="url(#mfa)" id="mf_Dt"/>
+        <!-- cap labels -->
+        <text x="120" y="60" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="120" y="155" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="262" y="42" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="262" y="165" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="218" y="100" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="392" y="62" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <text x="392" y="145" font-family="Cousine" font-size="10" fill="#4b5563">cap=1</text>
+        <!-- nodes -->
+        <circle cx="50" cy="100" r="20" fill="rgba(232,121,249,0.1)" stroke="#e879f9" stroke-width="2"/>
+        <text x="50" y="105" text-anchor="middle" font-family="Cousine" font-size="13" font-weight="700" fill="#e879f9">s</text>
+        <circle cx="200" cy="50" r="18" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="mn_A"/>
+        <text x="200" y="55" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">A</text>
+        <circle cx="200" cy="150" r="18" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="mn_B"/>
+        <text x="200" y="155" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">B</text>
+        <circle cx="340" cy="50" r="18" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="mn_C"/>
+        <text x="340" y="55" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">C</text>
+        <circle cx="340" cy="150" r="18" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="mn_D"/>
+        <text x="340" y="155" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">D</text>
+        <circle cx="470" cy="100" r="20" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+        <text x="470" y="105" text-anchor="middle" font-family="Cousine" font-size="13" font-weight="700" fill="#34d399">t</text>
+        <!-- flow labels (hidden) -->
+        <text x="120" y="72" font-family="Cousine" font-size="10" fill="transparent" id="fl_sA">f=1</text>
+        <text x="120" y="143" font-family="Cousine" font-size="10" fill="transparent" id="fl_sB">f=1</text>
+        <text x="262" y="32" font-family="Cousine" font-size="10" fill="transparent" id="fl_AC">f=1</text>
+        <text x="262" y="178" font-family="Cousine" font-size="10" fill="transparent" id="fl_BD">f=1</text>
+        <text x="392" y="75" font-family="Cousine" font-size="10" fill="transparent" id="fl_Ct">f=1</text>
+        <text x="392" y="130" font-family="Cousine" font-size="10" fill="transparent" id="fl_Dt">f=1</text>
+      </svg>
+      <div class="ctrl">
+        <button class="btn btn-r" onclick="resetMFEDP()">↺ Reset</button>
+        <button class="btn btn-p" onclick="stepMFEDP()" id="mfedpBtn">Step →</button>
+        <div class="msgbox" id="mfedpMsg">All edge capacities = 1. Can we push flow 2 from s to t? That's exactly asking: do 2 edge-disjoint paths exist?</div>
+      </div>
+    </div>
+
+    <div class="box box-g" style="margin-top:4px">
+      ✅ <strong>1-commodity EDP = Max Flow.</strong> For a single (s,t) pair: the maximum number of edge-disjoint s→t paths equals the max flow value when all capacities are 1. This is a direct consequence of the Max-Flow Min-Cut theorem.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Where Does It Break Down? The k=2 Case</h2>
+    <p>With <strong>two different commodity pairs</strong> (s₁,t₁) and (s₂,t₂), max flow no longer directly applies. The issue: a single max flow treats all flow as fungible — it doesn't distinguish which unit of flow belongs to pair 1 vs pair 2.</p>
+    <div class="box box-r">
+      With k ≥ 2 commodity pairs, you'd need to track which flow belongs to which source-sink pair. This is the <strong>multi-commodity flow problem</strong> — and it's NP-hard for integer flows.
+    </div>
+    <p>This is precisely what your lecture notes highlight — the greedy algorithm and approximation strategies are needed specifically because the multi-commodity version can't be solved optimally in polynomial time.</p>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(3)">← Reductions</button>
+    <button class="nav-btn go" onclick="goTo(5)">Interactive EDP Explorer →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 6: Interactive EDP ═══════════════════ -->
+<div class="section" id="sec5">
+  <div class="chap">Part 6 / 8 <span>— Interactive EDP: Routing Paths & Finding Conflicts</span></div>
+
+  <div class="card">
+    <h2>Route Two Pairs — Feel the Constraint 🛣️</h2>
+    <p>Below: a graph with two source-sink pairs. <span style="color:var(--a2)">Pair 1: S₁→T₁ (green)</span> and <span style="color:var(--a3)">Pair 2: S₂→T₂ (amber)</span>.</p>
+    <p>Select a mode and click edges to assign them. The edge-disjoint constraint means no shared edges. Try to route both pairs successfully — and then try to break it by forcing a conflict.</p>
+  </div>
+
+  <div class="garea">
+    <div class="path-legend">
+      <div class="path-legend-item"><div class="path-dot" style="background:var(--a2)"></div> Path 1: S₁→T₁</div>
+      <div class="path-legend-item"><div class="path-dot" style="background:var(--a3)"></div> Path 2: S₂→T₂</div>
+      <div class="path-legend-item"><div class="path-dot" style="background:var(--red)"></div> Conflict!</div>
+    </div>
+    <div class="two" style="margin-bottom:10px;gap:8px">
+      <div class="ibox"><label>Path 1 edges used</label><div class="val" id="ep1c" style="color:var(--a2)">0</div></div>
+      <div class="ibox"><label>Path 2 edges used</label><div class="val" id="ep2c" style="color:var(--a3)">0</div></div>
+    </div>
+    <svg viewBox="0 0 540 260" id="edpSvg2">
+      <!-- thick clickable edges -->
+      <line x1="60" y1="130" x2="170" y2="60" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_s1A" onclick="clickEDP2('s1A',this)"/>
+      <line x1="60" y1="130" x2="170" y2="130" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_s1M" onclick="clickEDP2('s1M',this)"/>
+      <line x1="60" y1="130" x2="170" y2="200" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_s1B" onclick="clickEDP2('s1B',this)"/>
+      <line x1="170" y1="60" x2="370" y2="60" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_AT" onclick="clickEDP2('AT',this)"/>
+      <line x1="170" y1="130" x2="370" y2="130" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_MM" onclick="clickEDP2('MM',this)"/>
+      <line x1="170" y1="200" x2="370" y2="200" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_BT" onclick="clickEDP2('BT',this)"/>
+      <line x1="170" y1="60" x2="170" y2="118" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_AM" onclick="clickEDP2('AM',this)"/>
+      <line x1="170" y1="142" x2="170" y2="188" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_MB" onclick="clickEDP2('MB',this)"/>
+      <line x1="370" y1="60" x2="480" y2="130" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_At2" onclick="clickEDP2('At2',this)"/>
+      <line x1="370" y1="130" x2="480" y2="130" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_Mt2" onclick="clickEDP2('Mt2',this)"/>
+      <line x1="370" y1="200" x2="480" y2="130" stroke="#1e1d2e" stroke-width="10" style="cursor:pointer" id="e2_Bt2" onclick="clickEDP2('Bt2',this)"/>
+      <!-- thin visual lines -->
+      <line x1="60" y1="130" x2="170" y2="60" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="60" y1="130" x2="170" y2="130" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="60" y1="130" x2="170" y2="200" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="170" y1="60" x2="370" y2="60" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="170" y1="130" x2="370" y2="130" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="170" y1="200" x2="370" y2="200" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="170" y1="60" x2="170" y2="118" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="170" y1="142" x2="170" y2="188" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="370" y1="60" x2="480" y2="130" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="370" y1="130" x2="480" y2="130" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <line x1="370" y1="200" x2="480" y2="130" stroke="#2d3748" stroke-width="1.5" pointer-events="none"/>
+      <!-- Source/sink -->
+      <circle cx="40" cy="130" r="20" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="40" y="123" text-anchor="middle" font-family="Cousine" font-size="9" fill="#34d399">S₁</text>
+      <text x="40" y="136" text-anchor="middle" font-family="Cousine" font-size="9" fill="#fbbf24">S₂</text>
+      <circle cx="500" cy="130" r="20" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="500" y="123" text-anchor="middle" font-family="Cousine" font-size="9" fill="#34d399">T₁</text>
+      <text x="500" y="136" text-anchor="middle" font-family="Cousine" font-size="9" fill="#fbbf24">T₂</text>
+      <!-- Middle nodes -->
+      <circle cx="170" cy="60" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="170" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">A</text>
+      <circle cx="170" cy="130" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="170" y="135" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">M</text>
+      <circle cx="170" cy="200" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="170" y="205" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">B</text>
+      <circle cx="370" cy="60" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="370" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">C</text>
+      <circle cx="370" cy="130" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="370" y="135" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">N</text>
+      <circle cx="370" cy="200" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+      <text x="370" y="205" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">D</text>
+    </svg>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn btn-g" id="edp2m1" onclick="setEDP2(1)">▶ Route Path 1 (green)</button>
+      <button class="btn" id="edp2m2" onclick="setEDP2(2)" style="border-color:rgba(251,191,36,0.4);color:var(--a3)">▶ Route Path 2 (amber)</button>
+      <button class="btn btn-r" onclick="resetEDP2()">↺ Clear</button>
+    </div>
+    <div class="msgbox" id="edp2Msg">Choose a path mode, then click edges to assign them. Try: P1 = S→A→C→T, P2 = S→B→D→T for a valid solution!</div>
+  </div>
+
+  <div class="card">
+    <h2>What Makes It Hard — The Bottleneck Graph</h2>
+    <p>Now let's look at a graph where it's genuinely impossible to route 2 edge-disjoint paths. Understanding WHY helps you see why the general problem is hard.</p>
+
+    <div class="garea">
+      <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">Step through to see why 2 EDP paths are IMPOSSIBLE here:</p>
+      <svg viewBox="0 0 460 180" id="hardEdpSvg">
+        <defs><marker id="hea" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker></defs>
+        <!-- Bottleneck: only one edge connects left side to right side -->
+        <line x1="60" y1="60" x2="160" y2="90" stroke="#374151" stroke-width="2" marker-end="url(#hea)"/>
+        <line x1="60" y1="120" x2="160" y2="90" stroke="#374151" stroke-width="2" marker-end="url(#hea)"/>
+        <!-- BOTTLENECK EDGE -->
+        <line x1="178" y1="90" x2="280" y2="90" stroke="#374151" stroke-width="3" marker-end="url(#hea)" id="hbottle"/>
+        <text x="229" y="80" text-anchor="middle" font-family="Cousine" font-size="10" fill="#f87171" id="hbottle_lbl">BOTTLENECK</text>
+        <line x1="298" y1="90" x2="398" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#hea)"/>
+        <line x1="298" y1="90" x2="398" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#hea)"/>
+        <!-- Nodes -->
+        <circle cx="42" cy="60" r="18" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+        <text x="42" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#34d399">S₁</text>
+        <circle cx="42" cy="120" r="18" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="42" y="125" text-anchor="middle" font-family="Cousine" font-size="11" fill="#fbbf24">S₂</text>
+        <circle cx="168" cy="90" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+        <text x="168" y="95" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">X</text>
+        <circle cx="290" cy="90" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+        <text x="290" y="95" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">Y</text>
+        <circle cx="416" cy="60" r="18" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+        <text x="416" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#34d399">T₁</text>
+        <circle cx="416" cy="120" r="18" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="416" y="125" text-anchor="middle" font-family="Cousine" font-size="11" fill="#fbbf24">T₂</text>
+      </svg>
+      <div class="box box-r" style="margin-top:4px">
+        The edge X→Y is a <strong>bottleneck</strong> — it's the only connection between the two halves of the graph. Both S₁→T₁ and S₂→T₂ must pass through it, but edge-disjoint means only one path can use it. <strong>Maximum EDP = 1, not 2.</strong> This is exactly a min-cut of size 1!
+      </div>
+    </div>
+
+    <div class="box box-p">
+      💡 This is the connection to min-cut again. The maximum number of edge-disjoint s→t paths equals the min cut (with all capacities = 1). This is Menger's theorem — and it's why the k=1 case is solvable with max flow.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(4)">← EDP & Max Flow</button>
+    <button class="nav-btn go" onclick="goTo(6)">Why EDP is NP-Hard →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 7: EDP NP-Hardness ═══════════════════ -->
+<div class="section" id="sec6">
+  <div class="chap">Part 7 / 8 <span>— Proving EDP is NP-Hard</span></div>
+
+  <div class="card">
+    <h2>The Jump From k=1 to k≥2</h2>
+    <p>We just saw that 1-commodity EDP (single s,t pair) = max flow = polynomial time. But the moment you have <strong>multiple source-sink pairs that all need routing simultaneously</strong>, the problem becomes NP-hard.</p>
+    <p>The reduction comes from your lecture notes — it goes from 3-SAT to k-EDP. Here's the conceptual structure:</p>
+    <div class="red-chain">
+      <div class="red-node" style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.35);color:var(--red)">3-SAT<div style="font-size:9px;opacity:0.7;margin-top:3px">NP-Complete</div></div>
+      <div class="red-arrow">≤ₚ</div>
+      <div class="red-node" style="background:rgba(232,121,249,0.12);border:1px solid rgba(232,121,249,0.35);color:var(--a1)">k-EDP<div style="font-size:9px;opacity:0.7;margin-top:3px">NP-Hard!</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Gadget Construction (Conceptually)</h2>
+    <p>Given a 3-SAT instance with variables x₁...xₙ and clauses C₁...Cₘ, the reduction builds a graph G as follows:</p>
+    <div class="box box-y">
+      <strong>Main path:</strong> A backbone of nodes going from s to t: s → v₁ → v₂ → ... → vₘ → t. One node per clause.
+    </div>
+    <div class="box box-p">
+      <strong>Variable gadgets:</strong> For each variable xᵢ, add a pair (sᵢ, tᵢ). The path for pair i can go through node vⱼ only if xᵢ appears (positively or negatively) in clause Cⱼ.
+    </div>
+    <div class="box box-b">
+      <strong>The key property:</strong> A valid set of k edge-disjoint paths (one per variable pair) exists <strong>if and only if</strong> the 3-SAT formula is satisfiable. Choosing which way a variable's path goes through each clause = setting that variable TRUE or FALSE.
+    </div>
+
+    <p>Let's see a tiny example with 2 variables and 2 clauses: (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₂)</p>
+
+    <div class="garea">
+      <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:1px">GADGET: 3-SAT formula (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₂) mapped to EDP instance</p>
+      <svg viewBox="0 0 580 240" id="gadgetSvg">
+        <defs>
+          <marker id="ga" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="ga1" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#34d399"/></marker>
+          <marker id="ga2" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#60a5fa"/></marker>
+        </defs>
+
+        <!-- ── BACKBONE: s → C₁ → C₂ → t (middle row) ── -->
+        <line x1="55" y1="120" x2="195" y2="120" stroke="#4b5563" stroke-width="2.5" marker-end="url(#ga)"/>
+        <line x1="235" y1="120" x2="315" y2="120" stroke="#4b5563" stroke-width="2.5" marker-end="url(#ga)"/>
+        <line x1="355" y1="120" x2="520" y2="120" stroke="#4b5563" stroke-width="2.5" marker-end="url(#ga)"/>
+
+        <!-- ── VARIABLE x₁ PATH (green): s₁→[through C₁]→[through C₂]→t₁ ── -->
+        <!-- x₁ appears in C₁ (positive) and C₂ (negated) so path can use both clause nodes -->
+        <!-- Option A (x₁=TRUE): dip through C₁ top, bypass C₂ above -->
+        <line x1="130" y1="35" x2="210" y2="105" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga1)"/>
+        <line x1="220" y1="105" x2="340" y2="50" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga1)"/>
+        <line x1="355" y1="50" x2="448" y2="50" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga1)"/>
+        <!-- x₁ source and target -->
+        <circle cx="115" cy="35" r="16" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="115" y="31" text-anchor="middle" font-family="Cousine" font-size="9" fill="#34d399">s₁</text>
+        <text x="115" y="43" text-anchor="middle" font-family="Cousine" font-size="8" fill="#6ee7b7">x₁</text>
+        <circle cx="462" cy="50" r="16" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="462" y="46" text-anchor="middle" font-family="Cousine" font-size="9" fill="#34d399">t₁</text>
+        <text x="462" y="58" text-anchor="middle" font-family="Cousine" font-size="8" fill="#6ee7b7">x₁</text>
+
+        <!-- ── VARIABLE x₂ PATH (blue): s₂→[through C₁]→[through C₂]→t₂ ── -->
+        <!-- x₂ appears in both clauses (positive both times) -->
+        <line x1="130" y1="200" x2="210" y2="136" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga2)"/>
+        <line x1="220" y1="136" x2="320" y2="136" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga2)"/>
+        <line x1="336" y1="136" x2="448" y2="185" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga2)"/>
+        <!-- x₂ source and target -->
+        <circle cx="115" cy="200" r="16" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="115" y="196" text-anchor="middle" font-family="Cousine" font-size="9" fill="#60a5fa">s₂</text>
+        <text x="115" y="208" text-anchor="middle" font-family="Cousine" font-size="8" fill="#bfdbfe">x₂</text>
+        <circle cx="462" cy="185" r="16" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="462" y="181" text-anchor="middle" font-family="Cousine" font-size="9" fill="#60a5fa">t₂</text>
+        <text x="462" y="193" text-anchor="middle" font-family="Cousine" font-size="8" fill="#bfdbfe">x₂</text>
+
+        <!-- ── CLAUSE NODES on backbone ── -->
+        <circle cx="215" cy="120" r="20" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="215" y="115" text-anchor="middle" font-family="Cousine" font-size="9" font-weight="700" fill="#fbbf24">C₁</text>
+        <text x="215" y="128" text-anchor="middle" font-family="Cousine" font-size="8" fill="#fde68a">x₁∨x₂</text>
+
+        <circle cx="335" cy="120" r="20" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="335" y="115" text-anchor="middle" font-family="Cousine" font-size="9" font-weight="700" fill="#fbbf24">C₂</text>
+        <text x="335" y="128" text-anchor="middle" font-family="Cousine" font-size="8" fill="#fde68a">¬x₁∨x₂</text>
+
+        <!-- ── s and t (backbone endpoints) ── -->
+        <circle cx="36" cy="120" r="18" fill="rgba(232,121,249,0.12)" stroke="#e879f9" stroke-width="2"/>
+        <text x="36" y="125" text-anchor="middle" font-family="Cousine" font-size="13" font-weight="700" fill="#e879f9">s</text>
+
+        <circle cx="538" cy="120" r="18" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="2"/>
+        <text x="538" y="125" text-anchor="middle" font-family="Cousine" font-size="13" font-weight="700" fill="#34d399">t</text>
+
+        <!-- ── LEGEND ── -->
+        <line x1="20" y1="225" x2="45" y2="225" stroke="#4b5563" stroke-width="2.5"/>
+        <text x="50" y="229" font-family="Cousine" font-size="9" fill="#6b7280">backbone (s→t)</text>
+        <line x1="155" y1="225" x2="180" y2="225" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="185" y="229" font-family="Cousine" font-size="9" fill="#34d399">x₁ path options</text>
+        <line x1="300" y1="225" x2="325" y2="225" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="330" y="229" font-family="Cousine" font-size="9" fill="#60a5fa">x₂ path options</text>
+      </svg>
+      <div class="box box-p" style="margin-top:8px;font-size:13px">
+        <strong>How to read this:</strong> The solid backbone goes s→C₁→C₂→t. Variable paths (dashed) thread through clause nodes they can satisfy. Path for x₁ can enter C₁ from above (satisfying C₁ with x₁=TRUE), then bypass C₂ above. Path for x₂ enters C₁ from below and exits C₂ from below. Edge-disjoint constraint means each clause node can only be "dipped into" by one variable path — that variable satisfies that clause. A valid edge-disjoint routing = a satisfying assignment.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What the Reduction Proves</h2>
+    <p>The reduction shows: a valid set of k edge-disjoint paths exists in this constructed graph <strong>if and only if</strong> the 3-SAT formula is satisfiable.</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(52,211,153,0.3)">
+        <label>SAT → EDP (YES→YES)</label>
+        <div style="font-size:12px;color:#6ee7b7;line-height:1.6">If the formula is satisfiable, use the satisfying assignment to route variable paths through the clauses they satisfy. The edge-disjoint property holds because each clause is satisfied by exactly one variable.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(248,113,113,0.3)">
+        <label>¬SAT → ¬EDP (NO→NO)</label>
+        <div style="font-size:12px;color:#fca5a5;line-height:1.6">If no satisfying assignment exists, some clause has no variable satisfying it. The corresponding clause node can't be "dipped into" by any path → no edge-disjoint routing exists.</div>
+      </div>
+    </div>
+    <div class="box box-g" style="margin-top:8px">
+      ✅ The transformation runs in polynomial time (graph has O(n+m) nodes). The correctness holds both ways. Therefore <strong>3-SAT ≤ₚ k-EDP</strong>, which means k-EDP is NP-hard.
+    </div>
+    <table class="tbl" style="margin-top:14px">
+      <thead><tr><th>EDP Variant</th><th>Complexity</th><th>How to solve</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>1 pair (s,t) — max edge-disjoint paths</td><td style="color:var(--a2)">✅ Polynomial</td><td>Max flow with all caps = 1</td></tr>
+        <tr class="hi"><td>2 pairs — does solution exist?</td><td style="color:var(--red)">❌ NP-Hard</td><td>Approximation only</td></tr>
+        <tr class="hi"><td>k pairs — general</td><td style="color:var(--red)">❌ NP-Hard</td><td>Greedy |E|^(1/2) approx (Session 2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(5)">← Interactive EDP</button>
+    <button class="nav-btn go" onclick="goTo(7)">Practice Problems →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 8: PRACTICE PROBLEMS ═══════════════════ -->
+<div class="section" id="sec7">
+  <div class="chap">Part 8 / 8 <span>— Practice Problems</span></div>
+
+  <div class="card">
+    <h2>5 Problems — Work These Out 📝</h2>
+    <p>These are exam-style problems. For each one, think it through first (ideally sketch on paper or a whiteboard), then expand the solution. They test different skills across today's material.</p>
+  </div>
+
+  <!-- PROBLEM 1 -->
+  <div class="problem-card">
+    <div class="problem-header" onclick="toggleSol(1)">
+      <div style="flex:1">
+        <div class="problem-num">Problem 1 — Complexity Classification</div>
+        <div class="problem-title">Which class does each problem belong to?</div>
+        <div class="problem-body" style="padding:0">
+          <p style="font-size:14px;color:#a5b4c8;margin-top:10px">For each problem below, determine whether it's in <strong>P</strong>, <strong>NP-Complete</strong>, or <strong>NP-Hard but not in NP</strong>. Justify each answer in 1-2 sentences.</p>
+          <div style="margin-top:12px">
+            <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(a)</strong> Given a directed graph G and vertices s, t: does a path from s to t exist?</div>
+            <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(b)</strong> Given a flow network with integer capacities and a claimed max flow f: is f actually maximum?</div>
+            <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(c)</strong> Given a graph G: is there a subset of vertices S such that every edge has at least one endpoint in S, with |S| ≤ k? (Vertex Cover)</div>
+            <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(d)</strong> Given a bipartite graph G: does a perfect matching exist?</div>
+          </div>
+        </div>
+      </div>
+      <button class="solution-toggle" onclick="toggleSol(1);event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="solution-panel" id="sol1">
+      <div class="solution-label">Complete Solution</div>
+      <p><strong style="color:var(--a2)">(a) P.</strong> This is just DFS/BFS reachability. Run DFS from s — if you reach t, output YES, else NO. Runtime O(V+E). This is the definition of a tractable problem — you've been doing this since session 1.</p>
+      <p style="margin-top:10px"><strong style="color:var(--a2)">(b) P.</strong> Verifying a max flow is in NP by definition. But checking if it's actually MAXIMUM is also in P — run Edmonds-Karp and compare. Or equivalently: check if there's an augmenting path in the residual graph. If no augmenting path exists (BFS finds nothing), the flow is maximum. O(VE²).</p>
+      <p style="margin-top:10px"><strong style="color:var(--a1)">(c) NP-Complete.</strong> Vertex Cover is in NP: given a claimed cover S, verify in O(V+E) that every edge has an endpoint in S. It's also NP-hard via reduction from Independent Set: S is a vertex cover in G iff V\S is an independent set. (Every edge must be covered ↔ no two non-covered vertices form an edge.) Since Independent Set is NP-complete, so is Vertex Cover.</p>
+      <p style="margin-top:10px"><strong style="color:var(--a2)">(d) P.</strong> You solved this in session 4! Reduce to max flow: add super-source and super-sink with capacity-1 edges. If max flow = |L|, perfect matching exists. Polynomial time via Edmonds-Karp. The key is it reduces to a problem already in P.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 2 -->
+  <div class="problem-card">
+    <div class="problem-header" onclick="toggleSol(2)">
+      <div style="flex:1">
+        <div class="problem-num">Problem 2 — Reduction Construction (Draw This!)</div>
+        <div class="problem-title">Reduce Independent Set to Vertex Cover</div>
+        <div class="problem-body" style="padding:0">
+          <p style="font-size:14px;color:#a5b4c8;margin-top:10px">Given graph G = (V, E) and integer k, show that G has an independent set of size ≥ k if and only if G has a vertex cover of size ≤ |V| − k.</p>
+          <p style="font-size:14px;color:#a5b4c8;margin-top:8px"><strong>On your board:</strong> Draw a small graph (4-5 vertices), find an independent set, then identify the corresponding vertex cover. Verify the relationship |S| + |C| = |V| holds.</p>
+          <p style="font-size:14px;color:#a5b4c8;margin-top:8px">Then: why does this reduction prove that if you can solve Vertex Cover in polynomial time, you can solve Independent Set in polynomial time?</p>
+        </div>
+      </div>
+      <button class="solution-toggle" onclick="toggleSol(2);event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="solution-panel" id="sol2">
+      <div class="solution-label">Complete Solution</div>
+      <p><strong style="color:var(--text)">The key observation:</strong> S ⊆ V is an independent set ↔ V\S is a vertex cover.</p>
+      <p style="margin-top:10px"><strong>Proof (⟹):</strong> Suppose S is an independent set. Take any edge (u,v) ∈ E. Since S is independent, u and v cannot both be in S — at least one of them is in V\S. So V\S covers every edge. Therefore V\S is a vertex cover of size |V| − |S| ≤ |V| − k.</p>
+      <p style="margin-top:10px"><strong>Proof (⟸):</strong> Suppose C = V\S is a vertex cover of size ≤ |V| − k. Then |S| = |V| − |C| ≥ k. For any edge (u,v), since C covers it, at least one of u,v is in C = V\S, meaning not both are in S. So S is an independent set of size ≥ k. ✅</p>
+      <p style="margin-top:10px"><strong>Example:</strong> Path graph 1-2-3-4. Independent set S = {1,3} (no edges between them). Vertex cover C = {2,4}. |S| + |C| = 2+2 = 4 = |V|. Check: edges (1,2), (2,3), (3,4) — all have an endpoint in C. ✅</p>
+      <p style="margin-top:10px"><strong>Why this proves hardness:</strong> The reduction f(G,k) = (G, |V|−k) is computable in O(1) — just change k! So Independent Set ≤ₚ Vertex Cover. Since IS is NP-hard, Vertex Cover is NP-hard too. If any poly-time algorithm for Vertex Cover existed, we'd apply it with k' = |V|−k to solve IS in poly time — contradiction with NP-hardness of IS.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 3 -->
+  <div class="problem-card">
+    <div class="problem-header" onclick="toggleSol(3)">
+      <div style="flex:1">
+        <div class="problem-num">Problem 3 — Edge-Disjoint Paths as Max Flow (Draw This!)</div>
+        <div class="problem-title">Is the max number of edge-disjoint s→t paths equal to the min cut?</div>
+        <div class="problem-body" style="padding:0">
+          <p style="font-size:14px;color:#a5b4c8;margin-top:10px">Consider this graph with vertices {s, a, b, c, t} and edges: s→a, s→b, a→c, b→c, a→t, c→t.</p>
+          <p style="font-size:14px;color:#a5b4c8;margin-top:8px"><strong>On your board:</strong></p>
+          <p style="font-size:14px;color:#a5b4c8">(1) Draw the graph with all edges labeled capacity=1.</p>
+          <p style="font-size:14px;color:#a5b4c8">(2) Find the maximum number of edge-disjoint paths from s to t by running max flow mentally.</p>
+          <p style="font-size:14px;color:#a5b4c8">(3) Find the minimum cut. Verify that min cut = max flow (Menger's theorem).</p>
+          <p style="font-size:14px;color:#a5b4c8">(4) List ALL distinct edge-disjoint paths.</p>
+        </div>
+      </div>
+      <button class="solution-toggle" onclick="toggleSol(3);event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="solution-panel" id="sol3">
+      <div class="solution-label">Complete Solution</div>
+      <div class="garea">
+        <svg viewBox="0 0 420 180">
+          <defs><marker id="p3a" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="p3g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#34d399"/></marker>
+          <marker id="p3o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#fbbf24"/></marker></defs>
+          <line x1="55" y1="90" x2="145" y2="50" stroke="#34d399" stroke-width="2.5" marker-end="url(#p3g)"/>
+          <line x1="55" y1="90" x2="145" y2="130" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#p3o)"/>
+          <line x1="165" y1="50" x2="245" y2="90" stroke="#374151" stroke-width="2" marker-end="url(#p3a)"/>
+          <line x1="165" y1="130" x2="245" y2="90" stroke="#374151" stroke-width="2" marker-end="url(#p3a)"/>
+          <line x1="165" y1="50" x2="355" y2="90" stroke="#34d399" stroke-width="2.5" marker-end="url(#p3g)"/>
+          <line x1="263" y1="90" x2="355" y2="90" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#p3o)"/>
+          <circle cx="38" cy="90" r="17" fill="rgba(232,121,249,0.1)" stroke="#e879f9" stroke-width="2"/>
+          <text x="38" y="95" text-anchor="middle" font-family="Cousine" font-size="13" fill="#e879f9">s</text>
+          <circle cx="155" cy="50" r="15" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="155" y="55" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">a</text>
+          <circle cx="155" cy="130" r="15" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="155" y="135" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">b</text>
+          <circle cx="254" cy="90" r="15" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="254" y="95" text-anchor="middle" font-family="Cousine" font-size="12" fill="#6b7280">c</text>
+          <circle cx="372" cy="90" r="17" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+          <text x="372" y="95" text-anchor="middle" font-family="Cousine" font-size="13" fill="#34d399">t</text>
+          <!-- Min cut line -->
+          <line x1="130" y1="10" x2="130" y2="170" stroke="rgba(248,113,113,0.5)" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="100" y="165" font-family="Cousine" font-size="9" fill="#f87171">min cut</text>
+          <text x="100" y="175" font-family="Cousine" font-size="9" fill="#f87171">cap=2</text>
+        </svg>
+      </div>
+      <p><strong style="color:var(--text)">Max flow computation:</strong></p>
+      <p style="margin-top:6px">All capacities = 1. Augmenting paths:</p>
+      <p>• Path 1: <span style="color:var(--a2)">s → a → t</span> — bottleneck = 1. Flow = 1.</p>
+      <p>• Path 2: <span style="color:var(--a3)">s → b → c → t</span> — all edges still have residual. Bottleneck = 1. Flow = 2.</p>
+      <p>• Path 3: Try s→a→c→t — but a→c still has cap. s→a already used! Residual of s→a = 0. No augmenting path.</p>
+      <p style="margin-top:10px"><strong>Max flow = 2.</strong></p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">Min cut:</strong> Cut {s} | {a,b,c,t}. Edges crossing: s→a (cap 1) and s→b (cap 1). Total = 2. ✅ Min cut = max flow = 2.</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">All edge-disjoint paths:</strong></p>
+      <p>• s→a→t (uses edges s→a, a→t)</p>
+      <p>• s→b→c→t (uses edges s→b, b→c, c→t)</p>
+      <p>These two share no edges — they are edge-disjoint. Maximum is 2 (limited by the min cut of size 2 at s).</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 4 -->
+  <div class="problem-card">
+    <div class="problem-header" onclick="toggleSol(4)">
+      <div style="flex:1">
+        <div class="problem-num">Problem 4 — Reduction Validity</div>
+        <div class="problem-title">Does this reduction work? Find the flaw (or confirm it's correct)</div>
+        <div class="problem-body" style="padding:0">
+          <p style="font-size:14px;color:#a5b4c8;margin-top:10px">A student claims the following reduction from Bipartite Matching to SAT:</p>
+          <div class="box box-b" style="margin:10px 0;font-size:13px">
+            "Given bipartite graph G = (L ∪ R, E), create a boolean variable xₑ for each edge e ∈ E. Write a SAT formula that is satisfiable iff a matching of size k exists: for each vertex v, at most one of its adjacent edge-variables is TRUE (at-most-one constraint). Add a clause requiring at least k edge-variables to be TRUE."
+          </div>
+          <p style="font-size:14px;color:#a5b4c8">(a) Is this reduction correct? Does it preserve YES/NO answers?</p>
+          <p style="font-size:14px;color:#a5b4c8">(b) What is its runtime? Is it polynomial?</p>
+          <p style="font-size:14px;color:#a5b4c8">(c) Does this prove that Bipartite Matching is NP-hard? Why or why not?</p>
+        </div>
+      </div>
+      <button class="solution-toggle" onclick="toggleSol(4);event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="solution-panel" id="sol4">
+      <div class="solution-label">Complete Solution</div>
+      <p><strong style="color:var(--text)">(a) The reduction is correct in concept</strong> — but encoding "at most one of k variables is TRUE" requires O(k²) clauses (one for each pair). The at-most-one constraint for a vertex with degree d requires O(d²) clauses. Total formula size is O(|E|²). The YES/NO mapping is valid: a satisfying assignment with k TRUE edge-variables = a matching of size k.</p>
+      <p style="margin-top:10px"><strong style="color:var(--a2)">(b) Runtime: Polynomial!</strong> O(|E|²) clauses, each of constant size. The transformation takes polynomial time. ✅</p>
+      <p style="margin-top:10px"><strong style="color:var(--red)">(c) This does NOT prove Bipartite Matching is NP-hard.</strong> This is a reduction FROM Bipartite Matching TO SAT — i.e., Bipartite Matching ≤ₚ SAT. For hardness you need the reduction to go FROM a hard problem TO Bipartite Matching. This reduction goes the wrong direction! It actually proves that Bipartite Matching is in NP (we can encode it as SAT, which is in NP), not that it's NP-hard. The fact that Bipartite Matching is efficiently solvable via max flow is what puts it in P — not anything about reductions from it to SAT.</p>
+      <div class="box box-y" style="margin-top:10px">
+        Key lesson: <strong>the direction of a reduction matters enormously.</strong> A ≤ₚ B means A is no harder than B — it says nothing about whether B is hard. To prove B is hard, you need a hard problem A such that A ≤ₚ B.
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 5 -->
+  <div class="problem-card">
+    <div class="problem-header" onclick="toggleSol(5)">
+      <div style="flex:1">
+        <div class="problem-num">Problem 5 — EDP Impossibility (Draw This!)</div>
+        <div class="problem-title">Prove that 3 edge-disjoint paths cannot exist in this graph</div>
+        <div class="problem-body" style="padding:0">
+          <p style="font-size:14px;color:#a5b4c8;margin-top:10px">You have graph G with pairs (s₁,t₁), (s₂,t₂), (s₃,t₃). All three pairs share source s₁=s₂=s₃=s and target t₁=t₂=t₃=t (same s and t).</p>
+          <p style="font-size:14px;color:#a5b4c8;margin-top:8px">The graph has edges: s→a, s→b, a→c, b→c, c→t. All capacities = 1.</p>
+          <p style="font-size:14px;color:#a5b4c8;margin-top:8px"><strong>On your board:</strong></p>
+          <p style="font-size:14px;color:#a5b4c8">(1) Draw the graph.</p>
+          <p style="font-size:14px;color:#a5b4c8">(2) Without computing max flow, identify why 3 edge-disjoint paths from s to t cannot exist. Use the min-cut argument.</p>
+          <p style="font-size:14px;color:#a5b4c8">(3) What IS the maximum number of edge-disjoint paths? Show them.</p>
+          <p style="font-size:14px;color:#a5b4c8">(4) If you changed the capacity of edge c→t to 3, what would the max EDP become? Why?</p>
+        </div>
+      </div>
+      <button class="solution-toggle" onclick="toggleSol(5);event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="solution-panel" id="sol5">
+      <div class="solution-label">Complete Solution</div>
+      <div class="garea">
+        <svg viewBox="0 0 380 160">
+          <defs><marker id="p5a" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="p5g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#34d399"/></marker>
+          <marker id="p5o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#fbbf24"/></marker></defs>
+          <line x1="55" y1="80" x2="140" y2="45" stroke="#34d399" stroke-width="2" marker-end="url(#p5g)"/>
+          <line x1="55" y1="80" x2="140" y2="115" stroke="#fbbf24" stroke-width="2" marker-end="url(#p5o)"/>
+          <line x1="158" y1="45" x2="228" y2="80" stroke="#34d399" stroke-width="2" marker-end="url(#p5g)"/>
+          <line x1="158" y1="115" x2="228" y2="80" stroke="#fbbf24" stroke-width="2" marker-end="url(#p5o)"/>
+          <line x1="246" y1="80" x2="320" y2="80" stroke="#f87171" stroke-width="3" marker-end="url(#p5a)"/>
+          <text x="283" y="70" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f87171">BOTTLENECK</text>
+          <text x="283" y="96" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f87171">cap=1 (or 3)</text>
+          <circle cx="38" cy="80" r="16" fill="rgba(232,121,249,0.1)" stroke="#e879f9" stroke-width="2"/>
+          <text x="38" y="85" text-anchor="middle" font-family="Cousine" font-size="12" fill="#e879f9">s</text>
+          <circle cx="148" cy="45" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="148" y="50" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">a</text>
+          <circle cx="148" cy="115" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="148" y="120" text-anchor="middle" font-family="Cousine" font-size="11" fill="#6b7280">b</text>
+          <circle cx="237" cy="80" r="14" fill="var(--bg2)" stroke="#f87171" stroke-width="2"/>
+          <text x="237" y="85" text-anchor="middle" font-family="Cousine" font-size="11" fill="#f87171">c</text>
+          <circle cx="338" cy="80" r="16" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+          <text x="338" y="85" text-anchor="middle" font-family="Cousine" font-size="12" fill="#34d399">t</text>
+        </svg>
+      </div>
+      <p><strong style="color:var(--text)">(2) Min-cut argument:</strong> Consider the cut ({s,a,b,c}, {t}). The only edge crossing this cut is c→t with capacity 1. Therefore by Max-Flow Min-Cut theorem, max flow ≤ 1. Since max EDP = max flow (all caps = 1), at most 1 edge-disjoint path can exist — let alone 3.</p>
+      <p style="margin-top:10px">Alternatively: look at the cut ({s}, {a,b,c,t}). Edges s→a and s→b cross it. Capacity = 2. So max flow ≤ 2 from this cut. But the tighter cut gives max = 1.</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">(3) Maximum EDP = 1.</strong> The only path is s→a→c→t (or s→b→c→t, but they share c→t so you can only use one). Max EDP = 1 because the min cut is 1 (the c→t edge bottleneck).</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">(4) If c→t has capacity 3:</strong> Now the cut ({s,a,b,c},{t}) has capacity 3. But the cut ({s},{a,b,c,t}) still has capacity 2 (edges s→a and s→b). So the binding constraint is now at s — max flow = 2. You can route: s→a→c→t AND s→b→c→t — both use c→t but now c→t has capacity 3 so it can carry 2 units. Max EDP = 2.</p>
+      <div class="box box-g" style="margin-top:10px">The maximum number of edge-disjoint paths is always determined by the minimum cut. Identifying the bottleneck edge or cut is the key to analyzing EDP instances.</div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(6)">← EDP Hardness</button>
+    <button class="nav-btn go" onclick="goTo(0)" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:var(--a2)">↺ Start Over</button>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── NAV ─────────────────────────────────────────────────
+let cur = 0;
+const labels = ['1','2','3','4','5','6','7','8'];
+function goTo(i) {
+  document.getElementById('sec'+cur).classList.remove('active');
+  cur = i;
+  document.getElementById('sec'+cur).classList.add('active');
+  document.querySelectorAll('.ps').forEach((s,idx) =>
+    s.className='ps'+(idx<i?' done':idx===i?' active':''));
+  document.getElementById('progLabel').textContent = `Part ${i+1} / 8`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── RUNTIME BARS ─────────────────────────────────────────
+const n = 50;
+const runtimes = [
+  { label:'O(n) — linear', val: n, color:'#34d399', display: `${n}` },
+  { label:'O(n²) — quadratic', val: n*n, color:'#60a5fa', display: `${n*n}` },
+  { label:'O(n³) — cubic', val: n*n*n, color:'#fbbf24', display: `${n*n*n}` },
+  { label:'O(2ⁿ) — exponential', val: Math.pow(2,50), color:'#f87171', display: `~1.1 × 10¹⁵` },
+  { label:'O(n!) — factorial', val: Infinity, color:'#dc2626', display: `~3 × 10⁶⁴` },
+];
+const container = document.getElementById('runtimeBars');
+const maxLog = Math.log10(1.1e15);
+runtimes.forEach(r => {
+  const logVal = r.val === Infinity ? maxLog : Math.log10(Math.max(r.val, 2));
+  const pct = Math.min(100, (logVal / maxLog) * 100);
+  const isSmall = pct < 25;
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin:5px 0">
+      <div style="width:190px;font-family:'Cousine',monospace;font-size:11px;color:#6b7280;flex-shrink:0">${r.label}</div>
+      <div style="flex:1;background:#1c1a2e;border-radius:4px;height:24px;position:relative;overflow:visible">
+        <div style="width:${pct}%;background:${r.color};height:100%;border-radius:4px;min-width:4px;position:relative">
+          <span style="position:absolute;${isSmall?'left:calc(100% + 6px);color:'+r.color:'left:8px;color:var(--bg)'};top:50%;transform:translateY(-50%);font-family:Cousine,monospace;font-size:10px;font-weight:700;white-space:nowrap">${r.display}</span>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+});
+
+// ── QUIZ PART 2 ──────────────────────────────────────────
+const q0 = [
+  { q:'Is every problem in NP also in P?', a:'Not necessarily. P ⊆ NP, but whether NP ⊆ P is the P=NP question — believed to be false. NP-complete problems are in NP but not known to be in P.' },
+  { q:'If you can verify a solution in O(n²), is the problem in NP?', a:'YES. NP is defined as the class of problems where a YES-certificate can be verified in polynomial time. O(n²) is polynomial, so yes.' },
+];
+const qz0El = document.getElementById('qz0');
+q0.forEach((q,i) => {
+  const d = document.createElement('div');
+  d.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 15px;cursor:pointer;transition:border-color 0.2s';
+  d.innerHTML = `<div style="font-size:14px;color:var(--text);font-weight:600">Q: ${q.q}</div><div style="display:none;margin-top:9px;font-size:13px;color:#a5b4c8;line-height:1.6;border-top:1px solid var(--border);padding-top:9px">${q.a}</div>`;
+  d.onclick = () => { const ans = d.querySelector('div:last-child'); const s = ans.style.display!=='none'; ans.style.display=s?'none':'block'; d.style.borderColor=s?'var(--border)':'rgba(52,211,153,0.4)'; };
+  qz0El.appendChild(d);
+});
+
+// ── SAT INTERACTIVE ──────────────────────────────────────
+const vars = { x1: null, x2: null, x3: null };
+// Clauses: C1=(x1 OR NOT x2 OR x3), C2=(NOT x1 OR x2), C3=(x1 OR x2 OR NOT x3), C4=(NOT x1 OR NOT x2 OR NOT x3)
+function toggleVar(v) {
+  if (vars[v] === null) vars[v] = true;
+  else if (vars[v] === true) vars[v] = false;
+  else vars[v] = null;
+  const btn = document.getElementById('v'+v);
+  const names = {x1:'x₁',x2:'x₂',x3:'x₃'};
+  btn.className = 'var-btn' + (vars[v]===true?' true':vars[v]===false?' false':'');
+  btn.textContent = names[v] + ' = ' + (vars[v]===null?'?':vars[v]?'T':'F');
+  updateSAT();
+}
+
+function evalClause(lits) {
+  for (const [v,neg] of lits) {
+    if (vars[v] === null) return null; // unset
+    const val = neg ? !vars[v] : vars[v];
+    if (val) return true;
+  }
+  return false;
+}
+
+function updateSAT() {
+  const clauses = [
+    {id:'c1', lits:[['x1',false],['x2',true],['x3',false]]},
+    {id:'c2', lits:[['x1',true],['x2',false]]},
+    {id:'c3', lits:[['x1',false],['x2',false],['x3',true]]},
+    {id:'c4', lits:[['x1',true],['x2',true],['x3',true]]},
+  ];
+  let allSet = Object.values(vars).every(v => v !== null);
+  let allSat = true;
+  clauses.forEach(c => {
+    const r = evalClause(c.lits);
+    const el = document.getElementById(c.id);
+    el.className = 'clause-box' + (r===null?'':r?' sat':' unsat');
+    if (r === false) allSat = false;
+  });
+  const v = document.getElementById('satVerdict');
+  if (!allSet) { v.textContent = 'Set all variables to check satisfiability...'; v.style.color='var(--muted)'; return; }
+  if (allSat) { v.textContent = '✅ SATISFIABLE! All clauses are TRUE with this assignment.'; v.style.color='#34d399'; }
+  else { v.textContent = '❌ NOT SATISFIED. At least one clause is FALSE. Try a different assignment.'; v.style.color='#f87171'; }
+}
+
+// ── REDUCTION FLOW ANIMATION ─────────────────────────────
+let rfStep = 0;
+const rfColors = { rl1:'#e879f9', rl2:'#60a5fa', rl3:'#34d399' };
+function stepRedFlow() {
+  const steps = [
+    () => { setArrow('rl1','#e879f9','#e879f9'); document.getElementById('redFlowMsg').textContent = 'Step 1: The instance x of problem A arrives at the transformer.'; },
+    () => { document.getElementById('redBox1').setAttribute('fill','rgba(251,191,36,0.15)'); document.getElementById('redBox1').setAttribute('stroke','rgba(251,191,36,0.7)'); document.getElementById('redFlowMsg').textContent = 'Step 2: Transformer computes f(x) in polynomial time. This is the key — the transformation itself must be fast.'; },
+    () => { setArrow('rl2','#fbbf24','#fbbf24'); document.getElementById('rl2t').textContent='f(x)'; document.getElementById('rl2t').setAttribute('fill','#fbbf24'); document.getElementById('redFlowMsg').textContent = 'Step 3: f(x) is an instance of problem B. Send it to the B solver.'; },
+    () => { document.getElementById('redBox2').setAttribute('fill','rgba(96,165,250,0.15)'); document.getElementById('redBox2').setAttribute('stroke','rgba(96,165,250,0.7)'); document.getElementById('redFlowMsg').textContent = 'Step 4: Black-box solver for B runs on f(x). We don\'t care how it works internally.'; },
+    () => { setArrow('rl3','#34d399','#34d399'); document.getElementById('redFlowMsg').textContent = '✅ Final answer: YES for f(x) ↔ YES for x. The iff property means the answer to B correctly answers A. Reduction complete!'; document.getElementById('redFlowBtn').disabled=true; },
+  ];
+  if (rfStep < steps.length) { steps[rfStep](); rfStep++; }
+}
+function setArrow(id, stroke, markerFill) {
+  const el = document.getElementById(id);
+  el.setAttribute('stroke', stroke); el.setAttribute('stroke-width','2.5');
+  el.setAttribute('marker-end', `url(#bbag)`);
+}
+function resetRedFlow() {
+  rfStep=0;
+  document.getElementById('redFlowBtn').disabled=false;
+  document.getElementById('redFlowMsg').textContent='A reduction turns any instance of A into an instance of B. Click to animate.';
+  ['rl1','rl2','rl3'].forEach(id=>{ const el=document.getElementById(id); el.setAttribute('stroke','#6b7280'); el.setAttribute('stroke-width','2'); el.setAttribute('marker-end','url(#bba)'); });
+  ['redBox1','redBox2'].forEach(id=>{ document.getElementById(id).setAttribute('fill','rgba(251,191,36,0.08)'); document.getElementById(id).setAttribute('stroke','rgba(251,191,36,0.35)'); });
+  document.getElementById('redBox2').setAttribute('fill','rgba(96,165,250,0.08)'); document.getElementById('redBox2').setAttribute('stroke','rgba(96,165,250,0.35)');
+}
+
+// ── MAX FLOW / EDP DEMO ──────────────────────────────────
+let mfStep = 0;
+const mfSteps = [
+  { msg:'Path 1 (green): s→A→C→t. All caps=1. Bottleneck=1. Flow=1.', edges:[['mf_sA','#34d399','url(#mfag)'],['mf_AC','#34d399','url(#mfag)'],['mf_Ct','#34d399','url(#mfag)']], flows:['fl_sA','fl_AC','fl_Ct'] },
+  { msg:'Path 2 (amber): s→B→D→t. All residuals still available. Bottleneck=1. Flow=2.', edges:[['mf_sB','#fbbf24','url(#mfao)'],['mf_BD','#fbbf24','url(#mfao)'],['mf_Dt','#fbbf24','url(#mfao)']], flows:['fl_sB','fl_BD','fl_Dt'] },
+  { msg:'✅ Max flow = 2. These correspond to 2 edge-disjoint s→t paths — they share NO edges. Max EDP = max flow when all caps = 1.', edges:[], flows:[] },
+];
+function stepMFEDP() {
+  if (mfStep>=mfSteps.length) return;
+  const s = mfSteps[mfStep];
+  document.getElementById('mfedpMsg').textContent = s.msg;
+  s.edges.forEach(([id,col,mk]) => { const el=document.getElementById(id); el.setAttribute('stroke',col); el.setAttribute('stroke-width','2.5'); el.setAttribute('marker-end',mk); });
+  s.flows.forEach(id => { const el=document.getElementById(id); el.setAttribute('fill','#6b7280'); });
+  mfStep++;
+  if (mfStep>=mfSteps.length) document.getElementById('mfedpBtn').disabled=true;
+}
+function resetMFEDP() {
+  mfStep=0; document.getElementById('mfedpBtn').disabled=false;
+  document.getElementById('mfedpMsg').textContent='All edge capacities = 1. Can we push flow 2 from s to t? That\'s exactly asking: do 2 edge-disjoint paths exist?';
+  ['mf_sA','mf_sB','mf_AC','mf_BD','mf_AB','mf_Ct','mf_Dt'].forEach(id => { const el=document.getElementById(id); if(!el)return; el.setAttribute('stroke','#2d3748'); el.setAttribute('stroke-width','2'); el.setAttribute('marker-end','url(#mfa)'); });
+  ['fl_sA','fl_sB','fl_AC','fl_BD','fl_Ct','fl_Dt'].forEach(id => { const el=document.getElementById(id); if(el) el.setAttribute('fill','transparent'); });
+}
+
+// ── EDP2 INTERACTIVE ─────────────────────────────────────
+let edp2Mode = 1;
+const edp2Assigned = {};
+const edp2Colors = {1:'#34d399',2:'#fbbf24'};
+function setEDP2(m) {
+  edp2Mode=m;
+  document.getElementById('edp2m1').style.background=m===1?'rgba(52,211,153,0.2)':'rgba(52,211,153,0.1)';
+  document.getElementById('edp2m2').style.background=m===2?'rgba(251,191,36,0.2)':'';
+}
+function clickEDP2(id, el) {
+  if (edp2Assigned[id]===edp2Mode) { delete edp2Assigned[id]; el.setAttribute('stroke','#1e1d2e'); }
+  else if (edp2Assigned[id] && edp2Assigned[id]!==edp2Mode) {
+    document.getElementById('edp2Msg').textContent='❌ Conflict! Edge already used by Path '+edp2Assigned[id]+'. Edge-disjoint means each edge belongs to at most ONE path.';
+    el.setAttribute('stroke','#f87171'); setTimeout(()=>el.setAttribute('stroke',edp2Colors[edp2Assigned[id]]),700); return;
+  } else { edp2Assigned[id]=edp2Mode; el.setAttribute('stroke',edp2Colors[edp2Mode]); }
+  const c1=Object.values(edp2Assigned).filter(v=>v===1).length;
+  const c2=Object.values(edp2Assigned).filter(v=>v===2).length;
+  document.getElementById('ep1c').textContent=c1; document.getElementById('ep2c').textContent=c2;
+  if(c1>=2&&c2>=2) document.getElementById('edp2Msg').textContent='✅ Both paths routed using completely different edges! That\'s edge-disjoint.';
+}
+function resetEDP2() {
+  Object.keys(edp2Assigned).forEach(k=>delete edp2Assigned[k]);
+  document.querySelectorAll('#edpSvg2 line[id^="e2_"]').forEach(el=>el.setAttribute('stroke','#1e1d2e'));
+  document.getElementById('ep1c').textContent='0'; document.getElementById('ep2c').textContent='0';
+  document.getElementById('edp2Msg').textContent='Choose a path mode, then click edges to assign them.';
+}
+setEDP2(1);
+
+// ── SOLUTION TOGGLES ─────────────────────────────────────
+function toggleSol(n) {
+  const p = document.getElementById('sol'+n);
+  p.classList.toggle('open');
+}
+</script>
+</body>
+</html>
