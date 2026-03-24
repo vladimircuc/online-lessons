@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 2 — Approximation Algorithms & Greedy EDP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+  :root {
+    --bg:#0d1117;--bg2:#161b22;--card:#1c2128;--border:#30363d;
+    --a1:#f0883e;--a2:#56d364;--a3:#79c0ff;--a4:#d2a8ff;--red:#ff7b72;
+    --text:#e6edf3;--muted:#7d8590;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lora',serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 80% 10%,rgba(240,136,62,0.05) 0%,transparent 50%),radial-gradient(ellipse at 10% 90%,rgba(86,211,100,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .container{max-width:920px;margin:0 auto;padding:46px 22px;position:relative;z-index:1;}
+
+  .header{margin-bottom:44px;}
+  .badge{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);border:1px solid rgba(240,136,62,0.3);background:rgba(240,136,62,0.07);padding:5px 14px;border-radius:3px;display:inline-block;margin-bottom:18px;}
+  .header h1{font-size:clamp(30px,6vw,58px);font-weight:700;line-height:1.05;margin-bottom:10px;}
+  .header h1 em{color:var(--a1);font-style:italic;}
+  .header .sub{font-size:15px;color:var(--muted);font-style:italic;max-width:560px;line-height:1.65;}
+  .recap-bar{background:rgba(86,211,100,0.07);border:1px solid rgba(86,211,100,0.25);border-radius:8px;padding:12px 18px;margin-bottom:28px;font-size:13px;color:#6ee7b7;font-family:'Cousine',monospace;letter-spacing:0.5px;}
+
+  .prog-label{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .prog{display:flex;gap:4px;margin-bottom:36px;}
+  .ps{height:3px;flex:1;background:var(--border);border-radius:99px;cursor:pointer;transition:background 0.3s;}
+  .ps.done{background:var(--a2);}
+  .ps.active{background:var(--a1);}
+
+  .section{display:none;}
+  .section.active{display:block;animation:up 0.3s ease forwards;}
+  @keyframes up{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  .chap{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:26px;display:flex;align-items:center;gap:12px;}
+  .chap::after{content:'';flex:1;height:1px;background:var(--border);}
+  .chap span{color:var(--a1);}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;margin-bottom:16px;}
+  .card h2{font-size:23px;font-weight:700;margin-bottom:12px;line-height:1.15;}
+  .card h3{font-size:17px;font-weight:600;margin:18px 0 10px;color:var(--text);}
+  .card p{font-size:15px;color:#8b949e;line-height:1.82;margin-bottom:11px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  .box{border-radius:7px;padding:14px 18px;margin:13px 0;font-size:14px;line-height:1.72;}
+  .box-o{background:rgba(240,136,62,0.08);border-left:3px solid var(--a1);color:#ffa657;}
+  .box-g{background:rgba(86,211,100,0.08);border-left:3px solid var(--a2);color:#7ee787;}
+  .box-b{background:rgba(121,192,255,0.08);border-left:3px solid var(--a3);color:#a5d6ff;}
+  .box-p{background:rgba(210,168,255,0.08);border-left:3px solid var(--a4);color:#e2c0ff;}
+  .box-r{background:rgba(255,123,114,0.08);border-left:3px solid var(--red);color:#ffa198;}
+
+  .garea{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px;margin:14px 0;}
+  .garea svg{width:100%;display:block;}
+
+  .ctrl{display:flex;gap:9px;align-items:stretch;flex-wrap:wrap;margin-top:12px;}
+  .btn{font-family:'Cousine',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.15s;}
+  .btn:hover{border-color:var(--a1);color:var(--a1);}
+  .btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-o{background:rgba(240,136,62,0.1);border-color:rgba(240,136,62,0.35);color:var(--a1);}
+  .btn-g{background:rgba(86,211,100,0.1);border-color:rgba(86,211,100,0.35);color:var(--a2);}
+  .btn-r{background:rgba(255,123,114,0.08);border-color:rgba(255,123,114,0.3);color:var(--red);}
+  .msgbox{flex:1;min-width:180px;background:rgba(240,136,62,0.05);border:1px solid rgba(240,136,62,0.15);border-radius:6px;padding:10px 14px;font-family:'Cousine',monospace;font-size:12px;color:#ffa657;line-height:1.5;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0;}
+  .ibox{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:13px 15px;}
+  .ibox label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .ibox .val{font-family:'Cousine',monospace;font-size:20px;font-weight:700;color:var(--a1);}
+
+  .tbl{width:100%;border-collapse:collapse;font-family:'Cousine',monospace;font-size:12px;margin-top:12px;}
+  .tbl th{background:rgba(240,136,62,0.1);color:var(--a1);padding:9px 13px;text-align:left;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+  .tbl td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--muted);}
+  .tbl .hi td{background:rgba(86,211,100,0.05);color:var(--text);}
+  .tbl .warn td{background:rgba(255,123,114,0.05);color:#ffa198;}
+  .tbl .mid td{background:rgba(240,136,62,0.05);color:#ffa657;}
+
+  /* ALPHA SLIDER */
+  .slider-wrap{margin:16px 0;}
+  input[type=range]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--border);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--a1);cursor:pointer;border:2px solid var(--bg);}
+
+  /* GREEDY STEP */
+  .step-log{margin-top:12px;max-height:180px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;}
+  .log-entry{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(48,54,61,0.5);}
+  .log-entry.routed{color:var(--a2);}
+  .log-entry.failed{color:var(--red);}
+  .log-entry.header{color:var(--a1);font-weight:700;font-size:12px;}
+
+  /* PRACTICE */
+  .prob-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:18px;overflow:hidden;}
+  .prob-head{padding:22px 26px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .prob-head:hover{background:rgba(240,136,62,0.03);}
+  .prob-num{font-family:'Cousine',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);margin-bottom:6px;}
+  .prob-title{font-size:17px;font-weight:700;margin-bottom:8px;}
+  .prob-body{padding:0 26px 20px;}
+  .sol-btn{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);white-space:nowrap;padding:6px 12px;border:1px solid var(--border);border-radius:5px;background:var(--bg2);cursor:pointer;flex-shrink:0;}
+  .sol-btn:hover{border-color:var(--a2);color:var(--a2);}
+  .sol-panel{display:none;padding:22px 26px;border-top:1px solid var(--border);background:rgba(86,211,100,0.02);}
+  .sol-panel.open{display:block;}
+  .sol-label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a2);margin-bottom:14px;}
+
+  .nav-btns{display:flex;justify-content:space-between;margin-top:34px;padding-top:18px;border-top:1px solid var(--border);gap:12px;}
+  .nav-btn{font-family:'Lora',serif;font-size:14px;font-weight:700;padding:11px 22px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--a1);color:var(--a1);transform:translateY(-1px);}
+  .nav-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+  .nav-btn.go{background:rgba(240,136,62,0.1);border-color:rgba(240,136,62,0.4);color:var(--a1);}
+
+  @keyframes dash{to{stroke-dashoffset:-16;}}
+  .anim-path{stroke-dasharray:8 4;animation:dash 0.5s linear infinite;}
+
+  @media(max-width:600px){.two,.three{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="badge">CS 6515 — Session 2 of 6 — 90 min</div>
+  <h1>Approximation<br><em>Algorithms</em> &<br>Greedy EDP</h1>
+  <p class="sub">When optimal is impossible, how close can we get — and how fast? Formal definitions, PTAS, FPTAS, and the first real approximation algorithm.</p>
+</div>
+
+<div class="recap-bar">
+  ← Session 1 covered: P vs NP · NP-hardness · Reductions · SAT · k-EDP is NP-hard. Today we start with the practice problems from that session, then build the approximation framework on top.
+</div>
+
+<div class="prog-label" id="progLabel">Part 1 / 8</div>
+<div class="prog" id="prog">
+  <div class="ps active" onclick="goTo(0)"></div>
+  <div class="ps" onclick="goTo(1)"></div>
+  <div class="ps" onclick="goTo(2)"></div>
+  <div class="ps" onclick="goTo(3)"></div>
+  <div class="ps" onclick="goTo(4)"></div>
+  <div class="ps" onclick="goTo(5)"></div>
+  <div class="ps" onclick="goTo(6)"></div>
+  <div class="ps" onclick="goTo(7)"></div>
+</div>
+
+<!-- ═══════════════════ PART 1: WARM-UP PRACTICE ═══════════════════ -->
+<div class="section active" id="sec0">
+  <div class="chap">Part 1 / 8 <span>— Warm-Up: Session 1 Practice Problems</span></div>
+
+  <div class="card">
+    <h2>Before We Start — Two Quick Problems 📝</h2>
+    <p>These are two of the problems from the end of Session 1. Work through them before expanding the solutions. Sketching on paper or a whiteboard first is strongly recommended.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('w1')">
+      <div style="flex:1">
+        <div class="prob-num">Warm-Up A — Reduction Direction</div>
+        <div class="prob-title">Which direction proves NP-hardness?</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">A student wants to prove that problem X is NP-hard. They have two options:</p>
+          <div class="box box-b" style="margin:8px 0;font-size:13px"><strong>(Option A)</strong> Show that X reduces to 3-SAT: any instance of X can be transformed into a 3-SAT instance in polynomial time.</div>
+          <div class="box box-b" style="margin:8px 0;font-size:13px"><strong>(Option B)</strong> Show that 3-SAT reduces to X: any 3-SAT instance can be transformed into an instance of X in polynomial time.</div>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px">Which option proves X is NP-hard? Explain in 2 sentences why the other option does NOT prove hardness.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('w1');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solw1">
+      <div class="sol-label">Solution</div>
+      <p><strong style="color:var(--a2)">Option B proves NP-hardness.</strong> 3-SAT ≤ₚ X means "if I can solve X, I can solve 3-SAT." Since 3-SAT is NP-hard, this means X must also be at least as hard as 3-SAT — so X is NP-hard.</p>
+      <p style="margin-top:10px">Option A (X ≤ₚ 3-SAT) says the OPPOSITE: "if I can solve 3-SAT, I can solve X." This means X is no harder than 3-SAT, placing X inside NP — but it says nothing about whether X is easy or hard. It could be in P for all we know.</p>
+      <div class="box box-o" style="margin-top:10px">Memory trick: to prove B is hard, reduce FROM a known hard problem TO B. The arrow points toward the new problem you want to prove hard.</div>
+    </div>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('w2')">
+      <div style="flex:1">
+        <div class="prob-num">Warm-Up B — EDP & Min Cut</div>
+        <div class="prob-title">Max edge-disjoint paths = min cut value</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Graph G has vertices {s, a, b, c, d, t} with directed edges: s→a (cap 1), s→b (cap 1), s→c (cap 1), a→d (cap 1), b→d (cap 1), c→t (cap 1), d→t (cap 1).</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px"><strong>On your board:</strong> Draw the graph. Find max edge-disjoint s→t paths. Find the min cut. Verify they are equal.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('w2');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solw2">
+      <div class="sol-label">Solution</div>
+      <div class="garea">
+        <svg viewBox="0 0 480 180">
+          <defs><marker id="wa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="wag" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#56d364"/></marker>
+          <marker id="wao" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#f0883e"/></marker></defs>
+          <line x1="55" y1="90" x2="145" y2="50" stroke="#56d364" stroke-width="2" marker-end="url(#wag)"/>
+          <line x1="55" y1="90" x2="145" y2="90" stroke="#f0883e" stroke-width="2" marker-end="url(#wao)"/>
+          <line x1="55" y1="90" x2="145" y2="130" stroke="#374151" stroke-width="2" marker-end="url(#wa)"/>
+          <line x1="163" y1="50" x2="273" y2="90" stroke="#56d364" stroke-width="2" marker-end="url(#wag)"/>
+          <line x1="163" y1="90" x2="273" y2="90" stroke="#f0883e" stroke-width="2" marker-end="url(#wao)"/>
+          <line x1="163" y1="130" x2="423" y2="90" stroke="#374151" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#wa)"/>
+          <line x1="291" y1="90" x2="423" y2="90" stroke="#56d364" stroke-width="2" marker-end="url(#wag)"/>
+          <line x1="291" y1="90" x2="423" y2="100" stroke="#f0883e" stroke-width="2" marker-end="url(#wao)"/>
+          <circle cx="38" cy="90" r="16" fill="rgba(210,168,255,0.1)" stroke="#d2a8ff" stroke-width="2"/>
+          <text x="38" y="95" text-anchor="middle" font-family="Cousine" font-size="12" fill="#d2a8ff">s</text>
+          <circle cx="154" cy="50" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="154" y="55" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">a</text>
+          <circle cx="154" cy="90" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="154" y="95" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">b</text>
+          <circle cx="154" cy="130" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="154" y="135" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">c</text>
+          <circle cx="282" cy="90" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="282" y="95" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">d</text>
+          <circle cx="440" cy="90" r="16" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="2"/>
+          <text x="440" y="95" text-anchor="middle" font-family="Cousine" font-size="12" fill="#56d364">t</text>
+          <!-- min cut line -->
+          <line x1="260" y1="10" x2="260" y2="170" stroke="rgba(255,123,114,0.5)" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="245" y="168" font-family="Cousine" font-size="9" fill="#ff7b72" text-anchor="end">min cut</text>
+        </svg>
+      </div>
+      <p><strong>Max flow paths:</strong></p>
+      <p>• <span style="color:var(--a2)">Path 1:</span> s→a→d→t (uses s→a, a→d, d→t)</p>
+      <p>• <span style="color:var(--a1)">Path 2:</span> s→b→d→t — BLOCKED: d→t already used!</p>
+      <p>• Try s→b→d→t: conflicts on d→t. Try s→c→t: works! <span style="color:var(--a1)">Path 2: s→c→t</span></p>
+      <p style="margin-top:8px"><strong>Max flow = 2.</strong> (Can't get 3 — node d has only one outgoing edge d→t with capacity 1, so at most 1 of {s→a→d, s→b→d} can complete.)</p>
+      <p style="margin-top:10px"><strong>Min cut:</strong> ({s,a,b,c,d}, {t}). Edges crossing: d→t (cap 1), c→t (cap 1). Total = 2. ✅ Min cut = max flow = 2.</p>
+      <p style="margin-top:10px"><strong>Note:</strong> s→b is "wasted" here — b connects only to d, which is already saturated by the s→a→d path. This is exactly the kind of bottleneck the greedy algorithm in today's session must navigate.</p>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" disabled>← Back</button>
+    <button class="nav-btn go" onclick="goTo(1)">Intro to Approximation →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 2: WHAT IS APPROXIMATION ═══════════════════ -->
+<div class="section" id="sec1">
+  <div class="chap">Part 2 / 8 <span>— What is an Approximation Algorithm?</span></div>
+
+  <div class="card">
+    <h2>The Core Idea: Close Enough, Fast Enough</h2>
+    <p>NP-hard problems can't be solved optimally in polynomial time (assuming P ≠ NP). But in practice we still need answers. The solution: <strong>approximation algorithms</strong> — polynomial-time algorithms that guarantee a solution within some factor of optimal.</p>
+    <p>The factor is called <strong>α</strong> (the approximation ratio). The formal definition from your notes:</p>
+    <div class="box box-o" style="font-size:15px;padding:18px">
+      Algorithm A is an <strong>α-approximation</strong> for problem P if for every input I, A outputs a solution that is within a factor of α from the optimal.
+    </div>
+    <p>The exact meaning of "within factor α" depends on whether P is a maximization or minimization problem. These are different and easy to confuse:</p>
+  </div>
+
+  <div class="card">
+    <h2>Max vs Min — The Direction Matters</h2>
+    <div class="two">
+      <div style="background:var(--bg2);border:1px solid rgba(86,211,100,0.25);border-radius:8px;padding:18px">
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--a2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Maximization Problem</div>
+        <p style="font-size:14px;color:#8b949e;line-height:1.7">We want to maximize. Optimal = OPT (big is good). Our algorithm gives A(I).</p>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;margin-top:10px;font-family:'Cousine',monospace;font-size:13px;color:var(--a2)">
+          OPT / α ≤ A(I) ≤ OPT<br>
+          <span style="color:var(--muted);font-size:10px">A(I) is at least 1/α of optimal</span>
+        </div>
+        <p style="font-size:13px;color:#8b949e;margin-top:8px">Example: max matching. If OPT=10 and α=2, our algo gives ≥5.</p>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(255,123,114,0.25);border-radius:8px;padding:18px">
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--red);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Minimization Problem</div>
+        <p style="font-size:14px;color:#8b949e;line-height:1.7">We want to minimize. Optimal = OPT (small is good). Our algorithm gives A(I).</p>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;margin-top:10px;font-family:'Cousine',monospace;font-size:13px;color:var(--red)">
+          OPT ≤ A(I) ≤ α · OPT<br>
+          <span style="color:var(--muted);font-size:10px">A(I) is at most α times optimal</span>
+        </div>
+        <p style="font-size:13px;color:#8b949e;margin-top:8px">Example: min vertex cover. If OPT=5 and α=2, our algo gives ≤10.</p>
+      </div>
+    </div>
+    <div class="box box-p" style="margin-top:4px">
+      In both cases α ≥ 1. A perfect algorithm would have α=1 (exact optimal). The larger α gets, the worse the guarantee. For NP-hard problems we aim for α as close to 1 as possible.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Interactive: Feel What α Actually Means</h2>
+    <p>Drag the slider to set α. See how far from optimal the approximation can be — and how that changes for both maximization and minimization problems with OPT = 100.</p>
+
+    <div class="slider-wrap">
+      <div style="display:flex;justify-content:space-between;font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:6px">
+        <span>α = 1 (exact)</span><span>α = 5 (rough)</span>
+      </div>
+      <input type="range" min="1" max="5" step="0.1" value="2" id="alphaSlider" oninput="updateAlpha()">
+      <div style="text-align:center;font-family:'Cousine',monospace;font-size:22px;font-weight:700;color:var(--a1);margin:10px 0" id="alphaVal">α = 2.0</div>
+    </div>
+
+    <div class="two" style="gap:12px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--a2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Maximization (OPT = 100)</div>
+        <div style="font-family:'Cousine',monospace;font-size:12px;color:#7d8590;margin-bottom:6px">Our algo guarantees at LEAST:</div>
+        <div id="maxGuarantee" style="font-family:'Cousine',monospace;font-size:28px;font-weight:700;color:var(--a2)">50</div>
+        <div id="maxBar" style="background:var(--border);border-radius:4px;height:16px;margin-top:8px;overflow:hidden">
+          <div id="maxFill" style="height:100%;background:var(--a2);width:50%;border-radius:4px;transition:width 0.3s"></div>
+        </div>
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px" id="maxPct">50% of optimal</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--red);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Minimization (OPT = 100)</div>
+        <div style="font-family:'Cousine',monospace;font-size:12px;color:#7d8590;margin-bottom:6px">Our algo guarantees at MOST:</div>
+        <div id="minGuarantee" style="font-family:'Cousine',monospace;font-size:28px;font-weight:700;color:var(--red)">200</div>
+        <div id="minBar" style="background:var(--border);border-radius:4px;height:16px;margin-top:8px;overflow:hidden">
+          <div id="minFill" style="height:100%;background:var(--red);width:100%;border-radius:4px;transition:width 0.3s"></div>
+        </div>
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px" id="minPct">200% of optimal (2× worse)</div>
+      </div>
+    </div>
+
+    <div class="box box-b" style="margin-top:8px" id="alphaInterpret">
+      α = 2.0: Our solution is at most 2× worse than optimal (for min problems) or at least half of optimal (for max problems). This is a commonly achievable ratio for many NP-hard problems.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>A Concrete Max Example: Vertex Cover</h2>
+    <p>Vertex Cover (minimize the number of vertices that cover all edges) has a simple <strong>2-approximation</strong>: pick any uncovered edge, add BOTH its endpoints to the cover, repeat.</p>
+    <p>Let's verify this is α=2: when we pick edge (u,v) and add both, the optimal cover must include at least one of u or v for this edge. So we're using 2 vertices where optimal uses at least 1. We never use more than 2× what optimal uses. ✅</p>
+    <div class="box box-g">
+      This is why the 2-approximation is achievable here — and why getting better (like a 1.5-approximation) is an open problem, believed to require fundamentally different techniques.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(0)">← Warm-Up</button>
+    <button class="nav-btn go" onclick="goTo(2)">PTAS & FPTAS →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 3: PTAS & FPTAS ═══════════════════ -->
+<div class="section" id="sec2">
+  <div class="chap">Part 3 / 8 <span>— PTAS and FPTAS</span></div>
+
+  <div class="card">
+    <h2>Beyond a Fixed Ratio — Approximation Schemes</h2>
+    <p>A single fixed α (like 2-approximation) is fine, but sometimes we need more flexibility. What if you need a 1.1-approximation for a high-stakes application? Or a 1.01-approximation?</p>
+    <p>An <strong>approximation scheme</strong> is a family of algorithms parameterized by ε > 0 that gives a (1+ε)-approximation. You can make ε as small as you want — getting arbitrarily close to optimal.</p>
+    <p>There are two important classes from your notes: PTAS and FPTAS. The difference is about how the runtime scales with ε:</p>
+  </div>
+
+  <div class="card">
+    <h2>PTAS — Polynomial Time Approximation Scheme</h2>
+    <p>Algorithm A is a <strong>PTAS</strong> if for every fixed ε > 0, A runs in polynomial time in the input size n and achieves a (1+ε)-approximation.</p>
+    <div class="box box-o">
+      Runtime: polynomial in n for any FIXED ε. But as ε → 0, the runtime might blow up. For example: O(n^(1/ε)) is a valid PTAS runtime — polynomial in n for fixed ε, but terrible as ε shrinks.
+    </div>
+    <p>Example PTAS runtime for n=100:</p>
+
+    <div id="ptasBars" style="margin:14px 0"></div>
+
+    <div class="box box-r" style="margin-top:4px">
+      ⚠️ PTAS can be practically useless for small ε. O(n^(1/ε)) with ε=0.01 gives O(n^100) — technically polynomial in n but completely infeasible. You need FPTAS for truly practical guarantees.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>FPTAS — Fully Polynomial Time Approximation Scheme</h2>
+    <p>Algorithm A is an <strong>FPTAS</strong> if it runs in polynomial time in BOTH the input size n AND 1/ε, achieving a (1+ε)-approximation.</p>
+    <div class="box box-g">
+      Runtime example: O(n³/ε²) — polynomial in both n and 1/ε. Doubling n or halving ε doesn't cause explosion. This is genuinely practical for a wide range of ε values.
+    </div>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(240,136,62,0.3)">
+        <label>PTAS (weaker)</label>
+        <div style="font-size:13px;color:#ffa657;line-height:1.6">poly(n) for fixed ε<br>runtime can explode as ε→0<br>Example: O(n^(1/ε))</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(86,211,100,0.3)">
+        <label>FPTAS (stronger)</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">poly(n, 1/ε) for all ε<br>runtime stays controlled<br>Example: O(n³/ε²)</div>
+      </div>
+    </div>
+    <div class="box box-p">
+      Every FPTAS is also a PTAS. But not every PTAS is an FPTAS — FPTAS is strictly stronger. FPTAS algorithms exist for knapsack (Session 5) but NOT for problems like TSP or EDP.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Interactive: Compare PTAS vs FPTAS Runtime</h2>
+    <p>Adjust ε and n to see how each runtime scales. Notice where PTAS becomes impractical:</p>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin:14px 0">
+      <div style="flex:1;min-width:180px">
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:6px">n (input size): <span id="nVal">100</span></div>
+        <input type="range" min="10" max="500" value="100" id="nSlider" oninput="updatePTAS()">
+      </div>
+      <div style="flex:1;min-width:180px">
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:6px">ε (error tolerance): <span id="epsVal">0.1</span></div>
+        <input type="range" min="0.01" max="0.5" step="0.01" value="0.1" id="epsSlider" oninput="updatePTAS()">
+      </div>
+    </div>
+
+    <div class="two" style="gap:10px">
+      <div class="ibox" style="border-color:rgba(240,136,62,0.3)">
+        <label>PTAS — O(n^(1/ε))</label>
+        <div class="val" id="ptasRuntime" style="font-size:16px">10^20</div>
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px" id="ptasVerdict">Impractical</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(86,211,100,0.3)">
+        <label>FPTAS — O(n³/ε²)</label>
+        <div class="val" id="fptasRuntime" style="color:var(--a2);font-size:16px">10^8</div>
+        <div style="font-family:'Cousine',monospace;font-size:10px;color:var(--muted);margin-top:4px" id="fptasVerdict">Manageable</div>
+      </div>
+    </div>
+    <div class="box box-b" style="margin-top:10px" id="ptasInterpret">With these settings, PTAS requires astronomically more operations than FPTAS. This is why FPTAS is significantly more useful in practice despite the (1+ε) guarantee being identical.</div>
+  </div>
+
+  <div class="card">
+    <h2>The Approximability Landscape</h2>
+    <p>Not all NP-hard problems are equally approximable. From your notes, there's a hierarchy:</p>
+    <table class="tbl">
+      <thead><tr><th>Class</th><th>What it means</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>FPTAS exists</td><td>Can get (1+ε)-approx in poly(n,1/ε)</td><td>Knapsack</td></tr>
+        <tr class="hi"><td>PTAS exists (not FPTAS)</td><td>Can get (1+ε)-approx but runtime explodes</td><td>Some scheduling problems</td></tr>
+        <tr class="mid"><td>Constant approx only</td><td>No PTAS unless P=NP, but fixed ratio ok</td><td>Vertex Cover (α=2), Set Cover (α=ln n)</td></tr>
+        <tr class="warn"><td>Hard to approximate</td><td>Even constant approx is NP-hard</td><td>TSP (general) — inapprox unless P=NP</td></tr>
+      </tbody>
+    </table>
+    <div class="box box-o" style="margin-top:12px">
+      EDP (k-edge-disjoint paths) falls in the "constant approx only" regime — specifically the greedy gives O(√|E|) approximation. No PTAS is known. We'll derive this bound now.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(1)">← Approx Basics</button>
+    <button class="nav-btn go" onclick="goTo(3)">Greedy EDP Algorithm →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 4: GREEDY EDP ═══════════════════ -->
+<div class="section" id="sec3">
+  <div class="chap">Part 4 / 8 <span>— The Greedy Algorithm for k-EDP</span></div>
+
+  <div class="card">
+    <h2>The Algorithm — Beautifully Simple 🌿</h2>
+    <p>Given graph G=(V,E) and k source-sink pairs (s₁,t₁),...,(sₖ,tₖ), the greedy algorithm is:</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px;font-family:'Cousine',monospace;font-size:13px;line-height:2.1;margin:14px 0">
+      <span style="color:var(--a1)">GreedyEDP</span>(G, (s₁,t₁), ..., (sₖ,tₖ)):<br>
+      &nbsp;&nbsp;Z ← ∅ &nbsp;&nbsp;<span style="color:var(--muted)">// set of routed pairs</span><br>
+      &nbsp;&nbsp;E' ← E &nbsp;&nbsp;<span style="color:var(--muted)">// available edges</span><br>
+      &nbsp;&nbsp;<span style="color:var(--a3)">for</span> i = 1 to k:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--a3)">if</span> ∃ path from sᵢ to tᵢ using only edges in E':<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P ← any such path &nbsp;&nbsp;<span style="color:var(--muted)">// e.g. via BFS/DFS</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Z ← Z ∪ {i} &nbsp;&nbsp;<span style="color:var(--muted)">// mark pair i as routed</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E' ← E' \ P &nbsp;&nbsp;<span style="color:var(--muted)">// remove used edges</span><br>
+      &nbsp;&nbsp;<span style="color:var(--a3)">return</span> Z
+    </div>
+    <div class="box box-o">
+      Runtime: O(k · (V+E)) — for each of k pairs, run BFS/DFS once. Since k ≤ |E| (can't have more pairs than edges), this is O(|E|·(V+E)) — polynomial. ✅
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Step Through It — Interactive Demo</h2>
+    <p>Graph below has 4 pairs to route. Greedy processes them in order. Watch which get routed and which get blocked. Pay attention to WHY a pair fails — which earlier routing used the edge it needed.</p>
+  </div>
+
+  <div class="garea">
+    <div class="two" style="margin-bottom:12px;gap:8px">
+      <div class="ibox"><label>Pairs Routed</label><div class="val" id="greedyRouted" style="color:var(--a2)">0</div></div>
+      <div class="ibox"><label>Pairs Tried</label><div class="val" id="greedyTried">0 / 4</div></div>
+    </div>
+
+    <svg viewBox="0 0 560 240" id="greedySvg">
+      <defs>
+        <marker id="gra" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+        <marker id="grg" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#56d364"/></marker>
+        <marker id="gro" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#f0883e"/></marker>
+        <marker id="grb" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#79c0ff"/></marker>
+        <marker id="grp" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#d2a8ff"/></marker>
+      </defs>
+
+      <!-- Edges (all undirected-style with arrows both ways conceptually, but directed for flow) -->
+      <!-- Top path: A→B→C→D -->
+      <line x1="80" y1="60" x2="180" y2="60" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_AB"/>
+      <line x1="200" y1="60" x2="300" y2="60" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_BC"/>
+      <line x1="320" y1="60" x2="420" y2="60" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_CD"/>
+      <!-- Bottom path: A→E→F→D -->
+      <line x1="80" y1="180" x2="180" y2="180" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_AE"/>
+      <line x1="200" y1="180" x2="300" y2="180" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_EF"/>
+      <line x1="320" y1="180" x2="420" y2="180" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_FD"/>
+      <!-- Cross connections -->
+      <line x1="190" y1="75" x2="190" y2="165" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_BE"/>
+      <line x1="310" y1="75" x2="310" y2="165" stroke="#2d3748" stroke-width="3" marker-end="url(#gra)" id="ge_CF"/>
+      <!-- Long cross: B→F and E→C -->
+      <line x1="203" y1="67" x2="305" y2="173" stroke="#2d3748" stroke-width="2" marker-end="url(#gra)" id="ge_BF"/>
+      <line x1="203" y1="173" x2="305" y2="67" stroke="#2d3748" stroke-width="2" marker-end="url(#gra)" id="ge_EC"/>
+
+      <!-- Source/sink nodes for pairs -->
+      <!-- Pair 1: top-left to top-right (green) -->
+      <circle cx="60" cy="60" r="18" fill="rgba(86,211,100,0.12)" stroke="#56d364" stroke-width="2"/>
+      <text x="60" y="56" text-anchor="middle" font-family="Cousine" font-size="9" fill="#56d364">s₁</text>
+      <text x="60" y="68" text-anchor="middle" font-family="Cousine" font-size="9" fill="#56d364">s₄</text>
+      <circle cx="440" cy="60" r="18" fill="rgba(86,211,100,0.12)" stroke="#56d364" stroke-width="2"/>
+      <text x="440" y="56" text-anchor="middle" font-family="Cousine" font-size="9" fill="#56d364">t₁</text>
+      <text x="440" y="68" text-anchor="middle" font-family="Cousine" font-size="9" fill="#56d364">t₄</text>
+
+      <!-- Pair 2: bottom-left to bottom-right (orange) -->
+      <circle cx="60" cy="180" r="18" fill="rgba(240,136,62,0.12)" stroke="#f0883e" stroke-width="2"/>
+      <text x="60" y="176" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f0883e">s₂</text>
+      <text x="60" y="188" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f0883e">s₃</text>
+      <circle cx="440" cy="180" r="18" fill="rgba(240,136,62,0.12)" stroke="#f0883e" stroke-width="2"/>
+      <text x="440" y="176" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f0883e">t₂</text>
+      <text x="440" y="188" text-anchor="middle" font-family="Cousine" font-size="9" fill="#f0883e">t₃</text>
+
+      <!-- Middle nodes -->
+      <circle cx="190" cy="60" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="gn_B"/>
+      <text x="190" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">B</text>
+      <circle cx="310" cy="60" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="gn_C"/>
+      <text x="310" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">C</text>
+      <circle cx="190" cy="180" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="gn_E"/>
+      <text x="190" y="185" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">E</text>
+      <circle cx="310" cy="180" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="gn_F"/>
+      <text x="310" y="185" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">F</text>
+    </svg>
+
+    <div class="ctrl">
+      <button class="btn btn-r" onclick="resetGreedy()">↺ Reset</button>
+      <button class="btn btn-o" onclick="stepGreedy()" id="greedyBtn">Step →</button>
+      <div class="msgbox" id="greedyMsg">4 pairs to route. Pair 1: s₁→t₁ (top), Pair 2: s₂→t₂ (bottom), Pair 3: s₃→t₃ (bottom-right to bottom-left), Pair 4: s₄→t₄ (top, same as pair 1). Click Step.</div>
+    </div>
+
+    <div class="step-log" id="greedyLog">
+      <div class="log-entry header">— Greedy log will appear here —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Key Observations from the Demo</h2>
+    <p>After watching the greedy run, notice:</p>
+    <div class="box box-g">
+      ✅ <strong>Greedy succeeds</strong> on every pair where a path exists in the remaining edges. It never skips a pair it could have routed.
+    </div>
+    <div class="box box-r">
+      ❌ <strong>Greedy can fail</strong> to match optimal. An earlier routing can "use up" edges that a later pair needed, even when a globally better assignment existed. This is the approximation gap.
+    </div>
+    <div class="box box-p">
+      💡 <strong>Order matters.</strong> If we processed pairs in a different order, we might route more or fewer. Finding the optimal order is itself NP-hard. Greedy picks an arbitrary order — and that's where the approximation ratio comes from.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(2)">← PTAS/FPTAS</button>
+    <button class="nav-btn go" onclick="goTo(4)">Approximation Ratio Proof →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 5: APPROXIMATION RATIO PROOF ═══════════════════ -->
+<div class="section" id="sec4">
+  <div class="chap">Part 5 / 8 <span>— Proving the √|E| Approximation Ratio</span></div>
+
+  <div class="card">
+    <h2>The Theorem from Your Notes</h2>
+    <p>From L3: there is a (greedy!) |E|^(1/2)-approximation algorithm for the k-edge-disjoint paths problem.</p>
+    <div class="box box-o" style="font-size:15px;padding:18px">
+      <strong>Theorem:</strong> Let Z be the set of pairs routed by greedy, and I* be the optimal routing. Then:<br><br>
+      |I*| ≤ √|E| · |Z|<br><br>
+      Equivalently: |Z| ≥ |I*| / √|E|
+    </div>
+    <p>This means greedy routes at least 1/√|E| of the optimal number of pairs. So the approximation ratio is √|E| — greedy is at most √|E| times worse than optimal.</p>
+    <div class="box box-b">
+      Note: √|E| depends on the number of edges in the graph, not just the number of pairs k. For a graph with 100 edges, the guarantee is within a factor of 10. For 10,000 edges, factor of 100. It's not a constant — it grows with graph size.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Proof Idea — Step by Step</h2>
+    <p>Let Z be greedy output (|Z| pairs routed), I* be optimal (|I*| pairs routed). We want to show |I*| ≤ √|E| · |Z|.</p>
+
+    <h3>Step 1: What do the greedy paths "use"?</h3>
+    <p>Greedy routes |Z| edge-disjoint paths. Since paths are edge-disjoint and all edges come from E, the total number of edges used by greedy paths is at most |E|. Call this m_used ≤ |E|.</p>
+
+    <h3>Step 2: Why did greedy fail on some pairs?</h3>
+    <p>Consider any pair (sᵢ, tᵢ) in I* that greedy did NOT route. When greedy tried this pair, there was no path from sᵢ to tᵢ in the remaining graph. This means <strong>every possible sᵢ→tᵢ path in the original G shares at least one edge with some greedy path</strong>. Otherwise greedy would have found and used that path.</p>
+
+    <h3>Step 3: Count the "blocking"</h3>
+    <p>Each greedy path Pⱼ has some length len(Pⱼ). It can "block" at most len(Pⱼ) pairs from I* (one per edge — a pair is blocked by Pⱼ only if EVERY path for that pair shares an edge with Pⱼ, but the bound counts by edges).</p>
+    <p>Total blocking capacity of all Z paths:</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;font-family:'Cousine',monospace;font-size:13px;margin:12px 0;line-height:1.9">
+      |I*| ≤ |Z| + Σⱼ len(Pⱼ) &nbsp;&nbsp;<span style="color:var(--muted)">// Z pairs that were routed, plus blocked pairs</span><br>
+      Σⱼ len(Pⱼ) ≤ |E| &nbsp;&nbsp;<span style="color:var(--muted)">// paths are edge-disjoint, use ≤ |E| edges total</span><br>
+      So: |I*| ≤ |Z| + |E|
+    </div>
+    <p>This gives us |I*| ≤ |Z| + |E|, but that's not tight enough. We need a better argument using both bounds simultaneously.</p>
+
+    <h3>Step 4: The AM-GM argument</h3>
+    <p>We have two facts:</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(86,211,100,0.3)">
+        <label>Fact 1</label>
+        <div style="font-family:'Cousine',monospace;font-size:13px;color:#7ee787;line-height:1.7">|Z| ≥ 1<br><span style="color:var(--muted);font-size:11px">greedy routed at least 1 pair (else optimal is also 0)</span></div>
+      </div>
+      <div class="ibox" style="border-color:rgba(240,136,62,0.3)">
+        <label>Fact 2</label>
+        <div style="font-family:'Cousine',monospace;font-size:13px;color:#ffa657;line-height:1.7">Σ len(Pⱼ) ≤ |E|<br><span style="color:var(--muted);font-size:11px">total edge usage bounded by graph size</span></div>
+      </div>
+    </div>
+    <p style="margin-top:12px">The paths in Z are edge-disjoint, each of length ≥ 1. So:</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px;font-family:'Cousine',monospace;font-size:13px;margin:12px 0;line-height:2">
+      |I*| ≤ |Z| · (average path length blocked per path) + ...<br>
+      Each pair in I* not routed by greedy shares ≥1 edge with a Z-path.<br>
+      |I*| ≤ |Z| + (total edges in Z-paths) ≤ |Z| + |E|<br>
+      &nbsp;<br>
+      Now use: for any x,y &gt; 0: x + y ≥ 2√(xy) (AM-GM).<br>
+      We want to bound |I*| using √|E| · |Z|.<br>
+      &nbsp;<br>
+      Key bound: |I*| ≤ √|E| · |Z| follows when:<br>
+      (|Z|) · (|I*|/|Z|) ≤ |E| → |I*| ≤ |E|/|Z| · |Z| = |E| ... <br>
+      <span style="color:var(--a1)">Combined: |I*|² ≤ |E| · |Z| · (something) → |I*| ≤ √|E| · √|Z| ≤ √|E| · |Z|</span>
+    </div>
+    <div class="box box-o">
+      The full algebraic proof uses the observation that each path in Z uses ≥1 edge and blocks ≥0 pairs from I*, and the total blocked pairs plus routed pairs equals |I*|. The √|E| bound comes from the geometric mean of the two constraints. The details are in L3 — the key takeaway is the √|E| factor and why it comes from the edge budget.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Visualizing the Bound — Interactive</h2>
+    <p>Adjust the number of edges |E| and greedy output |Z| to see what the theorem guarantees about optimal:</p>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin:14px 0">
+      <div style="flex:1;min-width:160px">
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:6px">|E| (edges): <span id="eVal">100</span></div>
+        <input type="range" min="4" max="400" value="100" id="eSlider" oninput="updateBound()">
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:6px">|Z| (greedy routed): <span id="zVal">5</span></div>
+        <input type="range" min="1" max="30" value="5" id="zSlider" oninput="updateBound()">
+      </div>
+    </div>
+    <div class="three" style="gap:10px">
+      <div class="ibox">
+        <label>√|E| (ratio)</label>
+        <div class="val" id="sqrtE">10.0</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(86,211,100,0.3)">
+        <label>|Z| greedy output</label>
+        <div class="val" id="zDisp" style="color:var(--a2)">5</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(240,136,62,0.3)">
+        <label>|I*| ≤ (guaranteed)</label>
+        <div class="val" id="iStarBound" style="color:var(--a1)">50</div>
+      </div>
+    </div>
+    <div class="box box-b" style="margin-top:10px" id="boundInterpret">
+      If greedy routes 5 pairs on a 100-edge graph, we know optimal routes at most 50 pairs. So greedy is within 10× of optimal.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(3)">← Greedy Algorithm</button>
+    <button class="nav-btn go" onclick="goTo(5)">When Greedy Fails →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 6: WHEN GREEDY FAILS ═══════════════════ -->
+<div class="section" id="sec5">
+  <div class="chap">Part 6 / 8 <span>— When and Why Greedy Fails to Hit Optimal</span></div>
+
+  <div class="card">
+    <h2>Greedy is NOT Always Optimal — Here's Why</h2>
+    <p>The √|E| approximation ratio tells us greedy can be far from optimal. But when does this actually happen? Let's construct a graph where greedy provably does worse than optimal.</p>
+    <p>The classic bad example for greedy EDP is when the greedy routing "uses up" a bottleneck edge that blocks multiple later pairs, while a different routing would have avoided that bottleneck.</p>
+  </div>
+
+  <div class="garea">
+    <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">Step through: greedy routes pair 1 greedily, but blocks optimal routing of pairs 2 and 3</p>
+    <svg viewBox="0 0 540 200" id="failSvg">
+      <defs>
+        <marker id="fa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+        <marker id="fog" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#56d364"/></marker>
+        <marker id="foo" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#f0883e"/></marker>
+        <marker id="fob" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#79c0ff"/></marker>
+      </defs>
+      <!-- The bottleneck edge X→Y is the middle edge that greedy will use for pair 1 -->
+      <line x1="55" y1="60" x2="175" y2="100" stroke="#2d3748" stroke-width="2.5" id="f_s1X" marker-end="url(#fa)"/>
+      <line x1="55" y1="140" x2="175" y2="100" stroke="#2d3748" stroke-width="2.5" id="f_s2X" marker-end="url(#fa)"/>
+      <line x1="193" y1="100" x2="343" y2="100" stroke="#2d3748" stroke-width="3.5" id="f_XY" marker-end="url(#fa)"/>
+      <text x="268" y="90" text-anchor="middle" font-family="Cousine" font-size="10" fill="#f87171" id="f_XY_lbl">BOTTLENECK</text>
+      <line x1="361" y1="100" x2="485" y2="60" stroke="#2d3748" stroke-width="2.5" id="f_Yt1" marker-end="url(#fa)"/>
+      <line x1="361" y1="100" x2="485" y2="140" stroke="#2d3748" stroke-width="2.5" id="f_Yt2" marker-end="url(#fa)"/>
+      <!-- Also: direct edges that avoid bottleneck (for optimal) -->
+      <line x1="55" y1="60" x2="485" y2="60" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="6,4" id="f_s1t1" marker-end="url(#fa)"/>
+      <text x="270" y="48" text-anchor="middle" font-family="Cousine" font-size="9" fill="#4b5563" id="f_alt_lbl">(alt path for pair 1)</text>
+
+      <!-- Nodes -->
+      <circle cx="38" cy="60" r="16" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="2"/>
+      <text x="38" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#56d364">s₁</text>
+      <circle cx="38" cy="140" r="16" fill="rgba(240,136,62,0.1)" stroke="#f0883e" stroke-width="2"/>
+      <text x="38" y="145" text-anchor="middle" font-family="Cousine" font-size="11" fill="#f0883e">s₂</text>
+      <circle cx="184" cy="100" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="fn_X"/>
+      <text x="184" y="105" text-anchor="middle" font-family="Cousine" font-size="12" fill="#7d8590">X</text>
+      <circle cx="352" cy="100" r="16" fill="var(--bg2)" stroke="#374151" stroke-width="2" id="fn_Y"/>
+      <text x="352" y="105" text-anchor="middle" font-family="Cousine" font-size="12" fill="#7d8590">Y</text>
+      <circle cx="502" cy="60" r="16" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="2"/>
+      <text x="502" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#56d364">t₁</text>
+      <circle cx="502" cy="140" r="16" fill="rgba(240,136,62,0.1)" stroke="#f0883e" stroke-width="2"/>
+      <text x="502" y="145" text-anchor="middle" font-family="Cousine" font-size="11" fill="#f0883e">t₂</text>
+    </svg>
+    <div class="ctrl">
+      <button class="btn btn-r" onclick="resetFail()">↺ Reset</button>
+      <button class="btn btn-o" onclick="stepFail()" id="failBtn">Step →</button>
+      <div class="msgbox" id="failMsg">Pairs: (s₁,t₁) and (s₂,t₂). Both need to go through X→Y bottleneck. But there's also a direct edge s₁→t₁. Click Step to see greedy's mistake.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Why This Happens — The Fundamental Tension</h2>
+    <p>Greedy is <strong>myopic</strong> — it only sees the current pair and picks any available path. It has no way to know that using the bottleneck edge for pair 1 will block pair 2.</p>
+    <p>Optimal is <strong>omniscient</strong> — it sees all pairs simultaneously and coordinates. It knows pair 1 has an alternate route (s₁→t₁ direct), so it reserves the bottleneck for pair 2 which has no alternative.</p>
+    <div class="box box-r">
+      Greedy output: 1 pair routed (pair 1 via bottleneck, pair 2 blocked).<br>
+      Optimal output: 2 pairs routed (pair 1 via direct edge, pair 2 via bottleneck).
+    </div>
+    <div class="box box-o" style="margin-top:8px">
+      In this example: |E| = 5, |Z| = 1, so √|E| ≈ 2.24. The theorem says |I*| ≤ √5 · 1 ≈ 2.24, and indeed |I*| = 2 ≤ 2.24. The bound is tight here!
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(4)">← Ratio Proof</button>
+    <button class="nav-btn go" onclick="goTo(6)">Full Comparison →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 7: COMPARISON & BIG PICTURE ═══════════════════ -->
+<div class="section" id="sec6">
+  <div class="chap">Part 7 / 8 <span>— Putting It All Together</span></div>
+
+  <div class="card">
+    <h2>Where We Are After 2 Sessions</h2>
+    <p>Sessions 1 and 2 have built the foundation of the entire exam topic list. Here's how it all connects:</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px;margin:14px 0">
+      <div style="font-family:'Cousine',monospace;font-size:12px;line-height:2.2;color:#8b949e">
+        <span style="color:var(--a2)">Session 1:</span> NP-hard problems exist → need approximation<br>
+        <span style="color:var(--a2)">Session 1:</span> k-EDP is NP-hard via reduction from 3-SAT<br>
+        <span style="color:var(--a1)">Session 2:</span> Define α-approximation formally<br>
+        <span style="color:var(--a1)">Session 2:</span> PTAS (poly in n) vs FPTAS (poly in n AND 1/ε)<br>
+        <span style="color:var(--a1)">Session 2:</span> Greedy EDP = √|E|-approximation<br>
+        <span style="color:var(--a3)">Session 3:</span> Linear Programming (next)<br>
+        <span style="color:var(--a4)">Session 4:</span> LP rounding → Set Cover approximation<br>
+        <span style="color:var(--muted)">Sessions 5-6:</span> FPTAS for Knapsack, Randomized Algorithms
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Approximation Algorithms — Full Reference</h2>
+    <table class="tbl">
+      <thead><tr><th>Problem</th><th>NP-Hard?</th><th>Best Known Approx</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>k-Edge-Disjoint Paths</td><td style="color:var(--red)">Yes</td><td>O(√|E|)-approx</td><td>Greedy (today)</td></tr>
+        <tr class="hi"><td>Vertex Cover</td><td style="color:var(--red)">Yes</td><td>2-approx</td><td>Greedy matching</td></tr>
+        <tr class="hi"><td>Set Cover (unweighted)</td><td style="color:var(--red)">Yes</td><td>ln(n)-approx</td><td>LP rounding (Session 4)</td></tr>
+        <tr class="hi"><td>Knapsack</td><td style="color:var(--red)">Yes (pseudo-poly)</td><td>FPTAS exists</td><td>Scaling DP (Session 5)</td></tr>
+        <tr class="mid"><td>TSP (metric)</td><td style="color:var(--red)">Yes</td><td>1.5-approx</td><td>Christofides (advanced)</td></tr>
+        <tr class="warn"><td>TSP (general)</td><td style="color:var(--red)">Yes</td><td>None (inapprox)</td><td>Cannot approximate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Quick Self-Check</h2>
+    <div id="qz2" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(5)">← When Greedy Fails</button>
+    <button class="nav-btn go" onclick="goTo(7)">Practice Problems →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 8: PRACTICE PROBLEMS ═══════════════════ -->
+<div class="section" id="sec7">
+  <div class="chap">Part 8 / 8 <span>— Practice Problems</span></div>
+
+  <div class="card">
+    <h2>5 Problems — Work These Out 📝</h2>
+    <p>These cover everything from both sessions. Sketch on paper first, then expand solutions. Problems are intentionally different from each other — some are purely conceptual, others require you to draw graphs or run algorithms by hand.</p>
+  </div>
+
+  <!-- P1 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p1')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 1 — Approximation Ratio Identification</div>
+        <div class="prob-title">Is this a valid α-approximation? What is α?</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Consider the following algorithm for <strong>Maximum Independent Set</strong> (a maximization problem — find the largest set of vertices with no edges between them):</p>
+          <div class="box box-b" style="margin:8px 0;font-size:13px">
+            "Pick any vertex v. Add v to the independent set S. Remove v AND all its neighbors from the graph. Repeat until no vertices remain."
+          </div>
+          <p style="font-size:14px;color:#8b949e">(a) What is the approximation ratio α of this algorithm?</p>
+          <p style="font-size:14px;color:#8b949e">(b) Construct a small graph (5-6 vertices) where this algorithm achieves exactly α times worse than optimal. Draw it.</p>
+          <p style="font-size:14px;color:#8b949e">(c) Is there any graph class where this algorithm IS optimal (α=1)?</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p1');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp1">
+      <div class="sol-label">Solution</div>
+      <p><strong style="color:var(--text)">(a) The approximation ratio is Δ (maximum degree of any vertex)</strong> — or more loosely, we can say this greedy gives no constant approximation ratio in general. Here's why: when we pick v and remove all neighbors, we add 1 vertex and throw away up to deg(v) vertices. In the worst case, optimal could have picked ALL those neighbors instead. So we might use 1 where optimal uses deg(v), giving ratio up to Δ.</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">(b) Bad example:</strong> Star graph — one center node connected to k leaves. Algorithm picks center (1 vertex added), removes all k leaves. Independent set size = 1. Optimal: pick all k leaves (no edges between them). Ratio = k = n-1. The algorithm performs terribly on stars.</p>
+      <div class="garea" style="padding:10px">
+        <svg viewBox="0 0 280 160">
+          <defs><marker id="sta" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#374151"/></marker></defs>
+          <line x1="140" y1="80" x2="60" y2="30" stroke="#374151" stroke-width="1.5"/>
+          <line x1="140" y1="80" x2="220" y2="30" stroke="#374151" stroke-width="1.5"/>
+          <line x1="140" y1="80" x2="40" y2="100" stroke="#374151" stroke-width="1.5"/>
+          <line x1="140" y1="80" x2="240" y2="100" stroke="#374151" stroke-width="1.5"/>
+          <line x1="140" y1="80" x2="140" y2="148" stroke="#374151" stroke-width="1.5"/>
+          <circle cx="140" cy="80" r="16" fill="rgba(255,123,114,0.15)" stroke="#ff7b72" stroke-width="2"/>
+          <text x="140" y="85" text-anchor="middle" font-family="Cousine" font-size="11" fill="#ff7b72">C</text>
+          <text x="100" y="76" font-family="Cousine" font-size="9" fill="#ff7b72">greedy picks</text>
+          <circle cx="60" cy="30" r="13" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="1.5"/>
+          <text x="60" y="34" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">L₁</text>
+          <circle cx="220" cy="30" r="13" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="1.5"/>
+          <text x="220" y="34" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">L₂</text>
+          <circle cx="40" cy="100" r="13" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="1.5"/>
+          <text x="40" y="104" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">L₃</text>
+          <circle cx="240" cy="100" r="13" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="1.5"/>
+          <text x="240" y="104" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">L₄</text>
+          <circle cx="140" cy="148" r="13" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="1.5"/>
+          <text x="140" y="152" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">L₅</text>
+          <text x="8" y="155" font-family="Cousine" font-size="8" fill="#56d364">optimal: {L₁,L₂,L₃,L₄,L₅}</text>
+        </svg>
+      </div>
+      <p><strong style="color:var(--text)">(c) Yes — tree graphs (and more generally, bipartite graphs).</strong> For trees, greedy gives a 2-approximation, and with careful implementation is optimal. The structure avoids the star worst-case because in a tree, no node can be adjacent to an independent set of exponential size.</p>
+    </div>
+  </div>
+
+  <!-- P2 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p2')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 2 — PTAS vs FPTAS Analysis (Draw the Curve)</div>
+        <div class="prob-title">Determine which class each algorithm belongs to</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">For each algorithm below, determine: is it a PTAS? An FPTAS? Neither? Justify each.</p>
+          <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(a)</strong> Algorithm A has runtime O(n^(2/ε)). For input size n=100 and ε=0.5, is this practical? What about ε=0.01?</div>
+          <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(b)</strong> Algorithm B has runtime O(n² · 2^(1/ε)). Does this qualify as PTAS? As FPTAS?</div>
+          <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(c)</strong> Algorithm C has runtime O((n/ε)³). Does this qualify as PTAS? As FPTAS?</div>
+          <div class="box box-b" style="margin:6px 0;font-size:13px"><strong>(d)</strong> A knapsack algorithm solves the problem exactly in O(nW) where W is the total weight. Is this a PTAS? An FPTAS?</div>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p2');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp2">
+      <div class="sol-label">Solution</div>
+      <p><strong style="color:var(--a2)">(a) PTAS but not FPTAS.</strong> O(n^(2/ε)) — for fixed ε=0.5 this is O(n⁴), polynomial in n. ✅ PTAS. But (2/ε) is not polynomial in 1/ε — it APPEARS in the exponent of n. For ε=0.5: n^4 = 100^4 = 10^8, manageable. For ε=0.01: n^200 = 10^400, completely infeasible. NOT FPTAS because the exponent grows as 1/ε, making runtime non-polynomial in 1/ε.</p>
+      <p style="margin-top:10px"><strong style="color:var(--red)">(b) Neither PTAS nor FPTAS.</strong> O(n² · 2^(1/ε)) — the 2^(1/ε) term is EXPONENTIAL in 1/ε. For fixed ε, 2^(1/ε) is a constant, so for fixed ε this is O(n²) — polynomial in n. BUT for ε=0.01, 2^100 ≈ 10^30 operations regardless of n. This completely fails the PTAS requirement that runtime must be polynomial in n for any fixed ε (since 2^(1/ε) is fixed for fixed ε, it's technically a constant... wait). Actually: for any FIXED ε > 0, 2^(1/ε) is a constant (just a big one). So this IS a PTAS! But it is NOT an FPTAS because 2^(1/ε) is not polynomial in 1/ε. Correction: <strong>this IS a PTAS but NOT an FPTAS.</strong></p>
+      <p style="margin-top:10px"><strong style="color:var(--a2)">(c) FPTAS (and hence also PTAS).</strong> O((n/ε)³) = O(n³/ε³) — polynomial in both n and 1/ε. For n=100, ε=0.01: (100/0.01)³ = 10000³ = 10^12 — large but polynomial. This qualifies as FPTAS. ✅</p>
+      <p style="margin-top:10px"><strong style="color:var(--red)">(d) Neither PTAS nor FPTAS as stated.</strong> O(nW) is "pseudo-polynomial" — polynomial in n and W, but W (the weight) is exponential in its INPUT SIZE (the number of bits to write W). If W = 2^100, this is not polynomial in the actual input size. However, we can turn this into an FPTAS by SCALING W. This is exactly the FPTAS for knapsack covered in Session 5 — by rounding and scaling weights down by a factor of (1+ε), we get O(n²/ε) runtime that IS polynomial in n and 1/ε.</p>
+    </div>
+  </div>
+
+  <!-- P3 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p3')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 3 — Run Greedy EDP By Hand (Draw This!)</div>
+        <div class="prob-title">Trace greedy on a specific graph, identify the approximation gap</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Graph G with edges: s₁→A→B→t₁, s₁→C→t₁, s₂→A→D→t₂, s₂→C→D→t₂. (All directed, all capacity 1.)</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px"><strong>On your board:</strong></p>
+          <p style="font-size:14px;color:#8b949e">(1) Draw the graph clearly.</p>
+          <p style="font-size:14px;color:#8b949e">(2) Run greedy processing pair 1 first. What does greedy route?</p>
+          <p style="font-size:14px;color:#8b949e">(3) What is the optimal routing?</p>
+          <p style="font-size:14px;color:#8b949e">(4) Compute the approximation ratio achieved on this instance. Verify it is ≤ √|E|.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p3');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp3">
+      <div class="sol-label">Solution</div>
+      <div class="garea">
+        <svg viewBox="0 0 480 180">
+          <defs><marker id="p3a" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#374151"/></marker>
+          <marker id="p3g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#56d364"/></marker>
+          <marker id="p3o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#f0883e"/></marker></defs>
+          <!-- Paths -->
+          <line x1="55" y1="60" x2="155" y2="60" stroke="#56d364" stroke-width="2" marker-end="url(#p3g)"/>
+          <line x1="175" y1="60" x2="265" y2="60" stroke="#56d364" stroke-width="2" marker-end="url(#p3g)"/>
+          <line x1="285" y1="60" x2="425" y2="60" stroke="#56d364" stroke-width="2" marker-end="url(#p3g)"/>
+          <line x1="55" y1="60" x2="155" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" stroke-dasharray="5,3"/>
+          <line x1="175" y1="120" x2="425" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" stroke-dasharray="5,3"/>
+          <line x1="55" y1="120" x2="155" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" opacity="0.4"/>
+          <line x1="55" y1="120" x2="155" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" opacity="0.4"/>
+          <line x1="175" y1="60" x2="265" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" opacity="0.4"/>
+          <line x1="175" y1="120" x2="265" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" opacity="0.4"/>
+          <line x1="285" y1="120" x2="425" y2="120" stroke="#374151" stroke-width="2" marker-end="url(#p3a)" opacity="0.4"/>
+          <!-- Nodes -->
+          <circle cx="38" cy="60" r="16" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="2"/>
+          <text x="38" y="65" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">s₁</text>
+          <circle cx="38" cy="120" r="16" fill="rgba(240,136,62,0.1)" stroke="#f0883e" stroke-width="2"/>
+          <text x="38" y="125" text-anchor="middle" font-family="Cousine" font-size="10" fill="#f0883e">s₂</text>
+          <circle cx="165" cy="60" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="165" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">A</text>
+          <circle cx="165" cy="120" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="165" y="125" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">C</text>
+          <circle cx="275" cy="60" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="275" y="65" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">B</text>
+          <circle cx="275" cy="120" r="14" fill="var(--bg2)" stroke="#374151" stroke-width="2"/>
+          <text x="275" y="125" text-anchor="middle" font-family="Cousine" font-size="11" fill="#7d8590">D</text>
+          <circle cx="442" cy="60" r="16" fill="rgba(86,211,100,0.1)" stroke="#56d364" stroke-width="2"/>
+          <text x="442" y="65" text-anchor="middle" font-family="Cousine" font-size="10" fill="#56d364">t₁</text>
+          <circle cx="442" cy="120" r="16" fill="rgba(240,136,62,0.1)" stroke="#f0883e" stroke-width="2"/>
+          <text x="442" y="125" text-anchor="middle" font-family="Cousine" font-size="10" fill="#f0883e">t₂</text>
+          <text x="240" y="175" text-anchor="middle" font-family="Cousine" font-size="9" fill="#56d364">green = greedy choice for pair 1 (s₁→A→B→t₁)</text>
+        </svg>
+      </div>
+      <p><strong>(2) Greedy with pair 1 first:</strong> Greedy finds path s₁→A→B→t₁ (or s₁→C→t₁). Say it picks s₁→A→B→t₁. This uses edges s₁→A, A→B, B→t₁. Now for pair 2: paths available are s₂→A→D→t₂ (A still has s₂→A, D available) — wait, s₂→A is separate. Path s₂→A→D→t₂ uses s₂→A, A→D, D→t₂, which are all unused. So greedy routes BOTH pairs! Greedy = 2 pairs.</p>
+      <p style="margin-top:8px">But if greedy had picked s₁→C→t₁ for pair 1 instead, pair 2 would try s₂→C→D→t₂ — blocked on C. It would fall back to s₂→A→D→t₂ — fine! Still 2 pairs. In this graph greedy achieves optimal regardless of path choice.</p>
+      <p style="margin-top:8px"><strong>(3) Optimal = 2 pairs</strong> routed: (s₁→A→B→t₁, s₂→C→D→t₂) — completely edge-disjoint. Or (s₁→C→t₁, s₂→A→D→t₂) also works.</p>
+      <p style="margin-top:8px"><strong>(4) Approximation ratio = 1 here</strong> (greedy is optimal). Edge count |E| ≈ 8, √8 ≈ 2.83. The theorem says |I*| ≤ 2.83 · |Z| = 2.83 · 2 = 5.66. Since |I*| = 2 ≤ 5.66, ✅ the bound holds (with lots of slack — this graph is not a tight example).</p>
+      <div class="box box-o" style="margin-top:10px">Key lesson: the √|E| bound is a WORST-CASE guarantee. On many graphs greedy does much better. The tight examples require carefully constructed bottleneck structures.</div>
+    </div>
+  </div>
+
+  <!-- P4 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p4')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 4 — Approximation Ratio Lower Bound</div>
+        <div class="prob-title">Construct a graph where greedy achieves exactly ratio √|E|</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">To show an approximation ratio is tight, you need to construct an input where the algorithm performs EXACTLY as badly as the ratio predicts.</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px"><strong>On your board:</strong> Construct a graph G and set of pairs such that:</p>
+          <p style="font-size:14px;color:#8b949e">• Greedy routes exactly 1 pair</p>
+          <p style="font-size:14px;color:#8b949e">• Optimal routes √|E| pairs</p>
+          <p style="font-size:14px;color:#8b949e">• The ratio achieved is exactly √|E|</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px">Hint: Think about a bottleneck structure where one long path "burns through" many edges, preventing many short paths from being routed.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p4');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp4">
+      <div class="sol-label">Solution</div>
+      <p><strong>Construction:</strong> Let m = √|E| be an integer. Build a graph with:</p>
+      <p style="margin-top:8px">• A <strong>long path</strong> s₀ → v₁ → v₂ → ... → vₘ → t₀ of length m (uses m edges). This is pair 0: (s₀, t₀).</p>
+      <p style="margin-top:8px">• For each i=1,...,m: a <strong>short edge</strong> sᵢ → vᵢ (one edge each). Pair i: (sᵢ, tᵢ) where tᵢ is reachable from vᵢ via one more edge vᵢ→tᵢ... but vᵢ is already on the long path.</p>
+      <p style="margin-top:8px">More cleanly — the standard tight example:</p>
+      <div class="box box-b" style="font-size:13px">
+        Graph: m "horizontal" short paths s₁→t₁, s₂→t₂, ..., sₘ→tₘ (each length 1). Plus ONE "vertical" long path that goes through a node on each horizontal path: s₀ → x₁ → x₂ → ... → xₘ → t₀, where xᵢ is the middle node of horizontal path i (splitting each horizontal path into two).<br><br>
+        Total edges: m (long path) + 2m (split horizontals) = 3m = 3√|E|... so |E| = 3m, √|E| ≈ √(3m).<br><br>
+        Greedy (unlucky): routes pair 0 (the long path), using ALL xᵢ nodes. Now each horizontal path sᵢ→xᵢ→tᵢ is broken — xᵢ→tᵢ edge is used. Greedy routes 1 pair.<br><br>
+        Optimal: routes ALL m horizontal pairs: s₁→x₁→t₁, ..., sₘ→xₘ→tₘ. These are all edge-disjoint. Optimal = m pairs.<br><br>
+        Ratio = m/1 = m = √(|E|/3) ≈ √|E|. ✅
+      </div>
+      <div class="box box-o" style="margin-top:10px">This construction shows the √|E| bound is essentially tight — there exist graphs where greedy is √|E| times worse than optimal. This means we can't do better than √|E| with greedy, even with optimal tie-breaking.</div>
+    </div>
+  </div>
+
+  <!-- P5 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p5')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 5 — Mixed Concepts (Session 1+2)</div>
+        <div class="prob-title">Why can't we do better than √|E| using any greedy-style algorithm?</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">This problem tests deep understanding of WHY the approximation ratio is what it is.</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px">(a) The greedy EDP algorithm uses BFS/DFS to find augmenting paths. Could we improve the ratio by using a smarter path-finding strategy — for example, always picking the SHORTEST available path?</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px">(b) EDP is NP-hard. Greedy gives √|E|-approximation. Does there exist a constant-factor (say 5-approximation) polynomial algorithm for EDP? What would we need to prove/disprove this?</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px">(c) Max flow (single commodity) solved EDP exactly in polynomial time. Multi-commodity flow (k ≥ 2 commodities) is NP-hard for integers. Is there a contradiction? Why not?</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p5');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp5">
+      <div class="sol-label">Solution</div>
+      <p><strong style="color:var(--text)">(a) Shortest path greedy helps — and IS better.</strong> If we always pick the shortest available path, the approximation ratio improves. Specifically, Edmonds-Karp style (BFS shortest paths) gives better bounds in practice. For the k-EDP problem, the algorithm in your notes (L3) already implies using shortest paths — the |E|^(-1/2) bound was proven for ANY path-finding strategy but shortest paths can tighten it. However, no polynomial-time algorithm is known that gives a constant-factor approximation for general k-EDP, so we're still stuck with superconstant ratios.</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">(b) Unknown — major open problem.</strong> Whether there's a constant approximation for k-EDP is an open question. To prove a constant approximation exists, you'd need to design such an algorithm and prove its ratio. To prove no constant approximation exists, you'd need to show that approximating EDP within any constant factor is NP-hard (an "inapproximability" result). Neither has been fully resolved for general k-EDP. We only know: greedy gives √|E|, and optimal is NP-hard.</p>
+      <p style="margin-top:10px"><strong style="color:var(--text)">(c) No contradiction — different problem structure.</strong> Single-commodity max flow asks: push as much flow as possible from ONE source to ONE sink. All flow is fungible — a unit entering at s is identical to any other unit. The LP relaxation is integral (total unimodularity of the constraint matrix), so the LP solution is automatically an integer solution. Multi-commodity flow has k separate "colors" of flow that can't mix. The LP relaxation is fractional — you can route 0.5 units of each commodity through a shared edge, satisfying capacity. But integer multi-commodity flow requires full units of each color, which may conflict. The LP-to-integer gap is what makes it NP-hard — you can solve the fractional version in poly time but rounding it to integers is hard.</p>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(6)">← Big Picture</button>
+    <button class="nav-btn go" onclick="goTo(0)" style="background:rgba(86,211,100,0.1);border-color:rgba(86,211,100,0.3);color:var(--a2)">↺ Start Over</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── NAV ─────────────────────────────────────────────────
+let cur = 0;
+function goTo(i) {
+  document.getElementById('sec'+cur).classList.remove('active');
+  cur = i;
+  document.getElementById('sec'+cur).classList.add('active');
+  document.querySelectorAll('.ps').forEach((s,idx) =>
+    s.className='ps'+(idx<i?' done':idx===i?' active':''));
+  document.getElementById('progLabel').textContent=`Part ${i+1} / 8`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── SOLUTION TOGGLES ─────────────────────────────────────
+function toggleSol(id) {
+  const p = document.getElementById('sol'+id);
+  p.classList.toggle('open');
+}
+
+// ── ALPHA SLIDER ─────────────────────────────────────────
+function updateAlpha() {
+  const a = parseFloat(document.getElementById('alphaSlider').value);
+  document.getElementById('alphaVal').textContent = 'α = '+a.toFixed(1);
+  const maxG = Math.round(100/a);
+  const minG = Math.round(100*a);
+  document.getElementById('maxGuarantee').textContent = maxG;
+  document.getElementById('minGuarantee').textContent = minG;
+  document.getElementById('maxFill').style.width = maxG+'%';
+  document.getElementById('minFill').style.width = Math.min(100, minG/3)+'%';
+  document.getElementById('maxPct').textContent = maxG+'% of optimal';
+  document.getElementById('minPct').textContent = minG+'% of optimal ('+a.toFixed(1)+'× worse)';
+  const interps = {
+    '1.0':'α = 1.0: Perfect! Algorithm always finds the exact optimal solution. Only possible for problems in P.',
+    '1.5':'α = 1.5: Quite good — at most 50% worse than optimal. Hard to achieve for most NP-hard problems.',
+    '2.0':'α = 2.0: A commonly achievable ratio for NP-hard problems (e.g., Vertex Cover). Solution is at most twice optimal.',
+    '3.0':'α = 3.0: Acceptable for some applications. Common for more complex NP-hard problems.',
+    '5.0':'α = 5.0: Rough guarantee. Often means the problem is particularly hard to approximate or the algorithm is simple.'
+  };
+  const key = a.toFixed(1);
+  document.getElementById('alphaInterpret').textContent = interps[key] || `α = ${a.toFixed(1)}: Algorithm guarantees within ${a.toFixed(1)}× of optimal. For minimization: at most ${a.toFixed(1)} times optimal cost.`;
+}
+updateAlpha();
+
+// ── PTAS BARS ─────────────────────────────────────────────
+const ptasData = [
+  { eps: 0.5, ptasR: 'n^4', ptasV: 4, fptas: 'n³·4', ok: true },
+  { eps: 0.1, ptasR: 'n^10', ptasV: 10, fptas: 'n³·100', ok: false },
+  { eps: 0.01, ptasR: 'n^100', ptasV: 100, fptas: 'n³·10000', ok: false },
+];
+const ptasContainer = document.getElementById('ptasBars');
+ptasData.forEach(d => {
+  const div = document.createElement('div');
+  div.style.cssText='display:flex;align-items:center;gap:10px;margin:6px 0;font-family:Cousine,monospace;font-size:12px';
+  div.innerHTML=`
+    <div style="width:100px;color:#7d8590">ε = ${d.eps}</div>
+    <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:8px 12px;display:flex;justify-content:space-between">
+      <span style="color:${d.ok?'#f0883e':'#ff7b72'}">PTAS: O(n^(${Math.round(1/d.eps)}))</span>
+      <span style="color:#56d364">FPTAS: O(n³/${Math.round(1/d.eps/d.eps)})</span>
+    </div>
+    <div style="color:${d.ok?'#56d364':'#ff7b72'};width:90px;text-align:right">${d.ok?'ok':'❌ impractical'}</div>`;
+  ptasContainer.appendChild(div);
+});
+
+// ── PTAS vs FPTAS INTERACTIVE ─────────────────────────────
+function updatePTAS() {
+  const n = parseInt(document.getElementById('nSlider').value);
+  const eps = parseFloat(document.getElementById('epsSlider').value);
+  document.getElementById('nVal').textContent = n;
+  document.getElementById('epsVal').textContent = eps.toFixed(2);
+  const ptasExp = Math.round(1/eps);
+  const ptasVal = Math.pow(n, ptasExp);
+  const fptasVal = Math.pow(n,3) / Math.pow(eps,2);
+  document.getElementById('ptasRuntime').textContent = ptasVal > 1e15 ? '> 10¹⁵ 🔥' : ptasVal.toExponential(1);
+  document.getElementById('fptasRuntime').textContent = fptasVal > 1e15 ? '> 10¹⁵' : fptasVal.toExponential(1);
+  document.getElementById('ptasVerdict').textContent = ptasVal > 1e12 ? 'Completely impractical' : ptasVal > 1e8 ? 'Borderline' : 'Manageable';
+  document.getElementById('fptasVerdict').textContent = fptasVal > 1e12 ? 'Slow' : fptasVal > 1e8 ? 'Acceptable' : 'Fast ✅';
+  document.getElementById('ptasInterpret').textContent = `n=${n}, ε=${eps.toFixed(2)}: PTAS needs O(n^${ptasExp}) = ${ptasVal > 1e15 ? 'astronomical' : ptasVal.toExponential(1)} ops. FPTAS needs O(n³/ε²) = ${fptasVal.toExponential(1)} ops. Ratio: ${ptasVal > 1e15 ? '>10⁷' : (ptasVal/fptasVal).toExponential(1)}× difference.`;
+}
+updatePTAS();
+
+// ── BOUND INTERACTIVE ─────────────────────────────────────
+function updateBound() {
+  const e = parseInt(document.getElementById('eSlider').value);
+  const z = parseInt(document.getElementById('zSlider').value);
+  document.getElementById('eVal').textContent = e;
+  document.getElementById('zVal').textContent = z;
+  const sqE = Math.sqrt(e).toFixed(1);
+  const bound = Math.ceil(Math.sqrt(e) * z);
+  document.getElementById('sqrtE').textContent = sqE;
+  document.getElementById('zDisp').textContent = z;
+  document.getElementById('iStarBound').textContent = bound;
+  document.getElementById('boundInterpret').textContent = `If greedy routes ${z} pair${z>1?'s':''} on a ${e}-edge graph, the theorem guarantees optimal routes at most ${bound} pairs. So greedy is within ${sqE}× of optimal.`;
+}
+updateBound();
+
+// ── GREEDY STEP SIMULATION ────────────────────────────────
+// 4 pairs on graph with top/bottom paths and cross-connections
+// Pair 1: s1->t1 (top): route via A->B->C->D
+// Pair 2: s2->t2 (bottom): route via E->F->G->D (bottom) — but D→t2 used
+// Pair 3: s3->t3 (bottom reverse) — blocked
+// Pair 4: s4->t4 (top, same as pair 1) — blocked
+const gSteps = [
+  { pair:1, msg:'Pair 1 (s₁→t₁): BFS finds path s₁→B→C→D→t₁ along top. All edges available. Routing!', route:true, edges:['ge_AB','ge_BC','ge_CD'], color:'#56d364', mk:'url(#grg)' },
+  { pair:2, msg:'Pair 2 (s₂→t₂): BFS finds path s₂→E→F→D... wait, D is internal. s₂→E→F→t₂ via bottom. Routing!', route:true, edges:['ge_AE','ge_EF','ge_FD'], color:'#f0883e', mk:'url(#gro)' },
+  { pair:3, msg:'Pair 3 (s₃→t₃): s₃=s₂, t₃=t₂, same endpoints as pair 2. But edges E→F and F→D already used by pair 2. Only cross-edges left: B→F (blocked: B already used) and E→C (blocked: E used). NO PATH AVAILABLE.', route:false, edges:[], color:'#ff7b72', mk:'' },
+  { pair:4, msg:'Pair 4 (s₄→t₄): s₄=s₁, t₄=t₁, same as pair 1. Edges A→B, B→C, C→D all used by pair 1. Try cross: B→F→t? B used. E→C→t? E used. Try B→F→D→t? all blocked. NO PATH AVAILABLE.', route:false, edges:[], color:'#ff7b72', mk:'' },
+  { msg:'Done! Greedy routed 2/4 pairs. Optimal is also 2 here (pairs 1+2 are the only edge-disjoint possibilities). Note: pairs 3 and 4 have the SAME endpoints as 1 and 2 — in a multigraph sense each pair can only be routed once.', done:true },
+];
+let gStep=0, gRouted=0;
+
+function stepGreedy() {
+  if(gStep>=gSteps.length) return;
+  const s=gSteps[gStep];
+  if(s.done){
+    document.getElementById('greedyMsg').textContent=s.msg;
+    document.getElementById('greedyBtn').disabled=true;
+    gStep++;return;
+  }
+  document.getElementById('greedyTried').textContent=(gStep+1)+' / 4';
+  document.getElementById('greedyMsg').textContent=s.msg;
+  const log=document.getElementById('greedyLog');
+  const entry=document.createElement('div');
+  entry.className='log-entry '+(s.route?'routed':'failed');
+  entry.textContent=(s.route?'✅ ROUTED':'❌ FAILED')+': Pair '+s.pair+' — '+s.msg.substring(0,60)+'...';
+  log.appendChild(entry);log.scrollTop=log.scrollHeight;
+  if(s.route){
+    gRouted++;
+    document.getElementById('greedyRouted').textContent=gRouted;
+    s.edges.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.setAttribute('stroke',s.color);el.setAttribute('stroke-width','4');el.setAttribute('marker-end',s.mk);}
+    });
+  }
+  gStep++;
+  if(gStep>=gSteps.length) document.getElementById('greedyBtn').disabled=true;
+}
+
+function resetGreedy(){
+  gStep=0;gRouted=0;
+  document.getElementById('greedyRouted').textContent='0';
+  document.getElementById('greedyTried').textContent='0 / 4';
+  document.getElementById('greedyMsg').textContent='4 pairs to route. Click Step.';
+  document.getElementById('greedyBtn').disabled=false;
+  document.getElementById('greedyLog').innerHTML='<div class="log-entry header">— Greedy log will appear here —</div>';
+  ['ge_AB','ge_BC','ge_CD','ge_AE','ge_EF','ge_FD','ge_BE','ge_CF','ge_BF','ge_EC'].forEach(id=>{
+    const el=document.getElementById(id); if(!el)return;
+    el.setAttribute('stroke','#2d3748');el.setAttribute('stroke-width','3');el.setAttribute('marker-end','url(#gra)');
+  });
+}
+
+// ── FAIL DEMO ─────────────────────────────────────────────
+let fStep=0;
+const fSteps=[
+  { msg:'Greedy processes Pair 1 (s₁→t₁). Two paths available: s₁→X→Y→t₁ (via bottleneck) or s₁→t₁ (direct). Greedy picks the BOTTLENECK path — it doesn\'t know better.', fn:()=>{
+    ['f_s1X','f_XY','f_Yt1'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#56d364');el.setAttribute('stroke-width','3');el.setAttribute('marker-end','url(#fog)');}});
+    document.getElementById('f_XY_lbl').textContent='USED BY PAIR 1';
+  }},
+  { msg:'Greedy tries Pair 2 (s₂→t₂). Only path: s₂→X→Y→t₂. But X→Y is USED. No path available. Pair 2 BLOCKED. Greedy output: 1 pair.', fn:()=>{
+    document.getElementById('fn_X').setAttribute('stroke','#ff7b72');
+    document.getElementById('fn_Y').setAttribute('stroke','#ff7b72');
+    document.getElementById('f_s2X').setAttribute('stroke','#ff7b72');
+    document.getElementById('f_XY').setAttribute('stroke','#ff7b72');
+  }},
+  { msg:'OPTIMAL would have been: Route Pair 1 via the DIRECT edge s₁→t₁ (spare the bottleneck). Then route Pair 2 via s₂→X→Y→t₂. Optimal = 2 pairs. Greedy = 1 pair. Ratio = 2 ≤ √5 ≈ 2.24 ✅', fn:()=>{
+    document.getElementById('f_s1t1').setAttribute('stroke','rgba(86,211,100,0.8)');
+    document.getElementById('f_s1t1').setAttribute('stroke-width','2.5');
+    document.getElementById('f_s1t1').setAttribute('stroke-dasharray','none');
+    document.getElementById('f_alt_lbl').setAttribute('fill','#56d364');
+    document.getElementById('f_alt_lbl').textContent='OPTIMAL: use this!';
+    document.getElementById('failBtn').disabled=true;
+  }},
+];
+function stepFail(){
+  if(fStep>=fSteps.length)return;
+  const s=fSteps[fStep];
+  document.getElementById('failMsg').textContent=s.msg;
+  s.fn();fStep++;
+}
+function resetFail(){
+  fStep=0;document.getElementById('failBtn').disabled=false;
+  document.getElementById('failMsg').textContent='Pairs: (s₁,t₁) and (s₂,t₂). Both need to go through X→Y bottleneck. But there\'s also a direct edge s₁→t₁. Click Step.';
+  ['f_s1X','f_XY','f_Yt1','f_s2X'].forEach(id=>{const el=document.getElementById(id);if(el){el.setAttribute('stroke','#2d3748');el.setAttribute('stroke-width','2.5');el.setAttribute('marker-end','url(#fa)');}});
+  document.getElementById('fn_X').setAttribute('stroke','#374151');
+  document.getElementById('fn_Y').setAttribute('stroke','#374151');
+  document.getElementById('f_s1t1').setAttribute('stroke','#2d3748');
+  document.getElementById('f_s1t1').setAttribute('stroke-dasharray','6,4');
+  document.getElementById('f_XY_lbl').textContent='BOTTLENECK';
+  document.getElementById('f_alt_lbl').setAttribute('fill','#4b5563');
+  document.getElementById('f_alt_lbl').textContent='(alt path for pair 1)';
+}
+
+// ── QUIZ ─────────────────────────────────────────────────
+const qz2data=[
+  {q:'What is the difference between a 2-approximation and a PTAS?', a:'A 2-approximation gives a fixed ratio of 2 for all inputs, always. A PTAS gives a (1+ε)-approximation for any ε > 0 you choose, but the runtime depends on ε. PTAS is more flexible but potentially slower.'},
+  {q:'Can we have an FPTAS for an NP-complete problem?', a:'Yes! Knapsack is NP-complete (in the strong sense when weights are arbitrary) yet has an FPTAS via scaling. Having an FPTAS doesn\'t contradict NP-hardness because FPTAS only gives approximate solutions, not exact ones.'},
+  {q:'Greedy EDP routes 3 pairs on a graph with 36 edges. What does the theorem guarantee about optimal?', a:'√36 = 6. So |I*| ≤ 6 · 3 = 18. Optimal routes at most 18 pairs. Greedy is within a factor of 6 of optimal.'},
+];
+const qzEl=document.getElementById('qz2');
+qz2data.forEach((q,i)=>{
+  const d=document.createElement('div');
+  d.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 15px;cursor:pointer;transition:border-color 0.2s';
+  d.innerHTML=`<div style="font-size:14px;color:var(--text);font-weight:600">Q${i+1}: ${q.q}</div><div style="display:none;margin-top:9px;font-size:13px;color:#8b949e;line-height:1.65;border-top:1px solid var(--border);padding-top:9px">${q.a}</div>`;
+  d.onclick=()=>{const ans=d.querySelector('div:last-child');const s=ans.style.display!=='none';ans.style.display=s?'none':'block';d.style.borderColor=s?'var(--border)':'rgba(86,211,100,0.4)';};
+  qzEl.appendChild(d);
+});
+</script>
+</body>
+</html>
