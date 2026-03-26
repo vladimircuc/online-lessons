@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 3 — Linear Programming</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+  :root {
+    --bg:#0d1117;--bg2:#161b22;--card:#1c2128;--border:#30363d;
+    --a1:#58a6ff;--a2:#3fb950;--a3:#f78166;--a4:#d2a8ff;--a5:#ffa657;
+    --text:#e6edf3;--muted:#7d8590;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lora',serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 70% 0%,rgba(88,166,255,0.05) 0%,transparent 55%),radial-gradient(ellipse at 20% 100%,rgba(63,185,80,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .container{max-width:920px;margin:0 auto;padding:46px 22px;position:relative;z-index:1;}
+
+  .header{margin-bottom:44px;}
+  .badge{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);border:1px solid rgba(88,166,255,0.3);background:rgba(88,166,255,0.07);padding:5px 14px;border-radius:3px;display:inline-block;margin-bottom:18px;}
+  .header h1{font-size:clamp(30px,6vw,60px);font-weight:700;line-height:1.05;margin-bottom:10px;}
+  .header h1 em{color:var(--a1);font-style:italic;}
+  .header .sub{font-size:15px;color:var(--muted);font-style:italic;max-width:560px;line-height:1.65;}
+  .recap-bar{background:rgba(88,166,255,0.07);border:1px solid rgba(88,166,255,0.2);border-radius:8px;padding:12px 18px;margin-bottom:28px;font-size:13px;color:#79c0ff;font-family:'Cousine',monospace;}
+
+  .prog-label{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .prog{display:flex;gap:4px;margin-bottom:36px;}
+  .ps{height:3px;flex:1;background:var(--border);border-radius:99px;cursor:pointer;transition:background 0.3s;}
+  .ps.done{background:var(--a2);}
+  .ps.active{background:var(--a1);}
+
+  .section{display:none;}
+  .section.active{display:block;animation:up 0.3s ease forwards;}
+  @keyframes up{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  .chap{font-family:'Cousine',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:26px;display:flex;align-items:center;gap:12px;}
+  .chap::after{content:'';flex:1;height:1px;background:var(--border);}
+  .chap span{color:var(--a1);}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;margin-bottom:16px;}
+  .card h2{font-size:23px;font-weight:700;margin-bottom:12px;line-height:1.15;}
+  .card h3{font-size:17px;font-weight:600;margin:18px 0 9px;color:var(--text);}
+  .card p{font-size:15px;color:#8b949e;line-height:1.82;margin-bottom:11px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  .box{border-radius:7px;padding:14px 18px;margin:13px 0;font-size:14px;line-height:1.72;}
+  .box-b{background:rgba(88,166,255,0.08);border-left:3px solid var(--a1);color:#79c0ff;}
+  .box-g{background:rgba(63,185,80,0.08);border-left:3px solid var(--a2);color:#7ee787;}
+  .box-r{background:rgba(247,129,102,0.08);border-left:3px solid var(--a3);color:#ffa198;}
+  .box-p{background:rgba(210,168,255,0.08);border-left:3px solid var(--a4);color:#e2c0ff;}
+  .box-y{background:rgba(255,166,87,0.08);border-left:3px solid var(--a5);color:#ffc680;}
+
+  .garea{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px;margin:14px 0;}
+  .garea svg{width:100%;display:block;}
+
+  .ctrl{display:flex;gap:9px;align-items:stretch;flex-wrap:wrap;margin-top:12px;}
+  .btn{font-family:'Cousine',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.15s;}
+  .btn:hover{border-color:var(--a1);color:var(--a1);}
+  .btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-b{background:rgba(88,166,255,0.1);border-color:rgba(88,166,255,0.35);color:var(--a1);}
+  .btn-b:hover{background:rgba(88,166,255,0.2);}
+  .btn-g{background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.35);color:var(--a2);}
+  .btn-r{background:rgba(247,129,102,0.08);border-color:rgba(247,129,102,0.3);color:var(--a3);}
+  .msgbox{flex:1;min-width:180px;background:rgba(88,166,255,0.05);border:1px solid rgba(88,166,255,0.15);border-radius:6px;padding:10px 14px;font-family:'Cousine',monospace;font-size:12px;color:#79c0ff;line-height:1.5;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0;}
+  .ibox{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:13px 15px;}
+  .ibox label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+  .ibox .val{font-family:'Cousine',monospace;font-size:20px;font-weight:700;color:var(--a1);}
+
+  .tbl{width:100%;border-collapse:collapse;font-family:'Cousine',monospace;font-size:12px;margin-top:12px;}
+  .tbl th{background:rgba(88,166,255,0.1);color:var(--a1);padding:9px 13px;text-align:left;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+  .tbl td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--muted);}
+  .tbl .hi td{background:rgba(63,185,80,0.05);color:var(--text);}
+  .tbl .warn td{background:rgba(247,129,102,0.05);color:#ffa198;}
+
+  /* LP canvas */
+  #lpCanvas{border:1px solid var(--border);border-radius:8px;display:block;background:#0a0d13;cursor:crosshair;}
+
+  /* slider */
+  input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:3px;background:var(--border);outline:none;margin:6px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--a1);cursor:pointer;border:2px solid var(--bg);}
+
+  /* practice */
+  .prob-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:18px;overflow:hidden;}
+  .prob-head{padding:22px 26px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .prob-head:hover{background:rgba(88,166,255,0.03);}
+  .prob-num{font-family:'Cousine',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a1);margin-bottom:6px;}
+  .prob-title{font-size:17px;font-weight:700;margin-bottom:8px;}
+  .prob-body{padding:0 26px 20px;}
+  .sol-btn{font-family:'Cousine',monospace;font-size:11px;color:var(--muted);white-space:nowrap;padding:6px 12px;border:1px solid var(--border);border-radius:5px;background:var(--bg2);cursor:pointer;flex-shrink:0;}
+  .sol-btn:hover{border-color:var(--a2);color:var(--a2);}
+  .sol-panel{display:none;padding:22px 26px;border-top:1px solid var(--border);background:rgba(63,185,80,0.02);}
+  .sol-panel.open{display:block;}
+  .sol-label{font-family:'Cousine',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a2);margin-bottom:14px;}
+
+  .math{font-family:'Cousine',monospace;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin:12px 0;font-size:13px;line-height:2;color:#8b949e;}
+  .math .kw{color:var(--a1);}
+  .math .hl{color:var(--text);font-weight:700;}
+  .math .cm{color:var(--muted);font-style:italic;}
+
+  .nav-btns{display:flex;justify-content:space-between;margin-top:34px;padding-top:18px;border-top:1px solid var(--border);gap:12px;}
+  .nav-btn{font-family:'Lora',serif;font-size:14px;font-weight:700;padding:11px 22px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--a1);color:var(--a1);transform:translateY(-1px);}
+  .nav-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+  .nav-btn.go{background:rgba(88,166,255,0.1);border-color:rgba(88,166,255,0.4);color:var(--a1);}
+
+  @media(max-width:600px){.two,.three{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="badge">CS 6515 — Session 3 of 6</div>
+  <h1><em>Linear</em><br>Programming</h1>
+  <p class="sub">Optimizing a linear objective over a region defined by linear constraints — and why this is one of the most powerful tools in algorithms.</p>
+</div>
+
+<div class="recap-bar">
+  ← Sessions 1-2 covered: NP-hardness · Reductions · Approximation algorithms · PTAS/FPTAS · Greedy EDP with √|E| ratio. Today: LP from scratch, geometry, standard form, and how max flow is secretly an LP.
+</div>
+
+<div class="prog-label" id="progLabel">Part 1 / 8</div>
+<div class="prog" id="prog">
+  <div class="ps active" onclick="goTo(0)"></div>
+  <div class="ps" onclick="goTo(1)"></div>
+  <div class="ps" onclick="goTo(2)"></div>
+  <div class="ps" onclick="goTo(3)"></div>
+  <div class="ps" onclick="goTo(4)"></div>
+  <div class="ps" onclick="goTo(5)"></div>
+  <div class="ps" onclick="goTo(6)"></div>
+  <div class="ps" onclick="goTo(7)"></div>
+</div>
+
+<!-- ═══════════════════ PART 1: WHAT IS LP ═══════════════════ -->
+<div class="section active" id="sec0">
+  <div class="chap">Part 1 / 8 <span>— What is Linear Programming?</span></div>
+
+  <div class="card">
+    <h2>The Big Idea</h2>
+    <p>A <strong>Linear Program (LP)</strong> is an optimization problem where you want to maximize (or minimize) a <strong>linear objective function</strong> subject to a set of <strong>linear inequality constraints</strong>.</p>
+    <p>Both of those words matter. <em>Linear</em> means no x², no x·y, no √x — everything is just variables multiplied by constants and added together. <em>Inequality</em> means constraints like ≤ or ≥, not equalities.</p>
+    <div class="box box-b">
+      From your notes: "An LP instance is an optimization problem where we aim to optimize a <strong>linear</strong> function constrained by <strong>linear</strong> inequalities."
+    </div>
+    <p>Before the formal notation, here's the intuition. Say you're a farmer with 100 acres of land. You can grow corn (profit $3/acre) or wheat (profit $5/acre). But corn needs 2 units of water per acre and wheat needs 4 — and you only have 280 units of water. How much of each should you plant?</p>
+    <p>That's a linear program. The objective (profit) is linear. The constraints (land, water) are linear inequalities. And the solution is some combination of corn and wheat that maximizes profit.</p>
+  </div>
+
+  <div class="card">
+    <h2>Why LP is Important for This Course</h2>
+    <p>LP sits right at the center of everything coming up:</p>
+    <div class="three">
+      <div class="ibox" style="border-color:rgba(88,166,255,0.3)">
+        <label>Today</label>
+        <div style="font-size:13px;color:#79c0ff;line-height:1.6">LP fundamentals, geometry, standard form, max flow as LP</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>Session 4</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">LP relaxation + rounding → approximation algorithms for Set Cover</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(210,168,255,0.3)">
+        <label>Session 5</label>
+        <div style="font-size:13px;color:#e2c0ff;line-height:1.6">FPTAS for Knapsack uses LP-style scaling ideas</div>
+      </div>
+    </div>
+    <div class="box box-g">
+      ✅ LP is solvable in polynomial time (Ellipsoid method 1979, Interior Point methods). This is crucial — it means LP is a tractable tool we can use as a subroutine inside approximation algorithms.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" disabled>← Back</button>
+    <button class="nav-btn go" onclick="goTo(1)">Standard Form →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 2: STANDARD FORM ═══════════════════ -->
+<div class="section" id="sec1">
+  <div class="chap">Part 2 / 8 <span>— Standard Form LP</span></div>
+
+  <div class="card">
+    <h2>The Standard Form</h2>
+    <p>Your notes define the standard form LP with three inputs: a matrix A, and vectors b and c. Here's what each piece means:</p>
+    <div class="math">
+      <span class="cm">// Input:</span><br>
+      A ∈ M<sub>m×n</sub>(ℝ) &nbsp;&nbsp;<span class="cm">// m×n matrix of constraint coefficients</span><br>
+      b ∈ ℝ<sup>m</sup> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// m right-hand side values (one per constraint)</span><br>
+      c ∈ ℝ<sup>n</sup> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// n objective coefficients (one per variable)</span><br>
+      <br>
+      <span class="cm">// Problem:</span><br>
+      <span class="kw">maximize</span> &nbsp;&nbsp;<span class="hl">cᵀx</span><br>
+      <span class="kw">subject to</span> <span class="hl">Ax ≤ b</span> &nbsp;&nbsp;<span class="cm">// coordinate-wise (each row is one constraint)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">x ≥ 0</span> &nbsp;&nbsp;&nbsp;<span class="cm">// all variables non-negative</span>
+    </div>
+    <p>The phrase "coordinate-wise" from your notes just means each row of Ax ≤ b is a separate constraint — row 1 gives constraint 1, row 2 gives constraint 2, and so on.</p>
+  </div>
+
+  <div class="card">
+    <h2>Breaking It Down — What Each Part Means</h2>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(88,166,255,0.3)">
+        <label>x — the decision variables</label>
+        <div style="font-size:13px;color:#79c0ff;line-height:1.7">An n-dimensional vector. These are what we're solving for. In the farm example: x₁ = acres of corn, x₂ = acres of wheat.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>cᵀx — the objective</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.7">c is a vector of profits/costs. cᵀx = c₁x₁ + c₂x₂ + ... + cₙxₙ. This is what we're maximizing.</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(247,129,102,0.3)">
+        <label>Ax ≤ b — the constraints</label>
+        <div style="font-size:13px;color:#ffa198;line-height:1.7">Each row i of A gives one constraint: aᵢ₁x₁ + ... + aᵢₙxₙ ≤ bᵢ. These are your resource limits.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(210,168,255,0.3)">
+        <label>x ≥ 0 — non-negativity</label>
+        <div style="font-size:13px;color:#e2c0ff;line-height:1.7">Variables can't go negative. You can't plant −10 acres. This is standard in most real LP problems.</div>
+      </div>
+    </div>
+    <div class="box box-b" style="margin-top:4px">
+      The variables x can be any real numbers (not just integers!). This is what makes LP tractable — as soon as you force x to be integers, you get Integer Linear Programming (ILP), which is NP-hard. The LP relaxation (allowing real values) is what we exploit in approximation algorithms.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Worked Example — Translating to Standard Form</h2>
+    <p>Farm problem: maximize profit with corn (x₁, $3/acre) and wheat (x₂, $5/acre). Constraints: 100 acres total, 280 units of water (corn needs 2/acre, wheat needs 4/acre).</p>
+    <div class="math">
+      <span class="kw">maximize</span> &nbsp;3x₁ + 5x₂ &nbsp;&nbsp;<span class="cm">// c = [3, 5]</span><br>
+      <span class="kw">subject to</span><br>
+      &nbsp;&nbsp;x₁ + x₂ &nbsp;≤ 100 &nbsp;&nbsp;<span class="cm">// land constraint</span><br>
+      &nbsp;&nbsp;2x₁ + 4x₂ ≤ 280 &nbsp;&nbsp;<span class="cm">// water constraint</span><br>
+      &nbsp;&nbsp;x₁, x₂ &nbsp;&nbsp;&nbsp;≥ 0 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// can't plant negative acres</span>
+    </div>
+    <p>In matrix form: A = [[1,1],[2,4]], b = [100, 280], c = [3, 5], x = [x₁, x₂].</p>
+    <div class="box box-y">
+      💡 Notice: this has 2 variables and 2 constraints (plus non-negativity). Real LPs can have thousands of variables and constraints — but the structure is always the same.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Converting to Standard Form</h2>
+    <p>Your notes show that ALL LP variants can be converted to standard form. Some common transformations:</p>
+    <table class="tbl">
+      <thead><tr><th>Original form</th><th>Standard form conversion</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td>Minimize cᵀx</td><td>Maximize −cᵀx (flip the sign of c)</td></tr>
+        <tr class="hi"><td>Constraint: aᵀx ≥ b</td><td>Multiply both sides by −1: −aᵀx ≤ −b</td></tr>
+        <tr class="hi"><td>Equality: aᵀx = b</td><td>Two constraints: aᵀx ≤ b AND −aᵀx ≤ −b</td></tr>
+        <tr class="hi"><td>Unbounded variable xᵢ (can be negative)</td><td>Replace xᵢ = xᵢ⁺ − xᵢ⁻ where xᵢ⁺, xᵢ⁻ ≥ 0</td></tr>
+      </tbody>
+    </table>
+    <div class="box box-g" style="margin-top:12px">
+      The fact that ALL LP variants convert to standard form is why we only need to design one LP solver — and why standard form is the universal representation.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(0)">← What is LP</button>
+    <button class="nav-btn go" onclick="goTo(2)">Geometry of LP →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 3: GEOMETRY ═══════════════════ -->
+<div class="section" id="sec2">
+  <div class="chap">Part 3 / 8 <span>— The Geometry of LP</span></div>
+
+  <div class="card">
+    <h2>Constraints Define a Region — The Feasible Set</h2>
+    <p>Every linear constraint cuts the space in half. The set of all points satisfying ALL constraints is called the <strong>feasible region</strong>. For 2 variables this is a polygon (or empty, or unbounded).</p>
+    <p>The objective function cᵀx is a family of parallel lines (hyperplanes in higher dimensions). Moving these lines in the direction of c increases the objective. The optimal solution is where this moving line last touches the feasible region.</p>
+    <div class="box box-b">
+      💡 The key geometric fact: <strong>the optimal solution is always at a vertex (corner point) of the feasible region</strong> — unless the LP is unbounded or infeasible. This is why LP is solvable: there are finitely many vertices to check.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Interactive: Visualize the Farm LP</h2>
+    <p>The farm LP from Part 2. Each constraint draws a boundary line. The feasible region is the shaded polygon. The objective lines (orange) show the direction of increasing profit. The optimal point is where the last objective line touches the region.</p>
+    <p>Use the sliders to change the objective coefficients and watch the optimal point move:</p>
+
+    <div class="two" style="margin:12px 0;gap:10px">
+      <div>
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:4px">c₁ (corn profit): <span id="c1val">3</span></div>
+        <input type="range" min="0" max="10" value="3" step="0.5" id="c1slider" oninput="drawLP()">
+      </div>
+      <div>
+        <div style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:4px">c₂ (wheat profit): <span id="c2val">5</span></div>
+        <input type="range" min="0" max="10" value="5" step="0.5" id="c2slider" oninput="drawLP()">
+      </div>
+    </div>
+
+    <canvas id="lpCanvas" width="860" height="400"></canvas>
+
+    <div class="two" style="margin-top:12px;gap:8px">
+      <div class="ibox">
+        <label>Optimal x₁ (corn acres)</label>
+        <div class="val" id="optX1">—</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>Optimal x₂ (wheat acres)</label>
+        <div class="val" id="optX2" style="color:var(--a2)">—</div>
+      </div>
+    </div>
+    <div class="ibox" style="margin-top:8px;border-color:rgba(255,166,87,0.3)">
+      <label>Optimal objective value (max profit $)</label>
+      <div class="val" id="optVal" style="color:var(--a5)">—</div>
+    </div>
+
+    <div class="box box-b" style="margin-top:10px" id="lpExplain">
+      Drag the sliders to change profit coefficients. Notice: the optimal solution always jumps between vertices. It never lands in the interior of the feasible region.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Vertices — Why They Matter</h2>
+    <p>The farm LP has 4 vertices (corners of the feasible polygon): (0,0), (100,0), (0,70), and (60,40).</p>
+    <p>The optimal solution is always one of these 4 points — regardless of what c₁ and c₂ are. You can verify this by trying all slider combinations above: the orange dot always sits at one of the corners.</p>
+    <div class="garea">
+      <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">ALL 4 VERTICES — evaluated for c₁=3, c₂=5</p>
+      <table class="tbl">
+        <thead><tr><th>Vertex</th><th>x₁ (corn)</th><th>x₂ (wheat)</th><th>Profit: 3x₁ + 5x₂</th><th>Feasible?</th></tr></thead>
+        <tbody>
+          <tr><td>Origin</td><td>0</td><td>0</td><td>0</td><td style="color:var(--a2)">✅</td></tr>
+          <tr><td>All corn</td><td>100</td><td>0</td><td>300</td><td style="color:var(--a2)">✅</td></tr>
+          <tr><td>All wheat</td><td>0</td><td>70</td><td>350</td><td style="color:var(--a2)">✅</td></tr>
+          <tr class="hi"><td>Intersection</td><td>60</td><td>40</td><td>380</td><td style="color:var(--a2)">✅ OPTIMAL</td></tr>
+        </tbody>
+      </table>
+      <div class="box box-y" style="margin-top:12px">
+        🔑 The intersection point (60,40) comes from solving the two binding constraints simultaneously: x₁+x₂=100 AND 2x₁+4x₂=280. Substituting: x₁=100−x₂ → 2(100−x₂)+4x₂=280 → 200+2x₂=280 → x₂=40, x₁=60.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Three Possible Outcomes for an LP</h2>
+    <div class="three">
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>✅ Feasible & Bounded</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">Constraints define a bounded polygon. Optimal solution exists at a vertex. This is the normal case.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(247,129,102,0.3)">
+        <label>❌ Infeasible</label>
+        <div style="font-size:13px;color:#ffa198;line-height:1.6">Constraints contradict each other. No point satisfies all of them simultaneously. No solution exists.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(255,166,87,0.3)">
+        <label>⚠️ Unbounded</label>
+        <div style="font-size:13px;color:#ffc680;line-height:1.6">Feasible region extends to infinity in the direction of the objective. Objective can grow forever. No finite optimal.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(1)">← Standard Form</button>
+    <button class="nav-btn go" onclick="goTo(3)">LP Duality →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 4: DUALITY ═══════════════════ -->
+<div class="section" id="sec3">
+  <div class="chap">Part 4 / 8 <span>— LP Duality</span></div>
+
+  <div class="card">
+    <h2>Every LP Has a "Mirror" — The Dual</h2>
+    <p>For every LP (called the <strong>primal</strong>), there's a corresponding <strong>dual LP</strong> that encodes the same information from the opposite perspective. This is one of the deepest ideas in LP theory.</p>
+    <p>The dual of the standard form primal:</p>
+    <div class="math">
+      <span class="cm">// PRIMAL:</span><br>
+      <span class="kw">maximize</span> &nbsp;cᵀx<br>
+      <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ax ≤ b, &nbsp;x ≥ 0<br>
+      <br>
+      <span class="cm">// DUAL:</span><br>
+      <span class="kw">minimize</span> &nbsp;bᵀy<br>
+      <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aᵀy ≥ c, &nbsp;y ≥ 0
+    </div>
+    <p>The dual has m variables (one per primal constraint) and n constraints (one per primal variable). It's like the primal flipped upside down.</p>
+  </div>
+
+  <div class="card">
+    <h2>Where Do the Dual Variables Come From?</h2>
+    <p>Here's the intuition with the farm example. Each constraint has a "shadow price" — how much would the objective improve if you relaxed that constraint by one unit?</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(88,166,255,0.3)">
+        <label>y₁ = price of land</label>
+        <div style="font-size:13px;color:#79c0ff;line-height:1.6">If you had 1 more acre of land, how much more profit could you make? y₁ captures this.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>y₂ = price of water</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">If you had 1 more unit of water, how much more profit? y₂ captures this.</div>
+      </div>
+    </div>
+    <p style="margin-top:12px">The dual LP asks: what are the "prices" of resources such that the total cost of all resources is minimized, while still being consistent with the objective values?</p>
+    <div class="box box-b">
+      The dual for our farm LP:<br>
+      minimize 100y₁ + 280y₂<br>
+      subject to: y₁ + 2y₂ ≥ 3 (corn constraint)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y₁ + 4y₂ ≥ 5 (wheat constraint)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y₁, y₂ ≥ 0
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Weak and Strong Duality</h2>
+    <p>Two fundamental theorems connect the primal and dual:</p>
+    <div class="box box-r">
+      <strong>Weak Duality:</strong> For any feasible primal solution x and any feasible dual solution y: cᵀx ≤ bᵀy. Any dual solution gives an UPPER BOUND on the primal optimum.
+    </div>
+    <div class="box box-g">
+      <strong>Strong Duality:</strong> At optimality, cᵀx* = bᵀy*. The primal and dual optimal values are EQUAL. The dual optimal IS the primal optimal.
+    </div>
+    <p>This should feel familiar — you've seen this before! Max-Flow = Min-Cut is EXACTLY LP strong duality applied to the flow LP. The primal is max flow, the dual is min cut, and strong duality says they're equal at optimality.</p>
+    <div class="box box-p">
+      💡 Max-Flow Min-Cut theorem = LP Strong Duality theorem applied to network flow. The two theorems are the same idea in different clothing. This is not a coincidence — it's because max flow IS an LP.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Complementary Slackness</h2>
+    <p>One more key theorem from your notes: <strong>Complementary Slackness</strong>. At optimality, for each constraint either:</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(88,166,255,0.3)">
+        <label>Primal constraint is TIGHT</label>
+        <div style="font-size:13px;color:#79c0ff;line-height:1.6">The constraint holds with equality (Aᵢx = bᵢ). The resource is fully used — at a bottleneck.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>Dual variable is ZERO</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">The shadow price of that resource is 0. Having more of it wouldn't help — it's not the bottleneck.</div>
+      </div>
+    </div>
+    <div class="box box-y" style="margin-top:8px">
+      In the farm example: at optimum (60,40), both constraints are tight (60+40=100, 2·60+4·40=280). Both resources fully used → both dual variables y₁,y₂ > 0. This is complementary slackness in action.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(2)">← LP Geometry</button>
+    <button class="nav-btn go" onclick="goTo(4)">Max Flow as LP →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 5: MAX FLOW AS LP ═══════════════════ -->
+<div class="section" id="sec4">
+  <div class="chap">Part 5 / 8 <span>— Max Flow is an LP</span></div>
+
+  <div class="card">
+    <h2>You've Been Solving LPs All Along</h2>
+    <p>Max flow — which you mastered in Sessions 2-4 of the original course — is secretly a linear program. Let's write it out explicitly and you'll see exactly how it maps to LP standard form.</p>
+    <p>Given a flow network G=(V,E) with capacities c(e), find a flow that maximizes total flow from s to t.</p>
+  </div>
+
+  <div class="card">
+    <h2>Writing Max Flow as an LP</h2>
+    <p>The decision variables are the flow values on each edge: one variable f(e) per edge e ∈ E.</p>
+    <div class="math">
+      <span class="kw">maximize</span> &nbsp;&nbsp;Σ<sub>e=(s,v)</sub> f(e) &nbsp;&nbsp;<span class="cm">// total flow leaving s</span><br>
+      <span class="kw">subject to</span><br>
+      &nbsp;&nbsp;f(e) ≤ c(e) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// capacity constraint: ∀e ∈ E</span><br>
+      &nbsp;&nbsp;Σ<sub>e into v</sub> f(e) = Σ<sub>e out of v</sub> f(e) &nbsp;&nbsp;<span class="cm">// conservation: ∀v ≠ s,t</span><br>
+      &nbsp;&nbsp;f(e) ≥ 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// non-negativity: ∀e ∈ E</span>
+    </div>
+    <div class="box box-b">
+      This is a valid LP! Objective is linear. All constraints are linear (in)equalities. Variables are the flows f(e) ≥ 0. This means max flow is in P via LP solvers — consistent with what you already know from Edmonds-Karp.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Mapping to Standard Form A, b, c</h2>
+    <p>Let's make this concrete on a tiny example. Graph: s→A (cap 3), s→B (cap 2), A→t (cap 2), B→t (cap 3). Variables: f₁=f(s,A), f₂=f(s,B), f₃=f(A,t), f₄=f(B,t).</p>
+
+    <div class="math">
+      <span class="kw">maximize</span> &nbsp;f₁ + f₂ &nbsp;&nbsp;<span class="cm">// total flow out of s</span><br>
+      <span class="kw">s.t.</span><br>
+      &nbsp;&nbsp;f₁ ≤ 3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// cap(s,A)</span><br>
+      &nbsp;&nbsp;f₂ ≤ 2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// cap(s,B)</span><br>
+      &nbsp;&nbsp;f₃ ≤ 2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// cap(A,t)</span><br>
+      &nbsp;&nbsp;f₄ ≤ 3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// cap(B,t)</span><br>
+      &nbsp;&nbsp;f₁ − f₃ = 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// conservation at A: in=f₁, out=f₃</span><br>
+      &nbsp;&nbsp;f₂ − f₄ = 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// conservation at B: in=f₂, out=f₄</span><br>
+      &nbsp;&nbsp;f₁,f₂,f₃,f₄ ≥ 0
+    </div>
+
+    <p>From conservation: f₁=f₃ and f₂=f₄. So we can simplify to: maximize f₁+f₂ subject to f₁≤2 (binding: min of cap(s,A)=3 and cap(A,t)=2), f₂≤2 (min of cap(s,B)=2 and cap(B,t)=3). Optimal: f₁=2, f₂=2, total flow = 4.</p>
+
+    <div class="box box-g">
+      ✅ The LP solution IS the max flow! And notice: the LP solution is automatically integer here (all capacities are integers). This is because the constraint matrix for flow networks is <strong>totally unimodular</strong> — a special structure that guarantees integer LP solutions when b is integer.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Totally Unimodular — Why Flow LP Has Integer Solutions</h2>
+    <p>A matrix A is <strong>totally unimodular (TU)</strong> if every square submatrix has determinant 0, 1, or −1. For TU constraint matrices with integer b, the LP always has an integer optimal solution — no rounding needed.</p>
+    <p>The constraint matrix for flow networks is TU because each column (edge variable) appears in at most two rows: +1 in the conservation constraint of its head vertex, and −1 in the conservation constraint of its tail vertex.</p>
+    <div class="box box-p">
+      This explains something that might have seemed like magic before: why Ford-Fulkerson always finds integer flows when capacities are integers. It's because max flow is an LP with a TU constraint matrix — the LP solution is automatically integer. No special handling needed.
+    </div>
+    <div class="box box-r">
+      ⚠️ Not all LP formulations have TU constraint matrices. For example, Set Cover (Session 4) does NOT — which is precisely why LP rounding is needed there and why we can't just solve the LP and get an integer solution for free.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(3)">← LP Duality</button>
+    <button class="nav-btn go" onclick="goTo(5)">LP Relaxation →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 6: LP RELAXATION ═══════════════════ -->
+<div class="section" id="sec5">
+  <div class="chap">Part 6 / 8 <span>— LP Relaxation: The Bridge to Approximation</span></div>
+
+  <div class="card">
+    <h2>The Key Trick for Approximation Algorithms</h2>
+    <p>Many NP-hard problems can be written as <strong>Integer Linear Programs (ILP)</strong> — LPs where variables must be integers (0 or 1 for decision problems). ILP is NP-hard.</p>
+    <p>The <strong>LP relaxation</strong> removes the integrality constraint — allowing variables to be any real number in [0,1] instead of just 0 or 1. This makes the problem tractable (LP is in P), but the solution might be fractional.</p>
+    <div class="box box-b">
+      Strategy: solve the LP relaxation (fast, polynomial), then <strong>round</strong> the fractional solution to integers. The rounding introduces approximation error — but a bounded one that gives us an α-approximation.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Concrete Example: Vertex Cover as ILP then LP Relaxation</h2>
+    <p>Vertex Cover: for each vertex v, let xᵥ ∈ {0,1} (1 = in the cover). Minimize the number of vertices chosen such that every edge is covered.</p>
+    <div class="math">
+      <span class="cm">// Integer Linear Program (ILP) — NP-hard:</span><br>
+      <span class="kw">minimize</span> &nbsp;Σᵥ xᵥ<br>
+      <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xᵤ + xᵥ ≥ 1 &nbsp;&nbsp;<span class="cm">// for each edge (u,v): at least one endpoint covered</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xᵥ ∈ {0,1} &nbsp;&nbsp;<span class="cm">// integer constraint — makes this NP-hard</span><br>
+      <br>
+      <span class="cm">// LP Relaxation — polynomial:</span><br>
+      <span class="kw">minimize</span> &nbsp;Σᵥ xᵥ<br>
+      <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xᵤ + xᵥ ≥ 1 &nbsp;&nbsp;<span class="cm">// same constraints</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">0 ≤ xᵥ ≤ 1</span> &nbsp;&nbsp;<span class="cm">// RELAXED — allows fractions</span>
+    </div>
+    <div class="box box-y">
+      The LP relaxation can give fractional solutions like xᵥ = 0.5 for all vertices. To get a valid integer cover, you <strong>round up</strong>: include v if xᵥ ≥ 0.5. This rounding gives a 2-approximation for Vertex Cover — the full analysis is Session 4.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Integrality Gap</h2>
+    <p>The <strong>integrality gap</strong> of an ILP is the worst-case ratio between the LP relaxation optimal and the ILP optimal:</p>
+    <div class="math">
+      integrality gap = max<sub>instances</sub> ( ILP optimal / LP relaxation optimal )
+    </div>
+    <p>The integrality gap is always ≥ 1 (LP relaxation is at least as good as ILP — it has more freedom). The gap tells you the best approximation ratio you can hope for from LP rounding.</p>
+    <div class="two">
+      <div class="ibox" style="border-color:rgba(63,185,80,0.3)">
+        <label>Vertex Cover</label>
+        <div style="font-size:13px;color:#7ee787;line-height:1.6">Integrality gap = 2. LP rounding gives a 2-approximation. This is tight — there are instances where LP gives 0.5 everywhere.</div>
+      </div>
+      <div class="ibox" style="border-color:rgba(88,166,255,0.3)">
+        <label>Set Cover</label>
+        <div style="font-size:13px;color:#79c0ff;line-height:1.6">Integrality gap = O(log n). LP rounding gives O(log n)-approximation. This too is tight.</div>
+      </div>
+    </div>
+    <div class="box box-r" style="margin-top:8px">
+      Integrality gap = the price you pay for rounding. Understanding it is key to analyzing LP-rounding-based approximation algorithms.
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(4)">← Max Flow as LP</button>
+    <button class="nav-btn go" onclick="goTo(6)">LP in Practice →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 7: LP SOLVING + BIG PICTURE ═══════════════════ -->
+<div class="section" id="sec6">
+  <div class="chap">Part 7 / 8 <span>— How LPs Are Solved & The Big Picture</span></div>
+
+  <div class="card">
+    <h2>The Simplex Method (Conceptually)</h2>
+    <p>The most famous LP algorithm is the <strong>Simplex method</strong>. The key insight from geometry: optimal is always at a vertex. So Simplex just walks along the edges of the feasible polytope, moving to better vertices until no improvement is possible.</p>
+    <div class="garea">
+      <p style="font-family:'Cousine',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">SIMPLEX WALK — step through the algorithm on the farm LP</p>
+      <svg viewBox="0 0 480 300" id="simplexSvg">
+        <defs>
+          <marker id="sxa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#58a6ff"/></marker>
+        </defs>
+        <!-- Feasible region (scaled: x axis = x1 acres, y axis = x2 acres, max 120) -->
+        <!-- Vertices: (0,0), (100,0), (60,40), (0,70) -->
+        <!-- Scale: 1 acre = 3.5px, origin at (40,270) -->
+        <polygon points="40,270 390,270 250,130 40,25" fill="rgba(88,166,255,0.08)" stroke="rgba(88,166,255,0.3)" stroke-width="1.5"/>
+        <!-- Axes -->
+        <line x1="30" y1="270" x2="430" y2="270" stroke="#374151" stroke-width="1.5"/>
+        <line x1="40" y1="280" x2="40" y2="10" stroke="#374151" stroke-width="1.5"/>
+        <text x="435" y="274" font-family="Cousine" font-size="11" fill="#7d8590">x₁</text>
+        <text x="44" y="12" font-family="Cousine" font-size="11" fill="#7d8590">x₂</text>
+        <!-- Axis labels -->
+        <text x="390" y="284" font-family="Cousine" font-size="9" fill="#7d8590" text-anchor="middle">100</text>
+        <text x="28" y="25" font-family="Cousine" font-size="9" fill="#7d8590" text-anchor="end">70</text>
+        <text x="28" y="130" font-family="Cousine" font-size="9" fill="#7d8590" text-anchor="end">40</text>
+        <text x="250" y="284" font-family="Cousine" font-size="9" fill="#7d8590" text-anchor="middle">60</text>
+        <!-- Vertices -->
+        <circle cx="40" cy="270" r="7" fill="#374151" stroke="#58a6ff" stroke-width="2" id="sv0"/>
+        <text x="50" y="266" font-family="Cousine" font-size="10" fill="#7d8590">(0,0) profit=0</text>
+        <circle cx="390" cy="270" r="7" fill="#374151" stroke="#374151" stroke-width="2" id="sv1"/>
+        <text x="395" y="266" font-family="Cousine" font-size="10" fill="#7d8590">(100,0) profit=300</text>
+        <circle cx="250" cy="130" r="7" fill="#374151" stroke="#374151" stroke-width="2" id="sv2"/>
+        <text x="258" y="126" font-family="Cousine" font-size="10" fill="#7d8590">(60,40) profit=380</text>
+        <circle cx="40" cy="25" r="7" fill="#374151" stroke="#374151" stroke-width="2" id="sv3"/>
+        <text x="50" y="21" font-family="Cousine" font-size="10" fill="#7d8590">(0,70) profit=350</text>
+        <!-- Simplex path arrows (hidden) -->
+        <line x1="40" y1="263" x2="383" y2="270" stroke="transparent" stroke-width="2" marker-end="url(#sxa)" id="sp1"/>
+        <line x1="390" y1="263" x2="257" y2="137" stroke="transparent" stroke-width="2" marker-end="url(#sxa)" id="sp2"/>
+        <!-- Step labels -->
+        <text x="180" y="290" font-family="Cousine" font-size="9" fill="transparent" id="sl1" text-anchor="middle">Step 1: 0→300</text>
+        <text x="330" y="195" font-family="Cousine" font-size="9" fill="transparent" id="sl2" text-anchor="middle">Step 2: 300→380</text>
+      </svg>
+      <div class="ctrl">
+        <button class="btn btn-r" onclick="resetSimplex()">↺ Reset</button>
+        <button class="btn btn-b" onclick="stepSimplex()" id="sxBtn">Step →</button>
+        <div class="msgbox" id="sxMsg">Simplex starts at a feasible vertex (origin). It moves to adjacent better vertices. Click Step.</div>
+      </div>
+    </div>
+    <div class="box box-y" style="margin-top:8px">
+      Simplex is not polynomial in the worst case (exponential on adversarial inputs) but works extremely well in practice. The <strong>Ellipsoid method</strong> (1979) was the first proven polynomial-time LP algorithm. <strong>Interior point methods</strong> are polynomial and fast in practice.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Everything Connects — The LP Web</h2>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px;font-family:'Cousine',monospace;font-size:12px;line-height:2.2;color:#8b949e">
+      <span style="color:var(--a2)">Max Flow (Sessions 2-4):</span> LP with TU constraint matrix → integer solution for free<br>
+      <span style="color:var(--a2)">Bipartite Matching (Session 4):</span> LP with TU constraint matrix → integer solution for free<br>
+      <span style="color:var(--a1)">LP Duality ↔ Max-Flow Min-Cut:</span> Strong duality IS the MFMC theorem<br>
+      <span style="color:var(--a5)">NP-hard problems as ILP:</span> Remove integrality → LP relaxation → round → approximation<br>
+      <span style="color:var(--a3)">Set Cover (Session 4):</span> LP rounding → O(log n) approximation<br>
+      <span style="color:var(--a4)">Knapsack (Session 5):</span> LP relaxation + scaling → FPTAS
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Quick Self-Check</h2>
+    <div id="qzlp" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(5)">← LP Relaxation</button>
+    <button class="nav-btn go" onclick="goTo(7)">Practice Problems →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PART 8: PRACTICE PROBLEMS ═══════════════════ -->
+<div class="section" id="sec7">
+  <div class="chap">Part 8 / 8 <span>— Practice Problems</span></div>
+
+  <div class="card">
+    <h2>5 Problems — Work These Out 📝</h2>
+    <p>These cover LP from multiple angles. Some require drawing, some require algebra, some are purely conceptual. Work through them before expanding solutions.</p>
+  </div>
+
+  <!-- P1 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p1')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 1 — Write the LP (Draw This!)</div>
+        <div class="prob-title">Convert a word problem to standard form LP</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">A factory produces two products: chairs (profit $40 each) and tables (profit $90 each). Making one chair requires 2 hours of labor and 3 kg of wood. Making one table requires 5 hours of labor and 2 kg of wood. Available: 40 hours of labor, 24 kg of wood. How many of each to maximize profit?</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px"><strong>On your board:</strong> (1) Write the LP in standard form with A, b, c explicitly. (2) Identify the feasible region vertices. (3) Solve by checking all vertices.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p1');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp1">
+      <div class="sol-label">Solution</div>
+      <p><strong>Variables:</strong> x₁ = chairs, x₂ = tables.</p>
+      <div class="math">
+        <span class="kw">maximize</span> &nbsp;40x₁ + 90x₂<br>
+        <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2x₁ + 5x₂ ≤ 40 &nbsp;&nbsp;<span class="cm">// labor</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3x₁ + 2x₂ ≤ 24 &nbsp;&nbsp;<span class="cm">// wood</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x₁, x₂ ≥ 0
+      </div>
+      <p><strong>Matrix form:</strong> A = [[2,5],[3,2]], b = [40,24], c = [40,90].</p>
+      <p style="margin-top:10px"><strong>Feasible vertices:</strong></p>
+      <p>• (0,0): profit = 0</p>
+      <p>• (8,0): x₁=8 from 3x₁≤24. Profit = 320</p>
+      <p>• (0,8): x₂=8 from 5x₂≤40. Profit = 720</p>
+      <p>• Intersection: solve 2x₁+5x₂=40 AND 3x₁+2x₂=24. From first: x₁=(40−5x₂)/2. Sub: 3(40−5x₂)/2 + 2x₂ = 24 → 60−7.5x₂+2x₂=24 → −5.5x₂=−36 → x₂≈6.55, x₁≈(40−32.7)/2≈3.64. Profit = 40(3.64)+90(6.55) = 145.6+589.5 ≈ <strong>735.1</strong></p>
+      <p style="margin-top:10px"><strong>Optimal: x₁≈3.64 chairs, x₂≈6.55 tables, profit≈$735.</strong></p>
+      <p style="margin-top:8px">Note: these are fractional. In an ILP you'd round: (3,6) gives 40(3)+90(6)=120+540=660, or (4,6) gives 160+540=700 but check feasibility: 2(4)+5(6)=38≤40 ✅, 3(4)+2(6)=24≤24 ✅. So ILP optimal = (4,6), profit=700.</p>
+    </div>
+  </div>
+
+  <!-- P2 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p2')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 2 — LP Duality</div>
+        <div class="prob-title">Write the dual and verify strong duality holds</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Given primal LP:</p>
+          <div class="box box-b" style="margin:8px 0;font-size:13px">
+            maximize 2x₁ + 3x₂<br>
+            s.t. x₁ + 2x₂ ≤ 4<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2x₁ + x₂ ≤ 6<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x₁, x₂ ≥ 0
+          </div>
+          <p style="font-size:14px;color:#8b949e">(a) Write the dual LP.</p>
+          <p style="font-size:14px;color:#8b949e">(b) Solve the primal (by vertices). What is the optimal value?</p>
+          <p style="font-size:14px;color:#8b949e">(c) Find a dual feasible solution with objective value equal to the primal optimal. Verify strong duality.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p2');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp2">
+      <div class="sol-label">Solution</div>
+      <p><strong>(a) Dual LP:</strong> m=2 constraints → 2 dual variables y₁, y₂. n=2 primal variables → 2 dual constraints.</p>
+      <div class="math">
+        <span class="kw">minimize</span> &nbsp;4y₁ + 6y₂<br>
+        <span class="kw">s.t.</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y₁ + 2y₂ ≥ 2 &nbsp;&nbsp;<span class="cm">// dual constraint for x₁</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2y₁ + y₂ &nbsp;≥ 3 &nbsp;&nbsp;<span class="cm">// dual constraint for x₂</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y₁, y₂ ≥ 0
+      </div>
+      <p style="margin-top:10px"><strong>(b) Primal vertices:</strong></p>
+      <p>• (0,0): obj = 0</p>
+      <p>• (3,0): from 2x₁≤6 → x₁=3. obj = 6</p>
+      <p>• (0,2): from x₂≤2 → x₂=2. obj = 6</p>
+      <p>• Intersection: x₁+2x₂=4 AND 2x₁+x₂=6. Subtract: x₁−x₂=2 → x₁=x₂+2. Sub: x₂+2+2x₂=4 → 3x₂=2 → x₂=2/3, x₁=8/3. obj = 2(8/3)+3(2/3) = 16/3+6/3 = <strong>22/3 ≈ 7.33</strong></p>
+      <p style="margin-top:10px"><strong>Primal optimal = 22/3 at (8/3, 2/3).</strong></p>
+      <p style="margin-top:10px"><strong>(c) Find dual solution with value 22/3.</strong> At optimum, both primal constraints are tight (binding). By complementary slackness, both dual variables are nonzero. Solve: y₁+2y₂=2 AND 2y₁+y₂=3 (dual constraints tight since primal variables x₁,x₂>0). Same system: y₁=4/3, y₂=1/3.</p>
+      <p style="margin-top:8px">Dual objective: 4(4/3)+6(1/3) = 16/3+6/3 = 22/3. ✅ Equal to primal. <strong>Strong duality verified.</strong></p>
+    </div>
+  </div>
+
+  <!-- P3 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p3')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 3 — LP Relaxation vs ILP</div>
+        <div class="prob-title">Find the integrality gap on a small instance</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Consider the following Vertex Cover ILP on a triangle graph (vertices {1,2,3}, edges {(1,2),(2,3),(1,3)}):</p>
+          <div class="box box-b" style="margin:8px 0;font-size:13px">
+            minimize x₁ + x₂ + x₃<br>
+            s.t. x₁ + x₂ ≥ 1 (edge 1-2)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x₂ + x₃ ≥ 1 (edge 2-3)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x₁ + x₃ ≥ 1 (edge 1-3)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xᵢ ∈ {0,1}
+          </div>
+          <p style="font-size:14px;color:#8b949e">(a) What is the optimal integer solution? (ILP optimal)</p>
+          <p style="font-size:14px;color:#8b949e">(b) Relax to LP (allow xᵢ ∈ [0,1]). What is the LP optimal?</p>
+          <p style="font-size:14px;color:#8b949e">(c) What is the integrality gap on this instance?</p>
+          <p style="font-size:14px;color:#8b949e">(d) If you round up all xᵢ ≥ 0.5, what cover do you get? What is the approximation ratio?</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p3');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp3">
+      <div class="sol-label">Solution</div>
+      <p><strong>(a) ILP optimal:</strong> Triangle graph — every pair of vertices shares an edge. You must include at least 2 vertices (e.g., {1,2}) to cover all 3 edges. Check {1,2}: covers (1,2)✅, (2,3)✅, (1,3)✅. Optimal = 2.</p>
+      <p style="margin-top:10px"><strong>(b) LP relaxation optimal:</strong> Set x₁=x₂=x₃=0.5. Check all constraints: 0.5+0.5=1≥1 ✅ for all edges. Objective = 1.5. Can we do better? If any xᵢ < 0.5, say x₁=0.4, then x₂+x₃≥1 from the other edges, and x₂≥1−x₁=0.6, giving total > 0.5+0.6+0.4=1.5. By symmetry, x₁=x₂=x₃=0.5 is optimal. <strong>LP optimal = 1.5.</strong></p>
+      <p style="margin-top:10px"><strong>(c) Integrality gap = ILP optimal / LP optimal = 2 / 1.5 = 4/3 ≈ 1.33.</strong> This instance achieves a gap of 4/3, which is actually the known integrality gap for Vertex Cover LP.</p>
+      <p style="margin-top:10px"><strong>(d) Round up all xᵢ ≥ 0.5:</strong> All three variables = 0.5, so all round up to 1. Cover = {1,2,3}, size = 3. Approximation ratio = 3/2 = 2 = α. This matches the 2-approximation guarantee for the LP-rounding algorithm.</p>
+      <div class="box box-y" style="margin-top:10px">The triangle is the canonical tight example for Vertex Cover LP — integrality gap exactly 4/3, rounding gives exactly 2×. The 2-approximation is NOT because the gap is 2 (it's only 4/3), but because rounding can be wasteful.</div>
+    </div>
+  </div>
+
+  <!-- P4 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p4')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 4 — Max Flow as LP (Write it out)</div>
+        <div class="prob-title">Convert a flow network to LP standard form</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">Flow network with vertices {s, u, v, t} and edges: s→u (cap 4), s→v (cap 3), u→t (cap 2), v→t (cap 5), u→v (cap 2).</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px"><strong>On your board:</strong></p>
+          <p style="font-size:14px;color:#8b949e">(1) Write the LP with all variables and constraints. Name variables fₑ for each edge e.</p>
+          <p style="font-size:14px;color:#8b949e">(2) Solve the LP to find max flow and optimal flow assignment.</p>
+          <p style="font-size:14px;color:#8b949e">(3) Identify the min cut and verify max flow = min cut.</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p4');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp4">
+      <div class="sol-label">Solution</div>
+      <p><strong>Variables:</strong> f₁=f(s,u), f₂=f(s,v), f₃=f(u,t), f₄=f(v,t), f₅=f(u,v).</p>
+      <div class="math">
+        <span class="kw">maximize</span> &nbsp;f₁ + f₂<br>
+        <span class="kw">s.t.</span><br>
+        &nbsp;&nbsp;f₁ ≤ 4, f₂ ≤ 3, f₃ ≤ 2, f₄ ≤ 5, f₅ ≤ 2 &nbsp;&nbsp;<span class="cm">// capacities</span><br>
+        &nbsp;&nbsp;f₁ = f₃ + f₅ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// conservation at u</span><br>
+        &nbsp;&nbsp;f₂ + f₅ = f₄ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// conservation at v</span><br>
+        &nbsp;&nbsp;all fₑ ≥ 0
+      </div>
+      <p style="margin-top:10px"><strong>Solving:</strong> Bottlenecks: u→t limited to 2. Even if we push 4 into u, only 2 can leave via u→t. The other 2 can go u→v→t. v→t has cap 5, so it can absorb: 2 from u→v plus up to 3 from s→v. s→v limited to 3. Total via v→t = min(5, 3+2) = 5, but s→v only gives 3 and u→v gives 2, so 5 units reach t via v→t.</p>
+      <p style="margin-top:8px">Optimal: f₁=4, f₂=3, f₃=2, f₄=5, f₅=2. Total flow = f₁+f₂ = 7. Verify: u conservation: 4=2+2 ✅. v conservation: 3+2=5 ✅.</p>
+      <p style="margin-top:10px"><strong>Max flow = 7.</strong></p>
+      <p style="margin-top:10px"><strong>Min cut:</strong> Cut {s,u,v} | {t}. Crossing edges: u→t (cap 2), v→t (cap 5). Cap = 2+5 = 7. ✅ Min cut = max flow = 7.</p>
+    </div>
+  </div>
+
+  <!-- P5 -->
+  <div class="prob-card">
+    <div class="prob-head" onclick="toggleSol('p5')">
+      <div style="flex:1">
+        <div class="prob-num">Problem 5 — Conceptual: LP vs ILP vs Approximation</div>
+        <div class="prob-title">Why can't we always just solve the LP and round?</div>
+        <div class="prob-body" style="padding:0">
+          <p style="font-size:14px;color:#8b949e;margin-top:10px">This problem tests deep understanding of why LP relaxation + rounding doesn't always give good approximations.</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:8px">(a) Max flow LP has TU constraint matrix → LP always gives integer optimal. Does this mean max flow ILP = max flow LP always? What would break if capacities were irrational?</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px">(b) Vertex Cover has integrality gap 2. If someone claims "I found an instance with integrality gap 3," what would that imply about the complexity of Vertex Cover?</p>
+          <p style="font-size:14px;color:#8b949e;margin-top:6px">(c) Why is LP relaxation + rounding NOT a useful approach for k-EDP (edge-disjoint paths)? What goes wrong?</p>
+        </div>
+      </div>
+      <button class="sol-btn" onclick="toggleSol('p5');event.stopPropagation()">Show Solution ▾</button>
+    </div>
+    <div class="sol-panel" id="solp5">
+      <div class="sol-label">Solution</div>
+      <p><strong>(a) Yes — max flow LP always equals max flow ILP when capacities are integers.</strong> TU + integer b guarantees the LP optimal is integer, so LP relaxation and ILP have the same optimal value and an optimal solution that works for both. If capacities are irrational: the TU property still holds (it's about the constraint matrix structure, not the values), so the LP still has a unique optimal. But the optimal flow values might themselves be irrational — which is fine for LP but causes Ford-Fulkerson to potentially not terminate (the irrational capacity problem from Session 2). This is a separate issue from LP vs ILP.</p>
+      <p style="margin-top:10px"><strong>(b) An integrality gap of 3 would mean the LP relaxation is at most 1/3 of the ILP optimal.</strong> This would imply no LP-rounding algorithm can achieve better than a 3-approximation. But it wouldn't by itself say anything about the NP-hardness of Vertex Cover — integrality gap is a property of the LP formulation, not of the underlying problem. You could potentially find a different LP formulation with a smaller gap, or use a completely different algorithmic approach. The current best known integrality gap for Vertex Cover LP is 2, and it's conjectured (via the Unique Games Conjecture) that no poly-time algorithm can beat a 2-approximation.</p>
+      <p style="margin-top:10px"><strong>(c) LP relaxation for k-EDP gives a fractional multi-commodity flow.</strong> In the LP relaxation, you can route 0.5 units of each commodity through shared edges. This fractional solution can achieve much higher "flow" than any integer EDP solution. When you try to round: you need to turn fractional paths into 0/1 paths (either routed or not), but rounding up all paths that carry any flow would violate the edge-disjoint constraint (multiple paths using the same edge). The integrality gap for multi-commodity flow is Θ(√n), which is large. So LP rounding for k-EDP gives the same √|E| approximation as greedy — and the LP approach is much more complex to analyze for no gain.</p>
+    </div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn" onclick="goTo(6)">← Big Picture</button>
+    <button class="nav-btn go" onclick="goTo(0)" style="background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.3);color:var(--a2)">↺ Start Over</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── NAV ─────────────────────────────────────────────────
+let cur = 0;
+function goTo(i) {
+  document.getElementById('sec'+cur).classList.remove('active');
+  cur = i;
+  document.getElementById('sec'+cur).classList.add('active');
+  document.querySelectorAll('.ps').forEach((s,idx) =>
+    s.className='ps'+(idx<i?' done':idx===i?' active':''));
+  document.getElementById('progLabel').textContent=`Part ${i+1} / 8`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleSol(id) {
+  document.getElementById('sol'+id).classList.toggle('open');
+}
+
+// ── LP CANVAS ─────────────────────────────────────────────
+// Farm LP: max c1*x1 + c2*x2
+// s.t. x1+x2<=100, 2x1+4x2<=280, x1,x2>=0
+// Vertices: (0,0),(100,0),(60,40),(0,70)
+const verts = [{x:0,y:0},{x:100,y:0},{x:60,y:40},{x:0,y:70}];
+
+function drawLP() {
+  const c1 = parseFloat(document.getElementById('c1slider').value);
+  const c2 = parseFloat(document.getElementById('c2slider').value);
+  document.getElementById('c1val').textContent = c1;
+  document.getElementById('c2val').textContent = c2;
+
+  const canvas = document.getElementById('lpCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = 60;
+  const scaleX = (W - PAD*2) / 120;
+  const scaleY = (H - PAD*2) / 90;
+
+  function px(x) { return PAD + x * scaleX; }
+  function py(y) { return H - PAD - y * scaleY; }
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle = '#0a0d13';
+  ctx.fillRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+  ctx.lineWidth = 0.5;
+  for(let x=0;x<=120;x+=20){ctx.beginPath();ctx.moveTo(px(x),PAD);ctx.lineTo(px(x),H-PAD);ctx.stroke();}
+  for(let y=0;y<=90;y+=10){ctx.beginPath();ctx.moveTo(PAD,py(y));ctx.lineTo(W-PAD,py(y));ctx.stroke();}
+
+  // Feasible region
+  ctx.beginPath();
+  ctx.moveTo(px(0),py(0)); ctx.lineTo(px(100),py(0)); ctx.lineTo(px(60),py(40)); ctx.lineTo(px(0),py(70));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(88,166,255,0.08)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(88,166,255,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Constraint lines
+  const lines = [
+    {color:'rgba(210,168,255,0.7)',label:'x₁+x₂=100',pts:[{x:0,y:100},{x:100,y:0}]},
+    {color:'rgba(247,129,102,0.7)',label:'2x₁+4x₂=280',pts:[{x:0,y:70},{x:140,y:0}]},
+  ];
+  lines.forEach(l => {
+    ctx.strokeStyle = l.color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    const p0 = l.pts[0], p1 = l.pts[1];
+    ctx.moveTo(px(p0.x),py(p0.y)); ctx.lineTo(px(p1.x),py(p1.y));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Objective level curves
+  const optVal = verts.reduce((best, v) => {
+    const val = c1*v.x + c2*v.y;
+    return val > best.val ? {val, x:v.x, y:v.y} : best;
+  }, {val:-Infinity});
+
+  const levels = [optVal.val * 0.3, optVal.val * 0.6, optVal.val];
+  levels.forEach((L, i) => {
+    if (c2 === 0 && c1 === 0) return;
+    ctx.strokeStyle = i===2 ? 'rgba(255,166,87,0.9)' : 'rgba(255,166,87,0.25)';
+    ctx.lineWidth = i===2 ? 2 : 1;
+    ctx.setLineDash(i===2 ? [] : [4,4]);
+    ctx.beginPath();
+    // c1*x + c2*y = L → if c2!=0: y = (L - c1*x)/c2
+    if (c2 !== 0) {
+      const x0 = 0, y0 = (L - c1*x0)/c2;
+      const x1 = 120, y1 = (L - c1*x1)/c2;
+      ctx.moveTo(px(x0), py(y0)); ctx.lineTo(px(x1), py(y1));
+    } else {
+      const x0 = L/c1;
+      ctx.moveTo(px(x0), PAD); ctx.lineTo(px(x0), H-PAD);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Axes
+  ctx.strokeStyle = '#374151'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(PAD,PAD); ctx.lineTo(PAD,H-PAD); ctx.lineTo(W-PAD,H-PAD); ctx.stroke();
+  ctx.fillStyle = '#7d8590'; ctx.font = '11px Cousine, monospace';
+  for(let x=0;x<=100;x+=20){ctx.fillText(x, px(x)-6, H-PAD+16);}
+  for(let y=0;y<=70;y+=10){ctx.fillText(y, PAD-30, py(y)+4);}
+  ctx.fillText('x₁ (corn)', W-PAD-30, H-PAD+28);
+  ctx.fillText('x₂', PAD+6, PAD-8);
+
+  // Vertices
+  verts.forEach(v => {
+    const val = c1*v.x + c2*v.y;
+    const isOpt = Math.abs(val - optVal.val) < 0.01;
+    ctx.beginPath();
+    ctx.arc(px(v.x), py(v.y), isOpt?9:5, 0, Math.PI*2);
+    ctx.fillStyle = isOpt ? '#ffa657' : 'rgba(88,166,255,0.6)';
+    ctx.fill();
+    if(isOpt){
+      ctx.strokeStyle = '#ffa657'; ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.fillStyle = isOpt ? '#ffa657' : '#7d8590';
+    ctx.font = isOpt ? 'bold 11px Cousine, monospace' : '10px Cousine, monospace';
+    ctx.fillText(`(${v.x},${v.y})=${val.toFixed(0)}`, px(v.x)+12, py(v.y)+4);
+  });
+
+  // Legend
+  ctx.font = '10px Cousine, monospace';
+  ctx.fillStyle = 'rgba(210,168,255,0.8)'; ctx.fillText('── land constraint', 70, 22);
+  ctx.fillStyle = 'rgba(247,129,102,0.8)'; ctx.fillText('── water constraint', 240, 22);
+  ctx.fillStyle = 'rgba(255,166,87,0.8)'; ctx.fillText('── objective lines', 420, 22);
+
+  // Update info
+  document.getElementById('optX1').textContent = optVal.x;
+  document.getElementById('optX2').textContent = optVal.y;
+  document.getElementById('optVal').textContent = '$'+optVal.val.toFixed(0);
+  document.getElementById('lpExplain').textContent = `Optimal at (${optVal.x}, ${optVal.y}): plant ${optVal.x} acres of corn and ${optVal.y} acres of wheat for $${optVal.val.toFixed(0)} profit. The orange line is the objective at maximum — touching the feasible region at exactly one corner vertex.`;
+}
+drawLP();
+
+// ── SIMPLEX ANIMATION ─────────────────────────────────────
+let sxStep = 0;
+const sxSteps = [
+  { msg:'Start at vertex (0,0). Profit = 0. Check neighbors: (100,0) gives profit=300 → better! Move there.', active:0, fn:()=>{
+    document.getElementById('sv0').setAttribute('fill','#374151');
+    document.getElementById('sv1').setAttribute('stroke','#58a6ff');
+    document.getElementById('sp1').setAttribute('stroke','#58a6ff');
+    document.getElementById('sl1').setAttribute('fill','#79c0ff');
+  }},
+  { msg:'At (100,0). Profit = 300. Check neighbors: (60,40) gives profit=380 → better! Move there.', fn:()=>{
+    document.getElementById('sv1').setAttribute('fill','#374151');
+    document.getElementById('sv2').setAttribute('stroke','#58a6ff');
+    document.getElementById('sp2').setAttribute('stroke','#58a6ff');
+    document.getElementById('sl2').setAttribute('fill','#79c0ff');
+  }},
+  { msg:'At (60,40). Profit = 380. Check all neighbors: (0,70) gives 350 < 380. (100,0) gives 300 < 380. No improvement possible. OPTIMAL FOUND! Simplex terminates.', fn:()=>{
+    document.getElementById('sv2').setAttribute('fill','#ffa657');
+    document.getElementById('sv2').setAttribute('stroke','#ffa657');
+    document.getElementById('sxBtn').disabled=true;
+  }},
+];
+function stepSimplex(){
+  if(sxStep>=sxSteps.length)return;
+  const s=sxSteps[sxStep];
+  document.getElementById('sxMsg').textContent=s.msg;
+  s.fn(); sxStep++;
+}
+function resetSimplex(){
+  sxStep=0;document.getElementById('sxBtn').disabled=false;
+  document.getElementById('sxMsg').textContent='Simplex starts at a feasible vertex (origin). It moves to adjacent better vertices. Click Step.';
+  ['sv0','sv1','sv2','sv3'].forEach(id=>{const el=document.getElementById(id);el.setAttribute('fill','#374151');el.setAttribute('stroke','#374151');});
+  document.getElementById('sv0').setAttribute('stroke','#58a6ff');
+  ['sp1','sp2'].forEach(id=>document.getElementById(id).setAttribute('stroke','transparent'));
+  ['sl1','sl2'].forEach(id=>document.getElementById(id).setAttribute('fill','transparent'));
+}
+
+// ── QUIZ ─────────────────────────────────────────────────
+const qzdata=[
+  {q:'Why is LP solvable in polynomial time but ILP is NP-hard?', a:'LP optimizes over a convex region (the feasible polytope) — the optimal is always at a vertex, and there are efficient methods to find it (Ellipsoid, Interior Point). ILP additionally requires variables to be integers — this combinatorial constraint means you can\'t rely on convexity, and the search space is exponential.'},
+  {q:'What is the connection between Max-Flow Min-Cut and LP duality?', a:'Max-Flow Min-Cut IS LP strong duality applied to the flow LP. The primal LP maximizes flow (max flow), and its dual minimizes cut capacity (min cut). Strong duality says primal optimal = dual optimal, which is exactly the Max-Flow Min-Cut theorem.'},
+  {q:'When does LP relaxation give integer solutions automatically?', a:'When the constraint matrix A is totally unimodular (TU) and b is integer, the LP optimal solution is always integer. Flow networks have TU constraint matrices — this is why max flow and bipartite matching (both flow-based) get integer solutions for free from LP.'},
+];
+const qzEl=document.getElementById('qzlp');
+qzdata.forEach((q,i)=>{
+  const d=document.createElement('div');
+  d.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 15px;cursor:pointer;transition:border-color 0.2s';
+  d.innerHTML=`<div style="font-size:14px;color:var(--text);font-weight:600">Q${i+1}: ${q.q}</div><div style="display:none;margin-top:9px;font-size:13px;color:#8b949e;line-height:1.65;border-top:1px solid var(--border);padding-top:9px">${q.a}</div>`;
+  d.onclick=()=>{const a=d.querySelector('div:last-child');const s=a.style.display!=='none';a.style.display=s?'none':'block';d.style.borderColor=s?'var(--border)':'rgba(63,185,80,0.4)';};
+  qzEl.appendChild(d);
+});
+</script>
+</body>
+</html>

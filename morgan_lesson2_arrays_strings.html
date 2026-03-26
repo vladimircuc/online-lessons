@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays & Strings — Morgan Session 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<style>
+:root {
+  --bg: #0c0f1e;
+  --surface: #131a2e;
+  --surface2: #192236;
+  --border: #1f2f4a;
+  --accent: #5bc8fa;
+  --accent2: #ffc46b;
+  --accent3: #a78bfa;
+  --danger: #ff6b7a;
+  --success: #4ade80;
+  --text: #dde6f5;
+  --muted: #7a90b5;
+  --bright: #ffffff;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Lato', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.7; display:flex; flex-direction:column; }
+
+/* TOP BAR */
+#topbar {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  height:54px;
+  flex-shrink:0;
+  gap:16px;
+}
+.logo { font-family:var(--display); font-size:15px; font-weight:800; color:var(--bright); }
+.logo span { color:var(--accent); }
+.chip { font-family:var(--mono); font-size:10px; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+.chip-red { background:rgba(255,107,122,0.12); border:1px solid rgba(255,107,122,0.4); color:var(--danger); }
+.chip-purple { background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.4); color:var(--accent3); }
+
+/* TAB BAR */
+#tabbar {
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  display:flex;
+  align-items:stretch;
+  overflow-x:auto;
+  flex-shrink:0;
+  height:46px;
+}
+#tabbar::-webkit-scrollbar { height:0; }
+.tb {
+  padding:0 18px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--muted);
+  cursor:pointer;
+  border:none;
+  background:none;
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;
+  white-space:nowrap;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.tb:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+.tb.active { color:var(--accent); border-bottom-color:var(--accent); background:rgba(91,200,250,0.05); }
+.tb .tn { font-size:10px; background:rgba(91,200,250,0.12); color:var(--accent); border-radius:3px; padding:1px 5px; }
+.tb.exam-tab.active { color:var(--accent2); border-bottom-color:var(--accent2); background:rgba(255,196,107,0.05); }
+.tb.exam-tab .tn { background:rgba(255,196,107,0.12); color:var(--accent2); }
+
+/* CONTENT */
+#content {
+  flex:1;
+  overflow-y:auto;
+  padding:40px 56px 64px;
+  max-width:980px;
+  width:100%;
+  margin:0 auto;
+}
+#content::-webkit-scrollbar { width:5px; }
+#content::-webkit-scrollbar-track { background:var(--bg); }
+#content::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+.panel { display:none; }
+.panel.active { display:block; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* HEADERS */
+.ph { margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+.ptag { font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px; }
+.ph h1 { font-family:var(--display); font-size:32px; font-weight:800; color:var(--bright); line-height:1.15; margin-bottom:8px; }
+.ph p { color:var(--muted); font-size:14px; max-width:560px; }
+
+h2 { font-family:var(--display); font-size:20px; font-weight:700; color:var(--bright); margin:36px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h2:first-of-type { margin-top:0; }
+h3 { font-family:var(--sans); font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:0.08em; margin:20px 0 8px; }
+p { margin-bottom:12px; }
+strong { color:var(--bright); }
+ul,ol { padding-left:22px; margin-bottom:14px; }
+li { margin-bottom:6px; }
+
+/* BOXES */
+.box { border-radius:7px; padding:14px 18px; margin:16px 0; font-size:14px; }
+.warn { background:rgba(255,107,122,0.08); border:1px solid rgba(255,107,122,0.3); border-left:4px solid var(--danger); }
+.tip  { background:rgba(91,200,250,0.07); border:1px solid rgba(91,200,250,0.22); border-left:4px solid var(--accent); }
+.prof { background:rgba(255,196,107,0.07); border:1px solid rgba(255,196,107,0.28); border-left:4px solid var(--accent2); }
+.good { background:rgba(74,222,128,0.07); border:1px solid rgba(74,222,128,0.25); border-left:4px solid var(--success); }
+.bt { font-family:var(--mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+.warn .bt { color:var(--danger); }
+.tip  .bt  { color:var(--accent); }
+.prof .bt  { color:var(--accent2); }
+.good .bt  { color:var(--success); }
+
+/* CODE */
+.cw { margin:14px 0; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+.cl { background:var(--surface2); padding:8px 16px; font-family:var(--mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.cpb { background:none; border:1px solid var(--border); color:var(--muted); font-family:var(--mono); font-size:10px; padding:3px 10px; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+.cpb:hover { color:var(--accent); border-color:var(--accent); }
+pre { margin:0!important; border-radius:0!important; }
+pre code { font-family:var(--mono)!important; font-size:13px!important; line-height:1.65!important; }
+.hljs { background:#0c1628!important; padding:20px!important; }
+p code,li code,td code,span code { font-family:var(--mono); font-size:12.5px; background:var(--surface2); color:var(--accent); padding:2px 6px; border-radius:3px; }
+
+/* TABLE */
+table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+th { background:var(--surface2); color:var(--accent); font-family:var(--mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* TWO COL */
+.two { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0; }
+@media(max-width:700px){.two{grid-template-columns:1fr;}}
+
+/* PRACTICE */
+.prac { background:var(--surface); border:1px solid var(--border); border-radius:9px; margin:22px 0; overflow:hidden; }
+.ph2 { background:var(--surface2); padding:12px 18px; font-family:var(--mono); font-size:11px; color:var(--accent2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.pb { padding:18px; }
+.sb { background:none; border:1px solid var(--accent); color:var(--accent); font-family:var(--mono); font-size:11px; padding:6px 14px; border-radius:4px; cursor:pointer; margin-top:14px; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; }
+.sb:hover { background:var(--accent); color:var(--bg); }
+.sp { display:none; margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); }
+.sp.open { display:block; animation:fadeIn 0.2s ease; }
+
+/* ARRAY VISUALIZER */
+.arr-vis { display:flex; align-items:flex-start; gap:0; margin:16px 0; font-family:var(--mono); font-size:14px; overflow-x:auto; padding-bottom:4px; }
+.arr-cell { display:flex; flex-direction:column; align-items:center; min-width:52px; }
+.arr-box { width:52px; height:52px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:var(--bright); transition:all 0.3s; position:relative; }
+.arr-box.highlight { border-color:var(--accent2); background:rgba(255,196,107,0.12); color:var(--accent2); }
+.arr-box.active { border-color:var(--accent); background:rgba(91,200,250,0.15); color:var(--accent); }
+.arr-box.modified { border-color:var(--success); background:rgba(74,222,128,0.12); color:var(--success); }
+.arr-idx { font-size:11px; color:var(--accent); margin-top:4px; }
+.arr-lbl { font-size:10px; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em; }
+
+/* INTERACTIVE ARRAY */
+.ia-wrap { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:20px; margin:16px 0; }
+.ia-title { font-family:var(--mono); font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+.ia-btns { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.ibtn { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:7px 14px; border-radius:6px; cursor:pointer; transition:all 0.15s; }
+.ibtn.pri { border-color:var(--accent); color:var(--accent); }
+.ibtn.pri:hover { background:var(--accent); color:var(--bg); }
+.ibtn:hover { border-color:var(--muted); }
+.ia-info { font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:10px; padding:8px 12px; background:var(--bg); border-radius:6px; border-left:3px solid var(--accent2); min-height:36px; }
+.ia-out { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:var(--mono); font-size:12px; color:var(--success); margin-top:10px; min-height:36px; white-space:pre; }
+
+/* 2D VIS */
+.grid-vis { display:inline-grid; gap:3px; margin:14px 0; }
+.gcell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; border:1px solid var(--border); border-radius:4px; color:var(--text); transition:all 0.3s; }
+.gcell.active { background:rgba(91,200,250,0.18); border-color:var(--accent); color:var(--accent); }
+.gcell.diag { background:rgba(255,196,107,0.15); border-color:var(--accent2); color:var(--accent2); }
+.gcell.zero { color:var(--muted); }
+
+/* STRING VIS */
+.str-vis { display:flex; align-items:flex-start; gap:0; margin:14px 0; font-family:var(--mono); overflow-x:auto; }
+.sc { display:flex; flex-direction:column; align-items:center; min-width:40px; }
+.sb2 { width:40px; height:40px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:var(--bright); transition:all 0.3s; }
+.sb2.null { color:var(--danger); border-color:rgba(255,107,122,0.4); background:rgba(255,107,122,0.08); font-size:12px; }
+.sb2.highlight { border-color:var(--accent); background:rgba(91,200,250,0.13); color:var(--accent); }
+.si { font-size:10px; color:var(--accent3); margin-top:4px; }
+
+/* QUIZ */
+.qcard { background:var(--surface); border:1px solid var(--border); border-radius:9px; margin:18px 0; overflow:hidden; }
+.qh { background:var(--surface2); padding:12px 18px; font-family:var(--mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; }
+.qn { color:var(--accent2); font-weight:700; }
+.qb { padding:18px; }
+.qt { font-size:14.5px; color:var(--bright); margin-bottom:14px; line-height:1.6; }
+.opts { list-style:none; padding:0; margin:0; }
+.opt { padding:10px 14px; border-radius:6px; border:1px solid var(--border); margin-bottom:8px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:12px; transition:all 0.15s; }
+.opt:hover { border-color:var(--accent); background:rgba(91,200,250,0.05); }
+.opt.correct { border-color:var(--success); background:rgba(74,222,128,0.09); color:var(--success); pointer-events:none; }
+.opt.wrong   { border-color:var(--danger); background:rgba(255,107,122,0.09); color:var(--danger); pointer-events:none; }
+.ol { font-family:var(--mono); font-size:12px; width:24px; height:24px; border-radius:4px; background:var(--surface2); display:flex; align-items:center; justify-content:center; color:var(--accent); min-width:24px; font-weight:700; }
+.qe { display:none; margin-top:12px; padding:12px 15px; background:rgba(91,200,250,0.07); border-radius:6px; border-left:3px solid var(--accent); font-size:13.5px; }
+.qe.show { display:block; animation:fadeIn 0.2s ease; }
+
+/* EXAM PROBLEMS */
+.exam-prob { background:var(--surface); border:2px solid rgba(255,196,107,0.3); border-radius:10px; margin:22px 0; overflow:hidden; }
+.ep-head { background:rgba(255,196,107,0.08); padding:14px 20px; font-family:var(--mono); font-size:12px; color:var(--accent2); border-bottom:1px solid rgba(255,196,107,0.2); display:flex; justify-content:space-between; align-items:center; }
+.ep-body { padding:20px; }
+.ep-pts { font-size:11px; color:var(--muted); }
+
+/* PAGE NAV */
+.pnav { display:flex; justify-content:space-between; align-items:center; margin-top:48px; padding-top:22px; border-top:1px solid var(--border); }
+.na { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:9px 18px; border-radius:6px; cursor:pointer; transition:all 0.15s; }
+.na:hover { border-color:var(--accent); color:var(--accent); }
+.na.inv { visibility:hidden; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">C<span>++</span> Session 2</div>
+  <div class="chip chip-red">📅 EXAM APRIL 1</div>
+  <div class="chip chip-purple">Arrays &amp; Strings</div>
+  <div style="flex:1"></div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Morgan</div>
+</div>
+
+<div id="tabbar">
+  <button class="tb active" onclick="go(0)"><span class="tn">01</span>What is an Array?</button>
+  <button class="tb" onclick="go(1)"><span class="tn">02</span>1D Operations</button>
+  <button class="tb" onclick="go(2)"><span class="tn">03</span>Arrays + Functions</button>
+  <button class="tb" onclick="go(3)"><span class="tn">04</span>2D Arrays</button>
+  <button class="tb" onclick="go(4)"><span class="tn">05</span>C-Strings</button>
+  <button class="tb" onclick="go(5)"><span class="tn">06</span>String Objects</button>
+  <button class="tb exam-tab" onclick="go(6)"><span class="tn">★</span>Exam Problems</button>
+</div>
+
+<div id="content">
+
+<!-- ============================== TAB 0: WHAT IS AN ARRAY ============================== -->
+<div class="panel active" id="t0">
+  <div class="ph">
+    <div class="ptag">// 01 — intro_to_arrays.cpp</div>
+    <h1>What is an Array?</h1>
+    <p>From complete scratch — what an array is, what an index is, how memory works, and how to declare and access elements.</p>
+  </div>
+
+  <h2>The Problem Arrays Solve</h2>
+  <p>Imagine storing grades for 5 students. Without arrays you'd need 5 separate variables:</p>
+  <div class="cw"><div class="cl"><span>the hard way</span></div>
+  <pre><code class="language-cpp">int grade1 = 90;
+int grade2 = 85;
+int grade3 = 72;
+int grade4 = 95;
+int grade5 = 88;
+// What if you had 100 students?? You'd need 100 variables.</code></pre></div>
+
+  <p>With an array, you store them all under <strong>one name</strong>, accessed by position:</p>
+  <div class="cw"><div class="cl"><span>the array way</span></div>
+  <pre><code class="language-cpp">int grades[5] = {90, 85, 72, 95, 88};
+// One name. Five values. Access any of them by index.</code></pre></div>
+
+  <h2>The Index — The Most Important Concept</h2>
+  <div class="box tip"><div class="bt">💡 The Golden Rule</div>
+  Arrays in C++ are <strong>zero-indexed</strong>. The first element is always at index <strong>0</strong>, not 1. The last element is always at index <strong>size - 1</strong>.
+  </div>
+
+  <p>Think of an array like a row of labeled boxes. Each box holds a value. The label on the box is the index:</p>
+
+  <div class="arr-vis" id="vis-intro">
+    <div class="arr-cell"><div class="arr-lbl">value</div><div class="arr-box">90</div><div class="arr-idx">[0]</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">85</div><div class="arr-idx">[1]</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">72</div><div class="arr-idx">[2]</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">95</div><div class="arr-idx">[3]</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box highlight">88</div><div class="arr-idx">[4]</div></div>
+  </div>
+  <p style="font-size:13px;color:var(--muted)">Array name: <code>grades</code>. Size: 5. Index runs from 0 to 4 (size - 1 = 4). Highlighted: last element.</p>
+
+  <div class="cw"><div class="cl"><span>accessing elements</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">int grades[5] = {90, 85, 72, 95, 88};
+
+cout &lt;&lt; grades[0];    // 90  — first element
+cout &lt;&lt; grades[2];    // 72  — third element (index 2)
+cout &lt;&lt; grades[4];    // 88  — last element (index = size-1 = 4)
+
+// Changing a value
+grades[1] = 100;      // now grades[1] = 100 instead of 85
+
+// NEVER do this — goes out of bounds!
+cout &lt;&lt; grades[5];    // DANGER: array only has indices 0-4</code></pre></div>
+
+  <h2>How to Declare an Array</h2>
+  <div class="cw"><div class="cl"><span>declaring_arrays.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// Syntax: type  name[size];
+int     arr[10];           // 10 integers — contains garbage until assigned
+double  scores[15];        // 15 doubles
+float   temps[5];          // 5 floats
+char    letters[26];       // 26 characters
+
+// Declare AND initialize at the same time
+int arr[5] = {3, -5, 14, 100, -67};
+
+// Partial init — remaining slots become 0
+int arr[10] = {1, 2, 3};    // arr[3] through arr[9] are all 0
+
+// Size must be a constant — you can't use a regular variable as size
+const int SIZE = 10;
+int arr[SIZE];               // this is fine
+int n = 10;
+int arr[n];                  // this may NOT work in all compilers — avoid it</code></pre></div>
+
+  <h2>Interactive — Click an Index</h2>
+  <div class="ia-wrap">
+    <div class="ia-title">⚡ Click any box to see what grades[i] returns</div>
+    <div class="arr-vis" id="vis-click">
+      <div class="arr-cell"><div class="arr-lbl">grades</div><div class="arr-box" onclick="clickBox(this,0,90)" style="cursor:pointer">90</div><div class="arr-idx">[0]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" onclick="clickBox(this,1,85)" style="cursor:pointer">85</div><div class="arr-idx">[1]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" onclick="clickBox(this,2,72)" style="cursor:pointer">72</div><div class="arr-idx">[2]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" onclick="clickBox(this,3,95)" style="cursor:pointer">95</div><div class="arr-idx">[3]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" onclick="clickBox(this,4,88)" style="cursor:pointer">88</div><div class="arr-idx">[4]</div></div>
+    </div>
+    <div class="ia-info" id="box-info">Click any box above to see how you access that element.</div>
+  </div>
+
+  <h2>Array Memory — How the Address Formula Works</h2>
+  <p>In memory, array elements sit <strong>right next to each other</strong>. That's why we can calculate any element's exact address:</p>
+  <div class="box tip"><div class="bt">💡 Address Formula</div>
+  <code>Address = Base_Address + sizeof(type) × index</code><br><br>
+  sizeof values: <code>int</code>=4, <code>double</code>=8, <code>float</code>=4, <code>short</code>=2, <code>char</code>=1
+  </div>
+
+  <div class="cw"><div class="cl"><span>address_calculation.cpp</span></div>
+  <pre><code class="language-cpp">// Example: int array starting at address 1000
+// int arr[5] = {90, 85, 72, 95, 88};
+// sizeof(int) = 4
+
+// arr[0] lives at: 1000 + 4 × 0 = 1000
+// arr[1] lives at: 1000 + 4 × 1 = 1004
+// arr[2] lives at: 1000 + 4 × 2 = 1008
+// arr[3] lives at: 1000 + 4 × 3 = 1012
+// arr[4] lives at: 1000 + 4 × 4 = 1016
+
+// Each int takes 4 bytes, so elements are 4 apart in memory</code></pre></div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — Index basics</span></div>
+    <div class="pb">
+      <p>Given <code>int arr[6] = {10, 20, 30, 40, 50, 60};</code></p>
+      <ol>
+        <li>What is <code>arr[0]</code>?</li>
+        <li>What is <code>arr[5]</code>?</li>
+        <li>What index holds the value 30?</li>
+        <li>What is the last valid index?</li>
+        <li>What does <code>arr[6]</code> do?</li>
+      </ol>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <ol>
+          <li><code>arr[0] = 10</code> — first element, always index 0</li>
+          <li><code>arr[5] = 60</code> — last element, index = size - 1 = 5</li>
+          <li>Index <strong>2</strong> — arr[2] = 30</li>
+          <li>Index <strong>5</strong> (size is 6, so last valid index = 6 - 1 = 5)</li>
+          <li>Out of bounds — <strong>undefined behavior</strong>, could crash or give garbage. Never do this.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — Address calculation</span></div>
+    <div class="pb">
+      <p>An array of <code>double</code> starts at address 2000. sizeof(double) = 8. What address is element 7 at?</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>steps</span></div>
+        <pre><code class="language-cpp">Address = Base + sizeof(double) × index
+        = 2000 + 8 × 7
+        = 2000 + 56
+        = 2056</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na inv">←</button>
+    <button class="na" onclick="go(1)">1D Operations →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 1: 1D OPERATIONS ============================== -->
+<div class="panel" id="t1">
+  <div class="ph">
+    <div class="ptag">// 02 — array_operations.cpp</div>
+    <h1>1D Array Operations</h1>
+    <p>Reading from user, printing, looping through, finding values, and modifying elements.</p>
+  </div>
+
+  <h2>Reading and Printing an Array</h2>
+  <div class="box prof"><div class="bt">⭐ Professor's Exact Pattern — Memorize This</div>
+  Read with a for loop using <code>cin &gt;&gt; arr[i]</code>. Print with a for loop using <code>arr[i] &lt;&lt; "\t"</code>. One <code>endl</code> after the loop. This exact pattern appears on every exam.
+  </div>
+
+  <div class="cw"><div class="cl"><span>read_and_print.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+int main()
+{
+    int arr[5];
+
+    // Reading from user — loop through each index
+    cout &lt;&lt; "Enter 5 values: ";
+    for(int i=0; i&lt;5; i++)
+        cin &gt;&gt; arr[i];      // reads one value into arr[i] each time
+
+    // Printing — tab between each element, endl after loop
+    cout &lt;&lt; "The array is: ";
+    for(int i=0; i&lt;5; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";   // \t = tab character
+    cout &lt;&lt; endl;                  // new line after the whole array
+
+    return 0;
+}</code></pre></div>
+
+  <h2>Interactive — Watch a Loop Fill an Array</h2>
+  <div class="ia-wrap">
+    <div class="ia-title">⚡ Array Fill Visualizer — see what happens each iteration</div>
+    <div class="arr-vis" id="fill-vis">
+      <div class="arr-cell"><div class="arr-lbl">arr</div><div class="arr-box" id="fc0">?</div><div class="arr-idx">[0]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="fc1">?</div><div class="arr-idx">[1]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="fc2">?</div><div class="arr-idx">[2]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="fc3">?</div><div class="arr-idx">[3]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="fc4">?</div><div class="arr-idx">[4]</div></div>
+    </div>
+    <div class="ia-info" id="fill-info">Click Next Step to simulate reading values into the array.</div>
+    <div class="ia-btns">
+      <button class="ibtn pri" onclick="fillNext()">▶ Next Step</button>
+      <button class="ibtn" onclick="fillReset()">↺ Reset</button>
+    </div>
+  </div>
+
+  <h2>Looping Through an Array</h2>
+  <div class="cw"><div class="cl"><span>common_loops.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">int arr[5] = {4, -2, 7, 0, 3};
+
+// Sum all elements
+int sum = 0;
+for(int i=0; i&lt;5; i++)
+    sum += arr[i];           // sum = sum + arr[i]
+cout &lt;&lt; "Sum: " &lt;&lt; sum &lt;&lt; endl;    // Sum: 12
+
+// Count negatives
+int negCount = 0;
+for(int i=0; i&lt;5; i++)
+{
+    if(arr[i] &lt; 0)
+        negCount++;
+}
+cout &lt;&lt; "Negatives: " &lt;&lt; negCount &lt;&lt; endl;    // Negatives: 1
+
+// Find the maximum
+int max = arr[0];            // assume first is max
+for(int i=1; i&lt;5; i++)      // start at 1 since we already grabbed arr[0]
+{
+    if(arr[i] &gt; max)
+        max = arr[i];        // update if found something bigger
+}
+cout &lt;&lt; "Max: " &lt;&lt; max &lt;&lt; endl;    // Max: 7
+
+// Linear search — find index of a value
+int key = 7;
+int found = -1;              // -1 means not found yet
+for(int i=0; i&lt;5; i++)
+{
+    if(arr[i] == key)
+    {
+        found = i;           // store the index where we found it
+        break;               // stop searching once found
+    }
+}
+if(found == -1)
+    cout &lt;&lt; "Not found" &lt;&lt; endl;
+else
+    cout &lt;&lt; "Found at index " &lt;&lt; found &lt;&lt; endl;    // Found at index 2</code></pre></div>
+
+  <h2>Modifying Array Elements</h2>
+  <div class="cw"><div class="cl"><span>modifying.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">int arr[5] = {10, 20, 30, 40, 50};
+
+// Double every element
+for(int i=0; i&lt;5; i++)
+    arr[i] = arr[i] * 2;
+// arr is now: {20, 40, 60, 80, 100}
+
+// Replace every even element with 0
+for(int i=0; i&lt;5; i++)
+{
+    if(arr[i] % 2 == 0)
+        arr[i] = 0;
+}
+
+// CAREFUL: when replacing elements using neighbors, copy first!
+int arr2[5] = {1, 2, 3, 4, 5};
+int temp[5];
+for(int i=0; i&lt;5; i++)
+    temp[i] = arr2[i];       // copy original values
+
+for(int i=0; i&lt;4; i++)
+    arr2[i] = temp[i] + temp[i+1];   // use temp, not arr2 (which is changing!)
+// If you used arr2[i] + arr2[i+1], arr2[i] would already be modified!</code></pre></div>
+
+  <div class="box warn"><div class="bt">⚠ The Temp Array Trap</div>
+  Whenever you need to replace an element using its neighbors, <strong>always copy to a temp array first</strong>. Otherwise element 0 changes, then when you calculate element 1 using element 0 you get the wrong (new) value. This is why sumReplace, moduli, and alternates all need a temp copy.
+  </div>
+
+  <h2>Interactive — Watch Array Modification</h2>
+  <div class="ia-wrap">
+    <div class="ia-title">⚡ "Double every element" — Step through the loop</div>
+    <div class="arr-vis">
+      <div class="arr-cell"><div class="arr-lbl">arr</div><div class="arr-box" id="mod0">10</div><div class="arr-idx">[0]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="mod1">20</div><div class="arr-idx">[1]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="mod2">30</div><div class="arr-idx">[2]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="mod3">40</div><div class="arr-idx">[3]</div></div>
+      <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box" id="mod4">50</div><div class="arr-idx">[4]</div></div>
+    </div>
+    <div class="ia-info" id="mod-info">Click Next Step. Each step: arr[i] = arr[i] * 2</div>
+    <div class="ia-btns">
+      <button class="ibtn pri" onclick="modNext()">▶ Next Step</button>
+      <button class="ibtn" onclick="modReset()">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — Trace the output</span></div>
+    <div class="pb">
+      <div class="cw"><div class="cl"><span>trace this</span></div>
+      <pre><code class="language-cpp">int arr[5] = {3, -1, 4, -1, 5};
+int count = 0;
+for(int i=0; i&lt;5; i++)
+{
+    if(arr[i] &gt; 0)
+        count++;
+}
+cout &lt;&lt; count &lt;&lt; endl;</code></pre></div>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <p>Loop checks each element: 3&gt;0 (yes), -1&gt;0 (no), 4&gt;0 (yes), -1&gt;0 (no), 5&gt;0 (yes). count = <strong>3</strong>.</p>
+        <div class="box tip"><div class="bt">Exam Tip</div>For output questions, always explain WHY. "count=3 because 3 elements are positive: arr[0]=3, arr[2]=4, arr[4]=5" is a full credit answer.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — Write the code</span></div>
+    <div class="pb">
+      <p>Write the lines of code to: declare an array of 6 ints, read the values from the user, then print the sum of all elements.</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>solution</span></div>
+        <pre><code class="language-cpp">int arr[6];
+cout &lt;&lt; "Enter 6 values: ";
+for(int i=0; i&lt;6; i++)
+    cin &gt;&gt; arr[i];
+
+int sum = 0;
+for(int i=0; i&lt;6; i++)
+    sum += arr[i];
+
+cout &lt;&lt; "Sum: " &lt;&lt; sum &lt;&lt; endl;</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 3 — Spot what's wrong</span></div>
+    <div class="pb">
+      <div class="cw"><div class="cl"><span>find the bug</span></div>
+      <pre><code class="language-cpp">int arr[5] = {10, 20, 30, 40, 50};
+for(int i=0; i&lt;=5; i++)           // bug is here
+    cout &lt;&lt; arr[i] &lt;&lt; "\t";
+cout &lt;&lt; endl;</code></pre></div>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <p>The condition is <code>i &lt;= 5</code> which means i goes 0,1,2,3,4,<strong>5</strong>. But arr only has indices 0–4. When i=5, <code>arr[5]</code> is out of bounds. Fix: change to <code>i &lt; 5</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(0)">← What is an Array?</button>
+    <button class="na" onclick="go(2)">Arrays + Functions →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 2: ARRAYS + FUNCTIONS ============================== -->
+<div class="panel" id="t2">
+  <div class="ph">
+    <div class="ptag">// 03 — arrays_and_functions.cpp</div>
+    <h1>Arrays + Functions</h1>
+    <p>How to pass arrays to functions, the professor's required format, and how to write the array functions that appear on the exam.</p>
+  </div>
+
+  <div class="box prof"><div class="bt">⭐ The Exam Pattern — Read This First</div>
+  The code writing question on the exam is always this same pattern: <strong>read array in main → pass to function → function modifies or computes → print result in main</strong>. If you can do this in your sleep, you pass.
+  </div>
+
+  <h2>How Passing an Array Works</h2>
+  <p>When you pass an array to a function, you're NOT copying the whole array. The function gets <strong>a direct connection to the original</strong>. Any change inside the function changes the real array. No <code>&</code> needed — it happens automatically.</p>
+
+  <div class="cw"><div class="cl"><span>passing_arrays.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// The parameter: type name[], int size
+// Always pass size as a second parameter — the function has no other way to know it
+
+void doubleAll(int arr[], int size)
+{
+    for(int i=0; i&lt;size; i++)
+        arr[i] = arr[i] * 2;    // changes the REAL array in main
+}
+
+// Use const when the function should NOT modify the array
+int findMax(const int arr[], int size)
+{
+    int max = arr[0];
+    for(int i=1; i&lt;size; i++)
+        if(arr[i] &gt; max) max = arr[i];
+    return max;
+}</code></pre></div>
+
+  <h2>The Full Professor-Style Program</h2>
+  <div class="cw"><div class="cl"><span>full_pattern.cpp — the exam template</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+// Step 1: Forward declarations at top
+void myFunction(int arr[], int size);
+int computeSomething(const int arr[], int size);
+
+int main()
+{
+    // Step 2: Declare and read array in main
+    int arr[10];
+    cout &lt;&lt; "Enter the array: ";
+    for(int i=0; i&lt;10; i++)
+        cin &gt;&gt; arr[i];
+
+    // Step 3: Call the function
+    myFunction(arr, 10);
+
+    // Step 4: Print results in main
+    cout &lt;&lt; "After function: ";
+    for(int i=0; i&lt;10; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+
+    cout &lt;&lt; "Result: " &lt;&lt; computeSomething(arr, 10) &lt;&lt; endl;
+    return 0;
+}
+
+// Step 5: Full definitions AFTER main
+void myFunction(int arr[], int size)
+{
+    for(int i=0; i&lt;size; i++)
+        arr[i] = arr[i] * 2;    // example: double everything
+}
+
+int computeSomething(const int arr[], int size)
+{
+    int sum = 0;
+    for(int i=0; i&lt;size; i++)
+        sum += arr[i];
+    return sum;
+}</code></pre></div>
+
+  <h2>Building the Exam Functions Step by Step</h2>
+
+  <h3>sumReplace — from the exam practice sheet</h3>
+  <p>Replace each element with the sum of its left and right neighbors. Position 0's left = -3. Last position's right = 250.</p>
+
+  <div class="arr-vis" style="margin:10px 0">
+    <div class="arr-cell"><div class="arr-lbl">original</div><div class="arr-box highlight">[0]</div><div class="arr-idx">left=-3</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">[1]</div><div class="arr-idx">&nbsp;</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">[2]</div><div class="arr-idx">&nbsp;</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box">[n-2]</div><div class="arr-idx">&nbsp;</div></div>
+    <div class="arr-cell"><div class="arr-lbl">&nbsp;</div><div class="arr-box highlight">[n-1]</div><div class="arr-idx">right=250</div></div>
+  </div>
+
+  <div class="cw"><div class="cl"><span>sumReplace.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">void sumReplace(int arr[], int size)
+{
+    // MUST copy first — otherwise changing arr[0] corrupts arr[1]'s calculation
+    int temp[10];
+    for(int i=0; i&lt;size; i++)
+        temp[i] = arr[i];
+
+    for(int i=0; i&lt;size; i++)
+    {
+        // Ternary operator: condition ? valueIfTrue : valueIfFalse
+        int left  = (i == 0)       ? -3  : temp[i-1];    // edge case: position 0
+        int right = (i == size-1)  ? 250 : temp[i+1];    // edge case: last position
+
+        arr[i] = left + right;    // replace with sum of neighbors
+    }
+}</code></pre></div>
+
+  <h3>alternates — every 3rd element</h3>
+  <div class="cw"><div class="cl"><span>alternates.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">void alternates(float arr[], int size)
+{
+    // Every 3rd element = index 2, 5, 8, 11...
+    // Start at i=2, step by 3 each time
+    for(int i=2; i&lt;size; i+=3)
+    {
+        arr[i] = arr[i] + arr[i-1] + arr[i-2];
+        // arr[2] = arr[2] + arr[1] + arr[0]
+        // arr[5] = arr[5] + arr[4] + arr[3]  etc.
+    }
+    // No temp needed here because we only replace i=2, 5, 8...
+    // We read i-1 and i-2 which we haven't modified yet
+}</code></pre></div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — Trace sumReplace</span></div>
+    <div class="pb">
+      <p>Given <code>int arr[5] = {10, 20, 30, 40, 50};</code>. After calling <code>sumReplace(arr, 5)</code>, what is the array?</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>trace</span></div>
+        <pre><code class="language-cpp">// temp = {10, 20, 30, 40, 50}  (copy of original)
+// arr[0]: left = -3,       right = temp[1] = 20  → -3 + 20 = 17
+// arr[1]: left = temp[0]=10, right = temp[2] = 30  → 10 + 30 = 40
+// arr[2]: left = temp[1]=20, right = temp[3] = 40  → 20 + 40 = 60
+// arr[3]: left = temp[2]=30, right = temp[4] = 50  → 30 + 50 = 80
+// arr[4]: left = temp[3]=40, right = 250             → 40 + 250 = 290
+// Result: arr = {17, 40, 60, 80, 290}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — Write moduli from scratch</span></div>
+    <div class="pb">
+      <p>Write <code>void moduli(int arr[], int size)</code>: replace each element with <code>arr[i] % arr[i+1]</code>. If <code>arr[i+1] == 0</code>, leave the element unchanged.</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>moduli.cpp</span></div>
+        <pre><code class="language-cpp">void moduli(int arr[], int size)
+{
+    int temp[15];
+    for(int i=0; i&lt;size; i++)
+        temp[i] = arr[i];       // copy so we use original values
+
+    for(int i=0; i&lt;size-1; i++)    // stop at size-2 (need i+1 to exist)
+    {
+        if(temp[i+1] == 0)
+            arr[i] = temp[i];       // leave unchanged if divisor is 0
+        else
+            arr[i] = temp[i] % temp[i+1];
+    }
+    // arr[size-1] (last element): no i+1 exists, leave unchanged
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(1)">← 1D Operations</button>
+    <button class="na" onclick="go(3)">2D Arrays →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 3: 2D ARRAYS ============================== -->
+<div class="panel" id="t3">
+  <div class="ph">
+    <div class="ptag">// 04 — 2d_arrays.cpp</div>
+    <h1>2D Arrays</h1>
+    <p>Rows, columns, nested loops, diagonal access, and passing 2D arrays to functions.</p>
+  </div>
+
+  <h2>What a 2D Array Looks Like</h2>
+  <p>A 2D array is a grid — rows and columns. You need <strong>two</strong> indices: <code>[row][col]</code>.</p>
+
+  <div class="box tip"><div class="bt">💡 Think of it as a spreadsheet</div>
+  First index = which row. Second index = which column. Both start at 0.
+  </div>
+
+  <div style="margin:16px 0">
+    <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:8px">int mat[3][4] — 3 rows, 4 columns:</p>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div id="grid-main" class="grid-vis" style="grid-template-columns:repeat(4,42px)"></div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px">Click any cell to highlight it</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:var(--mono);font-size:13px;min-width:200px">
+        <div style="color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Selected Cell</div>
+        <div id="grid-info" style="color:var(--muted)">Click a cell</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Declaring and Initializing</h2>
+  <div class="cw"><div class="cl"><span>2d_declare.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// Declaration — rows first, then columns
+int mat[3][3];
+
+// Declaration + initialization
+int mat[3][3] = {{1, 5, 19},    // row 0
+                 {6, -2, 10},   // row 1
+                 {12, 8, 5}};   // row 2
+
+// Access: mat[row][col]
+cout &lt;&lt; mat[0][0];   // 1    (row 0, col 0)
+cout &lt;&lt; mat[1][2];   // 10   (row 1, col 2)
+cout &lt;&lt; mat[2][1];   // 8    (row 2, col 1)
+
+// Change a value
+mat[0][1] = 99;      // row 0, col 1 is now 99</code></pre></div>
+
+  <h2>Nested Loops — The Only Way to Traverse 2D Arrays</h2>
+  <div class="cw"><div class="cl"><span>nested_loops.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">int mat[3][3] = {{1,5,19},{6,-2,10},{12,8,5}};
+
+// Print the whole 2D array
+for(int i=0; i&lt;3; i++)         // i = row number
+{
+    for(int j=0; j&lt;3; j++)     // j = column number
+    {
+        cout &lt;&lt; mat[i][j] &lt;&lt; " ";   // print each cell
+    }
+    cout &lt;&lt; endl;               // new line after each complete row
+}
+// Output:
+// 1 5 19
+// 6 -2 10
+// 12 8 5
+
+// Sum of the MAIN DIAGONAL (where row == col: mat[0][0], mat[1][1], mat[2][2])
+int sum = 0;
+for(int i=0; i&lt;3; i++)
+    sum += mat[i][i];           // i used for BOTH row and col
+// 1 + (-2) + 5 = 4
+
+// Sum of ALL elements
+int total = 0;
+for(int i=0; i&lt;3; i++)
+    for(int j=0; j&lt;3; j++)
+        total += mat[i][j];</code></pre></div>
+
+  <h2>Interactive — 2D Array Diagonal</h2>
+  <div class="ia-wrap">
+    <div class="ia-title">⚡ Watch the diagonal loop highlight mat[i][i]</div>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+      <div id="diag-grid" class="grid-vis" style="grid-template-columns:repeat(3,42px)"></div>
+      <div>
+        <div class="ia-info" id="diag-info" style="margin-top:0;min-width:280px">Click Next Step to trace the diagonal loop.</div>
+        <div class="ia-btns" style="margin-top:10px">
+          <button class="ibtn pri" onclick="diagNext()">▶ Next Step</button>
+          <button class="ibtn" onclick="diagReset()">↺ Reset</button>
+        </div>
+        <div class="ia-out" id="diag-out" style="margin-top:10px">// sum = 0</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Passing 2D Arrays to Functions</h2>
+  <div class="box warn"><div class="bt">⚠ Important — Column Count is Required</div>
+  When passing a 2D array to a function, you MUST write the column count in the parameter. The row count can be a variable, but the column count must be hard-coded. This is just how C++ works with 2D arrays.
+  </div>
+
+  <div class="cw"><div class="cl"><span>2d_functions.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// Column count MUST be specified in the parameter (9 here)
+void printArray(int arr[][9], int rows)
+{
+    for(int i=0; i&lt;rows; i++)
+    {
+        for(int j=0; j&lt;rows; j++)    // or use a cols parameter
+            cout &lt;&lt; arr[i][j] &lt;&lt; " ";
+        cout &lt;&lt; endl;
+    }
+}
+
+// Filling a 2D array
+void fillZeros(int arr[][9], int rows)
+{
+    for(int i=0; i&lt;rows; i++)
+        for(int j=0; j&lt;rows; j++)
+            arr[i][j] = 0;
+}
+
+int main()
+{
+    int mat[9][9];
+    fillZeros(mat, 9);      // pass name (no brackets needed) + rows
+    printArray(mat, 9);
+    return 0;
+}</code></pre></div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — Trace the output</span></div>
+    <div class="pb">
+      <div class="cw"><div class="cl"><span>trace this</span></div>
+      <pre><code class="language-cpp">int mat[3][3] = {{1,5,19},{6,-2,10},{12,8,5}};
+int sum = 0;
+for(int i=0; i&lt;3; i++)
+    sum += mat[i][i];
+cout &lt;&lt; "The sum is " &lt;&lt; sum &lt;&lt; endl;</code></pre></div>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <p>The loop accesses the <strong>main diagonal</strong> — where row index equals column index:</p>
+        <ul>
+          <li>i=0: <code>mat[0][0] = 1</code></li>
+          <li>i=1: <code>mat[1][1] = -2</code></li>
+          <li>i=2: <code>mat[2][2] = 5</code></li>
+        </ul>
+        <p>sum = 1 + (-2) + 5 = <strong>4</strong>. Output: <code>The sum is 4</code></p>
+        <div class="box tip"><div class="bt">Exam Tip</div>The study guide sample question 6 is exactly this. You need to explain that the loop adds elements where row == col.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — Write the code</span></div>
+    <div class="pb">
+      <p>Write the code to declare a 3×3 int array initialized to all zeros, then set the diagonal elements to 1 (making an identity matrix).</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>identity matrix</span></div>
+        <pre><code class="language-cpp">int mat[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+
+// Set diagonal to 1 — where row == col
+for(int i=0; i&lt;3; i++)
+    mat[i][i] = 1;
+
+// mat is now:
+// 1 0 0
+// 0 1 0
+// 0 0 1</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 3 — Write a 2D array function</span></div>
+    <div class="pb">
+      <p>Write a function <code>sumRows</code> that takes a 3×3 int array and prints the sum of each row on its own line.</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>sumRows.cpp</span></div>
+        <pre><code class="language-cpp">void sumRows(int arr[][3], int rows)
+{
+    for(int i=0; i&lt;rows; i++)       // for each row
+    {
+        int rowSum = 0;
+        for(int j=0; j&lt;3; j++)      // add up all columns in that row
+            rowSum += arr[i][j];
+        cout &lt;&lt; "Row " &lt;&lt; i &lt;&lt; " sum: " &lt;&lt; rowSum &lt;&lt; endl;
+    }
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(2)">← Arrays + Functions</button>
+    <button class="na" onclick="go(4)">C-Strings →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 4: C-STRINGS ============================== -->
+<div class="panel" id="t4">
+  <div class="ph">
+    <div class="ptag">// 05 — cstrings.cpp</div>
+    <h1>C-Strings</h1>
+    <p>A C-string is just an array of chars with a special ending character. Same array concepts, new type.</p>
+  </div>
+
+  <h2>A C-String is an Array of Characters</h2>
+  <p>Everything you learned about arrays applies here. The only difference: C-strings end with a special character called the <strong>null terminator</strong> (<code>'\0'</code>). It marks where the string ends.</p>
+
+  <div class="box tip"><div class="bt">💡 The Null Terminator</div>
+  Every C-string has a hidden <code>'\0'</code> at the end. That's how functions like <code>strlen</code> know where the string ends — they loop until they hit <code>'\0'</code>. Always declare your char array a bit bigger than you need to make room for it.
+  </div>
+
+  <p>Visualized — the string "Hello" in memory:</p>
+  <div class="str-vis" id="str-vis-hello">
+    <div class="sc"><div class="sb2">H</div><div class="si">[0]</div></div>
+    <div class="sc"><div class="sb2">e</div><div class="si">[1]</div></div>
+    <div class="sc"><div class="sb2">l</div><div class="si">[2]</div></div>
+    <div class="sc"><div class="sb2">l</div><div class="si">[3]</div></div>
+    <div class="sc"><div class="sb2">o</div><div class="si">[4]</div></div>
+    <div class="sc"><div class="sb2 null">\0</div><div class="si">[5]</div></div>
+    <div class="sc"><div class="sb2" style="color:var(--muted);border-color:rgba(255,255,255,0.05)">?</div><div class="si">[6]</div></div>
+    <div class="sc"><div class="sb2" style="color:var(--muted);border-color:rgba(255,255,255,0.05)">?</div><div class="si">[7]</div></div>
+  </div>
+  <p style="font-size:13px;color:var(--muted)">Declared as <code>char str[8] = "Hello";</code>. Length = 5 (not counting \0). Array size = 8.</p>
+
+  <div class="cw"><div class="cl"><span>cstring_basics.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// Declaration
+char str[100];            // empty, room for 99 chars + \0
+char str[8] = "Hello";   // "Hello\0??" — strlen = 5, array size = 8
+
+// Access individual characters just like an array
+cout &lt;&lt; str[0];          // H
+cout &lt;&lt; str[4];          // o
+
+// Change a character
+str[0] = 'J';             // now str = "Jello"
+
+// Loop through every character
+for(int i=0; i&lt;strlen(str); i++)
+{
+    cout &lt;&lt; str[i];       // prints one char at a time
+}
+
+// Read one word (stops at space)
+cin &gt;&gt; str;
+
+// Read a full line including spaces
+cin.getline(str, 100);    // reads up to 99 chars, stops at newline</code></pre></div>
+
+  <h2>cstring Library Functions</h2>
+  <div class="box warn"><div class="bt">⚠ Don't try to use = to copy or compare C-strings</div>
+  <code>str2 = str1</code> is a compile error. <code>str1 == str2</code> compares memory addresses, not content. Always use the library functions.
+  </div>
+
+  <table>
+    <tr><th>Function</th><th>What it does</th><th>Example</th></tr>
+    <tr><td><code>strlen(str)</code></td><td>Returns the length (not counting \0)</td><td><code>strlen("Hello") = 5</code></td></tr>
+    <tr><td><code>strcpy(dest, src)</code></td><td>Copies src into dest</td><td><code>strcpy(str2, str1)</code></td></tr>
+    <tr><td><code>strcat(str1, str2)</code></td><td>Appends str2 onto end of str1</td><td><code>strcat("Hello", " World") → "Hello World"</code></td></tr>
+    <tr><td><code>strcmp(s1, s2)</code></td><td>Compares: 0=equal, &lt;0=s1 first, &gt;0=s2 first</td><td><code>strcmp("apple","apple") = 0</code></td></tr>
+  </table>
+
+  <div class="cw"><div class="cl"><span>cstring_library.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+using namespace std;
+
+int main()
+{
+    char s1[100] = "Hello";
+    char s2[100] = "World";
+    char s3[100];
+
+    // Length
+    cout &lt;&lt; strlen(s1);          // 5
+
+    // Copy — s3 now contains "Hello"
+    strcpy(s3, s1);
+
+    // Concatenate — s1 is now "HelloWorld"
+    strcat(s1, s2);
+    cout &lt;&lt; s1;                   // HelloWorld
+
+    // Compare
+    if(strcmp(s3, s2) == 0)
+        cout &lt;&lt; "Same" &lt;&lt; endl;
+    else
+        cout &lt;&lt; "Different" &lt;&lt; endl;    // Different
+
+    return 0;
+}</code></pre></div>
+
+  <h2>cctype — Checking and Converting Individual Characters</h2>
+  <table>
+    <tr><th>Function</th><th>True when...</th><th>Watch Out</th></tr>
+    <tr><td><code>isalpha(c)</code></td><td>c is a letter</td><td></td></tr>
+    <tr><td><code>isdigit(c)</code></td><td>c is 0–9</td><td></td></tr>
+    <tr><td><code>isalnum(c)</code></td><td>letter or digit</td><td></td></tr>
+    <tr><td><code>isupper(c)</code></td><td>uppercase letter</td><td></td></tr>
+    <tr><td><code>islower(c)</code></td><td>lowercase letter</td><td><strong>'A' returns false!</strong></td></tr>
+    <tr><td><code>isspace(c)</code></td><td>space, tab, newline</td><td></td></tr>
+    <tr><td><code>toupper(c)</code></td><td>converts to uppercase</td><td>returns int, cast to char if needed</td></tr>
+    <tr><td><code>tolower(c)</code></td><td>converts to lowercase</td><td></td></tr>
+  </table>
+
+  <div class="cw"><div class="cl"><span>cctype_examples.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+#include&lt;cctype&gt;
+using namespace std;
+
+// Replace every 'e' with '3' — study guide problem
+void changeE(char str[])
+{
+    for(int i=0; i&lt;strlen(str); i++)
+    {
+        if(str[i] == 'e')          // check this exact character
+            str[i] = '3';          // replace it directly (we own the array)
+    }
+}
+
+// Count uppercase letters
+int countUpper(char str[])
+{
+    int count = 0;
+    for(int i=0; i&lt;strlen(str); i++)
+        if(isupper(str[i]))
+            count++;
+    return count;
+}
+
+// Convert whole string to lowercase
+void toLowerAll(char str[])
+{
+    for(int i=0; i&lt;strlen(str); i++)
+        str[i] = tolower(str[i]);
+}
+
+int main()
+{
+    char s[200];
+    cout &lt;&lt; "Input:\n";
+    cin.getline(s, 200);
+    changeE(s);
+    cout &lt;&lt; "Output:\n" &lt;&lt; s &lt;&lt; endl;
+    return 0;
+}</code></pre></div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — What does this print?</span></div>
+    <div class="pb">
+      <div class="cw"><div class="cl"><span>trace</span></div>
+      <pre><code class="language-cpp">char str[] = "Hello!";
+cout &lt;&lt; strlen(str) &lt;&lt; endl;
+cout &lt;&lt; str[0] &lt;&lt; endl;
+str[0] = 'J';
+cout &lt;&lt; str &lt;&lt; endl;</code></pre></div>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>output</span></div>
+        <pre><code class="language-cpp">6          // strlen counts H,e,l,l,o,!  — not the \0
+H          // str[0] = 'H'
+Jello!     // changed str[0] from H to J, then printed whole string</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — Write from scratch</span></div>
+    <div class="pb">
+      <p>Write a complete program with a function <code>countVowels</code> that takes a C-string and returns how many vowels (a,e,i,o,u — upper or lower case) it contains. Read a string in main, call the function, print the count.</p>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>countVowels.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+#include&lt;cctype&gt;
+using namespace std;
+
+int countVowels(char str[]);
+
+int main()
+{
+    char s[200];
+    cout &lt;&lt; "Enter a string: ";
+    cin.getline(s, 200);
+    cout &lt;&lt; "Vowels: " &lt;&lt; countVowels(s) &lt;&lt; endl;
+    return 0;
+}
+
+int countVowels(char str[])
+{
+    int count = 0;
+    for(int i=0; i&lt;strlen(str); i++)
+    {
+        char c = tolower(str[i]);    // convert to lowercase to check either case
+        if(c=='a' || c=='e' || c=='i' || c=='o' || c=='u')
+            count++;
+    }
+    return count;
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(3)">← 2D Arrays</button>
+    <button class="na" onclick="go(5)">String Objects →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 5: STRING OBJECTS ============================== -->
+<div class="panel" id="t5">
+  <div class="ph">
+    <div class="ptag">// 06 — string_objects.cpp</div>
+    <h1>String Objects</h1>
+    <p>The string class — easier than C-strings, supports = and == directly, and has built-in methods.</p>
+  </div>
+
+  <h2>string vs C-string — Key Differences</h2>
+  <table>
+    <tr><th>Feature</th><th>C-string (char[])</th><th>string object</th></tr>
+    <tr><td>Declaration</td><td><code>char str[100];</code></td><td><code>string s;</code></td></tr>
+    <tr><td>Copy</td><td><code>strcpy(dest, src)</code></td><td><code>s2 = s1;</code> (just =)</td></tr>
+    <tr><td>Compare</td><td><code>strcmp(s1,s2)==0</code></td><td><code>s1 == s2</code></td></tr>
+    <tr><td>Concatenate</td><td><code>strcat(s1, s2)</code></td><td><code>s1 + s2</code> or <code>s1 += s2</code></td></tr>
+    <tr><td>Length</td><td><code>strlen(str)</code></td><td><code>s.length()</code> or <code>s.size()</code></td></tr>
+    <tr><td>Read full line</td><td><code>cin.getline(str, 100)</code></td><td><code>getline(cin, s)</code></td></tr>
+    <tr><td>Library needed</td><td><code>#include&lt;cstring&gt;</code></td><td><code>#include&lt;string&gt;</code></td></tr>
+  </table>
+
+  <div class="cw"><div class="cl"><span>string_objects.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+int main()
+{
+    string s1 = "Hello";
+    string s2 = "World";
+    string s3;
+
+    // Length (both do the same thing)
+    cout &lt;&lt; s1.length();        // 5
+    cout &lt;&lt; s1.size();          // 5
+
+    // Concatenation — two ways
+    s3 = s1 + " " + s2;         // s3 = "Hello World"
+    s1 += "!";                   // s1 = "Hello!"
+
+    // Comparison — works directly, just like numbers
+    if(s1 == s2) cout &lt;&lt; "Same" &lt;&lt; endl;
+    if(s1 != s2) cout &lt;&lt; "Different" &lt;&lt; endl;
+    if(s1 &lt; s2)  cout &lt;&lt; "s1 comes first alphabetically" &lt;&lt; endl;
+
+    // Access individual characters — same as arrays
+    cout &lt;&lt; s3[0];               // 'H'
+    cout &lt;&lt; s3.at(6);            // 'W' — .at() with bounds check
+
+    // Find a substring — returns index, or string::npos if not found
+    int pos = s3.find("World");  // pos = 6
+    if(pos != string::npos)
+        cout &lt;&lt; "Found at " &lt;&lt; pos &lt;&lt; endl;
+
+    // Substring — .substr(startIndex, length)
+    string sub = s3.substr(6, 5);   // "World" (start=6, length=5)
+
+    // Reading
+    string word;
+    cin &gt;&gt; word;                     // reads one word
+    string line;
+    getline(cin, line);              // reads whole line (note: NOT cin.getline)
+
+    return 0;
+}</code></pre></div>
+
+  <h2>size vs capacity</h2>
+  <div class="box warn"><div class="bt">⚠ Study Guide Q7 — Short Answer Question</div>
+  <strong>size</strong>: the number of characters currently in the string.<br>
+  <strong>capacity</strong>: how many characters the string can hold before it needs more memory.<br><br>
+  size is what you put in. Capacity is the reserved space. size ≤ capacity always.
+  </div>
+
+  <h2>Arrays of Strings</h2>
+  <div class="cw"><div class="cl"><span>string_arrays.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+  <pre><code class="language-cpp">// Array of string objects
+string names[5] = {"Alice", "Bob", "Charlie", "Diana", "Eve"};
+
+// Print all
+for(int i=0; i&lt;5; i++)
+    cout &lt;&lt; names[i] &lt;&lt; "\n";
+
+// Find a name
+string search = "Bob";
+for(int i=0; i&lt;5; i++)
+{
+    if(names[i] == search)         // can use == directly with string objects!
+        cout &lt;&lt; "Found at index " &lt;&lt; i &lt;&lt; endl;
+}
+
+// 2D array of C-strings (array of names, each name up to 49 chars)
+char names2[5][50];
+for(int i=0; i&lt;5; i++)
+    cin.getline(names2[i], 50);    // read each name</code></pre></div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 1 — String operations trace</span></div>
+    <div class="pb">
+      <div class="cw"><div class="cl"><span>trace</span></div>
+      <pre><code class="language-cpp">string s = "Programming";
+cout &lt;&lt; s.length() &lt;&lt; endl;
+cout &lt;&lt; s[0] &lt;&lt; endl;
+cout &lt;&lt; s.substr(0, 7) &lt;&lt; endl;
+cout &lt;&lt; s.find("gram") &lt;&lt; endl;</code></pre></div>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>output</span></div>
+        <pre><code class="language-cpp">11           // P,r,o,g,r,a,m,m,i,n,g = 11 characters
+P            // s[0] = 'P'
+Program      // substr(0,7): start at 0, length 7 = "Program"
+3            // "gram" starts at index 3 in "Programming"</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prac">
+    <div class="ph2"><span>🔍 Practice 2 — C-string vs string object</span></div>
+    <div class="pb">
+      <p>For each task, write it using a C-string AND using a string object:</p>
+      <ol>
+        <li>Copy s1 into s2</li>
+        <li>Check if s1 equals s2</li>
+        <li>Read a full line into s</li>
+      </ol>
+      <button class="sb" onclick="ts(this)">▶ See Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>both versions</span></div>
+        <pre><code class="language-cpp">// 1. Copy
+strcpy(s2, s1);          // C-string version
+s2 = s1;                 // string object version
+
+// 2. Compare
+if(strcmp(s1, s2) == 0)  // C-string version
+if(s1 == s2)             // string object version — much cleaner!
+
+// 3. Read full line
+cin.getline(s, 100);     // C-string version (method on cin, needs size)
+getline(cin, s);         // string object version (standalone function)</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(4)">← C-Strings</button>
+    <button class="na" onclick="go(6)" style="border-color:var(--accent2);color:var(--accent2)">Exam Problems →</button>
+  </div>
+</div>
+
+<!-- ============================== TAB 6: EXAM PROBLEMS ============================== -->
+<div class="panel" id="t6">
+  <div class="ph">
+    <div class="ptag">// ★ exam_practice.cpp</div>
+    <h1>Study Guide Practice Problems</h1>
+    <p>The actual problems from the study guide. Problems 4–8. Try to solve each one before looking at the solution.</p>
+  </div>
+
+  <div class="box warn"><div class="bt">⚠ Exam Reality Check</div>
+  The real exam code writing question is worth <strong>25 points</strong> and will have 2 features to implement. The examples here are 15-point versions. You'll be graded on: does the code work, are you using the right concepts, and are you following the professor's style conventions.
+  </div>
+
+  <!-- PROBLEM 4 -->
+  <div class="exam-prob">
+    <div class="ep-head">
+      <span>Problem 4 — changeE function (C-string)</span>
+      <span class="ep-pts">Similar to 25pt exam problem</span>
+    </div>
+    <div class="ep-body">
+      <p>Write a C++ function that accepts a C-string as a parameter and replaces every occurrence of the letter <code>'e'</code> with <code>'3'</code>. In main, read a C-string and call the function, then print the result.</p>
+      <div class="box good"><div class="bt">Sample Run</div>
+      <pre style="font-family:var(--mono);font-size:12px;color:var(--success);margin-top:4px">Input:
+Never gonna give you up
+Output:
+N3v3r gonna giv3 you up</pre>
+      </div>
+      <p style="color:var(--muted);font-size:13px">Try writing it yourself before clicking solution. Remember: forward declaration, cin.getline, function after main.</p>
+      <button class="sb" onclick="ts(this)">▶ See Full Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>changeE_solution.cpp — professor's style</span><button class="cpb" onclick="cp(this)">copy</button></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+using namespace std;
+
+void changeE(char str[]);    // forward declaration
+
+int main()
+{
+    char st[200];
+    cout &lt;&lt; "Input:\n";
+    cin.getline(st, 200);    // read full line — cin >> would stop at space
+    changeE(st);             // call function — modifies st directly
+    cout &lt;&lt; "Output:\n" &lt;&lt; st &lt;&lt; endl;
+    return 0;
+}
+
+void changeE(char str[])
+{
+    for(int i=0; i&lt;strlen(str); i++)   // loop from 0 to end of string
+    {
+        if(str[i] == 'e')              // check for lowercase 'e' only
+            str[i] = '3';             // replace in place
+    }
+}</code></pre></div>
+        <div class="box warn"><div class="bt">⚠ Common Mistake in the Study Guide Solution</div>
+        The study guide's solution has a bug: it uses <code>strlen(st)</code> inside the function (where the parameter is named <code>str</code>). That's a wrong variable name — should be <code>strlen(str)</code>. Also uses <code>str</code> in main's cout but the variable there is <code>st</code>. The corrected version above is right.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 5 -->
+  <div class="exam-prob">
+    <div class="ep-head">
+      <span>Problem 5 — sumSquares (array + function)</span>
+      <span class="ep-pts">Similar to 25pt exam problem</span>
+    </div>
+    <div class="ep-body">
+      <p>Write a function <code>sumSquares</code> that accepts a double array and its size. The array represents side lengths of squares. Replace each value with its square (area), and return the sum of the squares. In main: create array of 5 doubles, read values, call the function, print the array and the sum.</p>
+      <div class="box good"><div class="bt">Sample Run</div>
+      <pre style="font-family:var(--mono);font-size:12px;color:var(--success);margin-top:4px">Enter the array values:
+12.5 9.7 4 2.63 7.1
+The array is:
+156.25   94.09   16   6.9169   50.41
+The sum is 323.667</pre>
+      </div>
+      <button class="sb" onclick="ts(this)">▶ See Full Solution</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>sumSquares_solution.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+double sumSquares(double arr[], int size);    // forward declaration
+
+int main()
+{
+    double arr[5];
+
+    // Read array
+    cout &lt;&lt; "Enter the array values:\n";
+    for(int i=0; i&lt;5; i++)
+        cin &gt;&gt; arr[i];
+
+    // Call function — it modifies arr AND returns the sum
+    double ans = sumSquares(arr, 5);
+
+    // Print modified array (professor's tab style)
+    cout &lt;&lt; "The array is:\n";
+    for(int i=0; i&lt;5; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+
+    // Print the returned sum
+    cout &lt;&lt; "The sum is " &lt;&lt; ans &lt;&lt; endl;
+
+    return 0;
+}
+
+double sumSquares(double arr[], int size)
+{
+    double sum = 0;
+    for(int i=0; i&lt;size; i++)
+    {
+        arr[i] = arr[i] * arr[i];   // replace value with its square
+        sum = sum + arr[i];          // add the square to running sum
+    }
+    return sum;                      // return total sum
+}</code></pre></div>
+        <div class="box tip"><div class="bt">💡 Notice — No temp copy needed here</div>
+        We don't need a temp array because we replace <code>arr[i]</code> using only <code>arr[i]</code> itself. We're not looking at neighbors. If we needed arr[i-1] or arr[i+1], we'd need a copy first.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 6 -->
+  <div class="exam-prob">
+    <div class="ep-head">
+      <span>Problem 6 — 2D diagonal trace</span>
+      <span class="ep-pts">Single-line response type</span>
+    </div>
+    <div class="ep-body">
+      <p>Figure out the output generated by this code snippet:</p>
+      <div class="cw"><div class="cl"><span>trace this</span></div>
+      <pre><code class="language-cpp">int mat[3][3] = {{1,5,19},{6,-2,10},{12,8,5}};
+int sum=0;
+for(int i=0;i&lt;3;i++)
+    sum += mat[i][i];
+cout&lt;&lt;"The sum is "&lt;&lt;sum&lt;&lt;endl;</code></pre></div>
+      <div class="box warn"><div class="bt">⚠ Remember — Explanation Required for Full Credit</div>
+      Just writing the answer gets partial credit. You need to explain in ~10 words why.
+      </div>
+      <button class="sb" onclick="ts(this)">▶ See Answer + Explanation</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>answer</span></div>
+        <pre><code class="language-cpp">The sum is 4
+
+// Explanation:
+// The loop uses mat[i][i] — both indices are the same (i)
+// This accesses only the MAIN DIAGONAL of the matrix:
+//   i=0: mat[0][0] = 1
+//   i=1: mat[1][1] = -2
+//   i=2: mat[2][2] = 5
+// sum = 1 + (-2) + 5 = 4
+
+// 10-word explanation: "Adds diagonal elements where row equals column. 1-2+5=4."</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 7 -->
+  <div class="exam-prob">
+    <div class="ep-head">
+      <span>Problem 7 — size vs capacity (short answer)</span>
+      <span class="ep-pts">Short answer — 3 minutes</span>
+    </div>
+    <div class="ep-body">
+      <p>What is the difference between the <strong>size</strong> and the <strong>capacity</strong> of a string?</p>
+      <div class="box warn"><div class="bt">⚠ Both Parts Required</div>
+      The study guide says "some questions have 2 parts — both the definition and the example are required for full credit." This might need an example.
+      </div>
+      <button class="sb" onclick="ts(this)">▶ See Full Answer</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>model answer</span></div>
+        <pre><code class="language-cpp">// Size: number of characters currently stored in the string
+// Capacity: number of characters the string can hold without reallocating memory
+// size is always <= capacity
+
+// Example:
+string s = "Hello";     // size = 5, capacity might be 15 (reserved ahead of time)
+s += " World";          // size = 11, capacity might still be 15 (no reallocation needed)
+s += " and more text";  // size = 26, capacity increases (reallocation happened)</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 8 -->
+  <div class="exam-prob">
+    <div class="ep-head">
+      <span>Problem 8 — fillArray triangle pattern (2D array)</span>
+      <span class="ep-pts">Hardest — similar to 25pt exam problem</span>
+    </div>
+    <div class="ep-body">
+      <p>Write a function that receives a 2D int array, number of rows, and a starting number. Populate it in a triangle pattern starting from the center of the top row, growing by 1 wider each row. Empty spots filled with 0.</p>
+      <div class="box good"><div class="bt">Sample Run</div>
+      <pre style="font-family:var(--mono);font-size:12px;color:var(--success);margin-top:4px">Enter the number of rows: 9
+Enter the first value: 4
+0 0 0 0 4 0 0 0 0
+0 0 0 5 6 0 0 0 0
+0 0 0 9 10 11 0 0 0
+0 0 12 13 14 15 0 0 0
+...</pre></div>
+      <div class="box warn"><div class="bt">⚠ This is the Most Complex Problem</div>
+      Don't panic if this seems hard. On the exam, turn in whatever you have — there is a lot of partial credit. Write the main function and at least the loop structure even if the logic isn't perfect.
+      </div>
+      <button class="sb" onclick="ts(this)">▶ See Full Solution + Explanation</button>
+      <div class="sp">
+        <div class="cw"><div class="cl"><span>fillArray_solution.cpp</span><button class="cpb" onclick="cp(this)">copy</button></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+void fillArray(int arr[][9], int rows, int num);
+
+int main()
+{
+    int arr[9][9], start, rows;
+    cout &lt;&lt; "Enter the number of rows: ";
+    cin &gt;&gt; rows;
+    cout &lt;&lt; "Enter the first value: ";
+    cin &gt;&gt; start;
+
+    fillArray(arr, rows, start);
+
+    cout &lt;&lt; "The array is \n";
+    for(int i=0; i&lt;rows; i++)
+    {
+        for(int j=0; j&lt;rows; j++)
+            cout &lt;&lt; arr[i][j] &lt;&lt; " ";
+        cout &lt;&lt; endl;
+    }
+    return 0;
+}
+
+void fillArray(int arr[][9], int rows, int num)
+{
+    // zeros = how many leading zeros in this row
+    // starts at rows/2 (for 9 rows: 4 zeros at start)
+    int zeros = rows / 2;
+
+    for(int i=0; i&lt;rows; i++)
+    {
+        int j = 0;
+
+        // Fill leading zeros
+        for(j=0; j&lt;zeros; j++)
+            arr[i][j] = 0;
+
+        // Fill the actual numbers (triangle grows: row i has i+1 numbers)
+        for(int k=0; j&lt;=i+zeros; k++)
+        {
+            arr[i][j] = num;
+            num++;
+            j++;
+        }
+
+        // Fill trailing zeros
+        for(; j&lt;rows; j++)
+            arr[i][j] = 0;
+
+        // Every other row (even rows) the triangle gets 1 wider on left
+        if(i % 2 == 0)
+            zeros--;
+    }
+}</code></pre></div>
+        <div class="box tip"><div class="bt">💡 Strategy for Hard Problems on the Exam</div>
+        <ol style="margin-top:6px">
+          <li>Write the includes, namespace, forward declaration first — free points</li>
+          <li>Write main with the read and print loops — more free points</li>
+          <li>Write the function stub with the right parameters — more points</li>
+          <li>Add whatever logic you can — partial credit for each correct piece</li>
+          <li>Never leave a function blank. Even a wrong loop attempt gets partial credit.</li>
+        </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="na" onclick="go(5)">← String Objects</button>
+    <button class="na inv">→</button>
+  </div>
+</div>
+
+</div><!-- end #content -->
+
+<script>
+// ---- TABS ----
+function go(idx) {
+  document.querySelectorAll('.tb').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.getElementById('content').scrollTop = 0;
+  document.querySelectorAll('#t'+idx+' pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
+}
+
+document.addEventListener('DOMContentLoaded', () => { hljs.highlightAll(); buildGrids(); });
+
+// ---- COPY ----
+function cp(btn) {
+  const pre = btn.closest('.cw').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+
+// ---- SOLUTION TOGGLE ----
+function ts(btn) {
+  const p = btn.nextElementSibling;
+  p.classList.toggle('open');
+  btn.textContent = p.classList.contains('open') ? '▼ Hide Solution' : '▶ See Solution';
+  if(p.classList.contains('open')) p.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+}
+
+// ---- CLICK BOX ----
+function clickBox(el, idx, val) {
+  document.querySelectorAll('#vis-click .arr-box').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('box-info').textContent =
+    'grades[' + idx + '] = ' + val + '   →   cout << grades[' + idx + '];  prints: ' + val;
+}
+
+// ---- FILL VISUALIZER ----
+const fillVals = [7, 3, 14, -5, 9];
+let fillStep = -1;
+function fillNext() {
+  if(fillStep >= 4) return;
+  fillStep++;
+  // clear previous active
+  for(let i=0;i<5;i++) { const b = document.getElementById('fc'+i); b.classList.remove('active'); b.classList.remove('modified'); }
+  document.getElementById('fc'+fillStep).textContent = fillVals[fillStep];
+  document.getElementById('fc'+fillStep).classList.add('active');
+  document.getElementById('fill-info').textContent =
+    'i=' + fillStep + ': cin >> arr[' + fillStep + '];  →  arr[' + fillStep + '] = ' + fillVals[fillStep];
+  if(fillStep===4) document.getElementById('fill-info').textContent += '  ✓ Loop complete!';
+}
+function fillReset() {
+  fillStep = -1;
+  for(let i=0;i<5;i++) { const b = document.getElementById('fc'+i); b.textContent='?'; b.classList.remove('active','modified'); }
+  document.getElementById('fill-info').textContent = 'Click Next Step to simulate reading values into the array.';
+}
+
+// ---- MODIFY VISUALIZER ----
+const modOrig = [10,20,30,40,50];
+const modNew  = [20,40,60,80,100];
+let modStep = -1;
+function modNext() {
+  if(modStep >= 4) return;
+  if(modStep >= 0) { document.getElementById('mod'+modStep).classList.remove('active'); document.getElementById('mod'+modStep).classList.add('modified'); }
+  modStep++;
+  const b = document.getElementById('mod'+modStep);
+  b.classList.add('active');
+  b.textContent = modNew[modStep];
+  document.getElementById('mod-info').textContent =
+    'i=' + modStep + ': arr[' + modStep + '] = arr[' + modStep + '] * 2 = ' + modOrig[modStep] + ' * 2 = ' + modNew[modStep];
+}
+function modReset() {
+  modStep = -1;
+  modOrig.forEach((v,i) => { const b = document.getElementById('mod'+i); b.textContent=v; b.classList.remove('active','modified'); });
+  document.getElementById('mod-info').textContent = 'Click Next Step. Each step: arr[i] = arr[i] * 2';
+}
+
+// ---- GRID BUILDER (clickable 2D) ----
+const matData = [[1,5,19,3],[6,-2,10,8],[12,8,5,4]];
+function buildGrids() {
+  // Tab 3 clickable grid
+  const g = document.getElementById('grid-main');
+  if(!g) return;
+  g.innerHTML = '';
+  for(let r=0;r<3;r++) for(let c=0;c<4;c++) {
+    const d = document.createElement('div');
+    d.className = 'gcell';
+    d.textContent = matData[r][c];
+    d.style.cursor = 'pointer';
+    d.onclick = (function(row,col,val){return function(){
+      document.querySelectorAll('#grid-main .gcell').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+      document.getElementById('grid-info').innerHTML =
+        '<span style="color:var(--accent2)">mat['+row+']['+col+']</span> = <span style="color:var(--bright)">'+val+'</span><br><span style="font-size:11px;color:var(--muted)">row '+row+', column '+col+'</span>';
+    };})(r,c,matData[r][c]);
+    g.appendChild(d);
+  }
+
+  // Diagonal grid
+  const mat2 = [[1,5,19],[6,-2,10],[12,8,5]];
+  const dg = document.getElementById('diag-grid');
+  if(!dg) return;
+  dg.innerHTML = '';
+  for(let r=0;r<3;r++) for(let c=0;c<3;c++) {
+    const d = document.createElement('div');
+    d.id = 'dg'+r+c;
+    d.className = 'gcell' + (mat2[r][c] === 0 ? ' zero' : '');
+    d.textContent = mat2[r][c];
+    dg.appendChild(d);
+  }
+}
+
+// ---- DIAGONAL TRACER ----
+const diagMat = [[1,5,19],[6,-2,10],[12,8,5]];
+let diagStep = -1;
+let diagSum = 0;
+function diagNext() {
+  if(diagStep >= 2) return;
+  diagStep++;
+  const r = diagStep, c = diagStep;
+  document.getElementById('dg'+r+c).classList.add('diag');
+  diagSum += diagMat[r][c];
+  document.getElementById('diag-info').textContent =
+    'i='+diagStep+': mat['+r+']['+c+'] = '+diagMat[r][c]+'. Running sum = '+diagSum;
+  document.getElementById('diag-out').textContent = '// sum = ' + diagSum + (diagStep===2 ? '  ← final answer' : '');
+}
+function diagReset() {
+  diagStep = -1; diagSum = 0;
+  document.querySelectorAll('#diag-grid .gcell').forEach(c => c.classList.remove('diag','active'));
+  document.getElementById('diag-info').textContent = 'Click Next Step to trace the diagonal loop.';
+  document.getElementById('diag-out').textContent = '// sum = 0';
+}
+</script>
+</body>
+</html>
