@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ Exam 2 Prep — Morgan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<style>
+:root {
+  --bg: #0b0f1a;
+  --surface: #131929;
+  --surface2: #1a2236;
+  --border: #1e2d47;
+  --accent: #4fc8ff;
+  --accent2: #ffb347;
+  --danger: #ff5f6d;
+  --success: #43e97b;
+  --text: #dde6f0;
+  --muted: #7a90b0;
+  --bright: #ffffff;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Lato', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.7; display:flex; flex-direction:column; }
+
+/* TOP BAR */
+#topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  height: 56px;
+  flex-shrink: 0;
+  gap: 20px;
+}
+.topbar-logo {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bright);
+  white-space: nowrap;
+  margin-right: 8px;
+}
+.topbar-logo span { color: var(--accent); }
+.exam-chip {
+  background: rgba(255,95,109,0.15);
+  border: 1px solid rgba(255,95,109,0.4);
+  color: var(--danger);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* TAB BAR */
+#tabbar {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  flex-shrink: 0;
+  height: 48px;
+}
+#tabbar::-webkit-scrollbar { height: 0; }
+.tab-btn {
+  padding: 0 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(79,200,255,0.05); }
+.tab-btn .tab-num {
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(79,200,255,0.12);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+.tab-btn.quiz-tab .tab-num { color: var(--accent2); background: rgba(255,179,71,0.12); }
+
+/* CONTENT AREA */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 56px 60px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+#content::-webkit-scrollbar { width: 5px; }
+#content::-webkit-scrollbar-track { background: var(--bg); }
+#content::-webkit-scrollbar-thumb { background: var(--border); border-radius:3px; }
+
+/* PANEL */
+.panel { display:none; }
+.panel.active { display:block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* PAGE HEADER */
+.page-header {
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.page-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.page-header h1 {
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--bright);
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.page-header p { color: var(--muted); font-size: 14px; max-width: 560px; }
+
+/* SECTION TITLE */
+h2 {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bright);
+  margin: 36px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+h2:first-of-type { margin-top: 0; }
+h3 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 22px 0 8px;
+}
+
+p { margin-bottom: 12px; color: var(--text); }
+ul,ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin-bottom: 6px; }
+strong { color: var(--bright); }
+
+/* CALLOUT BOXES */
+.box {
+  border-radius: 7px;
+  padding: 14px 18px;
+  margin: 18px 0;
+  font-size: 14px;
+}
+.box-warn { background:rgba(255,95,109,0.08); border:1px solid rgba(255,95,109,0.35); border-left:4px solid var(--danger); }
+.box-tip  { background:rgba(79,200,255,0.07); border:1px solid rgba(79,200,255,0.25); border-left:4px solid var(--accent); }
+.box-prof { background:rgba(255,179,71,0.07); border:1px solid rgba(255,179,71,0.3);  border-left:4px solid var(--accent2); }
+.box-title { font-family:var(--mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+.box-warn .box-title { color:var(--danger); }
+.box-tip  .box-title { color:var(--accent); }
+.box-prof .box-title { color:var(--accent2); }
+
+/* CODE */
+.code-wrap { margin:14px 0; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+.code-label { background:var(--surface2); padding:8px 16px; font-family:var(--mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.copy-btn { background:none; border:1px solid var(--border); color:var(--muted); font-family:var(--mono); font-size:10px; padding:3px 10px; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+.copy-btn:hover { color:var(--accent); border-color:var(--accent); }
+pre { margin:0!important; border-radius:0!important; }
+pre code { font-family:var(--mono)!important; font-size:13px!important; line-height:1.65!important; }
+.hljs { background:#0d1525!important; padding:20px!important; }
+p code, li code, td code { font-family:var(--mono); font-size:12.5px; background:var(--surface2); color:var(--accent); padding:2px 6px; border-radius:3px; }
+
+/* TABLE */
+table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+th { background:var(--surface2); color:var(--accent); font-family:var(--mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* KEYWORD GRID */
+.kw-grid { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.kw { font-family:var(--mono); font-size:12px; background:var(--surface2); border:1px solid var(--border); color:var(--accent); padding:5px 12px; border-radius:4px; }
+.kw.bad { color:var(--danger); border-color:rgba(255,95,109,0.3); background:rgba(255,95,109,0.07); }
+
+/* TWO COL */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0; }
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+/* PRACTICE / SOLUTION */
+.practice {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:9px;
+  margin:24px 0;
+  overflow:hidden;
+}
+.practice-head {
+  background:var(--surface2);
+  padding:12px 18px;
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--accent2);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.practice-body { padding:18px; }
+.sol-btn {
+  background:none;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  font-family:var(--mono);
+  font-size:11px;
+  padding:6px 14px;
+  border-radius:4px;
+  cursor:pointer;
+  margin-top:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:all 0.15s;
+}
+.sol-btn:hover { background:var(--accent); color:var(--bg); }
+.sol-panel { display:none; margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); animation:fadeIn 0.2s ease; }
+.sol-panel.open { display:block; }
+
+/* SCOPE DIAGRAM */
+.scope-box { border:2px dashed; border-radius:7px; padding:14px 16px; margin:8px 0; font-family:var(--mono); font-size:13px; }
+.scope-box.global  { border-color:var(--accent2); }
+.scope-box.func    { border-color:var(--accent); margin-left:16px; }
+.scope-box.loop    { border-color:var(--success); margin-left:32px; }
+.scope-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:8px; }
+.scope-box.global .scope-lbl { color:var(--accent2); }
+.scope-box.func   .scope-lbl { color:var(--accent); }
+.scope-box.loop   .scope-lbl { color:var(--success); }
+
+/* TRACER */
+.tracer-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.var-watch { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px; }
+.var-watch h3 { margin:0 0 10px; font-family:var(--mono); font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:0.1em; border:none; padding:0; }
+.var-row { display:flex; justify-content:space-between; padding:7px 10px; background:var(--surface); border-radius:5px; margin-bottom:6px; font-family:var(--mono); font-size:13px; transition:background 0.3s; }
+.var-row.changed { background:rgba(79,200,255,0.15); }
+.vn { color:var(--muted); }
+.vv { color:var(--accent2); font-weight:500; }
+.tracer-out { background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:12px 14px; font-family:var(--mono); font-size:12px; color:var(--success); margin-top:12px; min-height:54px; white-space:pre; }
+.tracer-info { font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:10px; background:var(--surface); padding:8px 12px; border-radius:6px; border-left:3px solid var(--accent2); }
+.tracer-btns { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+.tbtn { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:8px 16px; border-radius:6px; cursor:pointer; transition:all 0.15s; }
+.tbtn.pri { border-color:var(--accent); color:var(--accent); }
+.tbtn.pri:hover { background:var(--accent); color:var(--bg); }
+.tbtn:hover { border-color:var(--muted); }
+
+/* QUIZ */
+.qcard { background:var(--surface); border:1px solid var(--border); border-radius:9px; margin:18px 0; overflow:hidden; }
+.qhead { background:var(--surface2); padding:12px 18px; font-family:var(--mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); display:flex; gap:12px; align-items:center; }
+.qnum { color:var(--accent); font-weight:700; }
+.qbody { padding:18px; }
+.qtext { font-size:14.5px; color:var(--bright); margin-bottom:14px; line-height:1.6; }
+.opts { list-style:none; padding:0; margin:0; }
+.opt { padding:10px 14px; border-radius:6px; border:1px solid var(--border); margin-bottom:8px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:12px; transition:all 0.15s; }
+.opt:hover { border-color:var(--accent); background:rgba(79,200,255,0.05); }
+.opt.correct { border-color:var(--success); background:rgba(67,233,123,0.09); color:var(--success); pointer-events:none; }
+.opt.wrong   { border-color:var(--danger);  background:rgba(255,95,109,0.09);  color:var(--danger);  pointer-events:none; }
+.opt.disabled { pointer-events:none; opacity:0.5; }
+.oletter { font-family:var(--mono); font-size:12px; width:24px; height:24px; border-radius:4px; background:var(--surface2); display:flex; align-items:center; justify-content:center; color:var(--accent); min-width:24px; font-weight:700; }
+.qexp { display:none; margin-top:12px; padding:13px 15px; background:rgba(79,200,255,0.07); border-radius:6px; border-left:3px solid var(--accent); font-size:13.5px; }
+.qexp.show { display:block; animation:fadeIn 0.2s ease; }
+
+/* SCORE BAR */
+#score-bar { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:13px; }
+#score-bar .score-val { font-size:22px; font-weight:700; color:var(--accent2); }
+
+/* OP TABLE */
+.op-table tr.hi td { background:rgba(255,95,109,0.07); }
+
+/* NAV ARROWS */
+.page-nav { display:flex; justify-content:space-between; align-items:center; margin-top:48px; padding-top:24px; border-top:1px solid var(--border); }
+.nav-arrow { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:12px; padding:10px 20px; border-radius:6px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px; }
+.nav-arrow:hover { border-color:var(--accent); color:var(--accent); }
+.nav-arrow.hidden { visibility:hidden; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="topbar-logo">C<span>++</span> Exam 2</div>
+  <div class="exam-chip">📅 EXAM APRIL 1</div>
+  <div style="flex:1"></div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Morgan · Session 1</div>
+</div>
+
+<!-- TAB BAR -->
+<div id="tabbar">
+  <button class="tab-btn active" onclick="showTab(0)"><span class="tab-num">01</span>Basic Syntax</button>
+  <button class="tab-btn" onclick="showTab(1)"><span class="tab-num">02</span>Data Types</button>
+  <button class="tab-btn" onclick="showTab(2)"><span class="tab-num">03</span>I/O</button>
+  <button class="tab-btn" onclick="showTab(3)"><span class="tab-num">04</span>Selection & Loops</button>
+  <button class="tab-btn" onclick="showTab(4)"><span class="tab-num">05</span>Functions</button>
+  <button class="tab-btn" onclick="showTab(5)"><span class="tab-num">06</span>Arrays</button>
+  <button class="tab-btn" onclick="showTab(6)"><span class="tab-num">07</span>Strings</button>
+  <button class="tab-btn quiz-tab" onclick="showTab(7)"><span class="tab-num" style="color:var(--accent2);background:rgba(255,179,71,0.12)">✓</span>Quiz</button>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+
+<!-- ==================== TAB 0: BASIC SYNTAX ==================== -->
+<div class="panel active" id="tab-0">
+  <div class="page-header">
+    <div class="page-tag">// 01 — basic_syntax.cpp</div>
+    <h1>Basic C++ Syntax</h1>
+    <p>The golden template, reserved words, valid names, comments, escape sequences, and style rules your professor cares about.</p>
+  </div>
+
+  <div class="box box-prof"><div class="box-title">⭐ The Professor's Golden Template</div>
+  Always follow this exact structure. Forward declarations at top, main in the middle, function definitions at the bottom. She docks points for breaking this pattern.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>golden_template.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// 1. Libraries first
+#include&lt;iostream&gt;
+using namespace std;
+
+// 2. Forward declarations (prototypes) — all functions listed here
+void myFunction(int x);
+int calculate(int arr[], int size);
+
+// 3. main() always comes before the function definitions
+int main()
+{
+    // your code here
+    return 0;
+}
+
+// 4. Full function definitions go AFTER main
+void myFunction(int x)
+{
+    cout &lt;&lt; x &lt;&lt; endl;
+}
+
+int calculate(int arr[], int size)
+{
+    // body
+    return 0;
+}</code></pre>
+  </div>
+
+  <h2>Reserved Words (Keywords)</h2>
+  <p>These belong to C++. You can't use them as variable names. You need to know which ones ARE and which ones are NOT keywords.</p>
+
+  <div class="box box-warn"><div class="box-title">⚠ You Got This Wrong Last Time</div>
+  Q2 asked which is a C++ keyword. You picked <code>integer</code> but the answer was <code>double</code>. Remember: <code>integer</code> is NOT a keyword — <code>int</code> is. <code>double</code> IS a keyword.
+  </div>
+
+  <h3>Real Keywords ✓</h3>
+  <div class="kw-grid">
+    <span class="kw">int</span><span class="kw">double</span><span class="kw">float</span><span class="kw">char</span><span class="kw">bool</span>
+    <span class="kw">void</span><span class="kw">return</span><span class="kw">if</span><span class="kw">else</span><span class="kw">for</span>
+    <span class="kw">while</span><span class="kw">do</span><span class="kw">switch</span><span class="kw">case</span><span class="kw">break</span>
+    <span class="kw">continue</span><span class="kw">const</span><span class="kw">using</span><span class="kw">namespace</span><span class="kw">unsigned</span>
+  </div>
+
+  <h3>NOT Keywords ✗ (can be used as variable names)</h3>
+  <div class="kw-grid">
+    <span class="kw bad">integer ✗</span><span class="kw bad">function ✗</span><span class="kw bad">real ✗</span><span class="kw bad">cases ✗</span><span class="kw bad">Gr33n_ ✗ (valid var!)</span>
+  </div>
+
+  <h2>Valid Variable Names</h2>
+
+  <div class="box box-warn"><div class="box-title">⚠ You Got This Wrong Last Time</div>
+  Q3 asked which is NOT a valid variable name. You picked <code>Gr33n_</code> — but it IS valid. The correct answer was <code>unsigned</code> because it's a reserved keyword.
+  </div>
+
+  <table>
+    <tr><th>Rule</th><th>Valid ✓</th><th>Invalid ✗</th></tr>
+    <tr><td>Start with letter or _</td><td><code>myVar</code>, <code>_count</code></td><td><code>3var</code>, <code>9ball</code></td></tr>
+    <tr><td>Letters, digits, underscore only</td><td><code>Garnet_Gold</code>, <code>Gr33n_</code></td><td><code>my var</code>, <code>my-var</code></td></tr>
+    <tr><td>Cannot be a keyword</td><td><code>integer</code>, <code>count</code></td><td><code>int</code>, <code>unsigned</code>, <code>double</code></td></tr>
+    <tr><td>Case sensitive</td><td><code>myVar</code> ≠ <code>myvar</code></td><td></td></tr>
+  </table>
+
+  <h2>Comments & Escape Sequences</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>comments_and_escapes.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Single-line comment — anything after // is ignored
+
+/* Multi-line comment
+   used for longer explanations */
+
+int x = 5; // inline comment is fine too
+
+// Common escape sequences:
+cout &lt;&lt; "Hello\n";       // \n = new line
+cout &lt;&lt; "A\tB\tC\n";    // \t = tab (used between array values)
+cout &lt;&lt; "She said \"hi\""; // \" = literal quote inside string
+cout &lt;&lt; endl;             // endl = new line + flushes the buffer</code></pre>
+  </div>
+
+  <div class="box box-tip"><div class="box-title">💡 Professor's Array Print Style</div>
+  She always prints array values separated by <code>"\t"</code> (tab), then one <code>endl</code> after. You'll use this on the exam.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>array_print_style.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// This is how your professor prints arrays — memorize this pattern
+for(int i=0; i&lt;10; i++)
+    cout &lt;&lt; arr[i] &lt;&lt; "\t";  // tab after each element
+cout &lt;&lt; endl;                 // new line at the very end</code></pre>
+  </div>
+
+  <h2>Practice — Spot the Errors</h2>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 1 — What's wrong with these variable names?</span></div>
+    <div class="practice-body">
+      <p>Look at each one and decide: valid or invalid?</p>
+      <div class="code-wrap">
+        <div class="code-label"><span>spot_the_error.cpp</span></div>
+        <pre><code class="language-cpp">int 2fast;         // (a)
+double my_score;   // (b)
+char void;         // (c)
+float Gr33n_;      // (d)
+bool is valid;     // (e)
+int _counter;      // (f)</code></pre>
+      </div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <ul>
+          <li><strong>(a) invalid</strong> — starts with a digit</li>
+          <li><strong>(b) valid</strong> — letters and underscore only</li>
+          <li><strong>(c) invalid</strong> — <code>void</code> is a reserved keyword</li>
+          <li><strong>(d) valid</strong> — starts with letter, has digits and underscore, totally fine</li>
+          <li><strong>(e) invalid</strong> — contains a space</li>
+          <li><strong>(f) valid</strong> — starting with underscore is allowed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 2 — Fix the structure</span></div>
+    <div class="practice-body">
+      <p>This code doesn't follow the professor's style. What needs to change?</p>
+      <div class="code-wrap">
+        <div class="code-label"><span>bad_structure.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+int main()
+{
+    int x = 5;
+    printIt(x);    // calling a function that's defined below
+    return 0;
+}
+
+void printIt(int x)
+{
+    cout &lt;&lt; x &lt;&lt; endl;
+}</code></pre>
+      </div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <p>Missing the <strong>forward declaration</strong> at the top. You must add:</p>
+        <div class="code-wrap"><div class="code-label"><span>fix</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+void printIt(int x);   // ← ADD THIS forward declaration
+
+int main()
+{
+    int x = 5;
+    printIt(x);        // now the compiler knows about it
+    return 0;
+}
+
+void printIt(int x)    // full definition still goes after main
+{
+    cout &lt;&lt; x &lt;&lt; endl;
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow hidden">←</button>
+    <button class="nav-arrow" onclick="showTab(1)">Data Types → </button>
+  </div>
+</div>
+
+<!-- ==================== TAB 1: DATA TYPES ==================== -->
+<div class="panel" id="tab-1">
+  <div class="page-header">
+    <div class="page-tag">// 02 — data_types.cpp</div>
+    <h1>Data Types, Variables & Operators</h1>
+    <p>Primitive types, declaring variables, const vs #define, operator precedence, and type conversion.</p>
+  </div>
+
+  <h2>Primitive Data Types</h2>
+  <table>
+    <tr><th>Type</th><th>Size</th><th>Example Values</th><th>Use for</th></tr>
+    <tr><td><code>int</code></td><td>4 bytes</td><td>-5, 0, 100</td><td>Whole numbers, counters, indices</td></tr>
+    <tr><td><code>double</code></td><td>8 bytes</td><td>3.14, -0.5</td><td>Decimals (prefer over float)</td></tr>
+    <tr><td><code>float</code></td><td>4 bytes</td><td>3.14f</td><td>Decimals (less precise)</td></tr>
+    <tr><td><code>char</code></td><td>1 byte</td><td>'A', '7', ' '</td><td>Single character (use single quotes)</td></tr>
+    <tr><td><code>bool</code></td><td>1 byte</td><td>true / false</td><td>Conditions, flags</td></tr>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>declaring_variables.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Declaration only (holds garbage until assigned)
+int count;
+double area;
+
+// Declaration + initialization (best practice)
+int count = 0;
+double area = 0.0;
+char grade = 'A';       // char uses single quotes
+bool valid = true;
+
+// Constant variable — type required, semicolon required, init on same line
+const double PI = 3.14159;
+const double SIN60 = 0.866;   // just like on your last exam
+
+// Symbolic constant — NO type, NO semicolon, NO =
+// It's a text-substitution: compiler replaces PI with 3.14 everywhere
+#define MAX_SIZE 100</code></pre>
+  </div>
+
+  <div class="box box-warn"><div class="box-title">⚠ You Got This Wrong — const vs #define</div>
+  On last exam Q2, you confused these. Key differences:
+  <ul style="margin-top:8px">
+    <li><strong>const double PI = 3.14;</strong> — has a type, uses =, needs ;, must init on same line</li>
+    <li><strong>#define PI 3.14</strong> — no type, no =, no ;, just a find-and-replace</li>
+  </ul>
+  </div>
+
+  <h2>Arithmetic Operators & Precedence</h2>
+
+  <div class="box box-warn"><div class="box-title">⚠ You Got This Wrong — Operator Precedence (Q5)</div>
+  Q5: evaluate <code>a - b * c / a + d % 5</code>. You went left-to-right. The rule: <strong>*, /, %</strong> always happen before <strong>+, -</strong>. Within the same level, go left to right.
+  </div>
+
+  <table class="op-table">
+    <tr><th>Priority</th><th>Operators</th><th>Note</th></tr>
+    <tr><td>1 (highest)</td><td><code>++ --</code> (postfix)</td><td>Evaluated first in an expression</td></tr>
+    <tr><td>2</td><td><code>++ --</code> (prefix), unary <code>-</code></td><td></td></tr>
+    <tr class="hi"><td>3</td><td><code>*</code> &nbsp; <code>/</code> &nbsp; <code>%</code></td><td>⭐ These ALWAYS beat + and -</td></tr>
+    <tr><td>4</td><td><code>+</code> &nbsp; <code>-</code></td><td></td></tr>
+    <tr><td>5</td><td><code>&lt;&lt;</code> &nbsp; <code>&gt;&gt;</code></td><td>Stream operators</td></tr>
+    <tr><td>6</td><td><code>&lt; &gt; &lt;= &gt;=</code></td><td>Relational</td></tr>
+    <tr><td>7</td><td><code>== !=</code></td><td>Equality</td></tr>
+    <tr><td>8</td><td><code>&&</code></td><td>AND</td></tr>
+    <tr><td>9</td><td><code>||</code></td><td>OR</td></tr>
+    <tr><td>10 (lowest)</td><td><code>= += -= *=</code></td><td>Assignment operators</td></tr>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>precedence_examples.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Example 1 — from your last exam
+// a=9, b=8, c=25, d=14
+int result = a - b * c / a + d % 5;
+
+// Step 1: b*c = 8*25 = 200     → a - 200 / a + d % 5
+// Step 2: 200/a = 200/9 = 22   → a - 22 + d % 5   (integer division!)
+// Step 3: d%5 = 14%5 = 4       → a - 22 + 4
+// Step 4: left to right: 9-22 = -13, then -13+4 = -9
+// result = -9
+
+// Example 2 — pre vs post increment
+int x = 5;
+int a = x++;  // a = 5, THEN x becomes 6 (post: use first, increment after)
+int b = ++x;  // x becomes 7 first, THEN b = 7  (pre: increment first, use after)
+
+// Example 3 — combined assignment operators
+int n = 10;
+n += 5;   // n = n + 5 = 15
+n *= 2;   // n = n * 2 = 30
+n %= 7;   // n = n % 7 = 2</code></pre>
+  </div>
+
+  <h2>Type Conversion</h2>
+
+  <div class="box box-warn"><div class="box-title">⚠ static_cast — You got partial credit on this (last exam Q1)</div>
+  You knew the concept but couldn't write a clean example. Practice writing it.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>type_conversion.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Implicit (automatic) conversion
+int x = 5;
+double d = x;      // int → double, d = 5.0 (safe, no data lost)
+int z = 3.9;       // double → int, z = 3 (loses .9! truncates, doesn't round)
+
+// Explicit conversion with static_cast
+int val1 = 5, val2 = 2;
+
+// Without cast: integer division
+cout &lt;&lt; val1 / val2;                        // prints 2 (wrong if you want 2.5)
+
+// With cast: force floating point division
+cout &lt;&lt; static_cast&lt;double&gt;(val1) / val2;  // prints 2.5
+
+// Real exam example: average of array
+double avg = static_cast&lt;double&gt;(sum) / size;  // if sum and size are ints</code></pre>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 1 — Evaluate the expression</span></div>
+    <div class="practice-body">
+      <p>Given <code>a = 4, b = 3, c = 2</code>. What does <code>a + b * c - a % b</code> evaluate to?</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>steps</span></div>
+        <pre><code class="language-cpp">a + b * c - a % b
+// Step 1: b * c = 3 * 2 = 6
+a + 6 - a % b
+// Step 2: a % b = 4 % 3 = 1
+a + 6 - 1
+// Step 3: left to right: 4 + 6 = 10, then 10 - 1 = 9
+// Answer: 9</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 2 — static_cast</span></div>
+    <div class="practice-body">
+      <p>You have <code>int total = 17; int count = 5;</code>. Write the line that prints the average as a decimal (3.4).</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>solution</span></div>
+        <pre><code class="language-cpp">int total = 17;
+int count = 5;
+
+// Wrong — integer division gives 3 not 3.4
+cout &lt;&lt; total / count;
+
+// Correct — cast one to double first
+cout &lt;&lt; static_cast&lt;double&gt;(total) / count;  // 3.4</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 3 — Pre vs Post Increment Trace</span></div>
+    <div class="practice-body">
+      <p>What are the values of x, y, z after this runs?</p>
+      <div class="code-wrap"><div class="code-label"><span>trace_this.cpp</span></div>
+      <pre><code class="language-cpp">int x = 31, y = 48;
+int z = --x * y++ / 7;</code></pre></div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>walkthrough</span></div>
+        <pre><code class="language-cpp">// --x: pre-decrement, x becomes 30 first
+// y++: post-increment, y is used as 48 NOW, then becomes 49 after
+// So: z = 30 * 48 / 7
+//     z = 1440 / 7
+//     z = 205  (integer division)
+// After the line:
+// x = 30   (was decremented)
+// y = 49   (was post-incremented)
+// z = 205</code></pre></div>
+        <div class="box box-tip" style="margin-top:10px"><div class="box-title">💡 This is a type of question that appeared on last exam Q6/7</div>
+        Always check: is it pre (--x) or post (x--)? Pre changes the value before it's used. Post changes it after.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(0)">← Basic Syntax</button>
+    <button class="nav-arrow" onclick="showTab(2)">I/O →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: I/O ==================== -->
+<div class="panel" id="tab-2">
+  <div class="page-header">
+    <div class="page-tag">// 03 — io.cpp</div>
+    <h1>Input / Output</h1>
+    <p>cout for printing, cin for input, setprecision for decimals, and reading full lines with getline.</p>
+  </div>
+
+  <h2>Output with cout</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>output_examples.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;iomanip&gt;    // needed for setprecision and fixed
+using namespace std;
+
+int main()
+{
+    int count = 4;
+    double area = 174.57;
+    char letter = 'A';
+
+    // Print a string literal
+    cout &lt;&lt; "Hello World" &lt;&lt; endl;
+
+    // Print a variable
+    cout &lt;&lt; "The count is " &lt;&lt; count &lt;&lt; endl;
+    // Output: The count is 4
+
+    // Print multiple things on one line
+    cout &lt;&lt; "Count: " &lt;&lt; count &lt;&lt; " Area: " &lt;&lt; area &lt;&lt; endl;
+
+    // Fixed decimal places (from last exam — "accurate to 2 digits")
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2);
+    cout &lt;&lt; "The total area is " &lt;&lt; area &lt;&lt; endl;
+    // Output: The total area is 174.57
+
+    // setprecision stays on for rest of program unless changed
+    cout &lt;&lt; setprecision(4);
+    cout &lt;&lt; area &lt;&lt; endl;
+    // Output: 174.5700
+
+    // Print a character
+    cout &lt;&lt; letter &lt;&lt; endl;  // Output: A
+
+    return 0;
+}</code></pre>
+  </div>
+
+  <div class="box box-prof"><div class="box-title">⭐ Professor's Exact Output Patterns</div>
+  <p>Look at the sample runs in the study guide and match them exactly:</p>
+  <ul>
+    <li>Labels always come before the value: <code>"The sum is "</code> then <code>ans</code></li>
+    <li>Array elements separated by <code>"\t"</code>, then <code>endl</code> after the loop</li>
+    <li>When the problem says "accurate to 2 digits", use <code>fixed &lt;&lt; setprecision(2)</code></li>
+  </ul>
+  </div>
+
+  <h2>Input with cin</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>input_examples.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Reading a single value
+int num;
+cout &lt;&lt; "Enter a number: ";
+cin &gt;&gt; num;
+
+// Reading multiple values at once (space-separated input)
+int low, high, div;
+cout &lt;&lt; "Enter low, high, and div: ";
+cin &gt;&gt; low &gt;&gt; high &gt;&gt; div;
+// User types: 10 40 8  (and hits enter)
+
+// Reading into an array
+int arr[10];
+cout &lt;&lt; "Enter the array: ";
+for(int i=0; i&lt;10; i++)
+    cin &gt;&gt; arr[i];
+
+// Reading a full line (C-string)
+char str[100];
+cin.getline(str, 100);    // reads up to 99 chars, stops at newline
+
+// Reading a full line (string object)
+string s;
+getline(cin, s);          // reads whole line into string object</code></pre>
+  </div>
+
+  <div class="box box-tip"><div class="box-title">💡 cin.getline vs getline — Know Both</div>
+  <ul>
+    <li><strong>C-string (char array):</strong> <code>cin.getline(str, 100)</code> — method on cin object</li>
+    <li><strong>string object:</strong> <code>getline(cin, s)</code> — standalone function, cin passed as first arg</li>
+  </ul>
+  If you mix them up, you'll lose points. The study guide calls out "reading strings with getline — both options."
+  </div>
+
+  <h2>Full I/O Example (Professor's Style)</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>full_io_example.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;iomanip&gt;
+using namespace std;
+
+// Forward declaration
+double sumSquares(double arr[], int size);
+
+int main()
+{
+    double arr[5];
+
+    // Read array from user
+    cout &lt;&lt; "Enter the array values:\n";
+    for(int i=0; i&lt;5; i++)
+        cin &gt;&gt; arr[i];
+
+    // Call the function
+    double ans = sumSquares(arr, 5);
+
+    // Print array (professor's tab style)
+    cout &lt;&lt; "The array is:\n";
+    for(int i=0; i&lt;5; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+
+    // Print result
+    cout &lt;&lt; "The sum is " &lt;&lt; ans &lt;&lt; endl;
+
+    return 0;
+}
+
+double sumSquares(double arr[], int size)
+{
+    double sum = 0;
+    for(int i=0; i&lt;size; i++)
+    {
+        arr[i] = arr[i] * arr[i];   // replace value with its square
+        sum = sum + arr[i];          // add to running sum
+    }
+    return sum;
+}</code></pre>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice — Write the output</span></div>
+    <div class="practice-body">
+      <p>What does this code print?</p>
+      <div class="code-wrap"><div class="code-label"><span>trace_output.cpp</span></div>
+      <pre><code class="language-cpp">int a = 7, b = 3;
+double c = 4.5;
+cout &lt;&lt; fixed &lt;&lt; setprecision(1);
+cout &lt;&lt; "a=" &lt;&lt; a &lt;&lt; " b=" &lt;&lt; b &lt;&lt; endl;
+cout &lt;&lt; "c=" &lt;&lt; c &lt;&lt; endl;
+cout &lt;&lt; "a/b=" &lt;&lt; a/b &lt;&lt; endl;
+cout &lt;&lt; "c/b=" &lt;&lt; c/b &lt;&lt; endl;</code></pre></div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>output</span></div>
+        <pre><code class="language-cpp">a=7 b=3
+c=4.5
+a/b=2        // integer division: 7/3 = 2 (setprecision doesn't affect ints)
+c/b=1.5      // c is double, so 4.5/3 = 1.5, rounded to 1 decimal</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(1)">← Data Types</button>
+    <button class="nav-arrow" onclick="showTab(3)">Selection & Loops →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: SELECTION & LOOPS ==================== -->
+<div class="panel" id="tab-3">
+  <div class="page-header">
+    <div class="page-tag">// 04 — selection_loops.cpp</div>
+    <h1>Selection Statements & Loops</h1>
+    <p>if/else, switch, all three loop types, De Morgan's Law, scope, overflow/underflow, and loop tracing practice.</p>
+  </div>
+
+  <h2>Relational & Logical Operators</h2>
+
+  <div class="box box-warn"><div class="box-title">⚠ De Morgan's Law — You Got Q7 Wrong</div>
+  Q7: What is <code>!(x &gt; 17 || y != 24)</code> equivalent to?<br><br>
+  Rule: <code>!(A || B)</code> → <code>!A && !B</code> &nbsp;·&nbsp; <code>!(A && B)</code> → <code>!A || !B</code><br>
+  So: flip <code>||</code> to <code>&&</code>, then flip each condition:<br>
+  <code>!(x &gt; 17 || y != 24)</code> → <code>x &lt;= 17 && y == 24</code>
+  </div>
+
+  <table>
+    <tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td><code>==</code></td><td>Equal to</td><td><code>x == 5</code></td></tr>
+    <tr><td><code>!=</code></td><td>Not equal</td><td><code>x != 0</code></td></tr>
+    <tr><td><code>&gt;</code> <code>&lt;</code></td><td>Greater / Less</td><td><code>x &gt; 0</code></td></tr>
+    <tr><td><code>&gt;=</code> <code>&lt;=</code></td><td>Greater/Less or equal</td><td><code>x &gt;= 18</code></td></tr>
+    <tr><td><code>&&</code></td><td>AND — both must be true</td><td><code>x&gt;0 && x&lt;10</code></td></tr>
+    <tr><td><code>||</code></td><td>OR — at least one true</td><td><code>x==0 || x==1</code></td></tr>
+    <tr><td><code>!</code></td><td>NOT — flips true/false</td><td><code>!(x==0)</code></td></tr>
+  </table>
+
+  <div class="box box-warn"><div class="box-title">⚠ NOT a C++ Operator — You Got Q9 Wrong</div>
+  <code>=&gt;</code> is NOT a C++ operator (that's JavaScript/Python syntax). Valid C++ operators: <code>==</code>, <code>!=</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>++</code>, <code>--</code>, <code>+=</code>, <code>?:</code> (ternary).
+  </div>
+
+  <h2>if / else if / else</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>if_else_examples.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Simple if
+if (x &gt; 0)
+    cout &lt;&lt; "Positive" &lt;&lt; endl;
+
+// if-else
+if (x &gt; 0)
+    cout &lt;&lt; "Positive" &lt;&lt; endl;
+else
+    cout &lt;&lt; "Non-positive" &lt;&lt; endl;
+
+// Chained else-if (multiple conditions)
+if (grade &gt;= 90)
+    cout &lt;&lt; "A" &lt;&lt; endl;
+else if (grade &gt;= 80)
+    cout &lt;&lt; "B" &lt;&lt; endl;
+else if (grade &gt;= 70)
+    cout &lt;&lt; "C" &lt;&lt; endl;
+else
+    cout &lt;&lt; "F" &lt;&lt; endl;
+
+// Braces needed when you have multiple statements
+if (x &gt; 0 && y &gt; 0)
+{
+    cout &lt;&lt; "Both positive" &lt;&lt; endl;
+    count++;
+}
+
+// Nested if
+if (x &gt; 0)
+{
+    if (x &gt; 100)
+        cout &lt;&lt; "Very large" &lt;&lt; endl;
+    else
+        cout &lt;&lt; "Moderate" &lt;&lt; endl;
+}</code></pre>
+  </div>
+
+  <h2>switch Statement</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>switch_example.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">char grade = 'B';
+switch (grade)
+{
+    case 'A':                        // valid case label: char literal
+        cout &lt;&lt; "Excellent" &lt;&lt; endl;
+        break;                       // break exits the switch
+    case 'B':
+        cout &lt;&lt; "Good" &lt;&lt; endl;
+        break;
+    case 'C':
+        cout &lt;&lt; "Average" &lt;&lt; endl;
+        break;
+    default:                         // runs if no case matches
+        cout &lt;&lt; "Invalid" &lt;&lt; endl;
+}
+
+// Valid case labels: char literals ('A'), int literals (7), not variables
+// Without break, execution "falls through" to the next case
+
+// Integer switch example
+int day = 3;
+switch (day)
+{
+    case 1: cout &lt;&lt; "Monday"; break;
+    case 2: cout &lt;&lt; "Tuesday"; break;
+    case 3: cout &lt;&lt; "Wednesday"; break;
+    default: cout &lt;&lt; "Other";
+}</code></pre>
+  </div>
+
+  <h2>The Three Loops</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>loops_compared.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// FOR loop — use when you know exactly how many times to run
+for(int i=0; i&lt;10; i++)
+{
+    cout &lt;&lt; i &lt;&lt; "\t";
+}
+cout &lt;&lt; endl;
+// Prints: 0  1  2  3  4  5  6  7  8  9
+
+// WHILE loop — use when you run until a condition is met
+int val = 1;
+while (val &lt;= 5)
+{
+    cout &lt;&lt; val &lt;&lt; "\t";
+    val++;
+}
+cout &lt;&lt; endl;
+// Prints: 1  2  3  4  5
+
+// DO-WHILE — always runs at least once, then checks condition
+int input;
+do
+{
+    cout &lt;&lt; "Enter a positive number: ";
+    cin &gt;&gt; input;
+} while (input &lt;= 0);     // semicolon required here!
+// If user enters -5, it loops. If they enter 3, it stops.
+
+// NESTED loops — used for 2D arrays
+for(int i=0; i&lt;3; i++)         // outer loop: rows
+{
+    for(int j=0; j&lt;3; j++)     // inner loop: columns
+    {
+        cout &lt;&lt; mat[i][j] &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;               // newline after each row
+}</code></pre>
+  </div>
+
+  <h2>Interactive Loop Tracer</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:0">Step through the loop from your last exam one step at a time. This is the exact loop you got wrong.</p>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:20px;margin:16px 0;">
+    <div class="tracer-grid">
+      <div>
+        <div class="code-wrap">
+          <div class="code-label"><span>loop_from_exam.cpp</span></div>
+          <pre><code class="language-cpp">double sum = 0;
+for(int i=21; i&lt;75; i+=6)
+{
+    sum = sum + i;
+    if(i % 3 == 0)
+        i++;
+    cout &lt;&lt; "i is " &lt;&lt; i &lt;&lt; endl;
+}</code></pre>
+        </div>
+        <div class="tracer-info" id="stepInfo">Click "Next Step" to begin tracing.</div>
+      </div>
+      <div>
+        <div class="var-watch">
+          <h3>Variable Watch</h3>
+          <div class="var-row" id="vr-sum"><span class="vn">sum</span><span class="vv" id="vv-sum">0</span></div>
+          <div class="var-row" id="vr-i"><span class="vn">i</span><span class="vv" id="vv-i">—</span></div>
+          <div class="var-row" id="vr-c"><span class="vn">i &lt; 75 ?</span><span class="vv" id="vv-c">—</span></div>
+          <div class="var-row" id="vr-m"><span class="vn">i % 3 == 0 ?</span><span class="vv" id="vv-m">—</span></div>
+          <div class="var-row" id="vr-n"><span class="vn">iteration #</span><span class="vv" id="vv-n">0</span></div>
+        </div>
+        <div class="tracer-out" id="trOut">// output appears here</div>
+      </div>
+    </div>
+    <div class="tracer-btns">
+      <button class="tbtn pri" onclick="tNext()">▶ Next Step</button>
+      <button class="tbtn" onclick="tReset()">↺ Reset</button>
+      <button class="tbtn" onclick="tAll()">⚡ Run All</button>
+    </div>
+  </div>
+
+  <h2>Variable Scope</h2>
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:20px;margin:14px 0;">
+    <div class="scope-box global">
+      <div class="scope-lbl">Global Scope — visible to ALL functions</div>
+      <code style="color:var(--accent2)">const int MAX = 100; // only use const here, avoid global vars</code>
+      <div class="scope-box func">
+        <div class="scope-lbl">Function / Main Scope — visible inside this function only</div>
+        <code style="color:var(--accent)">int count = 0;</code>
+        <div class="scope-box loop">
+          <div class="scope-lbl">Block Scope — visible inside this loop only</div>
+          <code style="color:var(--success)">for(int i=0; i&lt;10; i++) { // i only exists here }</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Overflow & Underflow</h2>
+  <div class="box box-warn"><div class="box-title">⚠ Short Answer on Last Exam — Partial Credit</div>
+  You said "turns negative" which was incomplete. A full answer needs a definition AND an example.
+  </div>
+  <table>
+    <tr><th>Concept</th><th>Definition</th><th>Example</th></tr>
+    <tr><td><strong>Overflow</strong></td><td>Value exceeds the type's MAX — wraps around to a very negative number</td><td><code>int x = INT_MAX; x++; // becomes very negative</code></td></tr>
+    <tr><td><strong>Underflow</strong></td><td>Value goes below the type's MIN — wraps to positive; or float too small to represent</td><td><code>int x = INT_MIN; x--; // becomes very positive</code></td></tr>
+  </table>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice — Trace the loop output</span></div>
+    <div class="practice-body">
+      <p>What is printed to the console?</p>
+      <div class="code-wrap"><div class="code-label"><span>trace_this.cpp</span></div>
+      <pre><code class="language-cpp">for(int i=1; i&lt;=10; i++)
+{
+    if(i % 2 == 0)
+        cout &lt;&lt; i &lt;&lt; "\t";
+}</code></pre></div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <p>Only even numbers are printed (when <code>i % 2 == 0</code>):</p>
+        <div class="code-wrap"><div class="code-label"><span>output</span></div>
+        <pre><code class="language-cpp">2    4    6    8    10</code></pre></div>
+        <p style="margin-top:8px">Trace: i=1 (odd,skip), i=2 (even,print), i=3 (skip), i=4 (print)... i=10 (print), i=11 (11&lt;=10 false, stop)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice — Translate condition using De Morgan's</span></div>
+    <div class="practice-body">
+      <p>Rewrite <code>!(x &lt; 0 && y &gt; 100)</code> without the NOT operator.</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>de_morgan.cpp</span></div>
+        <pre><code class="language-cpp">// Original: !(x < 0 && y > 100)
+// De Morgan: !(A && B) → !A || !B
+// Flip the && to ||, flip each condition:
+//   !(x < 0) → x >= 0
+//   !(y > 100) → y <= 100
+// Result:
+x &gt;= 0 || y &lt;= 100</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(2)">← I/O</button>
+    <button class="nav-arrow" onclick="showTab(4)">Functions →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: FUNCTIONS ==================== -->
+<div class="panel" id="tab-4">
+  <div class="page-header">
+    <div class="page-tag">// 05 — functions.cpp</div>
+    <h1>Functions</h1>
+    <p>Writing functions, pass by value vs reference, overloading, default parameters, and scope.</p>
+  </div>
+
+  <div class="box box-prof"><div class="box-title">⭐ Professor's Function Style — Non-Negotiable</div>
+  Forward declaration at top, call in main, full definition after main. She deducts points if you don't follow this. The return type, name, and parameters in the declaration must match the definition exactly.
+  </div>
+
+  <h2>Function Structure</h2>
+  <div class="code-wrap">
+    <div class="code-label"><span>function_structure.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+// STEP 1: Forward declarations (prototypes)
+int add(int a, int b);
+void printResult(int result);
+bool isEven(int n);
+
+int main()
+{
+    // STEP 2: Call functions from main
+    int x = 5, y = 3;
+    int sum = add(x, y);        // calling a value-returning function
+    printResult(sum);           // calling a void function
+    if (isEven(x))
+        cout &lt;&lt; "x is even" &lt;&lt; endl;
+    return 0;
+}
+
+// STEP 3: Full function definitions AFTER main
+int add(int a, int b)
+{
+    return a + b;    // returns an int
+}
+
+void printResult(int result)
+{
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+    // void = no return needed
+}
+
+bool isEven(int n)
+{
+    return n % 2 == 0;    // returns true or false
+}</code></pre>
+  </div>
+
+  <h2>Pass by Value vs Pass by Reference</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="code-wrap">
+        <div class="code-label"><span>pass by VALUE — original unchanged</span></div>
+        <pre><code class="language-cpp">void triple(int x)
+{
+    x = x * 3;
+    // x is a COPY — original not changed
+}
+
+int main()
+{
+    int num = 5;
+    triple(num);
+    cout &lt;&lt; num;  // still 5!
+}</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="code-wrap">
+        <div class="code-label"><span>pass by REFERENCE — original IS changed</span></div>
+        <pre><code class="language-cpp">void triple(int &x)   // & means reference
+{
+    x = x * 3;
+    // x IS the original variable
+}
+
+int main()
+{
+    int num = 5;
+    triple(num);
+    cout &lt;&lt; num;  // now 15!
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>reference_use_cases.cpp — when to use &</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Use & when: function needs to modify the original variable
+void swap(int &a, int &b)
+{
+    int temp = a;
+    a = b;
+    b = temp;
+    // swaps the real variables in main
+}
+
+// Use & when: returning more than one value
+int calculate(int low, int high, int div, int &count)
+{
+    // count is returned by reference (second output)
+    // function return value is the sum
+    int sum = 0;
+    count = 0;
+    for(int i=low; i&lt;=high; i++)
+    {
+        if (i % div == 0)
+        {
+            sum += i;
+            count++;
+        }
+    }
+    return sum;   // returns sum normally
+    // count is "returned" through the reference parameter
+}
+
+int main()
+{
+    int totalCount;
+    int totalSum = calculate(10, 40, 8, totalCount);
+    // After call: totalSum = 72, totalCount = 4
+}</code></pre>
+  </div>
+
+  <h2>Function Overloading & Default Parameters</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>overloading.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Same function name, different parameter signatures
+// Compiler picks the right one based on what you pass
+
+double calculate(double a, double b, char op = 'S')
+{
+    // Default parameter: if op not given, defaults to 'S'
+    if (op == 'S') return a + b;   // sum
+    if (op == 'D') return a - b;   // difference
+    return 0;
+}
+
+int calculate(int low, int high, int div, int &count)
+{
+    // Different parameter types = different overload
+    int sum = 0;
+    count = 0;
+    for(int i=low; i&lt;=high; i++)
+        if(i % div == 0) { sum += i; count++; }
+    return sum;
+}
+
+int main()
+{
+    // These all call different versions:
+    cout &lt;&lt; calculate(3.0, 4.0);         // uses double version, op='S' (default)
+    cout &lt;&lt; calculate(3.0, 4.0, 'D');    // uses double version, op='D'
+
+    int cnt;
+    cout &lt;&lt; calculate(10, 40, 8, cnt);   // uses int version
+}</code></pre>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 1 — Will it compile? What prints?</span></div>
+    <div class="practice-body">
+      <div class="code-wrap"><div class="code-label"><span>trace_functions.cpp</span></div>
+      <pre><code class="language-cpp">void addOne(int x)   { x++; }
+void addOneRef(int &x) { x++; }
+
+int main()
+{
+    int a = 10, b = 10;
+    addOne(a);
+    addOneRef(b);
+    cout &lt;&lt; a &lt;&lt; " " &lt;&lt; b &lt;&lt; endl;
+}</code></pre></div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>output</span></div>
+        <pre><code class="language-cpp">10 11
+// a stayed 10 — addOne got a copy, original unchanged
+// b became 11 — addOneRef got a reference, original modified</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 2 — Write a function from scratch</span></div>
+    <div class="practice-body">
+      <p>Write a complete program with a function called <code>countNegatives</code> that accepts a double array and its size and returns the number of negative values. In main, read 5 doubles, call the function, and print the result.</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>countNegatives.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+// Forward declaration
+int countNegatives(double arr[], int size);
+
+int main()
+{
+    double arr[5];
+    cout &lt;&lt; "Enter 5 values: ";
+    for(int i=0; i&lt;5; i++)
+        cin &gt;&gt; arr[i];
+
+    int neg = countNegatives(arr, 5);
+    cout &lt;&lt; "Number of negatives: " &lt;&lt; neg &lt;&lt; endl;
+    return 0;
+}
+
+int countNegatives(double arr[], int size)
+{
+    int count = 0;                  // start counter at 0
+    for(int i=0; i&lt;size; i++)
+    {
+        if (arr[i] &lt; 0)            // if element is negative
+            count++;                // increment counter
+    }
+    return count;                   // return the total
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(3)">← Selection & Loops</button>
+    <button class="nav-arrow" onclick="showTab(5)">Arrays →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 5: ARRAYS ==================== -->
+<div class="panel" id="tab-5">
+  <div class="page-header">
+    <div class="page-tag">// 06 — arrays.cpp</div>
+    <h1>Arrays</h1>
+    <p>Declaring, initializing, passing to functions, address calculation, and 2D arrays.</p>
+  </div>
+
+  <h2>Declaring & Initializing</h2>
+  <div class="code-wrap">
+    <div class="code-label"><span>array_basics.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Declare only (contains garbage values until assigned)
+int arr[10];
+double scores[15];
+float values[5];
+
+// Declare + initialize with values
+int arr[5] = {3, -5, 14, 100, -67};
+
+// Partial init — rest become 0
+int arr[10] = {1, 2, 3};  // arr[3] through arr[9] = 0
+
+// Index runs from 0 to size-1
+// arr[0] is first element
+// arr[9] is last element for size 10
+
+// Print every element
+for(int i=0; i&lt;10; i++)
+    cout &lt;&lt; arr[i] &lt;&lt; "\t";
+cout &lt;&lt; endl;</code></pre>
+  </div>
+
+  <h2>Address Calculation</h2>
+  <div class="box box-tip"><div class="box-title">💡 Formula — Will Appear on Exam</div>
+  <code>Address = Base_Address + sizeof(element_type) × index</code><br><br>
+  sizeof: int=4, double=8, float=4, short=2, char=1
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Address Calculation Practice</span></div>
+    <div class="practice-body">
+      <p>Calculate:</p>
+      <ol>
+        <li>Doubles, base=2000, index=34, sizeof(double)=8</li>
+        <li>Shorts, base=10504, index=120, sizeof(short)=2</li>
+        <li>Chars, base=45906, index=219, sizeof(char)=1</li>
+      </ol>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>answers</span></div>
+        <pre><code class="language-cpp">// (i) 2000 + 8 × 34  = 2000 + 272  = 2272
+// (ii) 10504 + 2 × 120 = 10504 + 240 = 10744
+// (iii) 45906 + 1 × 219 = 45906 + 219 = 46125</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Passing Arrays to Functions</h2>
+
+  <div class="box box-prof"><div class="box-title">⭐ Professor's Array Function Pattern</div>
+  Always pass the array AND its size. Arrays are automatically passed by reference — changes inside the function affect the original. No <code>&</code> needed.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>array_functions.cpp — professor's style</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+// Forward declarations
+void sumReplace(int arr[], int size);
+int findMax(const int arr[], int size);
+
+int main()
+{
+    int arr[10];
+    cout &lt;&lt; "Enter the array: ";
+    for(int i=0; i&lt;10; i++)
+        cin &gt;&gt; arr[i];
+
+    sumReplace(arr, 10);     // modifies array in place
+
+    cout &lt;&lt; "After sumReplace: ";
+    for(int i=0; i&lt;10; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+
+    cout &lt;&lt; "Max value: " &lt;&lt; findMax(arr, 10) &lt;&lt; endl;
+    return 0;
+}
+
+// Replace each element with sum of its left and right neighbors
+// Position 0: left = -3, last position: right = 250
+void sumReplace(int arr[], int size)
+{
+    int temp[10];
+    for(int i=0; i&lt;size; i++)
+        temp[i] = arr[i];       // copy first — use original values
+
+    for(int i=0; i&lt;size; i++)
+    {
+        int left  = (i == 0)        ? -3  : temp[i-1];   // special left edge
+        int right = (i == size-1)   ? 250 : temp[i+1];   // special right edge
+        arr[i] = left + right;
+    }
+}
+
+// Find and return the largest element — const means we won't modify it
+int findMax(const int arr[], int size)
+{
+    int max = arr[0];               // assume first is max
+    for(int i=1; i&lt;size; i++)
+    {
+        if (arr[i] &gt; max)
+            max = arr[i];           // update if we find something bigger
+    }
+    return max;
+}</code></pre>
+  </div>
+
+  <h2>2D Arrays</h2>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>2d_arrays.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">// Declaration — rows x cols
+int mat[3][3];
+int mat[3][3] = {{1, 5, 19}, {6, -2, 10}, {12, 8, 5}};
+//  mat[row][col]
+//  mat[0][0]=1  mat[0][1]=5  mat[0][2]=19
+//  mat[1][0]=6  mat[1][1]=-2 mat[1][2]=10
+
+// Diagonal sum — where row index == col index
+int sum = 0;
+for(int i=0; i&lt;3; i++)
+    sum += mat[i][i];
+// sum = mat[0][0] + mat[1][1] + mat[2][2] = 1 + (-2) + 5 = 4
+
+// Print the whole 2D array
+for(int i=0; i&lt;3; i++)        // for each row
+{
+    for(int j=0; j&lt;3; j++)    // for each column in that row
+        cout &lt;&lt; mat[i][j] &lt;&lt; " ";
+    cout &lt;&lt; endl;              // new line after each row
+}
+
+// Passing 2D array to a function — MUST specify column count
+void myFunc(int arr[][9], int rows)
+{
+    // column count (9) must be hard-coded in the parameter
+}</code></pre>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice — Write the "alternates" function (from exam sheet)</span></div>
+    <div class="practice-body">
+      <p>Write a complete program: read 15 floats, call <code>alternates</code> which replaces every 3rd element (index 2, 5, 8...) with the sum of itself and the previous 2. Print the array.</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>alternates.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+void alternates(float arr[], int size);
+
+int main()
+{
+    float arr[15];
+    cout &lt;&lt; "Enter the array: ";
+    for(int i=0; i&lt;15; i++)
+        cin &gt;&gt; arr[i];
+
+    alternates(arr, 15);          // modifies array in place
+
+    cout &lt;&lt; "After alternates: ";
+    for(int i=0; i&lt;15; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+    return 0;
+}
+
+void alternates(float arr[], int size)
+{
+    // Every 3rd element: index 2, 5, 8, 11, 14...
+    // We start at i=2 and step by 3 each time
+    for(int i=2; i&lt;size; i+=3)
+    {
+        arr[i] = arr[i] + arr[i-1] + arr[i-2];
+        // replaces itself with sum of itself + previous 2
+    }
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice — Write the "moduli" function (from exam sheet)</span></div>
+    <div class="practice-body">
+      <p>15 ints. Function <code>moduli</code>: replace each element with <code>arr[i] % arr[i+1]</code>. If <code>arr[i+1] == 0</code>, leave it unchanged. Work from position 0.</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>moduli.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+using namespace std;
+
+void moduli(int arr[], int size);
+
+int main()
+{
+    int arr[15];
+    cout &lt;&lt; "Enter the array: ";
+    for(int i=0; i&lt;15; i++)
+        cin &gt;&gt; arr[i];
+
+    moduli(arr, 15);
+
+    cout &lt;&lt; "After moduli: ";
+    for(int i=0; i&lt;15; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; "\t";
+    cout &lt;&lt; endl;
+    return 0;
+}
+
+void moduli(int arr[], int size)
+{
+    int temp[15];
+    for(int i=0; i&lt;size; i++)
+        temp[i] = arr[i];          // copy first to avoid chain overwriting
+
+    for(int i=0; i&lt;size-1; i++)   // stop at size-1 (no "next" for last)
+    {
+        if (temp[i+1] == 0)
+            arr[i] = temp[i];      // leave unchanged if divisor is 0
+        else
+            arr[i] = temp[i] % temp[i+1];
+    }
+    // last element: no next element to mod by, leave unchanged
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(4)">← Functions</button>
+    <button class="nav-arrow" onclick="showTab(6)">Strings →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 6: STRINGS ==================== -->
+<div class="panel" id="tab-6">
+  <div class="page-header">
+    <div class="page-tag">// 07 — strings.cpp</div>
+    <h1>Strings</h1>
+    <p>C-strings (char arrays), string objects, cstring/cctype libraries, and common string operations.</p>
+  </div>
+
+  <h2>C-Strings (char arrays)</h2>
+  <div class="code-wrap">
+    <div class="code-label"><span>cstrings.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;   // strlen, strcpy, strcat, strcmp
+using namespace std;
+
+int main()
+{
+    char str[100] = "Hello World";   // auto adds \0 at end
+    char str2[100];
+
+    // Length — does NOT count the \0 null terminator
+    cout &lt;&lt; strlen(str);        // 11
+
+    // Copy — use strcpy, NOT str2 = str (that's a compile error)
+    strcpy(str2, str);           // str2 now = "Hello World"
+
+    // Concatenate — appends str2 to the end of str
+    strcat(str, "!");            // str = "Hello World!"
+
+    // Compare — 0 means equal, negative means str comes first alphabetically
+    if (strcmp(str, str2) == 0)
+        cout &lt;&lt; "Same" &lt;&lt; endl;
+
+    // Read one word
+    cin &gt;&gt; str;                  // stops at whitespace
+
+    // Read full line
+    cin.getline(str, 100);       // reads up to 99 chars + newline
+
+    return 0;
+}</code></pre>
+  </div>
+
+  <h2>cctype Functions</h2>
+  <table>
+    <tr><th>Function</th><th>Returns true if...</th><th>Example</th></tr>
+    <tr><td><code>isalpha(c)</code></td><td>letter (a-z or A-Z)</td><td><code>isalpha('A')</code> → true</td></tr>
+    <tr><td><code>isdigit(c)</code></td><td>digit (0-9)</td><td><code>isdigit('5')</code> → true</td></tr>
+    <tr><td><code>isalnum(c)</code></td><td>letter OR digit</td><td><code>isalnum('3')</code> → true</td></tr>
+    <tr><td><code>isupper(c)</code></td><td>uppercase letter</td><td><code>isupper('A')</code> → true</td></tr>
+    <tr><td><code>islower(c)</code></td><td>lowercase letter</td><td><code>islower('A')</code> → <strong>false</strong></td></tr>
+    <tr><td><code>isspace(c)</code></td><td>whitespace (space, tab, newline)</td><td><code>isspace(' ')</code> → true</td></tr>
+    <tr><td><code>isprint(c)</code></td><td>printable character</td><td><code>isprint('A')</code> → true</td></tr>
+    <tr><td><code>toupper(c)</code></td><td>converts to uppercase</td><td><code>toupper('a')</code> → 'A'</td></tr>
+    <tr><td><code>tolower(c)</code></td><td>converts to lowercase</td><td><code>tolower('A')</code> → 'a'</td></tr>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-label"><span>cctype_examples.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+#include&lt;cctype&gt;
+using namespace std;
+
+// Count vowels in a C-string
+int countVowels(char str[])
+{
+    int count = 0;
+    for(int i=0; i&lt;strlen(str); i++)
+    {
+        char c = tolower(str[i]);         // convert to lowercase first
+        if(c=='a' || c=='e' || c=='i' || c=='o' || c=='u')
+            count++;
+    }
+    return count;
+}
+
+// Replace every 'e' with '3' — from the study guide
+void changeE(char str[])
+{
+    for(int i=0; i&lt;strlen(str); i++)
+    {
+        if(str[i] == 'e')                 // check each char
+            str[i] = '3';                 // replace in place
+    }
+}
+
+int main()
+{
+    char s[200];
+    cout &lt;&lt; "Input:\n";
+    cin.getline(s, 200);
+    changeE(s);
+    cout &lt;&lt; "Output:\n" &lt;&lt; s &lt;&lt; endl;
+}</code></pre>
+  </div>
+
+  <h2>string Objects</h2>
+  <div class="code-wrap">
+    <div class="code-label"><span>string_objects.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+int main()
+{
+    string s1 = "Hello";
+    string s2 = "World";
+    string s3;
+
+    // Length — two ways, same result
+    cout &lt;&lt; s1.length();      // 5
+    cout &lt;&lt; s1.size();        // 5
+
+    // Concatenation — can use + or +=
+    s3 = s1 + " " + s2;      // "Hello World"
+    s1 += "!";                // "Hello!"
+
+    // Comparison — can use ==, !=, <, > directly (unlike C-strings)
+    if (s1 == s2) cout &lt;&lt; "Same" &lt;&lt; endl;
+    if (s1 &lt; s2)  cout &lt;&lt; "s1 first alphabetically" &lt;&lt; endl;
+
+    // Access individual characters
+    cout &lt;&lt; s3[0];            // 'H' — bracket notation
+    cout &lt;&lt; s3.at(1);         // 'e' — .at() with bounds checking
+
+    // Find substring — returns index, or string::npos if not found
+    int pos = s3.find("World");    // pos = 6
+
+    // Substring — .substr(start, length)
+    string sub = s3.substr(6, 5);  // "World"
+
+    // Read full line into string object
+    getline(cin, s3);              // NOT cin.getline — different syntax!
+
+    return 0;
+}</code></pre>
+  </div>
+
+  <div class="box box-warn"><div class="box-title">⚠ size vs capacity — Study Guide Q7</div>
+  <strong>size</strong>: number of characters currently in the string (what you put in it).<br>
+  <strong>capacity</strong>: how many characters the string can hold without reallocating memory (the reserved space).<br>
+  size ≤ capacity always.
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 1 — Write the output</span></div>
+    <div class="practice-body">
+      <div class="code-wrap"><div class="code-label"><span>trace_strings.cpp</span></div>
+      <pre><code class="language-cpp">char str[] = "Never gonna give you up";
+int vowels = 0, uppers = 0;
+for(int i=0; i&lt;strlen(str); i++)
+{
+    if(islower(str[i])) vowels++;     // counts lowercase letters
+    if(isupper(str[i])) uppers++;
+}
+cout &lt;&lt; vowels &lt;&lt; " " &lt;&lt; uppers &lt;&lt; endl;</code></pre></div>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <p>The variable is named <code>vowels</code> but the code actually counts <strong>lowercase letters</strong> using <code>islower</code>, not vowels. Careful reading the code — this is a trap question type.</p>
+        <div class="code-wrap"><div class="code-label"><span>answer</span></div>
+        <pre><code class="language-cpp">// "Never gonna give you up"
+// Lowercase letters: ever gonna give you up = 19 lowercase chars
+// Uppercase letters: N = 1 uppercase char
+// Output: 19 1</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="practice">
+    <div class="practice-head"><span>🔍 Practice 2 — Write a string function</span></div>
+    <div class="practice-body">
+      <p>Write a function that takes a C-string and counts how many digits it contains. Call it from main with user input.</p>
+      <button class="sol-btn" onclick="toggleSol(this)">▶ See Solution</button>
+      <div class="sol-panel">
+        <div class="code-wrap"><div class="code-label"><span>count_digits.cpp</span></div>
+        <pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstring&gt;
+#include&lt;cctype&gt;
+using namespace std;
+
+int countDigits(char str[]);
+
+int main()
+{
+    char s[200];
+    cout &lt;&lt; "Enter a string: ";
+    cin.getline(s, 200);
+    cout &lt;&lt; "Number of digits: " &lt;&lt; countDigits(s) &lt;&lt; endl;
+    return 0;
+}
+
+int countDigits(char str[])
+{
+    int count = 0;
+    for(int i=0; i&lt;strlen(str); i++)
+    {
+        if(isdigit(str[i]))    // isdigit checks 0-9
+            count++;
+    }
+    return count;
+}</code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(5)">← Arrays</button>
+    <button class="nav-arrow" onclick="showTab(7)" style="border-color:var(--accent2);color:var(--accent2)">Quiz →</button>
+  </div>
+</div>
+
+<!-- ==================== TAB 7: QUIZ ==================== -->
+<div class="panel" id="tab-7">
+  <div class="page-header">
+    <div class="page-tag">// quiz.cpp — multiple choice</div>
+    <h1>Multiple Choice Practice</h1>
+    <p>10 questions. Click an answer — instant feedback and explanation. Questions pulled from the study guide and your last exam mistakes.</p>
+  </div>
+
+  <div id="score-bar">
+    <span>Score</span>
+    <span><span class="score-val" id="scoreNum">0</span> / <span id="scoreTot">10</span></span>
+    <span style="font-size:11px;color:var(--muted)" id="scoreMsg">Answer questions to track your score</span>
+  </div>
+
+  <!-- Q1 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q1</span><span>Basic Syntax — Reserved Words</span></div>
+    <div class="qbody">
+      <div class="qtext">Which of the following is NOT a C++ reserved word?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'float IS a C++ keyword — it declares a floating-point variable.')"><span class="oletter">A</span>float</li>
+        <li class="opt" onclick="answer(this,true,'Correct! function is not a C++ keyword. C++ does not use the word function to define functions — you just write the return type and name.')"><span class="oletter">B</span>function</li>
+        <li class="opt" onclick="answer(this,false,'void IS a C++ keyword — it means the function returns nothing.')"><span class="oletter">C</span>void</li>
+        <li class="opt" onclick="answer(this,false,'return IS a C++ keyword — it exits a function and sends back a value.')"><span class="oletter">D</span>return</li>
+      </ul>
+      <div class="qexp" id="qe1"></div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q2</span><span>Keywords ⚠ You got this wrong last time</span></div>
+    <div class="qbody">
+      <div class="qtext">Which of the following IS a C++ keyword?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,true,'Correct! double is a C++ keyword for double-precision floating-point numbers.')"><span class="oletter">A</span>double</li>
+        <li class="opt" onclick="answer(this,false,'static_cast is a cast operator, not a traditional reserved keyword. It can\'t be used as a variable name but it\'s not listed as a keyword.')"><span class="oletter">B</span>static_cast</li>
+        <li class="opt" onclick="answer(this,false,'integer is NOT a keyword. The keyword is int. You can actually name a variable "integer" in C++.')"><span class="oletter">C</span>integer</li>
+        <li class="opt" onclick="answer(this,false,'cases is NOT a keyword. The keyword is case (singular). "cases" is a valid variable name.')"><span class="oletter">D</span>cases</li>
+      </ul>
+      <div class="qexp" id="qe2"></div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q3</span><span>Variable Names ⚠ You got this wrong last time</span></div>
+    <div class="qbody">
+      <div class="qtext">Which of the following is NOT a valid variable name in C++?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'integer IS valid — it starts with a letter, contains only letters, and is not a reserved keyword. You can use it as a variable name.')"><span class="oletter">A</span>integer</li>
+        <li class="opt" onclick="answer(this,false,'Garnet_Gold IS valid — starts with a capital letter, contains only letters and underscore.')"><span class="oletter">B</span>Garnet_Gold</li>
+        <li class="opt" onclick="answer(this,false,'Gr33n_ IS valid! Starts with G (a letter), contains letters, digits (3), and underscore. All allowed.')"><span class="oletter">C</span>Gr33n_</li>
+        <li class="opt" onclick="answer(this,true,'Correct! unsigned is a C++ reserved keyword. You cannot use reserved keywords as variable names.')"><span class="oletter">D</span>unsigned</li>
+      </ul>
+      <div class="qexp" id="qe3"></div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q4</span><span>Arrays — Address Calculation</span></div>
+    <div class="qbody">
+      <div class="qtext">Array of doubles starting at address 5000. What is the starting address of element 7? (sizeof(double) = 8)</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'5000 is the base address — the address of element 0, not element 7.')"><span class="oletter">A</span>5000</li>
+        <li class="opt" onclick="answer(this,false,'5048 = 5000 + 8×6 — that\'s element 6, not 7.')"><span class="oletter">B</span>5048</li>
+        <li class="opt" onclick="answer(this,true,'Correct! Address = Base + size × index = 5000 + 8×7 = 5000 + 56 = 5056.')"><span class="oletter">C</span>5056</li>
+        <li class="opt" onclick="answer(this,false,'5064 = 5000 + 8×8 — that\'s element 8.')"><span class="oletter">D</span>5064</li>
+      </ul>
+      <div class="qexp" id="qe4"></div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q5</span><span>Strings — cctype functions</span></div>
+    <div class="qbody">
+      <div class="qtext">Which function returns 0 (false) for the character 'A'?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'isalnum(\'A\') returns true — \'A\' is a letter, which counts as alphanumeric.')"><span class="oletter">A</span>isalnum</li>
+        <li class="opt" onclick="answer(this,false,'isprint(\'A\') returns true — \'A\' is a printable character.')"><span class="oletter">B</span>isprint</li>
+        <li class="opt" onclick="answer(this,true,'Correct! islower(\'A\') returns false because \'A\' is UPPERCASE. islower only returns true for a–z.')"><span class="oletter">C</span>islower</li>
+        <li class="opt" onclick="answer(this,false,'isalpha(\'A\') returns true — \'A\' is a letter.')"><span class="oletter">D</span>isalpha</li>
+      </ul>
+      <div class="qexp" id="qe5"></div>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q6</span><span>Operators ⚠ You got this wrong last time</span></div>
+    <div class="qbody">
+      <div class="qtext">Which of the following is NOT a C++ operator?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'== IS a valid C++ operator — equality test.')"><span class="oletter">A</span>==</li>
+        <li class="opt" onclick="answer(this,false,'?: IS a valid C++ operator — the ternary operator: condition ? valueIfTrue : valueIfFalse')"><span class="oletter">B</span>?:</li>
+        <li class="opt" onclick="answer(this,true,'Correct! => is NOT a C++ operator. It exists in JavaScript and Python but not C++. C++ uses >= for greater-than-or-equal.')"><span class="oletter">C</span>=></li>
+        <li class="opt" onclick="answer(this,false,'++ IS a valid C++ operator — post or pre increment.')"><span class="oletter">D</span>++</li>
+      </ul>
+      <div class="qexp" id="qe6"></div>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q7</span><span>Selection — De Morgan's Law ⚠ You got this wrong</span></div>
+    <div class="qbody">
+      <div class="qtext">Which condition is equivalent to <code>!(x &gt; 17 || y != 24)</code>?</div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'This negates the whole thing but leaves || in place. De Morgan says !(A || B) = !A && !B — the || must become &&.')"><span class="oletter">A</span>(y != 24 &amp;&amp; x &gt; 17)</li>
+        <li class="opt" onclick="answer(this,false,'The || didn\'t change to &&, so this is wrong. Also y == 24 is correct but x &lt; 17 should be x &lt;= 17.')"><span class="oletter">B</span>(y == 24 || x &lt; 17)</li>
+        <li class="opt" onclick="answer(this,true,'Correct! !(x > 17 || y != 24). Flip || to &&. Flip x > 17 to x <= 17. Flip y != 24 to y == 24. Result: x <= 17 && y == 24, same as 17 >= x && y == 24.')"><span class="oletter">C</span>(17 &gt;= x &amp;&amp; y == 24)</li>
+        <li class="opt" onclick="answer(this,false,'Almost. !(x > 17) is x <= 17, not x < 17. > flips to <=, not <.')"><span class="oletter">D</span>(x &lt; 17 &amp;&amp; y == 24)</li>
+      </ul>
+      <div class="qexp" id="qe7"></div>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q8</span><span>2D Arrays — Tracing code output</span></div>
+    <div class="qbody">
+      <div class="qtext">What does this code print?
+      <pre style="background:var(--surface2);padding:12px;border-radius:6px;font-family:var(--mono);font-size:13px;margin-top:10px;line-height:1.6">int mat[3][3] = {{1,5,19},{6,-2,10},{12,8,5}};
+int sum = 0;
+for(int i=0; i&lt;3; i++)
+    sum += mat[i][i];
+cout &lt;&lt; "The sum is " &lt;&lt; sum &lt;&lt; endl;</pre></div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'This would be the sum of the whole first row (1+5+19=25). The loop only uses mat[i][i], not all columns.')"><span class="oletter">A</span>The sum is 25</li>
+        <li class="opt" onclick="answer(this,true,'Correct! mat[i][i] picks the diagonal: mat[0][0]=1, mat[1][1]=-2, mat[2][2]=5. Sum = 1 + (-2) + 5 = 4.')"><span class="oletter">B</span>The sum is 4</li>
+        <li class="opt" onclick="answer(this,false,'15 would require adding a different combination. Trace mat[0][0]+mat[1][1]+mat[2][2].')"><span class="oletter">C</span>The sum is 15</li>
+        <li class="opt" onclick="answer(this,false,'64 would be the total of all elements. This loop only hits the main diagonal.')"><span class="oletter">D</span>The sum is 64</li>
+      </ul>
+      <div class="qexp" id="qe8"></div>
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q9</span><span>Functions — pass by reference</span></div>
+    <div class="qbody">
+      <div class="qtext">What prints?
+      <pre style="background:var(--surface2);padding:12px;border-radius:6px;font-family:var(--mono);font-size:13px;margin-top:10px;line-height:1.6">void triple(int &x) { x = x * 3; }
+int main()
+{
+    int num = 4;
+    triple(num);
+    cout &lt;&lt; num;
+}</pre></div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'This would be the answer with pass by value (no &). The & means the original IS modified.')"><span class="oletter">A</span>4</li>
+        <li class="opt" onclick="answer(this,true,'Correct! The & means pass by reference — the original num is modified: 4 × 3 = 12.')"><span class="oletter">B</span>12</li>
+        <li class="opt" onclick="answer(this,false,'3 is not correct. 4 × 3 = 12, not 3.')"><span class="oletter">C</span>3</li>
+        <li class="opt" onclick="answer(this,false,'This code compiles and runs fine. int & x is valid C++ syntax.')"><span class="oletter">D</span>Compilation error</li>
+      </ul>
+      <div class="qexp" id="qe9"></div>
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="qcard">
+    <div class="qhead"><span class="qnum">Q10</span><span>Type Conversion — integer division</span></div>
+    <div class="qbody">
+      <div class="qtext">What is the output?
+      <pre style="background:var(--surface2);padding:12px;border-radius:6px;font-family:var(--mono);font-size:13px;margin-top:10px;line-height:1.6">int a = 7, b = 2;
+cout &lt;&lt; a/b &lt;&lt; " ";
+cout &lt;&lt; static_cast&lt;double&gt;(a)/b &lt;&lt; " ";
+cout &lt;&lt; a/b*b &lt;&lt; endl;</pre></div>
+      <ul class="opts">
+        <li class="opt" onclick="answer(this,false,'3.5 would require floating point division for the first term, but both a and b are ints so 7/2 = 3.')"><span class="oletter">A</span>3.5 3.5 7</li>
+        <li class="opt" onclick="answer(this,true,'Correct! 7/2=3 (int division). static_cast makes it 3.5. 7/2*b = 3*2 = 6 (both multiplications after int division).')"><span class="oletter">B</span>3 3.5 6</li>
+        <li class="opt" onclick="answer(this,false,'7/2 is 3, not 3.5. And 7/2*2 = 3*2 = 6, not 7.')"><span class="oletter">C</span>3.5 3.5 7</li>
+        <li class="opt" onclick="answer(this,false,'The static_cast gives 3.5, not 3. Only the first cout does integer division.')"><span class="oletter">D</span>3 3 6</li>
+      </ul>
+      <div class="qexp" id="qe10"></div>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="nav-arrow" onclick="showTab(6)">← Strings</button>
+    <button class="nav-arrow hidden">→</button>
+  </div>
+</div>
+
+</div><!-- end #content -->
+
+<script>
+// ---- TABS ----
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+let currentTab = 0;
+
+function showTab(idx) {
+  tabs.forEach(t => t.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  tabs[idx].classList.add('active');
+  panels[idx].classList.add('active');
+  document.getElementById('content').scrollTop = 0;
+  currentTab = idx;
+  // Re-highlight code in newly shown panel
+  panels[idx].querySelectorAll('pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
+}
+
+// ---- INIT HIGHLIGHT ----
+document.addEventListener('DOMContentLoaded', () => {
+  hljs.highlightAll();
+});
+
+// ---- COPY CODE ----
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+
+// ---- SOLUTION TOGGLE ----
+function toggleSol(btn) {
+  const panel = btn.nextElementSibling;
+  panel.classList.toggle('open');
+  btn.textContent = panel.classList.contains('open') ? '▼ Hide Solution' : '▶ See Solution';
+  if (panel.classList.contains('open')) {
+    panel.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+  }
+}
+
+// ---- QUIZ ----
+let score = 0;
+let answered = 0;
+const total = 10;
+
+function answer(el, correct, explanation) {
+  // If already answered correctly on this card, do nothing
+  if (el.closest('.qcard').querySelector('.opt.correct')) return;
+
+  if (correct) {
+    // Lock the whole question
+    const opts = el.closest('.opts').querySelectorAll('.opt');
+    opts.forEach(o => { o.onclick = null; o.classList.add('disabled'); });
+    el.classList.remove('disabled');
+    el.classList.add('correct');
+
+    const exp = el.closest('.qcard').querySelector('.qexp');
+    if (exp) { exp.innerHTML = '✅ ' + explanation; exp.classList.add('show'); }
+
+    // Only count score if they haven't already got this one wrong
+    const card = el.closest('.qcard');
+    if (!card.dataset.wrong) score++;
+    answered++;
+
+    document.getElementById('scoreNum').textContent = score;
+    const pct = Math.round((score / answered) * 100);
+    document.getElementById('scoreMsg').textContent =
+      answered === total
+        ? (score >= 8 ? `🎉 ${pct}% — Great work!` : score >= 5 ? `👍 ${pct}% — Review the ones you missed.` : `📚 ${pct}% — Review the tabs and try again.`)
+        : `${answered}/${total} answered · ${pct}% correct so far`;
+  } else {
+    // Mark this option wrong but leave others clickable
+    el.classList.add('wrong');
+    el.onclick = null;
+    el.closest('.qcard').dataset.wrong = 'true';
+
+    const exp = el.closest('.qcard').querySelector('.qexp');
+    if (exp) { exp.innerHTML = '❌ ' + explanation + ' — Try another option.'; exp.classList.add('show'); }
+  }
+}
+
+// ---- LOOP TRACER ----
+const steps = [
+  { sum:0, i:'—', c:'—', m:'—', n:0, info:'Initial state. sum=0, loop about to start.', out:'' },
+  { sum:21, i:22, c:'21<75 ✓', m:'21%3==0 → i++', n:1, info:'i=21: sum=0+21=21. 21%3==0 so i becomes 22. cout prints "i is 22".', out:'i is 22' },
+  { sum:49, i:28, c:'28<75 ✓', m:'28%3≠0', n:2, info:'i was 22, then i+=6 → 28. sum=21+28=49. 28%3=1≠0, no extra increment. cout "i is 28".', out:'i is 22\ni is 28' },
+  { sum:83, i:34, c:'34<75 ✓', m:'34%3≠0', n:3, info:'i=28+6=34. sum=49+34=83. 34%3=1≠0. cout "i is 34".', out:'i is 22\ni is 28\ni is 34' },
+  { sum:123, i:40, c:'40<75 ✓', m:'40%3≠0', n:4, info:'i=34+6=40. sum=83+40=123. 40%3=1≠0. cout "i is 40".', out:'i is 22\ni is 28\ni is 34\ni is 40' },
+  { sum:169, i:46, c:'46<75 ✓', m:'46%3≠0', n:5, info:'i=40+6=46. sum=123+46=169. cout "i is 46".', out:'...\ni is 46' },
+  { sum:221, i:52, c:'52<75 ✓', m:'52%3≠0', n:6, info:'i=46+6=52. sum=169+52=221. cout "i is 52".', out:'...\ni is 52' },
+  { sum:279, i:58, c:'58<75 ✓', m:'58%3≠0', n:7, info:'i=52+6=58. sum=221+58=279. cout "i is 58".', out:'...\ni is 58' },
+  { sum:343, i:64, c:'64<75 ✓', m:'64%3≠0', n:8, info:'i=58+6=64. sum=279+64=343. cout "i is 64".', out:'...\ni is 64' },
+  { sum:413, i:70, c:'70<75 ✓', m:'70%3≠0', n:9, info:'i=64+6=70. sum=343+70=413. cout "i is 70".', out:'...\ni is 70' },
+  { sum:413, i:76, c:'76<75 ✗ STOP', m:'—', n:10, info:'i=70+6=76. Condition 76<75 is FALSE. Loop ends. Final sum=413.', out:'...\ni is 70\n// 76>=75, loop exits' },
+];
+
+let tStep = 0;
+function tNext() {
+  if (tStep >= steps.length-1) return;
+  tStep++;
+  const s = steps[tStep];
+  const prev = steps[tStep-1];
+  ['vr-sum','vr-i'].forEach(id => document.getElementById(id).classList.remove('changed'));
+  set('vv-sum', s.sum); if(s.sum !== prev.sum) document.getElementById('vr-sum').classList.add('changed');
+  set('vv-i', s.i);     if(s.i !== prev.i)   document.getElementById('vr-i').classList.add('changed');
+  set('vv-c', s.c); set('vv-m', s.m); set('vv-n', s.n);
+  document.getElementById('stepInfo').textContent = s.info;
+  document.getElementById('trOut').textContent = s.out || '// (no output yet)';
+}
+function set(id, val) { document.getElementById(id).textContent = val; }
+function tReset() {
+  tStep = 0;
+  const s = steps[0];
+  set('vv-sum',s.sum); set('vv-i',s.i); set('vv-c',s.c); set('vv-m',s.m); set('vv-n',s.n);
+  document.getElementById('stepInfo').textContent = 'Click "Next Step" to begin tracing.';
+  document.getElementById('trOut').textContent = '// output appears here';
+  ['vr-sum','vr-i'].forEach(id => document.getElementById(id).classList.remove('changed'));
+}
+function tAll() {
+  tReset();
+  let d = 0;
+  for(let i=1; i<steps.length; i++) { setTimeout(tNext, d); d+=500; }
+}
+</script>
+</body>
+</html>
