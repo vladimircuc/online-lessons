@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4 — Deterministic Rounding</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+
+  :root {
+    --bg: #0a0e17;
+    --bg2: #111827;
+    --bg3: #1a2236;
+    --surface: #1e293b;
+    --surface2: #253349;
+    --border: #2d3a4f;
+    --border2: #3b4a63;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --accent: #60a5fa;
+    --accent2: #3b82f6;
+    --accent-glow: rgba(96,165,250,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.15);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.15);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.15);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.15);
+    --cyan: #22d3ee;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+    --serif: 'Crimson Pro', serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,23,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar .course { letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 80px 32px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(96,165,250,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero .label {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-family: var(--serif);
+    font-weight: 400;
+  }
+  .hero .subtitle {
+    font-size: 20px;
+    color: var(--text2);
+    max-width: 660px;
+    margin: 0 auto;
+    font-style: italic;
+  }
+  .hero .prereqs {
+    margin-top: 28px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text3);
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 14px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg2);
+  }
+
+  /* ── PART NAV ── */
+  .part-nav {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 32px;
+    flex-wrap: wrap;
+  }
+  .part-btn {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .part-btn:hover { border-color: var(--accent); color: var(--text); }
+  .part-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* ── SECTIONS ── */
+  .section {
+    display: none;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+  .section.active { display: block; }
+
+  .section-header {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    margin: 48px 0 20px;
+    line-height: 1.3;
+  }
+  h2:first-of-type { margin-top: 8px; }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 32px 0 14px;
+  }
+
+  p { margin-bottom: 16px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ── CODE / MATH BLOCKS ── */
+  .math-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text);
+  }
+
+  /* ── CONCEPT CARDS ── */
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card .card-title {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card p { font-size: 16px; margin-bottom: 0; color: var(--text2); }
+
+  .card.green { border-left: 3px solid var(--green); }
+  .card.green .card-title { color: var(--green); }
+  .card.amber { border-left: 3px solid var(--amber); }
+  .card.amber .card-title { color: var(--amber); }
+  .card.red { border-left: 3px solid var(--red); }
+  .card.red .card-title { color: var(--red); }
+  .card.purple { border-left: 3px solid var(--purple); }
+  .card.purple .card-title { color: var(--purple); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--accent-glow);
+    border: 1px solid rgba(96,165,250,0.25);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 24px 0;
+    font-size: 17px;
+  }
+  .callout.warn {
+    background: var(--amber-dim);
+    border-color: rgba(251,191,36,0.25);
+  }
+  .callout.success {
+    background: var(--green-dim);
+    border-color: rgba(52,211,153,0.25);
+  }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+  }
+  th {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  tr:hover td { background: rgba(96,165,250,0.03); }
+
+  /* ── INTERACTIVE CONTAINERS ── */
+  .interactive {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 28px 0;
+    position: relative;
+  }
+  .interactive .int-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .interactive .int-caption {
+    font-size: 15px;
+    color: var(--text3);
+    margin-top: 14px;
+    font-style: italic;
+  }
+
+  /* ── SVG DIAGRAMS ── */
+  .diagram {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+  .btn.primary:hover { background: var(--accent); }
+
+  /* ── SPOILER / SOLUTION ── */
+  .spoiler {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .spoiler-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: none;
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .spoiler-toggle:hover { background: var(--surface2); }
+  .spoiler-content {
+    display: none;
+    padding: 20px 24px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    font-size: 17px;
+  }
+  .spoiler.open .spoiler-content { display: block; }
+  .spoiler.open .spoiler-toggle .arrow { transform: rotate(180deg); }
+  .spoiler-toggle .arrow { transition: transform 0.2s; }
+
+  /* ── PROBLEM BOXES ── */
+  .problem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 28px 0;
+  }
+  .problem .prob-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .problem .prob-title {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .problem .prob-subtitle {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  /* ── NAV FOOTER ── */
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-link {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: #fff; }
+
+  /* ── SLIDER ── */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    margin: 10px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── VERTEX COVER INTERACTIVE ── */
+  .vc-graph { user-select: none; }
+  .vc-graph .node {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .vc-graph .node circle { transition: all 0.2s; }
+  .vc-graph .edge { transition: stroke 0.3s; }
+
+  /* ── STEP INDICATOR ── */
+  .steps-bar {
+    display: flex;
+    gap: 4px;
+    margin: 16px 0;
+  }
+  .step-dot {
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .step-dot.done { background: var(--green); }
+  .step-dot.current { background: var(--accent); }
+
+  /* ── COMPARISON COLUMNS ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    align-items: start;
+    margin: 24px 0;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .compare-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--accent);
+    padding-top: 40px;
+  }
+  .compare-col .col-title {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  /* ── HIGHLIGHT TAGS ── */
+  .tag {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .tag.np { background: var(--red-dim); color: var(--red); }
+  .tag.p { background: var(--green-dim); color: var(--green); }
+  .tag.approx { background: var(--purple-dim); color: var(--purple); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    body { font-size: 17px; }
+    .section { padding: 0 18px 60px; }
+    .hero { padding: 48px 18px 40px; }
+    .compare { grid-template-columns: 1fr; gap: 12px; }
+    .compare-arrow { display: none; }
+    .card-row { grid-template-columns: 1fr; }
+    .interactive { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════ TOP BAR ═══════ -->
+<div class="topbar">
+  <span class="course">CS 6515 &mdash; Session 4 of 6</span>
+  <span>Deterministic Rounding</span>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="label">Session 4</div>
+  <h1><em>Deterministic</em> Rounding</h1>
+  <p class="subtitle">How to turn fractional LP solutions into integer answers, and why the approximation ratio is bounded.</p>
+  <div class="prereqs">
+    &larr; Sessions 1&ndash;3 covered: NP-hardness &middot; Reductions &middot; Approximation algorithms &middot; PTAS/FPTAS definitions &middot; Greedy EDP &middot; LP fundamentals &middot; LP duality &middot; LP relaxation intro. Today: the full LP rounding pipeline on Vertex Cover and Set Cover.
+  </div>
+</div>
+
+<!-- ═══════ PART NAVIGATION ═══════ -->
+<div class="part-nav" id="partNav"></div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 1: Warm-Up Recap                                   -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part1">
+  <div class="section-header">Part 1 / 8 &mdash; Warm-Up: Recap from Session 3</div>
+
+  <h2>The LP Relaxation Idea (Quick Refresher)</h2>
+
+  <p>In Session 3 we learned that many NP-hard problems can be written as <strong>Integer Linear Programs (ILP)</strong>, where we want to optimize a linear objective subject to linear constraints, with the extra requirement that variables must be integers (usually 0 or 1).</p>
+
+  <p>ILP is NP-hard. But if we <strong>drop the integrality constraint</strong> and let variables take any real value between 0 and 1, we get a regular LP, which is solvable in polynomial time. This is called the <strong>LP relaxation</strong>.</p>
+
+  <div class="compare">
+    <div class="compare-col">
+      <div class="col-title" style="color:var(--red)">ILP (NP-hard)</div>
+      <div class="math-block" style="font-size:14px; margin:0; border:none; padding:12px;">minimize  &Sigma;<sub>v</sub> x<sub>v</sub>
+s.t.  constraints...
+      x<sub>v</sub> &isin; {0, 1}</div>
+      <p style="font-size:15px; color:var(--text3); margin-top:8px;">Variables forced to 0 or 1. Exact optimal, but no poly-time algorithm known.</p>
+    </div>
+    <div class="compare-arrow">&rArr;</div>
+    <div class="compare-col">
+      <div class="col-title" style="color:var(--green)">LP Relaxation (Polynomial)</div>
+      <div class="math-block" style="font-size:14px; margin:0; border:none; padding:12px;">minimize  &Sigma;<sub>v</sub> x<sub>v</sub>
+s.t.  same constraints...
+      0 &le; x<sub>v</sub> &le; 1</div>
+      <p style="font-size:15px; color:var(--text3); margin-top:8px;">Variables can be fractional. Solvable in poly time, but answer may not be integer.</p>
+    </div>
+  </div>
+
+  <h2>The Three-Step Pipeline</h2>
+  <p>Today's entire session follows one recipe. Every LP-rounding algorithm does exactly these three things:</p>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">Step 1: Formulate as ILP</div>
+      <p>Write the NP-hard problem as an integer linear program. Variables are 0/1 decisions.</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--accent);">
+      <div class="card-title" style="color:var(--accent)">Step 2: Relax &amp; Solve</div>
+      <p>Drop the integrality constraint. Solve the resulting LP in polynomial time. Get a fractional solution.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-title">Step 3: Round</div>
+      <p>Convert the fractional solution to an integer one using a rounding rule. Analyze the approximation ratio.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    &#x1F511; <strong>Why this works:</strong> The LP relaxation optimal is always at least as good as (or equal to) the ILP optimal, because the LP has more freedom. So LP<sub>OPT</sub> gives us a <strong>bound on the true optimal</strong>, which we use to prove the approximation ratio.
+    <br><br>
+    For minimization: LP<sub>OPT</sub> &le; ILP<sub>OPT</sub> &le; Rounded solution.
+    <br>
+    For maximization: Rounded solution &le; ILP<sub>OPT</sub> &le; LP<sub>OPT</sub>.
+  </div>
+
+  <h2>Quick Self-Check</h2>
+  <div class="problem">
+    <div class="prob-label">Warm-Up Question</div>
+    <div class="prob-title">Why is LP<sub>OPT</sub> &le; ILP<sub>OPT</sub> for minimization?</div>
+    <p>Think about this before expanding. The answer is one sentence.</p>
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Answer <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p>The LP relaxation allows all the same solutions as the ILP (every 0/1 vector is also a valid real-valued vector in [0,1]), <strong>plus</strong> additional fractional solutions. More options means the minimum can only be the same or lower. So LP<sub>OPT</sub> &le; ILP<sub>OPT</sub>.</p>
+        <p>Think of it like this: if you're trying to minimize cost and I give you more options to choose from, your minimum cost can only go down (or stay the same), never go up.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span></span>
+    <span class="nav-link" onclick="goTo(2)">Vertex Cover ILP &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 2: Vertex Cover as ILP                             -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part2">
+  <div class="section-header">Part 2 / 8 &mdash; Vertex Cover: The ILP Formulation</div>
+
+  <h2>What is Vertex Cover?</h2>
+
+  <p>You saw this in Session 2 when we discussed approximation algorithms. Here's the formal definition:</p>
+
+  <div class="callout">
+    <strong>Vertex Cover:</strong> Given an undirected graph G = (V, E), find the <strong>smallest</strong> subset S &sube; V such that every edge in E has at least one endpoint in S.
+  </div>
+
+  <p>In other words, S "covers" every edge. For any edge (u, v), at least one of u or v must be in S. This is a <strong>minimization</strong> problem, and it is NP-hard (we showed this in Session 1 via reduction from Independent Set).</p>
+
+  <h2>Drawing it Out</h2>
+  <p>Let's use a concrete graph. Five vertices {A, B, C, D, E} with edges forming a small network:</p>
+
+  <div class="interactive">
+    <div class="int-title">Interactive: Click vertices to build a vertex cover</div>
+    <p style="font-size:15px; color:var(--text3); margin-bottom:16px;">Click on vertices to add/remove them from the cover. Covered edges turn <span style="color:var(--green)">green</span>. Uncovered edges stay <span style="color:var(--red)">red</span>. Try to cover all edges with as few vertices as possible.</p>
+
+    <div style="display:flex; justify-content:center;">
+      <svg class="vc-graph" id="vcGraph1" width="500" height="300" viewBox="0 0 500 300">
+        <!-- Edges -->
+        <line class="edge" id="e-AB" x1="100" y1="80" x2="250" y2="40" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-AC" x1="100" y1="80" x2="100" y2="220" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-BC" x1="250" y1="40" x2="100" y2="220" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-BD" x1="250" y1="40" x2="400" y2="80" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-CD" x1="100" y1="220" x2="400" y2="80" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-CE" x1="100" y1="220" x2="350" y2="240" stroke="#f87171" stroke-width="2.5"/>
+        <line class="edge" id="e-DE" x1="400" y1="80" x2="350" y2="240" stroke="#f87171" stroke-width="2.5"/>
+        <!-- Nodes -->
+        <g class="node" data-v="A" onclick="toggleVertex(this)">
+          <circle cx="100" cy="80" r="22" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+          <text x="100" y="85" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="15" font-weight="600">A</text>
+        </g>
+        <g class="node" data-v="B" onclick="toggleVertex(this)">
+          <circle cx="250" cy="40" r="22" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+          <text x="250" y="45" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="15" font-weight="600">B</text>
+        </g>
+        <g class="node" data-v="C" onclick="toggleVertex(this)">
+          <circle cx="100" cy="220" r="22" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+          <text x="100" y="225" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="15" font-weight="600">C</text>
+        </g>
+        <g class="node" data-v="D" onclick="toggleVertex(this)">
+          <circle cx="400" cy="80" r="22" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+          <text x="400" y="85" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="15" font-weight="600">D</text>
+        </g>
+        <g class="node" data-v="E" onclick="toggleVertex(this)">
+          <circle cx="350" cy="240" r="22" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+          <text x="350" y="245" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="15" font-weight="600">E</text>
+        </g>
+      </svg>
+    </div>
+    <div style="display:flex; justify-content:center; gap:32px; margin-top:14px; font-family:var(--sans); font-size:14px;">
+      <span>Vertices in cover: <strong id="vcCount1">0</strong></span>
+      <span>Edges covered: <strong id="vcEdges1">0</strong> / 7</span>
+      <span id="vcStatus1" style="color:var(--red)">Not a valid cover</span>
+    </div>
+    <div class="int-caption">Optimal cover for this graph has size 3. Can you find it? (Hint: C is a high-degree vertex.)</div>
+  </div>
+
+  <h2>Translating to an ILP</h2>
+
+  <p>For each vertex v &isin; V, define a binary variable:</p>
+  <div class="math-block">x<sub>v</sub> = 1  if vertex v is in the cover
+x<sub>v</sub> = 0  if vertex v is NOT in the cover</div>
+
+  <p>The ILP for our example graph {A, B, C, D, E}:</p>
+
+  <div class="math-block">minimize   x<sub>A</sub> + x<sub>B</sub> + x<sub>C</sub> + x<sub>D</sub> + x<sub>E</sub>
+
+subject to:
+  x<sub>A</sub> + x<sub>B</sub> &ge; 1    (edge A-B)
+  x<sub>A</sub> + x<sub>C</sub> &ge; 1    (edge A-C)
+  x<sub>B</sub> + x<sub>C</sub> &ge; 1    (edge B-C)
+  x<sub>B</sub> + x<sub>D</sub> &ge; 1    (edge B-D)
+  x<sub>C</sub> + x<sub>D</sub> &ge; 1    (edge C-D)
+  x<sub>C</sub> + x<sub>E</sub> &ge; 1    (edge C-E)
+  x<sub>D</sub> + x<sub>E</sub> &ge; 1    (edge D-E)
+
+  x<sub>v</sub> &isin; {0, 1}   for all v</div>
+
+  <p>Each constraint says: for this edge, at least one endpoint must be in the cover. The objective minimizes the total number of vertices chosen. This is an <strong>exact</strong> formulation of Vertex Cover as an optimization problem.</p>
+
+  <div class="callout warn">
+    &#9888;&#65039; Solving this ILP exactly is NP-hard. For our 5-vertex example, brute force (checking all 2<sup>5</sup> = 32 subsets) is trivial. But for a graph with 1000 vertices, checking 2<sup>1000</sup> subsets is impossible. That's why we need LP relaxation.
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(1)">&larr; Recap</span>
+    <span class="nav-link" onclick="goTo(3)">LP Relaxation &amp; Rounding &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 3: LP Relaxation & Deterministic Rounding          -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part3">
+  <div class="section-header">Part 3 / 8 &mdash; LP Relaxation &amp; Deterministic Rounding for Vertex Cover</div>
+
+  <h2>Step 2: Relax the ILP</h2>
+
+  <p>We take the Vertex Cover ILP from Part 2 and replace x<sub>v</sub> &isin; {0, 1} with 0 &le; x<sub>v</sub> &le; 1. Now x<sub>v</sub> can be any real number between 0 and 1, like 0.5 or 0.7.</p>
+
+  <div class="math-block">minimize   x<sub>A</sub> + x<sub>B</sub> + x<sub>C</sub> + x<sub>D</sub> + x<sub>E</sub>
+
+subject to:
+  x<sub>A</sub> + x<sub>B</sub> &ge; 1    (edge A-B)
+  x<sub>A</sub> + x<sub>C</sub> &ge; 1    (edge A-C)
+  ... (same 7 constraints) ...
+
+  0 &le; x<sub>v</sub> &le; 1   for all v     &larr; RELAXED!</div>
+
+  <p>Solving this LP (using any poly-time LP solver) might give a fractional answer like:</p>
+
+  <table>
+    <tr><th>Variable</th><th>LP Solution</th><th>Interpretation</th></tr>
+    <tr><td>x<sub>A</sub></td><td>0.5</td><td>"Half in the cover"</td></tr>
+    <tr><td>x<sub>B</sub></td><td>0.5</td><td>"Half in the cover"</td></tr>
+    <tr><td>x<sub>C</sub></td><td>0.5</td><td>"Half in the cover"</td></tr>
+    <tr><td>x<sub>D</sub></td><td>0.5</td><td>"Half in the cover"</td></tr>
+    <tr><td>x<sub>E</sub></td><td>0.5</td><td>"Half in the cover"</td></tr>
+  </table>
+
+  <p>LP objective = 2.5. But "half in the cover" is meaningless for a real vertex cover. We need 0 or 1 values. That's where <strong>rounding</strong> comes in.</p>
+
+  <h2>Step 3: Deterministic Rounding</h2>
+
+  <p>The rounding rule for Vertex Cover is beautifully simple:</p>
+
+  <div class="callout success">
+    <strong>Rounding Rule:</strong> Include vertex v in the cover if and only if x<sub>v</sub><sup>*</sup> &ge; 0.5 (where x<sup>*</sup> is the LP optimal solution).
+    <br><br>
+    In other words: round each variable to the nearest integer. If x<sub>v</sub><sup>*</sup> &ge; 0.5, set x&#772;<sub>v</sub> = 1 (include v). Otherwise set x&#772;<sub>v</sub> = 0 (exclude v).
+  </div>
+
+  <p>For our example: every variable is exactly 0.5, so every vertex rounds up to 1. We get the cover {A, B, C, D, E} with size 5. The true optimal is 3 (e.g., {B, C, D}). So our rounded answer is 5/3 &approx; 1.67 times the optimal. Not bad, but is this always at most 2 times optimal? Let's prove it.</p>
+
+  <h2>Interactive: Watch the Rounding in Action</h2>
+
+  <div class="interactive">
+    <div class="int-title">LP Relaxation &rarr; Rounding Pipeline</div>
+    <p style="font-size:15px; color:var(--text3); margin-bottom:16px;">Use the slider to change the rounding threshold. At 0.5 (the standard choice), see which vertices get included. Notice how the threshold affects feasibility and cover size.</p>
+
+    <div style="text-align:center; margin-bottom:16px;">
+      <label style="font-family:var(--sans); font-size:14px; color:var(--text2);">
+        Rounding threshold: <strong id="threshVal">0.50</strong>
+      </label>
+      <br>
+      <input type="range" id="threshSlider" min="0" max="100" value="50" style="max-width:400px;" oninput="updateThreshold(this.value)">
+      <div style="display:flex; justify-content:space-between; max-width:400px; margin:0 auto; font-family:var(--sans); font-size:12px; color:var(--text3);">
+        <span>0 (include all)</span>
+        <span>1 (include none)</span>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:24px; margin:20px 0;" id="roundingCards">
+      <!-- Generated by JS -->
+    </div>
+
+    <div style="text-align:center; font-family:var(--sans); font-size:15px; margin-top:16px;">
+      <span>Rounded cover size: <strong id="roundedSize">5</strong></span>
+      &nbsp;&middot;&nbsp;
+      <span id="roundedFeasible" style="color:var(--green)">Valid cover &#10003;</span>
+    </div>
+    <div class="int-caption">LP solution: all variables = 0.5. At threshold 0.5, all round up. Lower the threshold to see what happens. Raise it above 0.5 to see the cover become invalid.</div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(2)">&larr; Vertex Cover ILP</span>
+    <span class="nav-link" onclick="goTo(4)">Proving the 2-Approximation &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 4: Proving the 2-Approximation                     -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part4">
+  <div class="section-header">Part 4 / 8 &mdash; Proving the 2-Approximation</div>
+
+  <h2>The Claim</h2>
+
+  <div class="callout">
+    <strong>Theorem:</strong> The LP-rounding algorithm (round x<sub>v</sub><sup>*</sup> &ge; 0.5 to 1, otherwise 0) gives a <strong>2-approximation</strong> for Vertex Cover. That is, the rounded cover S satisfies |S| &le; 2 &middot; OPT, where OPT is the size of the optimal vertex cover.
+  </div>
+
+  <p>The proof has two parts: (1) the rounded solution is a valid cover, and (2) the cover is at most twice the size of optimal.</p>
+
+  <h2>Part 1: Feasibility (it IS a valid cover)</h2>
+
+  <p>We need to show that for every edge (u, v), at least one of u or v is included in the rounded cover.</p>
+
+  <p>Take any edge (u, v). The LP constraint says x<sub>u</sub><sup>*</sup> + x<sub>v</sub><sup>*</sup> &ge; 1. Since both values are at most 1, if neither rounds up (both &lt; 0.5), then x<sub>u</sub><sup>*</sup> + x<sub>v</sub><sup>*</sup> &lt; 0.5 + 0.5 = 1. But that contradicts the constraint x<sub>u</sub><sup>*</sup> + x<sub>v</sub><sup>*</sup> &ge; 1.</p>
+
+  <p>Therefore, at least one of x<sub>u</sub><sup>*</sup> or x<sub>v</sub><sup>*</sup> must be &ge; 0.5, which means at least one endpoint is in our rounded cover. Edge (u, v) is covered. &#10003;</p>
+
+  <div class="callout success">
+    <strong>Key insight:</strong> The threshold 0.5 is not arbitrary. It is exactly the right value because of the constraint x<sub>u</sub> + x<sub>v</sub> &ge; 1. If both are below 0.5, their sum is below 1, violating the constraint. So at least one must be &ge; 0.5.
+  </div>
+
+  <h2>Part 2: Approximation Ratio (at most 2&times; optimal)</h2>
+
+  <p>Let x<sup>*</sup> be the LP optimal solution, and let S = {v : x<sub>v</sub><sup>*</sup> &ge; 0.5} be our rounded cover. We need to show |S| &le; 2 &middot; OPT.</p>
+
+  <p>The proof chains three inequalities together:</p>
+
+  <div class="math-block">|S|  &le;  2 &middot; &Sigma;<sub>v</sub> x<sub>v</sub><sup>*</sup>  =  2 &middot; LP<sub>OPT</sub>  &le;  2 &middot; ILP<sub>OPT</sub>  =  2 &middot; OPT</div>
+
+  <p>Let's justify each step:</p>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">|S| &le; 2 &middot; &Sigma; x<sub>v</sub><sup>*</sup></div>
+      <p>For each v &isin; S, we know x<sub>v</sub><sup>*</sup> &ge; 0.5, so 1 &le; 2 &middot; x<sub>v</sub><sup>*</sup>. Summing over all v in S: |S| = &Sigma;<sub>v&isin;S</sub> 1 &le; &Sigma;<sub>v&isin;S</sub> 2x<sub>v</sub><sup>*</sup> &le; 2 &middot; &Sigma;<sub>all v</sub> x<sub>v</sub><sup>*</sup>.</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--accent);">
+      <div class="card-title" style="color:var(--accent);">LP<sub>OPT</sub> &le; ILP<sub>OPT</sub></div>
+      <p>LP relaxation is a less constrained version of the ILP. More feasible solutions means the minimum can only be lower or equal. So LP<sub>OPT</sub> &le; ILP<sub>OPT</sub>.</p>
+    </div>
+  </div>
+
+  <p>Putting them together: |S| &le; 2 &middot; LP<sub>OPT</sub> &le; 2 &middot; OPT. Done! The LP-rounding algorithm is a <strong>2-approximation</strong> for Vertex Cover.</p>
+
+  <h2>Step-by-Step: Trace the Proof on an Example</h2>
+
+  <div class="interactive">
+    <div class="int-title">Proof Walkthrough on the Triangle Graph</div>
+    <p style="font-size:15px; color:var(--text3); margin-bottom:12px;">Consider the triangle graph K<sub>3</sub> = {1, 2, 3} with all three edges. Click through to see each step of the proof.</p>
+
+    <div id="proofSteps" style="min-height:260px;">
+      <div class="proof-step" data-step="0">
+        <div style="display:flex; justify-content:center; margin-bottom:16px;">
+          <svg width="200" height="180" viewBox="0 0 200 180">
+            <line x1="100" y1="30" x2="30" y2="150" stroke="var(--text3)" stroke-width="2"/>
+            <line x1="100" y1="30" x2="170" y2="150" stroke="var(--text3)" stroke-width="2"/>
+            <line x1="30" y1="150" x2="170" y2="150" stroke="var(--text3)" stroke-width="2"/>
+            <circle cx="100" cy="30" r="18" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+            <circle cx="30" cy="150" r="18" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+            <circle cx="170" cy="150" r="18" fill="var(--surface)" stroke="var(--text3)" stroke-width="2"/>
+            <text x="100" y="35" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="14" font-weight="600">1</text>
+            <text x="30" y="155" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="14" font-weight="600">2</text>
+            <text x="170" y="155" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="14" font-weight="600">3</text>
+          </svg>
+        </div>
+        <p><strong>Setup:</strong> Triangle graph with 3 vertices and 3 edges. ILP optimal = 2 (need at least 2 vertices to cover all edges, e.g. {1, 2}).</p>
+      </div>
+      <div class="proof-step" data-step="1" style="display:none;">
+        <p><strong>Step 1 &mdash; LP Relaxation:</strong> Solving the LP gives x<sub>1</sub><sup>*</sup> = x<sub>2</sub><sup>*</sup> = x<sub>3</sub><sup>*</sup> = 0.5. Check: for each edge, 0.5 + 0.5 = 1 &ge; 1. &#10003;</p>
+        <p>LP<sub>OPT</sub> = 0.5 + 0.5 + 0.5 = <strong>1.5</strong></p>
+      </div>
+      <div class="proof-step" data-step="2" style="display:none;">
+        <p><strong>Step 2 &mdash; Rounding:</strong> All variables are &ge; 0.5, so all round up to 1. Rounded cover S = {1, 2, 3}, |S| = <strong>3</strong>.</p>
+        <p>Is it a valid cover? Every edge has both endpoints in S. &#10003;</p>
+      </div>
+      <div class="proof-step" data-step="3" style="display:none;">
+        <p><strong>Step 3 &mdash; Checking the bound:</strong></p>
+        <p>|S| = 3 &le; 2 &middot; LP<sub>OPT</sub> = 2 &middot; 1.5 = 3 &#10003;</p>
+        <p>|S| = 3 &le; 2 &middot; OPT = 2 &middot; 2 = 4 &#10003;</p>
+        <p>Approximation ratio on this instance: |S| / OPT = 3 / 2 = <strong>1.5</strong>. The algorithm uses 3 vertices; optimal is 2. That's 1.5&times; optimal, well within the 2&times; guarantee.</p>
+      </div>
+    </div>
+
+    <div class="steps-bar" id="proofBar">
+      <div class="step-dot current"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" onclick="proofPrev()">&#8592; Back</button>
+      <button class="btn primary" onclick="proofNext()">Next Step &#8594;</button>
+    </div>
+  </div>
+
+  <h2>Summary of the Proof Structure</h2>
+  <p>The proof template for any LP-rounding approximation works the same way:</p>
+
+  <div class="math-block" style="font-size:14px;">1. Show the rounded solution is FEASIBLE (satisfies all constraints)
+2. Relate the rounded cost to LP<sub>OPT</sub>: cost(rounded) &le; &alpha; &middot; LP<sub>OPT</sub>
+3. Use LP<sub>OPT</sub> &le; OPT to conclude: cost(rounded) &le; &alpha; &middot; OPT
+
+For Vertex Cover: &alpha; = 2, because rounding at 0.5 can at most
+double the fractional cost (each x<sub>v</sub><sup>*</sup> &ge; 0.5 contributes
+at most 2 &middot; x<sub>v</sub><sup>*</sup> to the rounded cost).</div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(3)">&larr; LP Relaxation &amp; Rounding</span>
+    <span class="nav-link" onclick="goTo(5)">Set Cover &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 5: Set Cover                                       -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part5">
+  <div class="section-header">Part 5 / 8 &mdash; Set Cover: ILP &amp; LP Relaxation</div>
+
+  <h2>The Set Cover Problem</h2>
+
+  <div class="callout">
+    <strong>Set Cover:</strong> Given a universe U = {e<sub>1</sub>, e<sub>2</sub>, ..., e<sub>n</sub>} of n elements, and m sets S<sub>1</sub>, S<sub>2</sub>, ..., S<sub>m</sub> (each a subset of U), find the <strong>smallest</strong> collection of sets whose union covers all of U.
+  </div>
+
+  <p>Example: Suppose you need to cover 6 towns with fire stations. Each potential station location covers some nearby towns. You want the fewest stations that cover all towns.</p>
+
+  <h2>A Concrete Example</h2>
+
+  <div class="interactive">
+    <div class="int-title">Set Cover Instance</div>
+    <p style="font-size:15px; color:var(--text3); margin-bottom:16px;">Universe U = {1, 2, 3, 4, 5, 6}. Four available sets:</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; max-width:500px; margin:0 auto;">
+      <div class="card" style="padding:14px; cursor:pointer; text-align:center;" id="sc-s1" onclick="toggleSet(1)">
+        <div class="card-title">S<sub>1</sub> = {1, 2, 3}</div>
+        <p style="font-size:14px;">Cost: 1</p>
+      </div>
+      <div class="card" style="padding:14px; cursor:pointer; text-align:center;" id="sc-s2" onclick="toggleSet(2)">
+        <div class="card-title">S<sub>2</sub> = {2, 4, 5}</div>
+        <p style="font-size:14px;">Cost: 1</p>
+      </div>
+      <div class="card" style="padding:14px; cursor:pointer; text-align:center;" id="sc-s3" onclick="toggleSet(3)">
+        <div class="card-title">S<sub>3</sub> = {3, 5, 6}</div>
+        <p style="font-size:14px;">Cost: 1</p>
+      </div>
+      <div class="card" style="padding:14px; cursor:pointer; text-align:center;" id="sc-s4" onclick="toggleSet(4)">
+        <div class="card-title">S<sub>4</sub> = {1, 4, 6}</div>
+        <p style="font-size:14px;">Cost: 1</p>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:12px; margin:20px 0; flex-wrap:wrap;" id="scElements">
+      <!-- Generated by JS -->
+    </div>
+
+    <div style="text-align:center; font-family:var(--sans); font-size:14px; margin-top:8px;">
+      Sets chosen: <strong id="scCount">0</strong> &nbsp;&middot;&nbsp;
+      Elements covered: <strong id="scCovered">0</strong> / 6 &nbsp;&middot;&nbsp;
+      <span id="scStatus" style="color:var(--red);">Incomplete</span>
+    </div>
+    <div class="int-caption">Click sets to select them. Try covering all 6 elements with 2 sets. (Hint: S<sub>1</sub> and S<sub>2</sub> miss element 6.)</div>
+  </div>
+
+  <h2>Set Cover as an ILP</h2>
+
+  <p>For each set S<sub>j</sub>, define a binary variable x<sub>j</sub> &isin; {0, 1}: whether we pick set j or not.</p>
+
+  <div class="math-block">minimize   x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> + x<sub>4</sub>
+
+subject to:
+  x<sub>1</sub> + x<sub>4</sub>          &ge; 1   (element 1 in S<sub>1</sub>, S<sub>4</sub>)
+  x<sub>1</sub> + x<sub>2</sub>          &ge; 1   (element 2 in S<sub>1</sub>, S<sub>2</sub>)
+  x<sub>1</sub> + x<sub>3</sub>          &ge; 1   (element 3 in S<sub>1</sub>, S<sub>3</sub>)
+  x<sub>2</sub> + x<sub>4</sub>          &ge; 1   (element 4 in S<sub>2</sub>, S<sub>4</sub>)
+  x<sub>2</sub> + x<sub>3</sub>          &ge; 1   (element 5 in S<sub>2</sub>, S<sub>3</sub>)
+  x<sub>3</sub> + x<sub>4</sub>          &ge; 1   (element 6 in S<sub>3</sub>, S<sub>4</sub>)
+
+  x<sub>j</sub> &isin; {0, 1}   for all j</div>
+
+  <p>Each constraint says: for element e<sub>i</sub>, at least one set containing it must be chosen. Notice the structure is very similar to Vertex Cover, but now each element might appear in many sets (not just 2 endpoints).</p>
+
+  <h2>The LP Relaxation</h2>
+
+  <p>Replace x<sub>j</sub> &isin; {0, 1} with 0 &le; x<sub>j</sub> &le; 1. Solve in polynomial time. The LP might return fractional values like x<sub>1</sub> = 0.4, x<sub>2</sub> = 0.6, x<sub>3</sub> = 0.6, x<sub>4</sub> = 0.4.</p>
+
+  <p>Check constraints: element 1 is in S<sub>1</sub> and S<sub>4</sub>, so 0.4 + 0.4 = 0.8... wait, that's less than 1! Let's use a feasible LP solution instead: x<sub>1</sub> = 0.5, x<sub>2</sub> = 0.5, x<sub>3</sub> = 0.5, x<sub>4</sub> = 0.5. All constraints become 1.0 &ge; 1. &#10003;</p>
+
+  <p>LP<sub>OPT</sub> = 2.0. The true integer optimal is also 2 (pick S<sub>1</sub> and S<sub>2</sub> and S<sub>3</sub>... actually, no two sets cover everything: S<sub>1</sub> &cup; S<sub>2</sub> = {1,2,3,4,5} misses 6. So we need at least 3 sets, e.g., {S<sub>1</sub>, S<sub>2</sub>, S<sub>3</sub>}). Let's verify: S<sub>1</sub> &cup; S<sub>2</sub> &cup; S<sub>3</sub> = {1,2,3} &cup; {2,4,5} &cup; {3,5,6} = {1,2,3,4,5,6}. &#10003; But can we do it with 2? S<sub>1</sub> &cup; S<sub>4</sub> = {1,2,3} &cup; {1,4,6} = {1,2,3,4,6}, missing 5. S<sub>2</sub> &cup; S<sub>3</sub> = {2,4,5} &cup; {3,5,6} = {2,3,4,5,6}, missing 1. S<sub>1</sub> &cup; S<sub>3</sub> = {1,2,3} &cup; {3,5,6} = {1,2,3,5,6}, missing 4. S<sub>1</sub> &cup; S<sub>2</sub> = {1,2,3,4,5}, missing 6. No pair works!</p>
+
+  <p>So ILP<sub>OPT</sub> = 3. But LP<sub>OPT</sub> = 2 (fractional). The <strong>integrality gap</strong> on this instance = 3/2 = 1.5.</p>
+
+  <div class="callout warn">
+    &#9888;&#65039; <strong>Why the 0.5 threshold doesn't work for Set Cover:</strong> In Vertex Cover, each constraint has exactly 2 variables (x<sub>u</sub> + x<sub>v</sub> &ge; 1), so rounding at 0.5 always keeps the constraint satisfied. But in Set Cover, a constraint might have just 1 variable (if element e is in only one set). If x<sub>j</sub><sup>*</sup> = 0.4, rounding at 0.5 would set it to 0, leaving element e uncovered. We need a different rounding rule.
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(4)">&larr; Proving 2-Approx</span>
+    <span class="nav-link" onclick="goTo(6)">Rounding for Set Cover &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 6: Deterministic Rounding for Set Cover            -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part6">
+  <div class="section-header">Part 6 / 8 &mdash; Deterministic Rounding for Set Cover</div>
+
+  <h2>The Frequency-Based Rounding Rule</h2>
+
+  <p>For Set Cover, the rounding threshold depends on the <strong>frequency</strong> of elements. Define:</p>
+
+  <div class="callout">
+    <strong>f</strong> = the maximum frequency of any element, i.e., the maximum number of sets that any single element appears in.
+  </div>
+
+  <p>In our example, every element appears in exactly 2 sets, so f = 2.</p>
+
+  <p>The rounding rule: include set S<sub>j</sub> if and only if x<sub>j</sub><sup>*</sup> &ge; 1/f.</p>
+
+  <div class="math-block">Rounding rule: x&#772;<sub>j</sub> = 1 if x<sub>j</sub><sup>*</sup> &ge; 1/f,  else x&#772;<sub>j</sub> = 0
+
+where f = max number of sets any element belongs to.</div>
+
+  <h2>Why Does This Work?</h2>
+
+  <h3>Feasibility</h3>
+  <p>Take any element e<sub>i</sub>. Suppose it appears in sets S<sub>j1</sub>, S<sub>j2</sub>, ..., S<sub>jk</sub> where k &le; f. The LP constraint says:</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:16px;">x<sub>j1</sub><sup>*</sup> + x<sub>j2</sub><sup>*</sup> + ... + x<sub>jk</sub><sup>*</sup> &ge; 1</p>
+  <p>Since there are at most f terms, and their sum is &ge; 1, at least one of them must be &ge; 1/f (by the pigeonhole principle: if all were &lt; 1/f, the sum would be &lt; f &middot; (1/f) = 1, a contradiction). That term rounds up to 1, so element e<sub>i</sub> is covered. &#10003;</p>
+
+  <h3>Approximation Ratio</h3>
+  <p>For each set S<sub>j</sub> that we include, we know x<sub>j</sub><sup>*</sup> &ge; 1/f, so 1 &le; f &middot; x<sub>j</sub><sup>*</sup>. Summing over all included sets:</p>
+
+  <div class="math-block">|rounded solution| &le; f &middot; &Sigma;<sub>j</sub> x<sub>j</sub><sup>*</sup> = f &middot; LP<sub>OPT</sub> &le; f &middot; OPT</div>
+
+  <p>So this is an <strong>f-approximation algorithm</strong> for Set Cover.</p>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">When f = 2</div>
+      <p>Each element in at most 2 sets. Threshold = 1/2. This is exactly Vertex Cover! Every edge (element) has exactly 2 endpoints (sets). We get a 2-approximation, matching what we proved in Part 4.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-title">When f is large</div>
+      <p>If elements can appear in many sets, the approximation gets worse. For example, if f = 10, we get a 10-approximation. The threshold drops to 1/10, so more sets get included.</p>
+    </div>
+  </div>
+
+  <h2>Worked Example: Rounding Our Instance</h2>
+
+  <div class="interactive">
+    <div class="int-title">Rounding with f = 2</div>
+    <p style="font-size:15px; color:var(--text3); margin-bottom:16px;">Our instance has f = 2 (each element appears in exactly 2 sets). Threshold = 1/f = 0.5.</p>
+
+    <table>
+      <tr><th>Set</th><th>LP Value x<sub>j</sub><sup>*</sup></th><th>&ge; 1/f = 0.5?</th><th>Rounded</th></tr>
+      <tr><td>S<sub>1</sub> = {1,2,3}</td><td>0.5</td><td style="color:var(--green);">Yes &#10003;</td><td><strong>1 (include)</strong></td></tr>
+      <tr><td>S<sub>2</sub> = {2,4,5}</td><td>0.5</td><td style="color:var(--green);">Yes &#10003;</td><td><strong>1 (include)</strong></td></tr>
+      <tr><td>S<sub>3</sub> = {3,5,6}</td><td>0.5</td><td style="color:var(--green);">Yes &#10003;</td><td><strong>1 (include)</strong></td></tr>
+      <tr><td>S<sub>4</sub> = {1,4,6}</td><td>0.5</td><td style="color:var(--green);">Yes &#10003;</td><td><strong>1 (include)</strong></td></tr>
+    </table>
+
+    <p>All sets included, cover size = 4. OPT = 3. Ratio = 4/3 &approx; 1.33. Well within the f = 2 guarantee.</p>
+    <div class="int-caption">Because the LP solution is symmetric (all = 0.5) and threshold is exactly 0.5, every set gets included. A non-symmetric LP solution would be more selective.</div>
+  </div>
+
+  <h2>Vertex Cover is a Special Case</h2>
+  <p>This is an important connection. Vertex Cover is <em>exactly</em> Set Cover where:</p>
+  <ul style="margin:12px 0 12px 24px; color:var(--text2);">
+    <li>Each "element" is an edge</li>
+    <li>Each "set" is the collection of edges touching a vertex</li>
+    <li>Every element (edge) appears in exactly f = 2 sets (its two endpoints)</li>
+  </ul>
+  <p>So the f-approximation for Set Cover, with f = 2, gives us the 2-approximation for Vertex Cover. The two results are the same theorem!</p>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(5)">&larr; Set Cover ILP</span>
+    <span class="nav-link" onclick="goTo(7)">The Big Picture &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 7: The Big Picture                                 -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part7">
+  <div class="section-header">Part 7 / 8 &mdash; The Big Picture: LP Rounding in Context</div>
+
+  <h2>What We Built Today</h2>
+
+  <p>We now have a complete approximation algorithm pipeline:</p>
+
+  <div class="interactive">
+    <div class="int-title">The LP Rounding Pipeline</div>
+    <div style="display:flex; justify-content:center;">
+      <svg width="660" height="200" viewBox="0 0 660 200">
+        <!-- Boxes -->
+        <rect x="10" y="60" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="2"/>
+        <text x="75" y="88" text-anchor="middle" fill="var(--red)" font-family="var(--sans)" font-size="12" font-weight="600">NP-HARD</text>
+        <text x="75" y="108" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="13">ILP formulation</text>
+
+        <rect x="180" y="60" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="245" y="88" text-anchor="middle" fill="var(--accent)" font-family="var(--sans)" font-size="12" font-weight="600">POLY TIME</text>
+        <text x="245" y="108" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="13">LP relaxation</text>
+
+        <rect x="350" y="60" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--amber)" stroke-width="2"/>
+        <text x="415" y="88" text-anchor="middle" fill="var(--amber)" font-family="var(--sans)" font-size="12" font-weight="600">ROUNDING</text>
+        <text x="415" y="108" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="13">x* &ge; 1/f &rarr; 1</text>
+
+        <rect x="520" y="60" width="130" height="70" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="2"/>
+        <text x="585" y="88" text-anchor="middle" fill="var(--green)" font-family="var(--sans)" font-size="12" font-weight="600">&alpha;-APPROX</text>
+        <text x="585" y="108" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="13">integer solution</text>
+
+        <!-- Arrows -->
+        <line x1="140" y1="95" x2="176" y2="95" stroke="var(--text3)" stroke-width="2" marker-end="url(#arrowR)"/>
+        <line x1="310" y1="95" x2="346" y2="95" stroke="var(--text3)" stroke-width="2" marker-end="url(#arrowR)"/>
+        <line x1="480" y1="95" x2="516" y2="95" stroke="var(--text3)" stroke-width="2" marker-end="url(#arrowR)"/>
+
+        <!-- Labels under arrows -->
+        <text x="158" y="150" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">drop</text>
+        <text x="158" y="163" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">integrality</text>
+        <text x="328" y="150" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">solve LP</text>
+        <text x="328" y="163" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">get x*</text>
+        <text x="498" y="150" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">threshold</text>
+        <text x="498" y="163" text-anchor="middle" fill="var(--text3)" font-family="var(--sans)" font-size="11">at 1/f</text>
+
+        <defs>
+          <marker id="arrowR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text3)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <h2>Comparing Approximation Techniques</h2>
+
+  <p>We've now seen three different ways to approximate NP-hard problems across Sessions 2-4:</p>
+
+  <table>
+    <tr><th>Technique</th><th>Problem</th><th>Ratio</th><th>Session</th></tr>
+    <tr>
+      <td><strong>Greedy</strong></td>
+      <td>Edge-Disjoint Paths</td>
+      <td>&radic;|E|-approx</td>
+      <td>Session 2</td>
+    </tr>
+    <tr>
+      <td><strong>LP Rounding</strong></td>
+      <td>Vertex Cover</td>
+      <td>2-approx</td>
+      <td>Today</td>
+    </tr>
+    <tr>
+      <td><strong>LP Rounding</strong></td>
+      <td>Set Cover (frequency f)</td>
+      <td>f-approx</td>
+      <td>Today</td>
+    </tr>
+  </table>
+
+  <p>LP rounding is more powerful than greedy for many problems because it gives us LP<sub>OPT</sub> as a provable lower bound. The greedy approach for EDP had to use a clever counting argument to get its bound, but LP rounding gets the bound "for free" from LP duality.</p>
+
+  <h2>Connection to LP Duality</h2>
+
+  <p>Remember from Session 3: strong duality says the LP optimal equals the dual optimal. For Vertex Cover:</p>
+
+  <div class="card-row">
+    <div class="card purple">
+      <div class="card-title">Primal (Vertex Cover LP)</div>
+      <p>Minimize &Sigma; x<sub>v</sub>, subject to x<sub>u</sub> + x<sub>v</sub> &ge; 1 for each edge. This is our LP relaxation.</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--cyan);">
+      <div class="card-title" style="color:var(--cyan);">Dual (Matching LP)</div>
+      <p>Maximize &Sigma; y<sub>e</sub>, subject to &Sigma;<sub>e incident to v</sub> y<sub>e</sub> &le; 1 for each vertex. This is a fractional matching!</p>
+    </div>
+  </div>
+
+  <p>Strong duality tells us: max fractional matching = min fractional vertex cover. And since LP<sub>OPT</sub> &le; OPT (integer), the fractional matching gives a lower bound on the optimal vertex cover. This is the same Max-Flow Min-Cut connection we saw in Sessions 2-4 of the original course, just in a different setting.</p>
+
+  <h2>What's Next?</h2>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">Session 5: FPTAS for Knapsack</div>
+      <p>A different style of approximation: scaling + dynamic programming. You can get (1+&epsilon;)-approximation for any &epsilon; > 0, in time polynomial in n and 1/&epsilon;.</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--cyan);">
+      <div class="card-title" style="color:var(--cyan);">Session 6: Randomized Algorithms</div>
+      <p>Las Vegas &amp; Monte Carlo algorithms. Randomized rounding (a probabilistic version of today's deterministic rounding). Probability fundamentals.</p>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(6)">&larr; Rounding for Set Cover</span>
+    <span class="nav-link" onclick="goTo(8)">Practice Problems &rarr;</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PART 8: Practice Problems                               -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section" id="part8">
+  <div class="section-header">Part 8 / 8 &mdash; Practice Problems</div>
+
+  <h2>5 Problems &mdash; Work These Out &#x1F4DD;</h2>
+  <p>These cover the full pipeline: ILP formulation, LP relaxation, rounding, and proving approximation ratios. For problems marked "Draw This!", sketch the graph on paper or a whiteboard first.</p>
+
+  <!-- PROBLEM 1 -->
+  <div class="problem">
+    <div class="prob-label">Problem 1 &mdash; Draw This!</div>
+    <div class="prob-title">LP Rounding on a Path Graph</div>
+    <div class="prob-subtitle">Write ILP, relax, solve, round, compare to optimal</div>
+
+    <p>Consider the path graph P<sub>4</sub> with vertices {A, B, C, D} and edges A-B, B-C, C-D.</p>
+    <p><strong>On your board:</strong></p>
+    <p>(1) Draw the graph.<br>
+    (2) Write the Vertex Cover ILP.<br>
+    (3) Find the optimal integer solution (the smallest vertex cover) by inspection.<br>
+    (4) Write and solve the LP relaxation.<br>
+    (5) Apply the 0.5-threshold rounding. What cover do you get?<br>
+    (6) What is the approximation ratio on this instance?</p>
+
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Solution <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>(1) Graph:</strong> A &mdash; B &mdash; C &mdash; D (a path of 4 vertices)</p>
+
+        <p><strong>(2) ILP:</strong></p>
+        <div class="math-block" style="font-size:14px;">minimize  x<sub>A</sub> + x<sub>B</sub> + x<sub>C</sub> + x<sub>D</sub>
+s.t.  x<sub>A</sub> + x<sub>B</sub> &ge; 1   (edge A-B)
+      x<sub>B</sub> + x<sub>C</sub> &ge; 1   (edge B-C)
+      x<sub>C</sub> + x<sub>D</sub> &ge; 1   (edge C-D)
+      x<sub>v</sub> &isin; {0, 1}</div>
+
+        <p><strong>(3) Optimal integer solution:</strong> We need to cover 3 edges. Picking {B, C} covers A-B (via B), B-C (via both), C-D (via C). That's 2 vertices. Can we do it with 1? A single vertex covers at most 2 of the 3 edges (B covers A-B and B-C but not C-D). So <strong>OPT = 2</strong>, achieved by {B, C}.</p>
+
+        <p><strong>(4) LP relaxation:</strong> Replace x<sub>v</sub> &isin; {0, 1} with 0 &le; x<sub>v</sub> &le; 1. The optimal LP solution: set x<sub>A</sub> = 0, x<sub>B</sub> = 1, x<sub>C</sub> = 1, x<sub>D</sub> = 0. Check: A-B: 0+1 = 1 &ge; 1 &#10003;, B-C: 1+1 = 2 &ge; 1 &#10003;, C-D: 1+0 = 1 &ge; 1 &#10003;. LP<sub>OPT</sub> = 2.</p>
+
+        <p>Actually, another LP optimum: x<sub>A</sub> = 0.5, x<sub>B</sub> = 0.5, x<sub>C</sub> = 0.5, x<sub>D</sub> = 0.5, giving LP value = 2. But x<sub>B</sub> = 1, x<sub>C</sub> = 1, rest 0 also gives LP value = 2. Both are optimal. The LP solver could return either one.</p>
+
+        <p><strong>(5) Rounding at 0.5:</strong></p>
+        <p>If LP returns (0, 1, 1, 0): rounding gives {B, C}, size = 2. Perfect!</p>
+        <p>If LP returns (0.5, 0.5, 0.5, 0.5): rounding gives {A, B, C, D}, size = 4.</p>
+
+        <p><strong>(6) Approximation ratio:</strong></p>
+        <p>Best case: 2/2 = 1 (exact).</p>
+        <p>Worst case: 4/2 = 2 (matches the 2-approximation guarantee).</p>
+        <p>This shows the ratio depends on which LP optimum the solver returns. The <em>guarantee</em> is always &le; 2, but we might get lucky and do better.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 2 -->
+  <div class="problem">
+    <div class="prob-label">Problem 2</div>
+    <div class="prob-title">Why Not Round at a Different Threshold?</div>
+    <div class="prob-subtitle">Understanding why 0.5 is the right choice for Vertex Cover</div>
+
+    <p>Suppose someone proposes rounding at threshold 0.3 instead of 0.5 for the Vertex Cover LP. That is, include vertex v if x<sub>v</sub><sup>*</sup> &ge; 0.3.</p>
+
+    <p>(a) Give a specific small example (a graph and LP solution) where the 0.3-threshold produces an infeasible cover (misses an edge).</p>
+
+    <p>(b) What is the best approximation ratio you could prove with a threshold of 0.3? (Hint: if x<sub>v</sub><sup>*</sup> &ge; 0.3 rounds up to 1, then 1 &le; (1/0.3) &middot; x<sub>v</sub><sup>*</sup>.)</p>
+
+    <p>(c) Explain in one sentence why 0.5 is the "sweet spot" for Vertex Cover.</p>
+
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Solution <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>(a) Infeasibility example:</strong> Single edge A-B. LP optimal: x<sub>A</sub> = 0.2, x<sub>B</sub> = 0.8. (Check: 0.2 + 0.8 = 1 &ge; 1 &#10003;.) With threshold 0.3: x<sub>A</sub> = 0.2 &lt; 0.3, so A is excluded. x<sub>B</sub> = 0.8 &ge; 0.3, so B is included. Cover = {B}. Edge A-B is covered. Hmm, that worked.</p>
+
+        <p>Try: x<sub>A</sub> = 0.25, x<sub>B</sub> = 0.75. Still works: B is included.</p>
+
+        <p>Try: Two edges sharing no vertices. A-B and C-D. LP: x<sub>A</sub> = 0.25, x<sub>B</sub> = 0.75, x<sub>C</sub> = 0.25, x<sub>D</sub> = 0.75. Threshold 0.3: include {B, D}. Both edges covered. &#10003;</p>
+
+        <p>Actually, for Vertex Cover, each constraint is x<sub>u</sub> + x<sub>v</sub> &ge; 1 with only 2 variables. If both are below 0.3, sum &lt; 0.6 &lt; 1, violating the constraint. So at least one must be &ge; 0.5 &gt; 0.3. Therefore threshold 0.3 always produces a valid cover! The issue isn't feasibility, it's the ratio.</p>
+
+        <p><strong>(b) Approximation ratio with threshold 0.3:</strong> If we include v whenever x<sub>v</sub><sup>*</sup> &ge; 0.3, then for each included vertex: 1 &le; (1/0.3) &middot; x<sub>v</sub><sup>*</sup> = (10/3) &middot; x<sub>v</sub><sup>*</sup>. Summing: |S| &le; (10/3) &middot; LP<sub>OPT</sub> &le; (10/3) &middot; OPT &approx; <strong>3.33-approximation</strong>. Worse than the 2-approximation at threshold 0.5!</p>
+
+        <p><strong>(c)</strong> Threshold 0.5 is optimal because it balances feasibility (any lower works for Vertex Cover since each constraint sums 2 variables to &ge; 1) against the ratio (the multiplier is 1/threshold = 1/0.5 = 2, which is minimized by making threshold as large as possible while still guaranteeing feasibility).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 3 -->
+  <div class="problem">
+    <div class="prob-label">Problem 3 &mdash; Draw This!</div>
+    <div class="prob-title">Set Cover LP Rounding</div>
+    <div class="prob-subtitle">Full pipeline on a small Set Cover instance</div>
+
+    <p>Universe U = {a, b, c, d}. Sets: S<sub>1</sub> = {a, b}, S<sub>2</sub> = {b, c}, S<sub>3</sub> = {c, d}, S<sub>4</sub> = {a, d}.</p>
+
+    <p><strong>On your board:</strong></p>
+    <p>(1) Draw a bipartite diagram with elements on one side and sets on the other. Draw lines from each element to the sets containing it.</p>
+    <p>(2) What is f (the max frequency)?</p>
+    <p>(3) Write the ILP. Find the optimal integer solution by trying all combinations.</p>
+    <p>(4) Write the LP relaxation. Find a feasible fractional solution and compute its objective.</p>
+    <p>(5) Apply rounding with threshold 1/f. What sets are included? Is it a valid cover?</p>
+    <p>(6) Verify the approximation ratio is &le; f.</p>
+
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Solution <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>(1) Bipartite diagram:</strong></p>
+        <p>Elements side: a, b, c, d. Sets side: S<sub>1</sub>, S<sub>2</sub>, S<sub>3</sub>, S<sub>4</sub>.</p>
+        <p>Connections: a connects to S<sub>1</sub>, S<sub>4</sub>. b connects to S<sub>1</sub>, S<sub>2</sub>. c connects to S<sub>2</sub>, S<sub>3</sub>. d connects to S<sub>3</sub>, S<sub>4</sub>.</p>
+
+        <p><strong>(2) f = 2.</strong> Every element appears in exactly 2 sets.</p>
+
+        <p><strong>(3) ILP:</strong></p>
+        <div class="math-block" style="font-size:14px;">minimize  x<sub>1</sub> + x<sub>2</sub> + x<sub>3</sub> + x<sub>4</sub>
+s.t.  x<sub>1</sub> + x<sub>4</sub> &ge; 1   (elem a)
+      x<sub>1</sub> + x<sub>2</sub> &ge; 1   (elem b)
+      x<sub>2</sub> + x<sub>3</sub> &ge; 1   (elem c)
+      x<sub>3</sub> + x<sub>4</sub> &ge; 1   (elem d)
+      x<sub>j</sub> &isin; {0, 1}</div>
+
+        <p><strong>Optimal integer solution:</strong> Try {S<sub>1</sub>, S<sub>3</sub>} = {a,b} &cup; {c,d} = {a,b,c,d} &#10003;. Size = 2. Try with 1 set: no single set covers all 4 elements. <strong>OPT = 2.</strong></p>
+
+        <p><strong>(4) LP relaxation:</strong> x<sub>1</sub> = x<sub>2</sub> = x<sub>3</sub> = x<sub>4</sub> = 0.5. Check all constraints: each is 0.5 + 0.5 = 1 &ge; 1. &#10003;. LP<sub>OPT</sub> &le; 2.0.</p>
+
+        <p>Actually, the integer solution (1, 0, 1, 0) also has objective 2, so LP<sub>OPT</sub> = 2.0 here. (Integer solution is also LP-feasible and has the same cost as our fractional solution.)</p>
+
+        <p><strong>(5) Rounding:</strong> Threshold = 1/f = 1/2 = 0.5. All LP values are 0.5 &ge; 0.5, so all sets are included. Rounded cover = {S<sub>1</sub>, S<sub>2</sub>, S<sub>3</sub>, S<sub>4</sub>}, size = 4.</p>
+        <p>Is it valid? S<sub>1</sub> &cup; S<sub>2</sub> &cup; S<sub>3</sub> &cup; S<sub>4</sub> = {a,b,c,d} &#10003;.</p>
+
+        <p><strong>(6) Ratio:</strong> 4 / 2 = 2 = f &#10003;. The ratio exactly matches the f-approximation bound. This is a tight example for f = 2.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 4 -->
+  <div class="problem">
+    <div class="prob-label">Problem 4</div>
+    <div class="prob-title">Integrality Gap</div>
+    <div class="prob-subtitle">Finding instances where LP and ILP disagree the most</div>
+
+    <p>Consider the complete graph K<sub>4</sub> (4 vertices, all 6 edges present).</p>
+
+    <p>(a) What is the optimal integer Vertex Cover? (How many vertices do you need to cover all edges of K<sub>4</sub>?)</p>
+
+    <p>(b) What is the LP relaxation optimal? (Hint: by symmetry, all x<sub>v</sub> should be equal.)</p>
+
+    <p>(c) What is the integrality gap on this instance?</p>
+
+    <p>(d) If you apply 0.5-threshold rounding, what cover do you get and what is the approximation ratio?</p>
+
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Solution <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>(a) ILP optimal:</strong> K<sub>4</sub> has 4 vertices and 6 edges (every pair connected). If we leave out vertex v, all 3 edges incident to v are uncovered unless the other endpoints are in the cover. If we leave out 2 vertices u, v, the edge (u, v) is uncovered. So we must include at least 3 vertices. Check: picking any 3 vertices covers all edges (the remaining vertex's 3 edges each have the other endpoint in the cover). <strong>OPT = 3.</strong></p>
+
+        <p><strong>(b) LP optimal:</strong> By symmetry, x<sub>1</sub> = x<sub>2</sub> = x<sub>3</sub> = x<sub>4</sub> = t. Each constraint: t + t = 2t &ge; 1, so t &ge; 0.5. Minimizing 4t gives t = 0.5. <strong>LP<sub>OPT</sub> = 4 &times; 0.5 = 2.</strong></p>
+
+        <p><strong>(c) Integrality gap:</strong> ILP / LP = 3 / 2 = <strong>1.5</strong>. This is the same gap as the triangle K<sub>3</sub>. In fact, the integrality gap for Vertex Cover LP on all odd cliques K<sub>2k+1</sub> is (2k+1-1)/(2k+1 &times; 0.5) = 2k/(k+0.5) which approaches 2 as k grows.</p>
+
+        <p><strong>(d) Rounding:</strong> All x<sub>v</sub> = 0.5 &ge; 0.5, so all 4 vertices are included. Cover = {1,2,3,4}, size = 4. Ratio = 4/3 &approx; 1.33. Within the 2-approximation guarantee. &#10003;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 5 -->
+  <div class="problem">
+    <div class="prob-label">Problem 5</div>
+    <div class="prob-title">Proof Comprehension</div>
+    <div class="prob-subtitle">Explain each step of the LP rounding proof</div>
+
+    <p>The 2-approximation proof for Vertex Cover contains this chain of inequalities:</p>
+    <div class="math-block" style="font-size:15px;">|S|  &le;  2 &middot; LP<sub>OPT</sub>  &le;  2 &middot; OPT</div>
+
+    <p>For each of the two inequalities, explain:</p>
+    <p>(a) |S| &le; 2 &middot; LP<sub>OPT</sub>: What property of the rounding rule makes this true? Would it still hold if we used threshold 0.3 instead of 0.5?</p>
+    <p>(b) LP<sub>OPT</sub> &le; OPT: What property of relaxation makes this true? Does this depend on the specific problem (Vertex Cover), or is it universal?</p>
+    <p>(c) A student claims: "LP rounding always gives a 2-approximation for any minimization problem." Is this correct? Why or why not?</p>
+
+    <div class="spoiler">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        Show Solution <span class="arrow">&#9660;</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>(a)</strong> The key property: for each vertex v in S, we know x<sub>v</sub><sup>*</sup> &ge; 0.5, so 1 &le; 2 &middot; x<sub>v</sub><sup>*</sup>. Summing gives |S| &le; 2 &middot; &Sigma; x<sub>v</sub><sup>*</sup> = 2 &middot; LP<sub>OPT</sub>. The factor 2 comes directly from 1/threshold = 1/0.5 = 2.</p>
+
+        <p>With threshold 0.3: we'd get 1 &le; (1/0.3) &middot; x<sub>v</sub><sup>*</sup> &approx; 3.33 &middot; x<sub>v</sub><sup>*</sup>, so |S| &le; 3.33 &middot; LP<sub>OPT</sub>. Worse ratio! The inequality still holds, but with a larger constant.</p>
+
+        <p><strong>(b)</strong> LP<sub>OPT</sub> &le; OPT holds because the LP relaxation has strictly more feasible solutions than the ILP (every integer solution is also a valid fractional solution, but not vice versa). More options &rArr; the minimum can only decrease or stay the same. This is <strong>universal</strong> for any ILP-to-LP relaxation, not specific to Vertex Cover.</p>
+
+        <p><strong>(c) Incorrect.</strong> The approximation ratio depends on the specific problem's constraint structure. For Vertex Cover, each constraint has exactly 2 variables summing to &ge; 1, which ensures the 0.5 threshold works and gives factor 2. For Set Cover with higher frequency f, the same approach gives an f-approximation, which could be much worse than 2. For some problems, LP rounding might not give any bounded ratio at all if the integrality gap is unbounded. The "2" is specific to Vertex Cover's structure (f = 2), not a universal LP rounding guarantee.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(7)">&larr; The Big Picture</span>
+    <span class="nav-link" onclick="goTo(1)">&#8634; Start Over</span>
+  </div>
+</div>
+
+<!-- ═══════ JAVASCRIPT ═══════ -->
+<script>
+// ── NAVIGATION ──
+const totalParts = 8;
+let currentPart = 1;
+
+function buildNav() {
+  const nav = document.getElementById('partNav');
+  nav.innerHTML = '';
+  for (let i = 1; i <= totalParts; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'part-btn' + (i === currentPart ? ' active' : '');
+    btn.textContent = 'Part ' + i;
+    btn.onclick = () => goTo(i);
+    nav.appendChild(btn);
+  }
+}
+
+function goTo(n) {
+  currentPart = n;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('part' + n).classList.add('active');
+  buildNav();
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+
+buildNav();
+goTo(1);
+
+// ── SPOILER TOGGLE ──
+function toggleSpoiler(btn) {
+  btn.closest('.spoiler').classList.toggle('open');
+}
+
+// ── VERTEX COVER INTERACTIVE (Part 2) ──
+const vcEdges = [
+  ['A','B'], ['A','C'], ['B','C'], ['B','D'], ['C','D'], ['C','E'], ['D','E']
+];
+const vcEdgeIds = ['e-AB','e-AC','e-BC','e-BD','e-CD','e-CE','e-DE'];
+let vcCover = new Set();
+
+function toggleVertex(el) {
+  const v = el.getAttribute('data-v');
+  if (vcCover.has(v)) {
+    vcCover.delete(v);
+    el.querySelector('circle').setAttribute('fill', 'var(--surface)');
+    el.querySelector('circle').setAttribute('stroke', 'var(--text3)');
+  } else {
+    vcCover.add(v);
+    el.querySelector('circle').setAttribute('fill', 'var(--accent2)');
+    el.querySelector('circle').setAttribute('stroke', 'var(--accent)');
+  }
+  updateVCDisplay();
+}
+
+function updateVCDisplay() {
+  let covered = 0;
+  for (let i = 0; i < vcEdges.length; i++) {
+    const [u, v] = vcEdges[i];
+    const isCovered = vcCover.has(u) || vcCover.has(v);
+    const line = document.getElementById(vcEdgeIds[i]);
+    line.setAttribute('stroke', isCovered ? 'var(--green)' : 'var(--red)');
+    if (isCovered) covered++;
+  }
+  document.getElementById('vcCount1').textContent = vcCover.size;
+  document.getElementById('vcEdges1').textContent = covered;
+  const status = document.getElementById('vcStatus1');
+  if (covered === vcEdges.length) {
+    status.textContent = 'Valid cover!';
+    status.style.color = 'var(--green)';
+    if (vcCover.size <= 3) {
+      status.textContent = 'Optimal cover!';
+    }
+  } else {
+    status.textContent = 'Not a valid cover';
+    status.style.color = 'var(--red)';
+  }
+}
+
+// ── ROUNDING THRESHOLD SLIDER (Part 3) ──
+const lpVals = {A: 0.5, B: 0.5, C: 0.5, D: 0.5, E: 0.5};
+
+function updateThreshold(val) {
+  const threshold = val / 100;
+  document.getElementById('threshVal').textContent = threshold.toFixed(2);
+  const container = document.getElementById('roundingCards');
+  container.innerHTML = '';
+  let count = 0;
+  for (const [v, lp] of Object.entries(lpVals)) {
+    const rounded = lp >= threshold ? 1 : 0;
+    if (rounded) count++;
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--surface); border:1px solid ' + (rounded ? 'var(--green)' : 'var(--border)') + '; border-radius:8px; padding:12px 18px; text-align:center; min-width:80px; transition:all 0.3s;';
+    div.innerHTML = '<div style="font-family:var(--sans); font-size:14px; font-weight:600; color:' + (rounded ? 'var(--green)' : 'var(--text3)') + ';">' + v + '</div>' +
+      '<div style="font-family:var(--mono); font-size:13px; color:var(--text2);">x*=' + lp + '</div>' +
+      '<div style="font-family:var(--sans); font-size:12px; margin-top:4px; color:' + (rounded ? 'var(--green)' : 'var(--red)') + ';">' + (rounded ? 'IN' : 'OUT') + '</div>';
+    container.appendChild(div);
+  }
+  document.getElementById('roundedSize').textContent = count;
+  // Check feasibility
+  const inCover = {};
+  for (const [v, lp] of Object.entries(lpVals)) {
+    inCover[v] = lp >= threshold ? 1 : 0;
+  }
+  const allCovered = vcEdges.every(([u, v]) => inCover[u] || inCover[v]);
+  const feasEl = document.getElementById('roundedFeasible');
+  if (allCovered) {
+    feasEl.textContent = 'Valid cover \u2713';
+    feasEl.style.color = 'var(--green)';
+  } else {
+    feasEl.textContent = 'Invalid cover \u2717';
+    feasEl.style.color = 'var(--red)';
+  }
+}
+updateThreshold(50);
+
+// ── PROOF STEPPER (Part 4) ──
+let proofStep = 0;
+const proofTotal = 4;
+
+function updateProofDisplay() {
+  document.querySelectorAll('.proof-step').forEach(el => {
+    el.style.display = parseInt(el.getAttribute('data-step')) <= proofStep ? 'block' : 'none';
+  });
+  document.querySelectorAll('#proofBar .step-dot').forEach((dot, i) => {
+    dot.className = 'step-dot';
+    if (i < proofStep) dot.classList.add('done');
+    if (i === proofStep) dot.classList.add('current');
+  });
+}
+
+function proofNext() {
+  if (proofStep < proofTotal - 1) { proofStep++; updateProofDisplay(); }
+}
+function proofPrev() {
+  if (proofStep > 0) { proofStep--; updateProofDisplay(); }
+}
+
+// ── SET COVER INTERACTIVE (Part 5) ──
+const sets = {
+  1: [1,2,3],
+  2: [2,4,5],
+  3: [3,5,6],
+  4: [1,4,6]
+};
+let selectedSets = new Set();
+
+function toggleSet(n) {
+  if (selectedSets.has(n)) selectedSets.delete(n);
+  else selectedSets.add(n);
+  updateSCDisplay();
+}
+
+function updateSCDisplay() {
+  // Highlight selected set cards
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('sc-s' + i);
+    if (selectedSets.has(i)) {
+      el.style.borderColor = 'var(--green)';
+      el.style.background = 'var(--green-dim)';
+    } else {
+      el.style.borderColor = 'var(--border)';
+      el.style.background = 'var(--surface)';
+    }
+  }
+  // Calculate covered elements
+  const covered = new Set();
+  for (const s of selectedSets) {
+    for (const e of sets[s]) covered.add(e);
+  }
+  // Render element pills
+  const container = document.getElementById('scElements');
+  container.innerHTML = '';
+  for (let e = 1; e <= 6; e++) {
+    const pill = document.createElement('span');
+    const isCovered = covered.has(e);
+    pill.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; font-family:var(--sans); font-size:15px; font-weight:600; border:2px solid ' + (isCovered ? 'var(--green)' : 'var(--border)') + '; color:' + (isCovered ? 'var(--green)' : 'var(--text3)') + '; background:' + (isCovered ? 'var(--green-dim)' : 'var(--surface)') + ';';
+    pill.textContent = e;
+    container.appendChild(pill);
+  }
+  document.getElementById('scCount').textContent = selectedSets.size;
+  document.getElementById('scCovered').textContent = covered.size;
+  const status = document.getElementById('scStatus');
+  if (covered.size === 6) {
+    status.textContent = 'All covered!';
+    status.style.color = 'var(--green)';
+  } else {
+    status.textContent = 'Incomplete';
+    status.style.color = 'var(--red)';
+  }
+}
+updateSCDisplay();
+</script>
+
+</body>
+</html>
