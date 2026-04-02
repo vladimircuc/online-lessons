@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 6 — Randomized Algorithms</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+  :root{--bg:#0b0f19;--bg-card:#141b2d;--bg-card-alt:#1a2340;--bg-hover:#1e2a4a;--border:#2a3a5c;--text:#c9d1d9;--text-dim:#8b949e;--text-bright:#e6edf3;--accent:#58a6ff;--accent-dim:#2a5a9c;--green:#3fb950;--green-dim:#1a4028;--red:#f85149;--red-dim:#4a1a1a;--orange:#d29922;--orange-dim:#3d2e0a;--purple:#bc8cff;--purple-dim:#2d1f5e;--cyan:#39d2c0;--yellow:#e3b341}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;line-height:1.7;font-size:16.5px;overflow-x:hidden}
+  .container{max-width:860px;margin:0 auto;padding:0 28px}
+  .hero{text-align:center;padding:80px 20px 50px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:180%;background:radial-gradient(ellipse at 50% 30%,rgba(88,166,255,.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,rgba(188,140,255,.06) 0%,transparent 50%);pointer-events:none}
+  .hero-label{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  .hero-session{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent);margin-bottom:16px;letter-spacing:1px}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.4rem);color:var(--text-bright);font-weight:700;line-height:1.15;margin-bottom:16px}
+  .hero h1 em{font-style:italic;color:var(--accent)}
+  .hero .subtitle{font-size:17px;color:var(--text-dim);max-width:620px;margin:0 auto 20px;line-height:1.6}
+  .hero .recap{font-size:13.5px;color:var(--text-dim);max-width:700px;margin:0 auto;line-height:1.6;opacity:.7}
+  .part{display:none;padding:50px 0 60px;animation:fadeIn .4s ease}
+  .part.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .part-header{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;opacity:.8}
+  .part-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--text-bright);margin-bottom:8px}
+  .part-subtitle{font-size:14px;color:var(--text-dim);margin-bottom:36px}
+  h2{font-family:'Inter',sans-serif;font-size:1.35rem;font-weight:700;color:var(--text-bright);margin:40px 0 16px}
+  h3{font-size:1.1rem;font-weight:600;color:var(--text-bright);margin:28px 0 12px}
+  p{margin-bottom:16px}
+  strong{color:var(--text-bright);font-weight:600}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:24px 28px;margin:24px 0}
+  .card-title{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  .card.green{border-color:var(--green);background:var(--green-dim)}.card.green .card-title{color:var(--green)}
+  .card.orange{border-color:var(--orange);background:var(--orange-dim)}.card.orange .card-title{color:var(--orange)}
+  .card.purple{border-color:var(--purple);background:var(--purple-dim)}.card.purple .card-title{color:var(--purple)}
+  .card.red{border-color:var(--red);background:var(--red-dim)}.card.red .card-title{color:var(--red)}
+  .def-box{background:var(--bg-card);border-left:4px solid var(--accent);padding:20px 24px;margin:24px 0;border-radius:0 8px 8px 0;font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.8;white-space:pre-line}
+  .def-box .def-label{font-weight:600;color:var(--accent);margin-bottom:8px;font-size:13px;letter-spacing:1px;text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14.5px}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-weight:600;color:var(--text-bright);font-size:13px;text-transform:uppercase;letter-spacing:.5px;background:var(--bg-card)}
+  td{color:var(--text)}
+  tr:hover td{background:rgba(88,166,255,.03)}
+  .spoiler{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin:20px 0;overflow:hidden}
+  .spoiler-trigger{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;cursor:pointer;user-select:none;transition:background .2s}
+  .spoiler-trigger:hover{background:var(--bg-hover)}
+  .spoiler-trigger .label{font-weight:600;color:var(--text-bright);font-size:15px}
+  .spoiler-trigger .arrow{color:var(--accent);font-size:18px;transition:transform .3s}
+  .spoiler.open .spoiler-trigger .arrow{transform:rotate(180deg)}
+  .spoiler-content{display:none;padding:0 24px 24px;border-top:1px solid var(--border)}
+  .spoiler.open .spoiler-content{display:block;padding-top:20px}
+  .problem{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin:28px 0;overflow:hidden}
+  .problem-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+  .problem-num{background:var(--accent-dim);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:.5px}
+  .problem-draw{background:var(--orange-dim);color:var(--orange)}
+  .problem-title{font-weight:700;color:var(--text-bright);font-size:16px}
+  .problem-body{padding:20px 24px}
+  .problem-subtitle{font-size:13.5px;color:var(--text-dim);margin-bottom:12px}
+  .nav-bar{display:flex;justify-content:space-between;align-items:center;padding:24px 0;margin-top:30px;border-top:1px solid var(--border)}
+  .nav-btn{font-family:'IBM Plex Mono',monospace;font-size:13px;padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;transition:all .2s;letter-spacing:.5px}
+  .nav-btn:hover{background:var(--bg-hover);color:var(--text-bright);border-color:var(--accent)}
+  .nav-btn:disabled{opacity:.3;cursor:not-allowed}
+  .nav-btn:disabled:hover{background:var(--bg-card);color:var(--text);border-color:var(--border)}
+  .nav-dots{display:flex;gap:8px}
+  .nav-dot{width:10px;height:10px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .2s}
+  .nav-dot.active{background:var(--accent);transform:scale(1.2)}
+  .nav-dot:hover{background:var(--accent-dim)}
+  .widget{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px;margin:28px 0;position:relative}
+  .widget-title{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cyan);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+  .btn{font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 18px;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:all .2s;letter-spacing:.3px}
+  .btn:hover{background:var(--accent);color:var(--bg)}
+  .btn.primary{background:var(--accent);color:var(--bg)}
+  .btn.primary:hover{background:#79bbff}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  input[type="range"]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;margin:12px 0}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 8px rgba(88,166,255,.4)}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+  .compare-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px}
+  .compare-box h4{font-size:14px;font-weight:700;color:var(--text-bright);margin-bottom:10px}
+  .compare-box.lv{border-top:3px solid var(--green)}.compare-box.lv h4{color:var(--green)}
+  .compare-box.mc{border-top:3px solid var(--orange)}.compare-box.mc h4{color:var(--orange)}
+  .trial-grid{display:flex;flex-wrap:wrap;gap:4px;margin:12px 0}
+  .trial-cell{width:18px;height:18px;border-radius:3px;transition:all .15s}
+  .trial-cell.success{background:var(--green)}.trial-cell.fail{background:var(--red);opacity:.5}.trial-cell.pending{background:var(--border)}
+  .graph-container{display:flex;justify-content:center;align-items:center;min-height:280px;margin:16px 0}
+  .stat-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+  .stat-badge{background:var(--bg-card-alt);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;flex:1;min-width:120px}
+  .stat-badge .stat-val{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--accent)}
+  .stat-badge .stat-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .hl-green{color:var(--green);font-weight:600}.hl-red{color:var(--red);font-weight:600}.hl-accent{color:var(--accent);font-weight:600}.hl-orange{color:var(--orange);font-weight:600}.hl-purple{color:var(--purple);font-weight:600}.hl-cyan{color:var(--cyan);font-weight:600}
+  code{font-family:'IBM Plex Mono',monospace;font-size:.9em;background:var(--bg-card-alt);padding:2px 6px;border-radius:4px;color:var(--cyan)}
+  svg text{font-family:'IBM Plex Mono',monospace}
+  @media(max-width:680px){.compare-grid{grid-template-columns:1fr}.stat-row{flex-direction:column}}
+  ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--accent-dim)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-label">Session 6 — Randomized Algorithms</div>
+  <div class="hero-session">CS 6515 — Session 6 of 6</div>
+  <h1><em>Randomized</em> Algorithms</h1>
+  <p class="subtitle">When flipping coins beats thinking hard, and how to make lucky guesses almost certain.</p>
+  <p class="recap">← Sessions 1–5 covered: NP-hardness · Reductions · Approximation algorithms · Greedy EDP · LP fundamentals · LP relaxation · Deterministic rounding · FPTAS for Knapsack. Today: probability fundamentals, Las Vegas algorithms, Monte Carlo algorithms, Karger's min-cut, and boosting success probability.</p>
+</header>
+<div class="container">
+<div class="nav-bar" style="margin-top:0;border-top:none">
+  <button class="nav-btn" id="prevBtn" onclick="goToPart(currentPart-1)" disabled>← Prev</button>
+  <div class="nav-dots" id="navDots"></div>
+  <button class="nav-btn" id="nextBtn" onclick="goToPart(currentPart+1)">Next →</button>
+</div>
+
+<!-- ============ PART 1 ============ -->
+<section class="part active" id="part1">
+<div class="part-header">Part 1 / 8 — Warm-Up: Why Randomness?</div>
+<div class="part-title">From Deterministic Approximation to Random Coin Flips</div>
+<h2>Where We Are: The Complete Deterministic Toolkit</h2>
+<p>Over Sessions 1–5 we built four approximation techniques. All of them are <strong>deterministic</strong>: given the same input, they always produce the same output and always take the same amount of time.</p>
+<table>
+<tr><th>Session</th><th>Technique</th><th>Problem</th><th>Guarantee</th></tr>
+<tr><td>2</td><td>Greedy</td><td>Edge-Disjoint Paths</td><td>√|E|-approx</td></tr>
+<tr><td>4</td><td>LP Rounding</td><td>Vertex Cover</td><td>2-approx</td></tr>
+<tr><td>4</td><td>LP Rounding</td><td>Set Cover (freq f)</td><td>f-approx</td></tr>
+<tr><td>5</td><td>FPTAS (scaling + DP)</td><td>Knapsack</td><td>(1−ε)-approx</td></tr>
+</table>
+<p>Today we add an entirely new ingredient: <strong>randomness</strong>. Instead of following a fixed recipe, the algorithm flips coins during execution. This sounds reckless, but it turns out to be incredibly powerful.</p>
+<h2>Two Flavors of Randomized Algorithms</h2>
+<p>There are exactly two types, and they make <em>opposite</em> trade-offs:</p>
+<div class="compare-grid">
+<div class="compare-box lv"><h4>Las Vegas</h4><p style="font-size:14px;margin:0">Always <span class="hl-green">correct</span>.<br>Runtime is <span class="hl-orange">random</span>.<br><br>"I'll keep working until I get the right answer, but I might get lucky and finish early."</p></div>
+<div class="compare-box mc"><h4>Monte Carlo</h4><p style="font-size:14px;margin:0">Runtime is <span class="hl-green">fixed</span>.<br>Answer might be <span class="hl-red">wrong</span>.<br><br>"I'll finish on time, but there's a small chance I'll give you the wrong answer."</p></div>
+</div>
+<table>
+<tr><th></th><th>Deterministic</th><th>Las Vegas</th><th>Monte Carlo</th></tr>
+<tr><td><strong>Correctness</strong></td><td>Always correct</td><td>Always correct</td><td>Correct w/ prob ≥ p</td></tr>
+<tr><td><strong>Runtime</strong></td><td>Worst-case bound</td><td>Expected bound</td><td>Worst-case bound</td></tr>
+<tr><td><strong>Example</strong></td><td>Merge Sort</td><td>Randomized QuickSort</td><td>Karger's Min-Cut</td></tr>
+</table>
+<h2>Why Bother With Randomness?</h2>
+<p>Randomness lets the algorithm <strong>avoid worst cases</strong>. An adversary who knows your algorithm can craft a bad input for a deterministic algorithm. But if the algorithm flips coins, the adversary can't predict which choices it will make, so there's no single "bad input" anymore.</p>
+<p>The classic example: deterministic QuickSort with "always pick the first element as pivot" has worst-case O(n²) on sorted input. Randomized QuickSort picks a random pivot and gets expected O(n log n) on <em>every</em> input. We'll see this in Part 3.</p>
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Warm-Up: When would you prefer Las Vegas vs Monte Carlo?</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>Las Vegas</strong> is better when correctness is non-negotiable (medical diagnosis, financial calculations, sorting data). You always get the right answer; sometimes it just takes longer.</p>
+<p><strong>Monte Carlo</strong> is better when you need a guaranteed time budget and can tolerate a small error probability (network routing, approximate counting). You always finish on time; occasionally the answer is wrong.</p>
+<p>The beautiful thing: if a Monte Carlo algorithm has even a tiny probability of success, you can <strong>boost</strong> it by running many independent trials. This is Part 6's main topic.</p>
+</div>
+</div>
+<div class="nav-bar"><button class="nav-btn" disabled>← Warm-Up</button><div></div><button class="nav-btn" onclick="goToPart(2)">Probability Fundamentals →</button></div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section class="part" id="part2">
+<div class="part-header">Part 2 / 8 — Fundamentals of Probability</div>
+<div class="part-title">The Toolkit You Need for Analyzing Randomized Algorithms</div>
+<p>Before we can analyze any randomized algorithm, we need some probability fundamentals. This section covers exactly the tools used in Parts 3–7, nothing extra.</p>
+<h2>Sample Spaces, Events, and Probability</h2>
+<p>A <strong>sample space</strong> Ω is the set of all possible outcomes of a random experiment. An <strong>event</strong> A ⊆ Ω is a subset of outcomes. The <strong>probability</strong> Pr[A] is a number between 0 and 1 measuring how likely A is.</p>
+<div class="card"><div class="card-title">Example: Two Coin Flips</div>
+<p>Sample space: Ω = {HH, HT, TH, TT}. Each outcome has probability 1/4.</p>
+<p>Event "at least one head" = {HH, HT, TH}. Probability = 3/4.</p>
+<p style="margin:0">Event "both heads" = {HH}. Probability = 1/4.</p></div>
+<h2>Independence</h2>
+<p>Events A and B are <strong>independent</strong> if knowing one happened doesn't change the probability of the other:</p>
+<div class="def-box"><div class="def-label">Independence</div>
+A and B are independent iff Pr[A ∩ B] = Pr[A] · Pr[B]
+
+For n independent events:
+Pr[A₁ ∩ A₂ ∩ ... ∩ Aₙ] = Pr[A₁] · Pr[A₂] · ... · Pr[Aₙ]</div>
+<p>This is <em>the</em> key property for boosting: if we run an algorithm multiple times with fresh random coins, the runs are independent, and we can multiply failure probabilities.</p>
+<h2>Conditional Probability</h2>
+<div class="def-box"><div class="def-label">Conditional Probability &amp; Chain Rule</div>
+Pr[A | B] = Pr[A ∩ B] / Pr[B]
+
+Chain rule:
+Pr[A₁ ∩ A₂ ∩ ... ∩ Aₙ] = Pr[A₁] · Pr[A₂|A₁] · Pr[A₃|A₁∩A₂] · ...</div>
+<p>The chain rule is exactly what we'll use to analyze Karger's algorithm in Part 5: each contraction succeeds <em>given that</em> all previous contractions succeeded.</p>
+<h2>Expected Value and Linearity of Expectation</h2>
+<p>The <strong>expected value</strong> E[X] of a random variable X is its weighted average outcome: E[X] = Σₓ x · Pr[X = x].</p>
+<div class="card green"><div class="card-title">Linearity of Expectation (The Power Tool)</div>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:15px;margin-bottom:8px">E[X₁ + X₂ + ... + Xₙ] = E[X₁] + E[X₂] + ... + E[Xₙ]</p>
+<p><strong>No independence required!</strong> This works for ANY random variables, correlated or not. This single fact is behind most of the elegant proofs in randomized algorithms.</p></div>
+
+<div class="widget">
+<div class="widget-title">Interactive: Linearity of Expectation with Biased Coins</div>
+<p style="margin-bottom:12px;font-size:14px;color:var(--text-dim)">Set the probability of heads for each of 5 coins. E[total heads] = sum of individual probabilities, no independence needed.</p>
+<div id="linExpWidget" style="display:flex;flex-direction:column;gap:12px"></div>
+<div style="margin-top:20px;padding:16px;background:var(--bg-card-alt);border-radius:8px;text-align:center">
+<span style="font-size:13px;color:var(--text-dim)">E[total heads] = </span>
+<span id="linExpSum" style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)">2.50</span>
+<div id="linExpBreakdown" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);margin-top:6px"></div>
+</div>
+</div>
+
+<h2>Union Bound</h2>
+<div class="def-box"><div class="def-label">Union Bound</div>
+Pr[A₁ ∪ A₂ ∪ ... ∪ Aₙ] ≤ Pr[A₁] + Pr[A₂] + ... + Pr[Aₙ]</div>
+<p>Useful when you want to bound "the probability that <em>something</em> bad happens." Bound each bad event individually and add them up.</p>
+
+<h2>Markov's Inequality</h2>
+<div class="def-box"><div class="def-label">Markov's Inequality</div>
+If X ≥ 0 and a > 0, then:  Pr[X ≥ a] ≤ E[X] / a</div>
+<div class="widget">
+<div class="widget-title">Interactive: Markov's Inequality</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:12px">E[X] = 10. Drag the threshold to see Markov's upper bound on Pr[X ≥ a].</p>
+<div style="display:flex;align-items:center;gap:12px">
+<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim)">a =</span>
+<input type="range" min="1" max="100" value="20" id="markovSlider" oninput="updateMarkov()" style="flex:1">
+<span id="markovA" style="font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--text-bright);width:40px">20</span>
+</div>
+<div style="margin-top:16px;padding:16px;background:var(--bg-card-alt);border-radius:8px;display:flex;justify-content:space-around;text-align:center">
+<div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px">Upper Bound</div>
+<div id="markovBound" style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)">0.50</div>
+<div style="font-size:12px;color:var(--text-dim)">Pr[X ≥ a] ≤ E[X]/a</div></div>
+<div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px">Meaning</div>
+<div id="markovMeaning" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--text);margin-top:6px">At most 50% chance X ≥ 20</div></div>
+</div>
+</div>
+
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Self-Check: Expected value of two dice using linearity</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>Problem:</strong> Roll two fair dice, X = sum. Compute E[X] using linearity.</p>
+<p><strong>Solution:</strong> X = X₁ + X₂. E[Xᵢ] = (1+2+3+4+5+6)/6 = 3.5. By linearity: E[X] = 3.5 + 3.5 = <strong>7</strong>. No need to enumerate all 36 outcomes or check independence.</p></div></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(1)">← Why Randomness?</button><div></div><button class="nav-btn" onclick="goToPart(3)">Las Vegas Algorithms →</button></div>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section class="part" id="part3">
+<div class="part-header">Part 3 / 8 — Las Vegas Algorithms</div>
+<div class="part-title">Always Correct, Sometimes Slow</div>
+<h2>Formal Definition</h2>
+<div class="def-box"><div class="def-label">Las Vegas Algorithm</div>
+A randomized algorithm is Las Vegas if:
+  1. It ALWAYS returns the correct answer
+  2. Its runtime is a random variable
+  3. We analyze the EXPECTED runtime</div>
+<p>A Las Vegas algorithm never lies. It might take a while, but the answer is guaranteed correct.</p>
+<h2>Example: Randomized QuickSort</h2>
+<div class="card"><div class="card-title">Randomized QuickSort</div>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;margin:0">RandomizedQuickSort(A):
+  if |A| ≤ 1: return A
+  Pick pivot p uniformly at random from A
+  Partition into L (&lt; p), {p}, R (&gt; p)
+  return QS(L) + {p} + QS(R)</p></div>
+<h3>Why Randomness Defeats the Adversary</h3>
+<p><strong>Deterministic QuickSort</strong> (always pick first element): adversary gives sorted array. Every partition is maximally unbalanced. Total: <span class="hl-red">O(n²)</span>.</p>
+<p><strong>Randomized QuickSort</strong>: on <em>any</em> input, the random pivot is equally likely to be any element. Expected comparisons: <span class="hl-green">O(n log n)</span> on every input.</p>
+<h3>The Analysis (Linearity of Expectation)</h3>
+<p>Let sorted elements be a₁ &lt; a₂ &lt; ... &lt; aₙ. Define Xᵢⱼ = 1 if aᵢ and aⱼ are ever compared. By linearity:</p>
+<p style="text-align:center;font-family:'IBM Plex Mono',monospace;margin:16px 0">E[comparisons] = Σᵢ&lt;ⱼ Pr[aᵢ and aⱼ compared]</p>
+<div class="card green"><div class="card-title">Key Insight</div>
+<p>aᵢ and aⱼ are compared <strong>iff</strong> one of them is the first element from {aᵢ, aᵢ₊₁, ..., aⱼ} chosen as pivot. If some aₖ with i &lt; k &lt; j is chosen first, aᵢ and aⱼ are separated and never compared.</p>
+<p style="margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:14px">Pr[aᵢ and aⱼ compared] = 2/(j − i + 1)</p></div>
+<p>Summing: E[comparisons] = Σ Σ 2/(j-i+1) ≤ 2n · Hₙ = <strong>O(n log n)</strong>, where Hₙ ≈ ln n is the harmonic number.</p>
+
+<div class="widget">
+<div class="widget-title">Interactive: Randomized QuickSort Simulator</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:16px">Click "Shuffle &amp; Sort" to run on 12 elements. Comparison count varies each run due to random pivots.</p>
+<div id="qsDisplay" style="display:flex;gap:4px;justify-content:center;margin-bottom:16px;min-height:50px;flex-wrap:wrap"></div>
+<div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap">
+<button class="btn primary" onclick="runQS()">Shuffle &amp; Sort</button>
+<button class="btn" onclick="runQSMany()">Run 50 Times</button>
+</div>
+<div id="qsStats" style="margin-top:16px;display:none">
+<div class="stat-row">
+<div class="stat-badge"><div class="stat-val" id="qsComps">0</div><div class="stat-label">Comparisons (this run)</div></div>
+<div class="stat-badge"><div class="stat-val" id="qsNlogN">0</div><div class="stat-label">n·ln(n) ≈</div></div>
+</div></div>
+<div id="qsHistogram" style="margin-top:16px;display:none">
+<p style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Distribution of comparison counts over 50 runs:</p>
+<canvas id="qsCanvas" width="600" height="140" style="width:100%;max-width:600px"></canvas>
+<p style="font-size:12px;color:var(--text-dim);margin-top:4px" id="qsAvg"></p>
+</div></div>
+
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Self-Check: Why can't an adversary force O(n²)?</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p>The adversary chooses the input <em>before</em> seeing random choices. No matter what array they pick, the random pivot is equally likely to be any element. The adversary would need to predict which element gets chosen, but that's decided after the input is fixed. Expected comparisons: O(n log n) on every input.</p></div></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(2)">← Probability</button><div></div><button class="nav-btn" onclick="goToPart(4)">Monte Carlo Algorithms →</button></div>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<section class="part" id="part4">
+<div class="part-header">Part 4 / 8 — Monte Carlo Algorithms</div>
+<div class="part-title">Always Fast, Sometimes Wrong</div>
+<h2>Formal Definition</h2>
+<div class="def-box"><div class="def-label">Monte Carlo Algorithm</div>
+A randomized algorithm is Monte Carlo if:
+  1. Its runtime is deterministic (worst-case bounded)
+  2. It may return an INCORRECT answer
+  3. Pr[correct] ≥ some bound (e.g., ≥ 2/3)</div>
+<p>Sounds worse than Las Vegas, but the guaranteed runtime is a huge advantage. And as we'll see, even a tiny success probability can be <strong>boosted</strong> to near-certainty.</p>
+<h2>One-Sided vs Two-Sided Error</h2>
+<div class="compare-grid">
+<div class="compare-box" style="border-top:3px solid var(--cyan)"><h4 style="color:var(--cyan)">One-Sided Error</h4>
+<p style="font-size:14px">If true answer is YES → always says YES<br>If true answer is NO → says NO with prob ≥ 1/2<br><span style="color:var(--text-dim);font-size:13px">Only "false positives," never "false negatives."</span></p></div>
+<div class="compare-box" style="border-top:3px solid var(--purple)"><h4 style="color:var(--purple)">Two-Sided Error</h4>
+<p style="font-size:14px">Can err in either direction<br>Pr[correct] ≥ 1/2 + ε for some ε > 0<br><span style="color:var(--text-dim);font-size:13px">Right more often than wrong, but can make any type of mistake.</span></p></div>
+</div>
+<h2>Converting Between Las Vegas and Monte Carlo</h2>
+<div class="card"><div class="card-title">Las Vegas → Monte Carlo</div>
+<p>Run the Las Vegas algorithm with a time limit T. If it finishes, return its (correct) answer. If not, return a default. Result: Monte Carlo with runtime ≤ T.</p>
+<p style="margin:0;font-size:14px;color:var(--text-dim)">Error prob = Pr[LV takes longer than T]. Use Markov's inequality: set T = 2·E[runtime] to get error ≤ 1/2.</p></div>
+<div class="card"><div class="card-title">Monte Carlo → Las Vegas (when verification is cheap)</div>
+<p>Run Monte Carlo, then <strong>verify</strong> the output. If correct, return it. If not, run again with fresh coins. Expected trials until success: 1/p.</p></div>
+
+<div class="widget">
+<div class="widget-title">Interactive: Las Vegas vs Monte Carlo Side-by-Side</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:16px">Run both 20 times. LV: runtime varies, always correct. MC: time fixed, sometimes wrong.</p>
+<div class="compare-grid">
+<div style="text-align:center"><h4 style="color:var(--green);margin-bottom:8px">Las Vegas</h4>
+<div id="lvTrials" class="trial-grid" style="justify-content:center"></div>
+<div style="margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:13px">Correct: <span id="lvCorrect" class="hl-green">0/0</span><br>Avg time: <span id="lvTime" class="hl-accent">0</span></div></div>
+<div style="text-align:center"><h4 style="color:var(--orange);margin-bottom:8px">Monte Carlo</h4>
+<div id="mcTrials" class="trial-grid" style="justify-content:center"></div>
+<div style="margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:13px">Correct: <span id="mcCorrect" class="hl-green">0/0</span><br>Time: <span id="mcTime" class="hl-accent">always 5</span></div></div>
+</div>
+<div style="text-align:center;margin-top:16px"><button class="btn primary" onclick="runLvMcSim()">Run 20 Trials Each</button></div>
+</div>
+
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Self-Check: One-sided or two-sided?</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>Q:</strong> Algorithm always says YES on YES-instances, but on NO-instances says NO only 60% of the time.</p>
+<p><strong>A:</strong> <strong>One-sided error.</strong> Never wrong on YES-instances. On NO-instances, correct 60%, wrong 40%. Error prob = 0.4, only false positives.</p></div></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(3)">← Las Vegas</button><div></div><button class="nav-btn" onclick="goToPart(5)">Karger's Min-Cut →</button></div>
+</section>
+
+<!-- ============ PART 5 ============ -->
+<section class="part" id="part5">
+<div class="part-header">Part 5 / 8 — Karger's Min-Cut Algorithm</div>
+<div class="part-title">Monte Carlo in Action: The Most Elegant Randomized Algorithm</div>
+<h2>The Global Min-Cut Problem</h2>
+<p>Given an undirected graph G = (V, E), find a cut (S, V\S) minimizing the number of crossing edges. No source/sink needed.</p>
+<p>You could solve this via n−1 max-flow computations. Karger's algorithm is simpler and beautifully illustrates randomized thinking.</p>
+<h2>Edge Contraction</h2>
+<div class="card"><div class="card-title">Contracting Edge (u, v)</div>
+<p>1. Merge u and v into a single supernode<br>2. Keep all edges to other vertices (parallel edges OK)<br>3. Remove self-loops</p>
+<p style="margin:0;font-size:14px;color:var(--text-dim)">A cut <strong>survives</strong> if the contracted edge was NOT a cut edge. A cut is <strong>destroyed</strong> if the contracted edge crosses it.</p></div>
+<h2>The Algorithm</h2>
+<div class="def-box"><div class="def-label">Karger's Min-Cut Algorithm</div>
+Input: Undirected (multi)graph G = (V, E), |V| = n
+
+1. While more than 2 vertices remain:
+   a. Pick edge e uniformly at random
+   b. Contract e (merge endpoints, remove self-loops)
+2. Two remaining supernodes define a cut
+3. Return this cut</div>
+
+<div class="widget">
+<div class="widget-title">Interactive: Karger's Algorithm Step-by-Step</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:4px">6 vertices. Min-cut edges shown <span class="hl-orange">dashed in orange</span> (size 2). Click to contract random edges.</p>
+<div class="graph-container"><svg id="kargerSvg" width="500" height="280" viewBox="0 0 500 280"></svg></div>
+<div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
+<button class="btn primary" id="kargerContractBtn" onclick="kargerStep()">Contract Random Edge</button>
+<button class="btn" onclick="kargerReset()">↺ Reset</button>
+</div>
+<div id="kargerStatus" style="text-align:center;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--text-dim)"></div>
+</div>
+
+<h2>The Analysis</h2>
+<p>Fix a minimum cut δ(S*) of size k. The algorithm finds it iff <strong>none</strong> of the n−2 contracted edges belong to δ(S*).</p>
+<h3>Step 1: Edge count lower bound</h3>
+<p>Every vertex has degree ≥ k (otherwise that vertex alone gives a smaller cut). So |E| ≥ nk/2.</p>
+<h3>Step 2: First contraction</h3>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;text-align:center;margin:12px 0">Pr[avoids cut] ≥ 1 − k/(nk/2) = 1 − 2/n</p>
+<h3>Step 3: Cascade via conditional probability</h3>
+<p>After i contractions (all avoiding the cut), we have n−i vertices. Same argument:</p>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;text-align:center;margin:12px 0">Pr[contraction i+1 avoids | all previous avoided] ≥ 1 − 2/(n−i)</p>
+<h3>Step 4: The telescoping product</h3>
+<div class="card green"><div class="card-title">Success Probability</div>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:2">
+Pr[success] = ∏ᵢ₌₀ⁿ⁻³ (1 − 2/(n−i))
+  = (n−2)/n · (n−3)/(n−1) · (n−4)/(n−2) · ... · 1/3
+  = 2/(n(n−1)) ≥ <strong>2/n²</strong></p>
+<p style="margin-top:8px">The factors telescope! Most terms cancel, leaving just the boundary terms.</p></div>
+
+<div class="widget">
+<div class="widget-title">Interactive: Success Probability vs Graph Size</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:12px">Drag to change n. Watch Pr[success] and the number of trials needed.</p>
+<div style="display:flex;align-items:center;gap:12px">
+<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim)">n =</span>
+<input type="range" min="4" max="50" value="10" id="kargerProbSlider" oninput="updateKargerProb()" style="flex:1">
+<span id="kargerProbN" style="font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--text-bright);width:30px">10</span>
+</div>
+<div class="stat-row" style="margin-top:16px">
+<div class="stat-badge"><div class="stat-val" id="kpSucc">2.22%</div><div class="stat-label">Pr[success] ≥ 2/(n(n-1))</div></div>
+<div class="stat-badge"><div class="stat-val" id="kpTrials">45</div><div class="stat-label">Trials for ~63% success</div></div>
+<div class="stat-badge"><div class="stat-val" id="kpRuntime">4,500</div><div class="stat-label">Total ops (each run O(n²))</div></div>
+</div></div>
+<p><strong>Runtime of one run:</strong> n−2 contractions × O(n) each = <strong>O(n²)</strong>.</p>
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Self-Check: n=100, Pr[success]? How many runs?</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p>Pr ≥ 2/(100·99) ≈ <strong>0.02%</strong>. Need ~n²/2 = 5000 runs for 63% success. For 99%: ~5000 · ln(100) ≈ 23,000 runs. Total: O(2.3 × 10⁸). Very manageable.</p></div></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(4)">← Monte Carlo</button><div></div><button class="nav-btn" onclick="goToPart(6)">Boosting →</button></div>
+</section>
+
+<!-- ============ PART 6 ============ -->
+<section class="part" id="part6">
+<div class="part-header">Part 6 / 8 — Boosting the Probability of Success</div>
+<div class="part-title">From Slim Chance to Near-Certainty</div>
+<h2>The Core Idea</h2>
+<p>Run a Monte Carlo algorithm <strong>T independent times</strong>. The probability that ALL T runs fail:</p>
+<div class="def-box"><div class="def-label">Boosting by Repetition</div>
+Pr[all T fail] = (1 − p)ᵀ
+Pr[≥ 1 success] = 1 − (1 − p)ᵀ
+
+To get failure ≤ δ:  T ≥ (1/p) · ln(1/δ)
+
+Key fact: (1 − 1/x)ˣ ≤ 1/e  for all x ≥ 1</div>
+
+<div class="widget">
+<div class="widget-title">Interactive: (1 − 1/x)ˣ ≤ 1/e</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:16px">Watch the function converge to 1/e ≈ 0.368 from below as x grows.</p>
+<canvas id="keyIneqCanvas" width="600" height="200" style="width:100%;max-width:600px;display:block;margin:0 auto"></canvas>
+</div>
+
+<h2>Applied to Karger's</h2>
+<div class="card green"><div class="card-title">Boosted Karger's</div>
+<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:2">
+p = 2/n², run T = (n²/2)·c·ln(n) times
+Pr[all fail] = (1 − 2/n²)ᵀ
+  ≤ (1/e)^(c·ln n)  [using key fact]
+  = 1/nᶜ</p>
+<p style="margin-top:8px">With T = O(n² log n) runs × O(n²) each = <strong>O(n⁴ log n)</strong> total, error ≤ 1/nᶜ for any constant c!</p></div>
+
+<h2>General Boosting Recipes</h2>
+<h3>Optimization (e.g., Min-Cut)</h3>
+<p>Run T times, <strong>keep the best answer</strong>. If any run succeeds, you'll pick up its result.</p>
+<h3>One-Sided Error Decisions</h3>
+<p>Run T times. If ANY says YES, output YES. Otherwise NO. (YES is always trustworthy.)</p>
+<h3>Two-Sided Error Decisions</h3>
+<p>Run T times, take <strong>majority vote</strong>. With Pr[correct] ≥ 1/2 + ε, error drops exponentially in T.</p>
+
+<div class="widget">
+<div class="widget-title">Interactive: Boosting Simulator</div>
+<p style="font-size:14px;color:var(--text-dim);margin-bottom:12px">Set per-trial success probability and target failure bound.</p>
+<div style="display:flex;gap:20px;flex-wrap:wrap">
+<div style="flex:1;min-width:200px"><label style="font-size:13px;color:var(--text-dim)">Success prob p:</label>
+<input type="range" min="1" max="50" value="5" id="boostP" oninput="updateBoost()">
+<span id="boostPVal" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent)">5%</span></div>
+<div style="flex:1;min-width:200px"><label style="font-size:13px;color:var(--text-dim)">Target failure δ:</label>
+<input type="range" min="1" max="20" value="6" id="boostD" oninput="updateBoost()">
+<span id="boostDVal" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--orange)">10⁻⁶</span></div>
+</div>
+<div class="stat-row" style="margin-top:16px">
+<div class="stat-badge"><div class="stat-val" id="boostT">277</div><div class="stat-label">Trials T needed</div></div>
+<div class="stat-badge"><div class="stat-val" id="boostSucc">≈ 100%</div><div class="stat-label">Pr[≥ 1 success]</div></div>
+</div>
+<div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="runBoostSim()">Simulate T Trials</button></div>
+<div id="boostTrialGrid" class="trial-grid" style="margin-top:12px"></div>
+<div id="boostResult" style="margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:14px;text-align:center"></div>
+</div>
+
+<div class="spoiler" onclick="this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Self-Check: Boosting a 1/1000 algorithm</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>Q:</strong> Algorithm succeeds with prob 1/1000. Run 7000 times. Pr[all fail]?</p>
+<p><strong>A:</strong> (1 − 1/1000)⁷⁰⁰⁰ = ((1 − 1/1000)¹⁰⁰⁰)⁷ ≤ (1/e)⁷ = e⁻⁷ ≈ <strong>0.00091</strong>. So Pr[≥ 1 success] ≈ 99.9%. Running ~7× the "expected" 1000 trials gave three nines of reliability.</p></div></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(5)">← Karger's</button><div></div><button class="nav-btn" onclick="goToPart(7)">Full Landscape →</button></div>
+</section>
+
+<!-- ============ PART 7 ============ -->
+<section class="part" id="part7">
+<div class="part-header">Part 7 / 8 — Putting It All Together</div>
+<div class="part-title">The Complete Algorithmic Toolkit</div>
+<h2>The Full Landscape: Sessions 1–6</h2>
+<table>
+<tr><th>Session</th><th>Technique</th><th>Type</th><th>Problem</th><th>Guarantee</th></tr>
+<tr><td>2</td><td>Greedy</td><td>Deterministic</td><td>Edge-Disjoint Paths</td><td>√|E|-approx</td></tr>
+<tr><td>4</td><td>LP Rounding</td><td>Deterministic</td><td>Vertex Cover</td><td>2-approx</td></tr>
+<tr><td>4</td><td>LP Rounding</td><td>Deterministic</td><td>Set Cover (freq f)</td><td>f-approx</td></tr>
+<tr><td>5</td><td>FPTAS</td><td>Deterministic</td><td>Knapsack</td><td>(1−ε)-approx</td></tr>
+<tr style="background:rgba(88,166,255,.06)"><td>6</td><td>Las Vegas</td><td>Randomized</td><td>QuickSort</td><td>Always correct, E[O(n log n)]</td></tr>
+<tr style="background:rgba(88,166,255,.06)"><td>6</td><td>MC + Boosting</td><td>Randomized</td><td>Min-Cut</td><td>Correct w.h.p., O(n⁴ log n)</td></tr>
+</table>
+
+<h2>Conversions Between Types</h2>
+<div class="card"><div class="card-title">Conversion Summary</div>
+<table style="margin:0"><tr><th>From</th><th>To</th><th>How</th><th>Cost</th></tr>
+<tr><td>Las Vegas</td><td>Monte Carlo</td><td>Time limit + default answer</td><td>Adds error prob</td></tr>
+<tr><td>Monte Carlo</td><td>Las Vegas</td><td>Repeat until verified correct</td><td>Expected time = T/p</td></tr>
+<tr><td>MC (low p)</td><td>MC (high p)</td><td>Repeat T = (1/p)·ln(1/δ) times</td><td>Runtime × T</td></tr>
+</table></div>
+
+<h2>Karger-Stein (Brief Mention)</h2>
+<p>Observation: early contractions are safe (prob 2/n is tiny); the danger is in the last few. Karger-Stein contracts to n/√2 vertices, then <strong>branches into two independent runs</strong> and recurses. Runtime improves to <strong>O(n² log³ n)</strong>.</p>
+<div class="card orange"><div class="card-title">Exam Tip</div>
+<p>You won't need Karger-Stein details. The important pieces: (1) basic Karger algorithm, (2) success prob ≥ 2/n², (3) boosting argument giving O(n⁴ log n) with high probability.</p></div>
+
+<div class="card purple"><div class="card-title">Cheat Sheet for Exam</div>
+<p>• <strong>Las Vegas:</strong> always correct, expected runtime. Example: randomized QuickSort, E[O(n log n)].</p>
+<p>• <strong>Monte Carlo:</strong> fixed runtime, may err. Example: Karger's, Pr[success] ≥ 2/n².</p>
+<p>• <strong>Boosting:</strong> T = (1/p) · ln(1/δ) independent runs drive failure to δ.</p>
+<p>• <strong>Linearity of expectation:</strong> E[X+Y] = E[X] + E[Y], no independence needed.</p>
+<p>• <strong>Key inequality:</strong> (1 − 1/x)ˣ ≤ 1/e.</p>
+<p style="margin:0">• <strong>Karger's:</strong> contract random edges → 2 remain. Pr[finds min-cut] ≥ 2/n². One run O(n²). Boosted: O(n⁴ log n).</p></div>
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(6)">← Boosting</button><div></div><button class="nav-btn" onclick="goToPart(8)">Practice Problems →</button></div>
+</section>
+
+<!-- ============ PART 8 ============ -->
+<section class="part" id="part8">
+<div class="part-header">Part 8 / 8 — Practice Problems</div>
+<div class="part-title">5 Problems: Work These Out 📝</div>
+<p>Covering probability, Las Vegas, Monte Carlo, Karger's analysis, and boosting.</p>
+
+<div class="problem"><div class="problem-header"><span class="problem-num">Problem 1</span><span class="problem-title">Linearity of Expectation: Random Cuts</span></div>
+<div class="problem-body"><div class="problem-subtitle">Expected cut edges under random 2-coloring</div>
+<p>A graph has 15 edges. You randomly 2-color each vertex: each is red or blue independently with probability 1/2. An edge is "cut" if its endpoints differ.</p>
+<p><strong>(a)</strong> Define indicator Xₑ for each edge. What is E[Xₑ]?</p>
+<p><strong>(b)</strong> Using linearity of expectation, what is E[total cut edges]?</p>
+<p><strong>(c)</strong> Argue some 2-coloring must cut ≥ 8 edges. (The probabilistic method!)</p>
+<div class="spoiler" onclick="event.stopPropagation();this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Show Solution</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>(a)</strong> Xₑ = 1 if edge e is cut. Pr[cut] = Pr[different colors] = 1/2. So E[Xₑ] = <strong>1/2</strong>.</p>
+<p><strong>(b)</strong> E[total] = Σ E[Xₑ] = 15 · 1/2 = <strong>7.5</strong>. (Linearity applies even though Xₑ's are correlated!)</p>
+<p><strong>(c)</strong> If E[X] = 7.5, some outcome has X ≥ 7.5. Since X is an integer, some coloring cuts ≥ <strong>8</strong> edges. This is the <strong>probabilistic method</strong>: proving existence without explicit construction.</p></div></div>
+</div></div>
+
+<div class="problem"><div class="problem-header"><span class="problem-num">Problem 2</span><span class="problem-title">Las Vegas vs Monte Carlo Conversions</span></div>
+<div class="problem-body"><div class="problem-subtitle">Converting between algorithm types</div>
+<p><strong>(a)</strong> You have a Las Vegas algorithm with expected runtime O(n³). Convert it to a Monte Carlo algorithm with worst-case runtime O(n³) and error ≤ 1/2.</p>
+<p><strong>(b)</strong> You have a one-sided-error Monte Carlo for a decision problem: never wrong on YES, correctly says NO with prob ≥ 2/3 on NO-instances. Runtime O(T(n)). Design a new algorithm with error ≤ 1/2ⁿ and state its runtime.</p>
+<div class="spoiler" onclick="event.stopPropagation();this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Show Solution</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>(a)</strong> Run LV for at most 2n³ steps. If it finishes, return the correct answer. Otherwise output a default. By Markov's: Pr[runtime ≥ 2n³] ≤ E[runtime]/(2n³) = n³/(2n³) = <strong>1/2</strong>. ✓</p>
+<p><strong>(b)</strong> Run n times independently. If ANY run says YES → output YES. If ALL say NO → output NO.</p>
+<p>On YES-instances: always correct (zero error). On NO-instances: each run wrongly says YES with prob ≤ 1/3. All n runs wrong: (1/3)ⁿ &lt; <strong>1/2ⁿ</strong>. Runtime: <strong>O(n · T(n))</strong>. ✓</p></div></div>
+</div></div>
+
+<div class="problem"><div class="problem-header"><span class="problem-num problem-draw">Problem 3 — Draw This!</span><span class="problem-title">Karger's Algorithm by Hand</span></div>
+<div class="problem-body"><div class="problem-subtitle">Trace a run and compute survival probabilities</div>
+<p>Graph: vertices {A, B, C, D, E}, edges: A-B, A-C, B-C, B-D, C-D, D-E, C-E.</p>
+<p><strong>(1)</strong> Draw the graph. Find the min-cut by inspection. What is k?</p>
+<p><strong>(2)</strong> What is Pr[single run finds min-cut] using the formula?</p>
+<p><strong>(3)</strong> Trace: contract B-C, then A-{BC}, then D-E. Draw after each step. Does the min-cut survive?</p>
+<p><strong>(4)</strong> How many trials for Pr[success] ≥ 0.99?</p>
+<div class="spoiler" onclick="event.stopPropagation();this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Show Solution</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>(1)</strong> Check cuts: ({A,B,C,D}, {E}) has crossing edges D-E and C-E, size <strong>k = 2</strong>. This is the min-cut.</p>
+<p><strong>(2)</strong> n = 5. Pr ≥ 2/(5·4) = <strong>1/10 = 10%</strong>.</p>
+<p><strong>(3)</strong> Min-cut edges: {D-E, C-E}.</p>
+<p><em>Contract B-C:</em> Not a cut edge. ✓ Merge into {BC}. Remaining: {A, {BC}, D, E}. Cut edges survive.</p>
+<p><em>Contract A-{BC}:</em> Not a cut edge. ✓ Merge into {ABC}. Remaining: {{ABC}, D, E}. Cut edges survive.</p>
+<p><em>Contract D-E:</em> <span class="hl-red">This IS a cut edge! Cut destroyed. ✗</span></p>
+<p>Algorithm returns cut of size 3, not the min-cut of 2.</p>
+<p><strong>(4)</strong> (0.9)ᵀ ≤ 0.01. T ≥ ln(0.01)/ln(0.9) ≈ <strong>44 trials</strong>.</p></div></div>
+</div></div>
+
+<div class="problem"><div class="problem-header"><span class="problem-num">Problem 4</span><span class="problem-title">Boosting Calculation</span></div>
+<div class="problem-body"><div class="problem-subtitle">Trials and runtime for boosted algorithms</div>
+<p>A two-sided-error Monte Carlo succeeds with prob ≥ 2/3 on every input. You want error ≤ 1/n³.</p>
+<p><strong>(a)</strong> Using majority-vote boosting with T = O((1/ε²)·ln(1/δ)) where ε = 1/6, δ = 1/n³, how many trials?</p>
+<p><strong>(b)</strong> Each trial is O(n²). Total runtime?</p>
+<p><strong>(c)</strong> Still polynomial? Justify.</p>
+<div class="spoiler" onclick="event.stopPropagation();this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Show Solution</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>(a)</strong> T = O((1/(1/6)²)·ln(n³)) = O(36 · 3 ln n) = <strong>O(log n)</strong>.</p>
+<p><strong>(b)</strong> Total = O(log n) · O(n²) = <strong>O(n² log n)</strong>.</p>
+<p><strong>(c)</strong> Yes! O(n² log n) is polynomial. Boosting from constant error to 1/n³ cost only a <strong>log n factor</strong>, negligible. ✓</p></div></div>
+</div></div>
+
+<div class="problem"><div class="problem-header"><span class="problem-num">Problem 5</span><span class="problem-title">Karger's Full Analysis</span></div>
+<div class="problem-body"><div class="problem-subtitle">End-to-end for n = 10</div>
+<p><strong>(a)</strong> Lower bound on Pr[single run finds min-cut]?</p>
+<p><strong>(b)</strong> Runs T for Pr[success] ≥ 99%?</p>
+<p><strong>(c)</strong> Each run O(n²) = O(100). Total runtime?</p>
+<p><strong>(d)</strong> Compare to max-flow approach (n−1 = 9 computations at O(VE) each). For dense graph |E| = O(n²), which is faster?</p>
+<div class="spoiler" onclick="event.stopPropagation();this.classList.toggle('open')">
+<div class="spoiler-trigger"><span class="label">Show Solution</span><span class="arrow">▼</span></div>
+<div class="spoiler-content">
+<p><strong>(a)</strong> 2/(10·9) ≈ <strong>2.22%</strong>.</p>
+<p><strong>(b)</strong> (1 − 2/90)ᵀ ≤ 0.01 → T ≥ ln(0.01)/ln(88/90) ≈ <strong>205 runs</strong>.</p>
+<p><strong>(c)</strong> 205 × 100 = <strong>20,500 operations</strong>.</p>
+<p><strong>(d)</strong> Max-flow: 9 × O(VE) = 9 × O(10 · 100) = <strong>9,000</strong> (using Edmonds-Karp O(VE²) would be 9 × O(10 · 10000) = 900,000). Karger's boosted is ~20,500. For simple O(VE) max-flow, max-flow wins here. But for O(VE²), Karger's is ~<strong>44× faster</strong>. Karger's is also simpler to implement and naturally parallelizable (run trials on different cores).</p></div></div>
+</div></div>
+
+<div class="nav-bar"><button class="nav-btn" onclick="goToPart(7)">← Full Landscape</button><div></div><button class="nav-btn" onclick="goToPart(1)">↺ Start Over</button></div>
+</section>
+
+<div class="nav-bar">
+<button class="nav-btn" id="prevBtn2" onclick="goToPart(currentPart-1)" disabled>← Prev</button>
+<div class="nav-dots" id="navDots2"></div>
+<button class="nav-btn" id="nextBtn2" onclick="goToPart(currentPart+1)">Next →</button>
+</div>
+</div>
+<div style="height:80px"></div>
+
+<script>
+// Navigation
+const TOTAL=8;let currentPart=1;
+function goToPart(n){if(n<1||n>TOTAL)return;document.getElementById('part'+currentPart).classList.remove('active');currentPart=n;document.getElementById('part'+currentPart).classList.add('active');updateNav();window.scrollTo({top:0,behavior:'smooth'})}
+function updateNav(){document.getElementById('prevBtn').disabled=currentPart===1;document.getElementById('nextBtn').disabled=currentPart===TOTAL;document.getElementById('prevBtn2').disabled=currentPart===1;document.getElementById('nextBtn2').disabled=currentPart===TOTAL;document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i+1===currentPart))}
+function initNav(){['navDots','navDots2'].forEach(id=>{const c=document.getElementById(id);c.innerHTML='';for(let i=1;i<=TOTAL;i++){const d=document.createElement('div');d.className='nav-dot'+(i===1?' active':'');d.onclick=()=>goToPart(i);c.appendChild(d)}})}
+initNav();
+
+// Linearity of Expectation
+(function(){const w=document.getElementById('linExpWidget');const vals=[50,70,30,90,10];vals.forEach((v,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px';row.innerHTML=`<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);width:60px">Coin ${i+1}:</span><input type="range" min="0" max="100" value="${v}" style="flex:1" oninput="updateLinExp()"><span class="coin-prob" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent);width:45px">${(v/100).toFixed(2)}</span>`;w.appendChild(row)})})();
+function updateLinExp(){const rows=document.querySelectorAll('#linExpWidget > div');let sum=0,parts=[];rows.forEach(r=>{const s=r.querySelector('input');const l=r.querySelector('.coin-prob');const v=parseInt(s.value)/100;l.textContent=v.toFixed(2);sum+=v;parts.push(v.toFixed(2))});document.getElementById('linExpSum').textContent=sum.toFixed(2);document.getElementById('linExpBreakdown').textContent='= '+parts.join(' + ')}
+updateLinExp();
+
+// Markov
+function updateMarkov(){const a=parseInt(document.getElementById('markovSlider').value);document.getElementById('markovA').textContent=a;const b=Math.min(10/a,1);document.getElementById('markovBound').textContent=b<.01?b.toExponential(1):b.toFixed(2);document.getElementById('markovMeaning').textContent='At most '+(b*100).toFixed(1)+'% chance X \u2265 '+a}
+updateMarkov();
+
+// QuickSort
+let qsC=0;
+function qs(a){if(a.length<=1)return a;const pi=Math.floor(Math.random()*a.length),p=a[pi],l=[],r=[];for(let i=0;i<a.length;i++){if(i===pi)continue;qsC++;if(a[i]<p)l.push(a[i]);else r.push(a[i])}return[...qs(l),p,...qs(r)]}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function runQS(){const n=12,arr=shuffle(Array.from({length:n},(_,i)=>i+1));qsC=0;const sorted=qs([...arr]);document.getElementById('qsDisplay').innerHTML=sorted.map(v=>`<div style="background:var(--accent-dim);color:var(--accent);padding:6px 10px;border-radius:6px;font-family:IBM Plex Mono,monospace;font-size:14px;font-weight:600">${v}</div>`).join('');document.getElementById('qsStats').style.display='block';document.getElementById('qsComps').textContent=qsC;document.getElementById('qsNlogN').textContent=Math.round(n*Math.log(n))}
+function runQSMany(){const n=12,counts=[];for(let t=0;t<50;t++){qsC=0;qs(shuffle(Array.from({length:n},(_,i)=>i+1)));counts.push(qsC)}const avg=counts.reduce((a,b)=>a+b,0)/50;document.getElementById('qsHistogram').style.display='block';document.getElementById('qsAvg').textContent='Average: '+avg.toFixed(1)+' comparisons (n\xb7ln n \u2248 '+Math.round(n*Math.log(n))+')';const c=document.getElementById('qsCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);const mn=Math.min(...counts),mx=Math.max(...counts),bins=15,bw=Math.max(1,(mx-mn+1)/bins),bk=new Array(bins).fill(0);counts.forEach(v=>{bk[Math.min(Math.floor((v-mn)/bw),bins-1)]++});const mb=Math.max(...bk),barW=(c.width-40)/bins,barH=c.height-30;ctx.fillStyle='#58a6ff';bk.forEach((b,i)=>{const h=(b/mb)*barH;ctx.fillRect(20+i*barW+1,barH-h+10,barW-2,h)});ctx.fillStyle='#8b949e';ctx.font='10px IBM Plex Mono';ctx.textAlign='center';for(let i=0;i<=bins;i+=3)ctx.fillText(Math.round(mn+i*bw),20+i*barW,c.height-2)}
+
+// LV/MC sim
+function runLvMcSim(){const lg=document.getElementById('lvTrials'),mg=document.getElementById('mcTrials');lg.innerHTML='';mg.innerHTML='';let lc=0,mc=0,lt=0;for(let i=0;i<20;i++){const t=Math.max(1,Math.round(-5*Math.log(Math.random())));lt+=t;lc++;const lv=document.createElement('div');lv.className='trial-cell success';lv.style.width=(12+t*2)+'px';lv.title='Correct, time='+t;lg.appendChild(lv);const ok=Math.random()<.75;if(ok)mc++;const mv=document.createElement('div');mv.className='trial-cell '+(ok?'success':'fail');mv.title=(ok?'Correct':'WRONG')+', time=5';mg.appendChild(mv)}document.getElementById('lvCorrect').textContent=lc+'/20';document.getElementById('lvTime').textContent=(lt/20).toFixed(1);document.getElementById('mcCorrect').textContent=mc+'/20'}
+runLvMcSim();
+
+// Karger's Interactive
+let KS=null;
+function kargerInit(){const nodes=[{id:'A',x:80,y:60,m:['A']},{id:'B',x:200,y:40,m:['B']},{id:'C',x:80,y:180,m:['C']},{id:'D',x:250,y:140,m:['D']},{id:'E',x:370,y:80,m:['E']},{id:'F',x:420,y:200,m:['F']}];const edges=[{u:'A',v:'B',c:0},{u:'A',v:'C',c:0},{u:'B',v:'C',c:0},{u:'B',v:'D',c:0},{u:'C',v:'D',c:0},{u:'D',v:'E',c:0},{u:'D',v:'F',c:1},{u:'E',v:'F',c:1}];KS={nodes,edges,alive:true};drawK();document.getElementById('kargerStatus').textContent='6 vertices, 8 edges. Min-cut edges: D-F and E-F (size 2).';document.getElementById('kargerContractBtn').disabled=false}
+function drawK(){const svg=document.getElementById('kargerSvg');let h='';KS.edges.forEach(e=>{const u=KS.nodes.find(n=>n.id===e.u),v=KS.nodes.find(n=>n.id===e.v);if(!u||!v)return;h+=`<line x1="${u.x}" y1="${u.y}" x2="${v.x}" y2="${v.y}" stroke="${e.c?'#d29922':'#2a3a5c'}" stroke-width="${e.c?3:2}" ${e.c?'stroke-dasharray="6,3"':''}/>`});KS.nodes.forEach(n=>{const r=16+(n.m.length-1)*4;h+=`<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="#141b2d" stroke="#58a6ff" stroke-width="2"/><text x="${n.x}" y="${n.y+4}" text-anchor="middle" fill="#c9d1d9" font-size="12">${n.m.join(',')}</text>`});svg.innerHTML=h}
+function kargerStep(){if(KS.nodes.length<=2)return;const ei=Math.floor(Math.random()*KS.edges.length),e=KS.edges[ei],un=KS.nodes.find(n=>n.id===e.u),vn=KS.nodes.find(n=>n.id===e.v);const wasCut=e.c;un.m=[...un.m,...vn.m];un.x=(un.x+vn.x)/2;un.y=(un.y+vn.y)/2;KS.edges.splice(ei,1);KS.edges.forEach(e=>{if(e.u===vn.id)e.u=un.id;if(e.v===vn.id)e.v=un.id});KS.edges=KS.edges.filter(e=>e.u!==e.v);KS.nodes=KS.nodes.filter(n=>n.id!==vn.id);let s=`Contracted edge. `;if(wasCut){s+='<span class="hl-red">Cut edge destroyed! \u2717</span>';KS.alive=false}else{s+='<span class="hl-green">Min-cut survived \u2713</span>'}s+=` (${KS.nodes.length} vertices remain)`;if(KS.nodes.length<=2){s+=`<br>Finished! Cut size: ${KS.edges.length}. `;s+=KS.alive&&KS.edges.filter(e=>e.c).length>=1?'<span class="hl-green">Found min-cut!</span>':'<span class="hl-red">Did NOT find min-cut.</span>';document.getElementById('kargerContractBtn').disabled=true}document.getElementById('kargerStatus').innerHTML=s;drawK()}
+function kargerReset(){kargerInit()}
+kargerInit();
+
+// Karger prob widget
+function updateKargerProb(){const n=parseInt(document.getElementById('kargerProbSlider').value);document.getElementById('kargerProbN').textContent=n;const p=2/(n*(n-1));document.getElementById('kpSucc').textContent=(p*100).toFixed(2)+'%';const t=Math.ceil(1/p);document.getElementById('kpTrials').textContent=t;const rt=t*n*n;document.getElementById('kpRuntime').textContent=rt>1e6?(rt/1e6).toFixed(1)+'M':rt.toLocaleString()}
+updateKargerProb();
+
+// Key inequality plot
+(function(){const c=document.getElementById('keyIneqCanvas'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#2a3a5c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(40,10);ctx.lineTo(40,h-25);ctx.lineTo(w-10,h-25);ctx.stroke();const ie=1/Math.E,ys=h-45,y1e=h-25-ie*ys;ctx.strokeStyle='#f85149';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(40,y1e);ctx.lineTo(w-10,y1e);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#f85149';ctx.font='11px IBM Plex Mono';ctx.fillText('1/e \u2248 0.368',w-105,y1e-5);ctx.strokeStyle='#58a6ff';ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<=200;i++){const x=1+49*i/200,v=Math.pow(1-1/x,x),px=40+(x-1)/49*(w-60),py=h-25-v*ys;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.fillStyle='#8b949e';ctx.font='10px IBM Plex Mono';ctx.textAlign='center';for(let x=1;x<=50;x+=10)ctx.fillText(x,40+(x-1)/49*(w-60),h-8);ctx.textAlign='right';for(let y=0;y<=1;y+=.2)ctx.fillText(y.toFixed(1),35,h-25-y*ys+3);ctx.fillStyle='#c9d1d9';ctx.font='12px IBM Plex Mono';ctx.textAlign='center';ctx.fillText('x',w/2,h)})();
+
+// Boosting
+function updateBoost(){const p=parseInt(document.getElementById('boostP').value)/100,de=parseInt(document.getElementById('boostD').value);document.getElementById('boostPVal').textContent=(p*100).toFixed(0)+'%';document.getElementById('boostDVal').textContent='10\u207B'+de;const delta=Math.pow(10,-de),T=Math.ceil(1/p*Math.log(1/delta));document.getElementById('boostT').textContent=T;const sp=1-Math.pow(1-p,T);document.getElementById('boostSucc').textContent=sp>.9999?'\u2248 100%':(sp*100).toFixed(2)+'%'}
+updateBoost();
+function runBoostSim(){const p=parseInt(document.getElementById('boostP').value)/100,de=parseInt(document.getElementById('boostD').value),delta=Math.pow(10,-de),T=Math.ceil(1/p*Math.log(1/delta)),g=document.getElementById('boostTrialGrid');g.innerHTML='';let s=0;const mx=Math.min(T,500);for(let i=0;i<mx;i++){const ok=Math.random()<p;if(ok)s++;const d=document.createElement('div');d.className='trial-cell '+(ok?'success':'fail');d.style.cssText='width:6px;height:6px';g.appendChild(d)}for(let i=mx;i<T;i++)if(Math.random()<p)s++;const r=document.getElementById('boostResult');r.innerHTML=s>0?`<span class="hl-green">${s} successes / ${T} trials. At least one! \u2713</span>`:'<span class="hl-red">0 successes / '+T+' trials!</span>';if(T>mx)r.innerHTML+=`<br><span style="font-size:12px;color:var(--text-dim)">(Showing first ${mx} of ${T})</span>`}
+</script>
+</body>
+</html>
