@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 6 — Exam Review: LP Duals, New Problems & Modeling</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+
+  :root {
+    --bg: #0a0e17;
+    --bg2: #111827;
+    --bg3: #1a2236;
+    --surface: #1e293b;
+    --surface2: #253349;
+    --border: #2d3a4f;
+    --border2: #3b4a63;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --accent: #60a5fa;
+    --accent2: #3b82f6;
+    --accent-glow: rgba(96,165,250,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.15);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.15);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.15);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.15);
+    --cyan: #22d3ee;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+    --serif: 'Crimson Pro', serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,23,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar .course { letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+
+  .hero {
+    text-align: center;
+    padding: 80px 32px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(96,165,250,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero .label {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-family: var(--serif);
+    font-weight: 400;
+  }
+  .hero .subtitle {
+    font-size: 20px;
+    color: var(--text2);
+    max-width: 660px;
+    margin: 0 auto;
+    font-style: italic;
+  }
+  .hero .prereqs {
+    margin-top: 28px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text3);
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 14px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg2);
+  }
+
+  .part-nav {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 32px;
+    flex-wrap: wrap;
+  }
+  .part-btn {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .part-btn:hover { border-color: var(--accent); color: var(--text); }
+  .part-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .section {
+    display: none;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+  .section.active { display: block; }
+
+  .section-header {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    margin: 48px 0 20px;
+    line-height: 1.3;
+  }
+  h2:first-of-type { margin-top: 8px; }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 32px 0 14px;
+  }
+
+  p { margin-bottom: 16px; }
+  strong { color: #fff; font-weight: 600; }
+
+  .math-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text);
+  }
+
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card .card-title {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card p { font-size: 16px; margin-bottom: 0; color: var(--text2); }
+  .card.green { border-left: 3px solid var(--green); }
+  .card.green .card-title { color: var(--green); }
+  .card.amber { border-left: 3px solid var(--amber); }
+  .card.amber .card-title { color: var(--amber); }
+  .card.red { border-left: 3px solid var(--red); }
+  .card.red .card-title { color: var(--red); }
+  .card.purple { border-left: 3px solid var(--purple); }
+  .card.purple .card-title { color: var(--purple); }
+
+  .callout {
+    background: var(--accent-glow);
+    border: 1px solid rgba(96,165,250,0.25);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 24px 0;
+    font-size: 17px;
+  }
+  .callout.warn {
+    background: var(--amber-dim);
+    border-color: rgba(251,191,36,0.25);
+  }
+  .callout.success {
+    background: var(--green-dim);
+    border-color: rgba(52,211,153,0.25);
+  }
+  .callout.danger {
+    background: var(--red-dim);
+    border-color: rgba(248,113,113,0.25);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+  }
+  th {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  tr:hover td { background: rgba(96,165,250,0.03); }
+
+  .interactive {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 28px 0;
+    position: relative;
+  }
+  .interactive .int-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .interactive .int-caption {
+    font-size: 15px;
+    color: var(--text3);
+    margin-top: 14px;
+    font-style: italic;
+  }
+
+  .diagram {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+  .btn.primary:hover { background: var(--accent); }
+
+  .spoiler {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .spoiler-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: none;
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .spoiler-toggle:hover { background: var(--surface2); }
+  .spoiler-content {
+    display: none;
+    padding: 20px 24px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    font-size: 17px;
+  }
+  .spoiler.open .spoiler-content { display: block; }
+  .spoiler.open .spoiler-toggle .arrow { transform: rotate(180deg); }
+  .spoiler-toggle .arrow { transition: transform 0.2s; }
+
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-link {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: #fff; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    margin: 10px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .vc-graph { user-select: none; }
+  .vc-graph .node { cursor: pointer; transition: all 0.2s; }
+  .vc-graph .node circle { transition: all 0.2s; }
+  .vc-graph .edge { transition: stroke 0.3s; }
+
+  .steps-bar { display: flex; gap: 4px; margin: 16px 0; }
+  .step-dot {
+    width: 32px; height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .step-dot.done { background: var(--green); }
+  .step-dot.active { background: var(--accent); }
+
+  .dual-table { font-family: var(--mono); font-size: 14px; }
+  .dual-table td { vertical-align: top; padding: 6px 12px; }
+  .dual-table .arrow-col { color: var(--accent); font-size: 20px; text-align: center; padding: 0 16px; }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+  .tag.max { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .tag.min { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .tag.np { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+
+  @media (max-width: 600px) {
+    body { font-size: 17px; }
+    .hero { padding: 48px 20px 40px; }
+    .section { padding: 0 20px 60px; }
+    .interactive { padding: 20px; }
+    .math-block { font-size: 13px; padding: 16px; }
+    .card-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <span class="course">CS 6515 &middot; Exam 3 Review</span>
+  <span>Session 6 of 6</span>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="label">Session 6</div>
+  <h1><em>Exam</em> Review:<br>Duals, New Problems &amp; Modeling</h1>
+  <p class="subtitle">The mechanical recipe for writing duals, four NP-hard problems through the full ILP pipeline, and modeling techniques for LP.</p>
+  <div class="prereqs">
+    ← Sessions 1–5 covered: NP-hardness &middot; Reductions &middot; Approximation &middot; PTAS/FPTAS &middot; Greedy EDP &middot; LP fundamentals &middot; Standard form &middot; LP duality &middot; LP relaxation &middot; Deterministic rounding (Vertex Cover 2-approx, Set Cover f-approx) &middot; FPTAS for Knapsack. Today: exam-focused review with four new problems and LP modeling.
+  </div>
+</div>
+
+<!-- ══ PART NAV ══ -->
+<div class="part-nav" id="partNav"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 1 — WRITING DUALS: THE MECHANICAL RECIPE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part1">
+  <div class="section-header">Part 1 / 8 — Writing Duals: The Mechanical Recipe</div>
+
+  <h2>The Dual in 30 Seconds</h2>
+  <p>In Session 3 we saw that every LP has a dual. Now we need to <strong>write duals quickly and correctly</strong> on the exam. Here is the complete mechanical recipe.</p>
+
+  <p>Start from the standard-form primal:</p>
+  <div class="math-block">PRIMAL (standard form):
+maximize  c&#7488;x
+subject to  Ax ≤ b
+            x ≥ 0
+
+DUAL:
+minimize  b&#7488;y
+subject to  A&#7488;y ≥ c
+            y ≥ 0</div>
+
+  <p>The transformation is purely mechanical: the matrix <strong>A</strong> gets transposed, the objective vector and the constraint vector swap roles, ≤ becomes ≥, and maximize becomes minimize.</p>
+
+  <h2>The General Recipe (Any LP)</h2>
+  <p>Real problems don't always arrive in standard form. Here is the full correspondence table that handles every case:</p>
+
+  <div class="interactive">
+    <div class="int-title">Primal ↔ Dual Correspondence Rules</div>
+    <table>
+      <tr><th>Primal (max)</th><th></th><th>Dual (min)</th></tr>
+      <tr><td>Objective: max c&#7488;x</td><td style="color:var(--accent)">↔</td><td>Objective: min b&#7488;y</td></tr>
+      <tr><td>Constraint i: (Ax)ᵢ ≤ bᵢ</td><td style="color:var(--accent)">↔</td><td>Variable yᵢ ≥ 0</td></tr>
+      <tr><td>Constraint i: (Ax)ᵢ ≥ bᵢ</td><td style="color:var(--accent)">↔</td><td>Variable yᵢ ≤ 0</td></tr>
+      <tr><td>Constraint i: (Ax)ᵢ = bᵢ</td><td style="color:var(--accent)">↔</td><td>Variable yᵢ unrestricted</td></tr>
+      <tr><td>Variable xⱼ ≥ 0</td><td style="color:var(--accent)">↔</td><td>Constraint j: (A&#7488;y)ⱼ ≥ cⱼ</td></tr>
+      <tr><td>Variable xⱼ ≤ 0</td><td style="color:var(--accent)">↔</td><td>Constraint j: (A&#7488;y)ⱼ ≤ cⱼ</td></tr>
+      <tr><td>Variable xⱼ unrestricted</td><td style="color:var(--accent)">↔</td><td>Constraint j: (A&#7488;y)ⱼ = cⱼ</td></tr>
+    </table>
+    <p class="int-caption">Each primal constraint spawns a dual variable. Each primal variable spawns a dual constraint. The direction flips.</p>
+  </div>
+
+  <div class="callout">🔑 <strong>Memory aid:</strong> "≤ constraints in a max problem give ≥ 0 dual variables." Think of it as: a ≤ constraint in a max problem is the 'normal' direction, so the dual variable is also 'normal' (non-negative). Anything that deviates from the standard form flips the dual correspondingly.</div>
+
+  <h2>Worked Example: Vertex Cover Dual</h2>
+  <p>Let's apply the recipe to the Vertex Cover LP relaxation from Session 4.</p>
+
+  <div class="math-block">PRIMAL (Vertex Cover LP, a minimization):
+minimize  Σᵥ xᵥ
+s.t.  xᵤ + xᵥ ≥ 1   for each edge (u,v) ∈ E
+      xᵥ ≥ 0         for all v ∈ V</div>
+
+  <p><strong>Step 1:</strong> This is a minimization. By the table, the dual will be a maximization.</p>
+  <p><strong>Step 2:</strong> There is one dual variable <strong>yₑ</strong> per primal constraint, so one yₑ per edge.</p>
+  <p><strong>Step 3:</strong> Primal constraints are ≥ in a min problem (the "normal" direction for min), so dual variables yₑ ≥ 0.</p>
+  <p><strong>Step 4:</strong> Primal variables xᵥ ≥ 0, so dual constraints are ≤ (normal direction for max dual). Each primal variable xᵥ appears in every edge constraint incident to v, so the dual constraint for v is: Σ(edges e incident to v) yₑ ≤ 1.</p>
+  <p><strong>Step 5:</strong> Dual objective is the primal RHS: maximize Σₑ yₑ (since each bᵢ = 1).</p>
+
+  <div class="math-block">DUAL (Fractional Matching LP):
+maximize  Σₑ yₑ
+s.t.  Σ_{e incident to v} yₑ ≤ 1   for each v ∈ V
+      yₑ ≥ 0                        for all e ∈ E</div>
+
+  <div class="callout success">✅ The Vertex Cover dual is a <strong>fractional matching</strong>! Each edge gets a weight yₑ, and no vertex is "overloaded" (total weight of its edges ≤ 1). Strong duality says: min fractional vertex cover = max fractional matching. This is the LP version of König's theorem for bipartite graphs.</div>
+
+  <h3>Interactive: Build the Dual Step-by-Step</h3>
+  <div class="interactive" id="dualBuilder">
+    <div class="int-title">Dual Builder: Farm LP from Session 3</div>
+    <p style="margin-bottom:16px; color:var(--text2); font-size:16px;">The farm LP: max 3x₁ + 5x₂ s.t. x₁+x₂ ≤ 100, 2x₁+4x₂ ≤ 280, x₁,x₂ ≥ 0. Click through each step to build its dual.</p>
+    <div class="steps-bar" id="dualSteps"></div>
+    <div id="dualStepContent" style="min-height:160px; margin: 16px 0;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" id="dualPrev" onclick="dualStep(-1)">← Back</button>
+      <button class="btn primary" id="dualNext" onclick="dualStep(1)">Next Step →</button>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span></span>
+    <span class="nav-link" onclick="goTo(2)">Weak Duality →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 2 — WEAK DUALITY & CONSEQUENCES
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part2">
+  <div class="section-header">Part 2 / 8 — Weak Duality &amp; Its Consequences</div>
+
+  <h2>The Weak Duality Theorem</h2>
+  <p>This is one of the most important theorems for the exam. It gives us <strong>free bounds</strong> on optimal values.</p>
+
+  <div class="math-block">Weak Duality Theorem:
+For any feasible primal solution x and any feasible
+dual solution y:
+
+  (max) c&#7488;x  ≤  b&#7488;y (min)
+
+The primal objective is always ≤ the dual objective.</div>
+
+  <p>In words: <strong>any feasible dual solution gives an upper bound on the max primal value</strong>. Any feasible primal solution gives a lower bound on the min dual value. They can never cross.</p>
+
+  <div class="interactive">
+    <div class="int-title">Visualizing Weak Duality</div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
+      <svg width="500" height="160" viewBox="0 0 500 160">
+        <defs>
+          <linearGradient id="pgr" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#34d399" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="dgr" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#f87171" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect x="30" y="40" width="180" height="80" fill="url(#pgr)" rx="4"/>
+        <rect x="290" y="40" width="180" height="80" fill="url(#dgr)" rx="4"/>
+        <line x1="250" y1="30" x2="250" y2="135" stroke="#60a5fa" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="120" y="30" fill="#34d399" font-family="Space Grotesk" font-size="13" text-anchor="middle" font-weight="600">PRIMAL (max) feasible values</text>
+        <text x="380" y="30" fill="#f87171" font-family="Space Grotesk" font-size="13" text-anchor="middle" font-weight="600">DUAL (min) feasible values</text>
+        <!-- arrows -->
+        <text x="80" y="75" fill="#94a3b8" font-family="IBM Plex Mono" font-size="13">c&#7488;x₁</text>
+        <text x="140" y="95" fill="#94a3b8" font-family="IBM Plex Mono" font-size="13">c&#7488;x₂</text>
+        <text x="190" y="80" fill="#34d399" font-family="Space Grotesk" font-size="14" font-weight="700">OPT_P</text>
+        <text x="295" y="80" fill="#f87171" font-family="Space Grotesk" font-size="14" font-weight="700">OPT_D</text>
+        <text x="350" y="75" fill="#94a3b8" font-family="IBM Plex Mono" font-size="13">b&#7488;y₁</text>
+        <text x="400" y="95" fill="#94a3b8" font-family="IBM Plex Mono" font-size="13">b&#7488;y₂</text>
+        <text x="250" y="150" fill="#60a5fa" font-family="Space Grotesk" font-size="12" text-anchor="middle">≤ (weak duality gap)</text>
+      </svg>
+    </div>
+    <p class="int-caption">Every primal feasible value sits to the left of every dual feasible value. They never cross. At optimality (strong duality), they meet.</p>
+  </div>
+
+  <h2>Consequences for Approximation</h2>
+  <p>Weak duality is the engine behind every LP-rounding proof. Here is why:</p>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">For Minimization (e.g. Vertex Cover)</div>
+      <p>LP_OPT ≤ ILP_OPT = OPT. Any dual feasible solution gives a <strong>lower bound</strong> on OPT. We prove: Rounded ≤ α · LP_OPT ≤ α · OPT.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-title">For Maximization (e.g. Independent Set)</div>
+      <p>LP_OPT ≥ ILP_OPT = OPT. The LP gives an <strong>upper bound</strong>. We need: Rounded ≥ OPT/α. Harder to prove, since LP_OPT is on the wrong side.</p>
+    </div>
+  </div>
+
+  <h2>Three Key Consequences</h2>
+
+  <h3>1. Certificates of Optimality</h3>
+  <p>If you find a feasible primal x and feasible dual y with c&#7488;x = b&#7488;y, then <strong>both are optimal</strong>. No further computation needed. This is because weak duality says c&#7488;x ≤ OPT_P ≤ OPT_D ≤ b&#7488;y, so if the endpoints are equal, everything in between must be equal too.</p>
+
+  <h3>2. Infeasibility Detection</h3>
+  <p>If the primal is unbounded (objective → ∞), then the dual must be infeasible (no feasible y exists). If the dual is unbounded (objective → -∞ for min), the primal must be infeasible.</p>
+
+  <h3>3. Bounding OPT for NP-Hard Problems</h3>
+  <p>For an NP-hard problem formulated as an ILP, we can't find OPT efficiently. But we <em>can</em> solve the LP relaxation. Weak duality guarantees that LP_OPT is a valid bound on OPT, which is exactly what we use in rounding proofs.</p>
+
+  <div class="callout">🔑 <strong>Strong Duality</strong> (which holds for LP but <em>not</em> for ILP) says that at optimality, primal = dual. So LP_OPT is simultaneously the best lower bound (for min problems) or best upper bound (for max problems) that any LP-based argument can provide. The gap between LP_OPT and ILP_OPT is the <strong>integrality gap</strong>.</div>
+
+  <h3>Quick Self-Check</h3>
+  <div class="spoiler">
+    <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+      <span>Why does weak duality hold? (1-sentence proof)</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="spoiler-content">
+      <p>For feasible x (Ax ≤ b, x ≥ 0) and feasible y (A&#7488;y ≥ c, y ≥ 0): c&#7488;x ≤ (A&#7488;y)&#7488;x = y&#7488;Ax ≤ y&#7488;b = b&#7488;y. The first ≤ uses A&#7488;y ≥ c and x ≥ 0. The second ≤ uses Ax ≤ b and y ≥ 0. Done.</p>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(1)">← Writing Duals</span>
+    <span class="nav-link" onclick="goTo(3)">Independent Set →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 3 — INDEPENDENT SET
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part3">
+  <div class="section-header">Part 3 / 8 — Independent Set: Full Pipeline</div>
+
+  <h2>What is Independent Set?</h2>
+  <p><span class="tag max">MAX</span><span class="tag np">NP-HARD</span></p>
+  <p><strong>Maximum Independent Set:</strong> Given an undirected graph G = (V, E), find the <strong>largest</strong> subset S ⊆ V such that no two vertices in S are adjacent (no edge connects any pair in S).</p>
+
+  <p>Independent Set is the <strong>complement</strong> of Vertex Cover: S is an independent set if and only if V \ S is a vertex cover. If OPT_VC is the min vertex cover, then OPT_IS = n - OPT_VC.</p>
+
+  <h3>Interactive: Click to Build an Independent Set</h3>
+  <div class="interactive">
+    <div class="int-title">Independent Set Builder</div>
+    <p style="color:var(--text2);font-size:15px;margin-bottom:12px;">Click vertices to add/remove them. Vertices in the set turn green. If two selected vertices share an edge, that edge turns red (conflict). Try to find the largest conflict-free set.</p>
+    <div class="diagram">
+      <svg id="isGraph" width="420" height="280" viewBox="0 0 420 280" class="vc-graph"></svg>
+    </div>
+    <div style="font-family:var(--sans);font-size:14px;color:var(--text2);text-align:center;">
+      Set size: <strong id="isSize">0</strong> &middot;
+      Conflicts: <strong id="isConflicts">0</strong> &middot;
+      <span id="isStatus" style="color:var(--green)">Valid IS ✓</span>
+    </div>
+    <p class="int-caption">This graph has max IS of size 3. Can you find it?</p>
+  </div>
+
+  <h2>(i) Greedy Approximation</h2>
+  <p>The natural greedy for Independent Set:</p>
+  <div class="math-block">Greedy-IS(G):
+  S ← ∅
+  while V is non-empty:
+    pick vertex v with minimum degree in G
+    add v to S
+    remove v and all its neighbors from G
+  return S</div>
+
+  <p><strong>Why minimum degree?</strong> By choosing a low-degree vertex, we remove the fewest other vertices from consideration, keeping more candidates for the IS.</p>
+
+  <h3>Analysis: What ratio do we get?</h3>
+  <p>Let Δ = max degree of any vertex in G. When we add v to S, we remove v plus at most Δ neighbors, so at most <strong>Δ + 1 vertices total</strong>. Since the algorithm processes all n vertices this way:</p>
+  <div class="math-block">|S| ≥ n / (Δ + 1)</div>
+  <p>Since OPT ≤ n, we get |S| ≥ OPT / (Δ + 1). This is a <strong>(Δ+1)-approximation</strong> for maximization (meaning our answer is at least 1/(Δ+1) of optimal).</p>
+
+  <div class="callout warn">⚠️ For general graphs, Δ can be as large as n-1 (e.g. a star graph), so this ratio is not a fixed constant. Independent Set is famously hard to approximate: it is NP-hard to get within n^(1-ε) for any ε > 0. But the (Δ+1)-approximation is the best simple greedy can achieve, and it is what the exam expects.</div>
+
+  <h3>Interactive: Watch Greedy-IS Run</h3>
+  <div class="interactive">
+    <div class="int-title">Greedy-IS Step-by-Step</div>
+    <div class="diagram">
+      <svg id="greedyIS" width="420" height="260" viewBox="0 0 420 260"></svg>
+    </div>
+    <div style="text-align:center; margin-top:8px;">
+      <button class="btn primary" id="greedyISBtn" onclick="greedyISStep()">Next Step →</button>
+      <button class="btn" onclick="greedyISReset()">↺ Reset</button>
+    </div>
+    <p id="greedyISLog" style="font-family:var(--mono);font-size:14px;color:var(--text2);margin-top:12px;min-height:40px;"></p>
+  </div>
+
+  <h2>(ii) ILP Formulation</h2>
+  <p>For each vertex v, define xᵥ ∈ {0, 1} (1 = in the IS, 0 = not).</p>
+  <div class="math-block">maximize  Σᵥ xᵥ
+subject to:
+  xᵤ + xᵥ ≤ 1     for each edge (u,v) ∈ E
+  xᵥ ∈ {0, 1}      for all v ∈ V</div>
+  <p>Each constraint says: for every edge, <strong>at most one</strong> endpoint can be in the IS. The objective maximizes the number of chosen vertices.</p>
+
+  <h2>(iii) The Dual</h2>
+  <p>LP relaxation (replace xᵥ ∈ {0,1} with 0 ≤ xᵥ ≤ 1):</p>
+  <div class="math-block">PRIMAL (IS LP Relaxation):
+maximize  Σᵥ xᵥ
+s.t.  xᵤ + xᵥ ≤ 1   for each edge (u,v)
+      xᵥ ≥ 0         for all v
+
+(Note: xᵥ ≤ 1 is implied by edge constraints
+when v has at least one neighbor.)</div>
+
+  <p>Applying the mechanical recipe from Part 1: one dual variable yₑ per edge constraint, ≤ constraint in max → yₑ ≥ 0, primal variable xᵥ ≥ 0 → dual constraint ≥.</p>
+
+  <div class="math-block">DUAL:
+minimize  Σₑ yₑ
+s.t.  Σ_{e incident to v} yₑ ≥ 1   for each v ∈ V
+      yₑ ≥ 0                        for all e ∈ E</div>
+
+  <div class="callout success">✅ The IS dual is a <strong>fractional edge cover</strong>! Assign non-negative weights to edges such that every vertex is "covered" (total weight of its incident edges ≥ 1), while minimizing total weight. Compare with the Vertex Cover dual which was fractional matching, the "opposite" problem.</div>
+
+  <h2>(iv) Rounding: Why It Fails for IS</h2>
+  <p>Here is the critical issue. Consider any graph. The LP relaxation can always set <strong>xᵥ = 1/2 for every vertex</strong>. Check: for each edge (u,v), x_u + x_v = 1/2 + 1/2 = 1 ≤ 1. ✓</p>
+  <p>So LP_OPT ≥ n/2 always. But OPT_IS could be as small as 1 (on a complete graph Kₙ). The <strong>integrality gap</strong> = LP_OPT / OPT_IS = (n/2) / 1 = n/2, which is <strong>unbounded</strong>.</p>
+
+  <div class="callout danger">❌ <strong>Rounding fails for IS.</strong> If we round at threshold 1/2 (include v if xᵥ ≥ 1/2), we might include <em>every</em> vertex, which is not a valid IS on most graphs. Rounding down (include only if xᵥ > 1/2) could give an empty set. The LP relaxation is too loose for IS to give any bounded approximation via rounding. This stands in sharp contrast to Vertex Cover, where the same LP gives a tight 2-approximation.</div>
+
+  <p>On the exam, you should state: "LP rounding does not yield a useful approximation for IS because the integrality gap is unbounded (Ω(n)). The LP relaxation always has a feasible solution of value n/2 regardless of the true IS size."</p>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(2)">← Weak Duality</span>
+    <span class="nav-link" onclick="goTo(4)">Clique →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 4 — CLIQUE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part4">
+  <div class="section-header">Part 4 / 8 — Clique: The Complement of Independent Set</div>
+
+  <h2>What is Clique?</h2>
+  <p><span class="tag max">MAX</span><span class="tag np">NP-HARD</span></p>
+  <p><strong>Maximum Clique:</strong> Given an undirected graph G = (V, E), find the <strong>largest</strong> subset S ⊆ V such that every pair of vertices in S is connected by an edge.</p>
+
+  <p>A clique is a "fully connected" subgraph. Clique and Independent Set are intimately related:</p>
+
+  <div class="callout">🔑 <strong>Key relationship:</strong> S is a clique in G if and only if S is an independent set in the <strong>complement graph</strong> Ḡ (where Ḡ has an edge (u,v) exactly when G does <em>not</em>). So max clique in G = max independent set in Ḡ. Every result about IS transfers to Clique by complementing the graph.</div>
+
+  <h3>Interactive: Graph vs. Complement</h3>
+  <div class="interactive">
+    <div class="int-title">A Graph and Its Complement</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--sans);font-size:13px;color:var(--accent);margin-bottom:8px;">GRAPH G</div>
+        <svg id="cliqueG" width="200" height="200" viewBox="0 0 200 200"></svg>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--sans);font-size:13px;color:var(--purple);margin-bottom:8px;">COMPLEMENT Ḡ</div>
+        <svg id="cliqueGbar" width="200" height="200" viewBox="0 0 200 200"></svg>
+      </div>
+    </div>
+    <p class="int-caption">In G: {B,C,D} form a triangle (clique of size 3). In Ḡ: {A,E} form an independent set of size 2. Max clique in G = 3; max IS in Ḡ would also be 3 (check: {B,C,D} have no edges in Ḡ).</p>
+  </div>
+
+  <h2>(i) Greedy Approximation</h2>
+  <div class="math-block">Greedy-Clique(G):
+  S ← ∅
+  while V is non-empty:
+    pick vertex v with maximum degree in G
+    add v to S
+    remove all vertices NOT adjacent to v
+    (keep only v's neighbors, since any clique
+     containing v must be within N(v))
+  return S</div>
+
+  <p>Equivalently, run Greedy-IS on the complement graph Ḡ. The analysis mirrors IS: this gives a <strong>(Δ̄+1)-approximation</strong> where Δ̄ is the max degree of Ḡ. Since Δ̄ can be up to n-1, the ratio is not a fixed constant.</p>
+
+  <p>Like IS, Clique is extremely hard to approximate: NP-hard to get within n^(1-ε).</p>
+
+  <h2>(ii) ILP Formulation</h2>
+  <div class="math-block">maximize  Σᵥ xᵥ
+subject to:
+  xᵤ + xᵥ ≤ 1     for each NON-edge (u,v) ∉ E
+  xᵥ ∈ {0, 1}      for all v ∈ V</div>
+
+  <p>The constraint says: for every pair of vertices that are <em>not</em> connected, at most one can be in the clique. This is exactly the IS ILP on the complement graph.</p>
+
+  <h2>(iii) The Dual</h2>
+  <p>LP relaxation and dual follow the same structure as IS. One dual variable y_f for each non-edge f ∉ E:</p>
+  <div class="math-block">DUAL:
+minimize  Σ_{f ∉ E} y_f
+s.t.  Σ_{non-edges f incident to v} y_f ≥ 1   for each v
+      y_f ≥ 0                                   for all f ∉ E</div>
+
+  <p>This is a fractional edge cover on the complement graph.</p>
+
+  <h2>(iv) Rounding</h2>
+  <p>Same issue as IS: the LP relaxation sets xᵥ = 1/2 for all v, giving LP_OPT = n/2 regardless of true clique size. <strong>Integrality gap is unbounded</strong>, so LP rounding does not give a useful approximation for Clique either.</p>
+
+  <div class="callout">🎯 <strong>Exam strategy for Clique:</strong> State that Clique on G is equivalent to IS on Ḡ. Then reference your IS answers with "complement the graph" for each part. The ILP has non-edge constraints instead of edge constraints. The greedy picks max-degree vertices. Rounding fails for the same reason (unbounded integrality gap).</div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(3)">← Independent Set</span>
+    <span class="nav-link" onclick="goTo(5)">Hitting Set →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 5 — HITTING SET
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part5">
+  <div class="section-header">Part 5 / 8 — Hitting Set: Set Cover's Twin</div>
+
+  <h2>What is Hitting Set?</h2>
+  <p><span class="tag min">MIN</span><span class="tag np">NP-HARD</span></p>
+  <p><strong>Hitting Set:</strong> Given a universe U = {1, ..., n} and sets S₁, S₂, ..., Sₘ (subsets of U), find the <strong>smallest</strong> subset H ⊆ U such that H ∩ Sⱼ ≠ ∅ for every j. In other words, H "hits" every set.</p>
+
+  <h3>Hitting Set vs. Set Cover</h3>
+  <p>These two problems are <strong>the same problem viewed from opposite sides</strong> of the incidence matrix. Consider an element-set incidence matrix A where Aⱼᵢ = 1 iff element i ∈ Sⱼ:</p>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">Set Cover</div>
+      <p>Choose columns (sets) to cover all rows (elements). minimize #columns chosen s.t. every row has a 1 in some chosen column.</p>
+    </div>
+    <div class="card purple">
+      <div class="card-title">Hitting Set</div>
+      <p>Choose rows (elements) to hit all columns (sets). minimize #rows chosen s.t. every column has a 1 in some chosen row.</p>
+    </div>
+  </div>
+
+  <p>Formally: Hitting Set with sets S₁,...,Sₘ over universe U is equivalent to Set Cover with the roles of elements and sets transposed. Every Hitting Set instance <em>is</em> a Set Cover instance (and vice versa) after relabeling.</p>
+
+  <h3>Interactive: Hitting Set Example</h3>
+  <div class="interactive">
+    <div class="int-title">Hitting Set Instance</div>
+    <p style="color:var(--text2);font-size:15px;margin-bottom:12px;">Universe U = {1,2,3,4,5}. Sets: S₁={1,2,3}, S₂={2,4}, S₃={3,5}, S₄={4,5}. Click elements to add them to H. A set turns green when hit.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0;" id="hsElements"></div>
+    <div style="margin:16px 0;" id="hsSets"></div>
+    <div style="font-family:var(--sans);font-size:14px;color:var(--text2);text-align:center;margin-top:8px;">
+      H size: <strong id="hsSize">0</strong> &middot;
+      Sets hit: <strong id="hsHit">0</strong>/4 &middot;
+      <span id="hsStatus" style="color:var(--red)">Not a valid hitting set</span>
+    </div>
+    <p class="int-caption">Optimal hitting set has size 2. Can you find it?</p>
+  </div>
+
+  <h2>(i) Greedy Approximation</h2>
+  <div class="math-block">Greedy-HittingSet(U, S₁,...,Sₘ):
+  H ← ∅
+  while some set Sⱼ is not hit:
+    pick element e that hits the most unhit sets
+    add e to H
+  return H</div>
+
+  <p>This is the same greedy strategy as Set Cover (pick the most "useful" element). It gives an <strong>O(ln m)-approximation</strong> where m is the number of sets, by the same analysis as the Set Cover greedy (which gives O(ln n) where n is the universe size).</p>
+
+  <p><strong>Why?</strong> Think of it as Set Cover with transposed roles. Each time we pick an element, it "covers" some unhit sets. The harmonic-series charging argument from Set Cover applies identically, giving the ln m bound.</p>
+
+  <div class="callout">🔑 The greedy gives O(ln m). But LP rounding (Part iv below) gives the cleaner <strong>f-approximation</strong> where f = max set size. For the exam, you should know both: state the greedy with its ln m ratio for part (i), and the rounding with its f ratio for part (iv).</div>
+
+  <h2>(ii) ILP Formulation</h2>
+  <p>For each element i ∈ U, define xᵢ ∈ {0,1} (1 = in H, 0 = not).</p>
+  <div class="math-block">minimize  Σᵢ xᵢ
+subject to:
+  Σ_{i ∈ Sⱼ} xᵢ ≥ 1     for each set Sⱼ, j=1,...,m
+  xᵢ ∈ {0, 1}             for all i ∈ U</div>
+  <p>Each constraint says: at least one element from each set must be in H.</p>
+
+  <h3>Concrete Example</h3>
+  <div class="math-block">minimize  x₁ + x₂ + x₃ + x₄ + x₅
+subject to:
+  x₁ + x₂ + x₃ ≥ 1   (S₁ = {1,2,3})
+  x₂ + x₄       ≥ 1   (S₂ = {2,4})
+  x₃ + x₅       ≥ 1   (S₃ = {3,5})
+  x₄ + x₅       ≥ 1   (S₄ = {4,5})
+  xᵢ ∈ {0, 1}</div>
+
+  <h2>(iii) The Dual</h2>
+  <p>LP relaxation: replace xᵢ ∈ {0,1} with 0 ≤ xᵢ ≤ 1. Apply the recipe:</p>
+  <p>One dual variable <strong>yⱼ</strong> per set constraint (j = 1,...,m). Primal is a min with ≥ constraints and xᵢ ≥ 0 variables.</p>
+
+  <div class="math-block">DUAL:
+maximize  Σⱼ yⱼ
+s.t.  Σ_{j: i ∈ Sⱼ} yⱼ ≤ 1   for each element i ∈ U
+      yⱼ ≥ 0                   for all j</div>
+
+  <p>The dual says: assign a non-negative weight yⱼ to each set, such that for each element, the total weight of the sets containing it is at most 1. Maximize total weight. This is a <strong>fractional set packing</strong>.</p>
+
+  <div class="callout success">✅ <strong>Duality connection:</strong> Hitting Set LP dual = fractional set packing. Just as Vertex Cover LP dual = fractional matching. The pattern is always: covering problem ↔ packing problem.</div>
+
+  <h2>(iv) Rounding</h2>
+  <p>Since Hitting Set is a minimization problem (like Vertex Cover and Set Cover), LP rounding <strong>works well</strong>.</p>
+  <p>Define f = max set size = max |Sⱼ|. The rounding rule:</p>
+  <div class="math-block">Rounding Rule: include element i if xᵢ* ≥ 1/f</div>
+
+  <p><strong>Feasibility:</strong> For any set Sⱼ with |Sⱼ| ≤ f, the constraint says Σ_{i ∈ Sⱼ} xᵢ* ≥ 1. Since there are at most f terms summing to ≥ 1, at least one must be ≥ 1/f (pigeonhole). That element is included. ✓</p>
+
+  <p><strong>Approximation:</strong> For each included element: 1 ≤ f · xᵢ*. Summing: |H| ≤ f · LP_OPT ≤ f · OPT. This is an <strong>f-approximation</strong>. ✓</p>
+
+  <div class="callout">🎯 <strong>The proof is identical to Set Cover rounding from Session 4!</strong> Replace "sets" with "elements" and "elements" with "sets." The max set size f plays the same role as the max frequency f in Set Cover. Both give an f-approximation via the same pigeonhole argument.</div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(4)">← Clique</span>
+    <span class="nav-link" onclick="goTo(6)">Knapsack ILP →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 6 — KNAPSACK ILP & DUAL
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part6">
+  <div class="section-header">Part 6 / 8 — Knapsack: The ILP Perspective</div>
+
+  <h2>Knapsack: What We Know vs. What We Need</h2>
+  <p>In Session 5, we built an FPTAS for Knapsack using scaling + DP. That gives (1-ε)-approximation for any ε. Now the exam asks us to also treat Knapsack through the ILP/dual/rounding lens.</p>
+
+  <h2>(i) Greedy Approximation</h2>
+  <div class="math-block">Greedy-Knapsack(items, W):
+  Sort items by value/weight ratio: v₁/w₁ ≥ v₂/w₂ ≥ ...
+  Greedily pack items in this order until one doesn't fit.
+  Let G = total value of items packed by greedy.
+  Let v_max = value of the single most valuable item
+            that fits in the knapsack.
+  Return max(G, v_max).</div>
+
+  <p><strong>Key insight:</strong> The greedy-by-ratio alone can be arbitrarily bad (consider one item worth $1000 with weight W, and many items worth $1 with weight 1). But taking the <strong>better of greedy and the single best item</strong> guarantees a <strong>2-approximation</strong>.</p>
+
+  <h3>Why is max(G, v_max) a 2-approximation?</h3>
+  <div class="spoiler">
+    <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+      <span>Show the proof</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="spoiler-content">
+      <p>Let the greedy pack items 1, 2, ..., k and let item k+1 be the first that doesn't fit. Let G = v₁+...+vₖ. If we could also add item k+1, we'd have G + v_{k+1}.</p>
+      <p>The LP relaxation (fractional knapsack) solves by ratio-order and splits the first item that doesn't fit. So LP_OPT ≤ G + v_{k+1} (the fractional solution can take a fraction of item k+1).</p>
+      <p>Since LP_OPT ≥ OPT: OPT ≤ G + v_{k+1}.</p>
+      <p>Now: max(G, v_max) ≥ max(G, v_{k+1}) ≥ (G + v_{k+1})/2 ≥ OPT/2.</p>
+      <p>(The inequality max(a,b) ≥ (a+b)/2 holds for any non-negative a, b.)</p>
+      <p>So max(G, v_max) ≥ OPT/2, which is a 2-approximation for maximization. ✓</p>
+    </div>
+  </div>
+
+  <h2>(ii) ILP Formulation</h2>
+  <p>For each item i, define xᵢ ∈ {0,1} (1 = take it, 0 = leave it).</p>
+  <div class="math-block">maximize  Σᵢ vᵢxᵢ
+subject to:
+  Σᵢ wᵢxᵢ ≤ W        (capacity constraint)
+  xᵢ ∈ {0, 1}          for all i</div>
+
+  <h2>(iii) The Dual</h2>
+  <p>LP relaxation: 0 ≤ xᵢ ≤ 1. But we also need the upper bound xᵢ ≤ 1 explicitly. In standard form:</p>
+  <div class="math-block">PRIMAL LP:
+maximize  Σᵢ vᵢxᵢ
+s.t.  Σᵢ wᵢxᵢ ≤ W       (one constraint, dual var: y)
+      xᵢ ≤ 1             (n constraints, dual vars: zᵢ)
+      xᵢ ≥ 0             for all i</div>
+
+  <p>Two types of constraints: the capacity constraint (dual variable y ≥ 0) and the upper bound constraints (dual variables zᵢ ≥ 0).</p>
+
+  <div class="math-block">DUAL:
+minimize  Wy + Σᵢ zᵢ
+s.t.  wᵢy + zᵢ ≥ vᵢ     for each item i
+      y ≥ 0, zᵢ ≥ 0      for all i</div>
+
+  <p><strong>Interpretation:</strong> y is the "price per unit of weight" (shadow price of capacity). zᵢ is the "bonus" for item i's upper bound constraint. The dual says: set prices so that each item's price (wᵢy + zᵢ) covers its value vᵢ, while minimizing the total "cost" of capacity and bounds.</p>
+
+  <div class="spoiler">
+    <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+      <span>Simplification: what if we drop xᵢ ≤ 1?</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="spoiler-content">
+      <p>If we omit the xᵢ ≤ 1 constraints (relying on the capacity constraint alone), the dual simplifies to:</p>
+      <div class="math-block" style="margin:12px 0;">minimize  Wy
+s.t.  wᵢy ≥ vᵢ   for each i
+      y ≥ 0</div>
+      <p>This forces y ≥ max(vᵢ/wᵢ) = the best value-to-weight ratio. So the dual just picks the ratio of the best item and multiplies by W. Simple, but less tight. The full dual with zᵢ variables gives a tighter bound.</p>
+    </div>
+  </div>
+
+  <h2>(iv) Rounding for Knapsack</h2>
+  <p>The LP relaxation of Knapsack (fractional knapsack) has a beautiful structure: sort by vᵢ/wᵢ ratio, pack items greedily, and split the first item that doesn't fit. At most <strong>one item is fractional</strong> in the LP solution.</p>
+
+  <div class="math-block">LP Rounding for Knapsack:
+1. Solve LP relaxation (fractional knapsack).
+2. At most one item k has 0 &lt; x_k* &lt; 1.
+3. Option A: round DOWN (drop item k). Total value = G.
+4. Option B: take ONLY item k (if it fits). Value = v_k.
+5. Return max(G, v_max) where v_max ≥ v_k.</div>
+
+  <p>This is exactly the same 2-approximation as the greedy! The LP relaxation confirms the greedy is doing the right thing.</p>
+
+  <div class="callout success">✅ <strong>Knapsack summary:</strong> Greedy-by-ratio + best single item = 2-approximation. LP rounding gives the same. But the FPTAS from Session 5 does much better: (1-ε)-approximation in poly(n, 1/ε) time. Knapsack is the "easiest" NP-hard problem to approximate.</div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(5)">← Hitting Set</span>
+    <span class="nav-link" onclick="goTo(7)">LP Modeling →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 7 — LP MODELING TECHNIQUES
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part7">
+  <div class="section-header">Part 7 / 8 — LP Modeling: Writing Problems as LPs</div>
+
+  <h2>Why LP Modeling Matters</h2>
+  <p>The exam (DPV Chapter 7 problems 7.2–7.6, 7.8, 7.27–7.29) tests your ability to take a word problem and express it as a linear program. This is a <strong>translation skill</strong>: identify the decision variables, write the objective, and list the constraints.</p>
+
+  <h2>The Modeling Checklist</h2>
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">Step 1: Variables</div>
+      <p>What are you deciding? Each variable should represent a quantity you control. Label them clearly: xᵢ = amount of product i, fₑ = flow on edge e, etc.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-title">Step 2: Objective</div>
+      <p>What are you optimizing? Write it as a linear function of your variables. Check: is it max or min?</p>
+    </div>
+    <div class="card purple">
+      <div class="card-title">Step 3: Constraints</div>
+      <p>What rules must be satisfied? Each rule becomes a linear inequality or equality. Don't forget non-negativity (x ≥ 0) if applicable.</p>
+    </div>
+  </div>
+
+  <h2>Modeling Pattern: Network Flow as LP</h2>
+  <p>You saw this in Session 3. It's the prototype for all LP modeling:</p>
+  <div class="math-block">Variables: fₑ for each edge e
+Objective: maximize Σ_{e out of s} fₑ
+Constraints:
+  fₑ ≤ cₑ           (capacity)       for all e
+  Σ(in) fₑ = Σ(out) fₑ (conservation)  for all v ≠ s,t
+  fₑ ≥ 0            (non-negativity)  for all e</div>
+
+  <h2>Modeling Pattern: Shortest Path as LP</h2>
+  <p>This is a classic DPV-style question. Given a directed graph with edge weights wₑ ≥ 0, find the shortest s-t path.</p>
+  <div class="math-block">Variables: dᵥ for each vertex v
+           (dᵥ = distance from s to v)
+Objective: maximize d_t
+Constraints:
+  d_s = 0
+  d_v ≤ d_u + w(u,v)   for each edge (u,v)
+           (triangle inequality / relaxation)</div>
+
+  <div class="spoiler">
+    <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+      <span>Wait, why maximize for shortest path?</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="spoiler-content">
+      <p>The constraints say d_v ≤ d_u + w(u,v), which means d_v can be at most the distance along any path. Any feasible solution gives a <strong>lower bound</strong> on the true shortest-path distance. By maximizing d_t, we push it up to the tightest possible lower bound, which is the actual shortest path.</p>
+      <p>This is a neat trick: the LP "discovers" shortest paths by maximizing under relaxation constraints. The dual of this LP gives the max-flow formulation (LP duality connects shortest paths and max flow).</p>
+    </div>
+  </div>
+
+  <h2>Modeling Pattern: Two-Player Zero-Sum Games</h2>
+  <p>This appears in DPV 7.20. Player 1 chooses row i, Player 2 chooses column j. Payoff matrix Gᵢⱼ: Player 1 gets Gᵢⱼ, Player 2 loses Gᵢⱼ. Players use mixed strategies (probability distributions).</p>
+  <div class="math-block">Player 1's LP (maximize worst-case payoff):
+Variables: p₁, p₂, ..., pₘ (probabilities), z
+Objective: maximize z
+Constraints:
+  Σᵢ pᵢGᵢⱼ ≥ z    for each column j
+  Σᵢ pᵢ = 1
+  pᵢ ≥ 0</div>
+  <p>The variable z represents the guaranteed minimum payoff. Player 1 maximizes this guarantee. The dual gives Player 2's optimal strategy (minimize max loss), and strong duality gives the minimax theorem.</p>
+
+  <h2>Modeling Pattern: Diet / Blending Problems</h2>
+  <p>Classic LP word problems: choose amounts of foods to minimize cost while meeting nutritional requirements.</p>
+  <div class="math-block">Variables: xⱼ = amount of food j purchased
+Objective: minimize Σⱼ cⱼxⱼ  (total cost)
+Constraints:
+  Σⱼ aᵢⱼxⱼ ≥ bᵢ     (nutrient i requirement)
+  xⱼ ≥ 0              (can't buy negative food)</div>
+
+  <h3>Interactive: LP Modeling Quiz</h3>
+  <div class="interactive" id="modelQuiz">
+    <div class="int-title">Match the Problem to its LP Variables</div>
+    <p style="color:var(--text2);font-size:15px;margin-bottom:16px;">For each problem below, click to reveal what the decision variables should be.</p>
+
+    <div class="spoiler" style="margin:12px 0;">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        <span>Bandwidth allocation: route traffic over a network to maximize throughput</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>Variables:</strong> fₚ = amount of traffic on each path p (or fₑ = flow on each edge). Same as max flow with multiple commodities.</p>
+        <p><strong>Constraints:</strong> edge capacities, demand satisfaction, non-negativity.</p>
+      </div>
+    </div>
+
+    <div class="spoiler" style="margin:12px 0;">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        <span>Production planning: how many of each product to make given resource limits</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>Variables:</strong> xⱼ = quantity of product j to produce.</p>
+        <p><strong>Objective:</strong> maximize profit = Σ pⱼxⱼ.</p>
+        <p><strong>Constraints:</strong> Σ aᵢⱼxⱼ ≤ bᵢ (resource i limit), xⱼ ≥ 0. This is the "farm LP" generalized to many products and resources.</p>
+      </div>
+    </div>
+
+    <div class="spoiler" style="margin:12px 0;">
+      <button class="spoiler-toggle" onclick="toggleSpoiler(this)">
+        <span>Portfolio optimization: allocate money across investments to minimize risk given return target</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="spoiler-content">
+        <p><strong>Variables:</strong> xⱼ = fraction of budget invested in asset j.</p>
+        <p><strong>Objective:</strong> minimize risk (linear approximation) or maximize return.</p>
+        <p><strong>Constraints:</strong> Σ xⱼ = 1 (budget), Σ rⱼxⱼ ≥ R (return target), xⱼ ≥ 0.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(6)">← Knapsack ILP</span>
+    <span class="nav-link" onclick="goTo(8)">Complete Toolkit →</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PART 8 — THE COMPLETE TOOLKIT
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="part8">
+  <div class="section-header">Part 8 / 8 — The Complete Exam Toolkit</div>
+
+  <h2>Everything in One Table</h2>
+  <p>Here is every problem from the course, with its approximation technique, ILP structure, dual interpretation, and rounding result:</p>
+
+  <div style="overflow-x:auto;">
+    <table>
+      <tr>
+        <th>Problem</th>
+        <th>Type</th>
+        <th>Greedy Ratio</th>
+        <th>ILP Constraint</th>
+        <th>Dual = ?</th>
+        <th>Rounding</th>
+      </tr>
+      <tr>
+        <td><strong>Vertex Cover</strong></td>
+        <td style="color:var(--red)">MIN</td>
+        <td>2-approx</td>
+        <td>xᵤ+xᵥ ≥ 1 per edge</td>
+        <td>Frac. matching</td>
+        <td style="color:var(--green)">2-approx ✓</td>
+      </tr>
+      <tr>
+        <td><strong>Set Cover</strong></td>
+        <td style="color:var(--red)">MIN</td>
+        <td>ln(n)-approx</td>
+        <td>Σ xⱼ ≥ 1 per element</td>
+        <td>Frac. packing</td>
+        <td style="color:var(--green)">f-approx ✓</td>
+      </tr>
+      <tr>
+        <td><strong>Hitting Set</strong></td>
+        <td style="color:var(--red)">MIN</td>
+        <td>O(ln m)-approx</td>
+        <td>Σ xᵢ ≥ 1 per set</td>
+        <td>Frac. set packing</td>
+        <td style="color:var(--green)">f-approx ✓</td>
+      </tr>
+      <tr>
+        <td><strong>Independent Set</strong></td>
+        <td style="color:var(--green)">MAX</td>
+        <td>(Δ+1)-approx</td>
+        <td>xᵤ+xᵥ ≤ 1 per edge</td>
+        <td>Frac. edge cover</td>
+        <td style="color:var(--red)">Fails ✗</td>
+      </tr>
+      <tr>
+        <td><strong>Clique</strong></td>
+        <td style="color:var(--green)">MAX</td>
+        <td>(Δ̄+1)-approx</td>
+        <td>xᵤ+xᵥ ≤ 1 per non-edge</td>
+        <td>Frac. edge cover on Ḡ</td>
+        <td style="color:var(--red)">Fails ✗</td>
+      </tr>
+      <tr>
+        <td><strong>Knapsack</strong></td>
+        <td style="color:var(--green)">MAX</td>
+        <td>2-approx</td>
+        <td>Σ wᵢxᵢ ≤ W</td>
+        <td>Weight pricing</td>
+        <td style="color:var(--amber)">2-approx (+ FPTAS)</td>
+      </tr>
+      <tr>
+        <td><strong>EDP</strong></td>
+        <td style="color:var(--green)">MAX</td>
+        <td>√|E|-approx</td>
+        <td>(multi-commodity)</td>
+        <td>(edge capacities)</td>
+        <td style="color:var(--text3)">Not covered</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>The Big Patterns</h2>
+
+  <div class="card-row">
+    <div class="card green">
+      <div class="card-title">Pattern 1: Min problems round well</div>
+      <p>Vertex Cover, Set Cover, Hitting Set are all minimization. LP relaxation gives a lower bound (LP_OPT ≤ OPT). Rounding at threshold 1/f gives f-approximation via pigeonhole. The proof template is always the same.</p>
+    </div>
+    <div class="card red">
+      <div class="card-title">Pattern 2: Max problems round poorly</div>
+      <p>Independent Set, Clique have unbounded integrality gaps. LP relaxation gives an upper bound, but rounding can violate feasibility or produce empty solutions. You need fundamentally different techniques (FPTAS for Knapsack, nothing good for IS/Clique).</p>
+    </div>
+  </div>
+
+  <div class="card-row">
+    <div class="card purple">
+      <div class="card-title">Pattern 3: Covering ↔ Packing duality</div>
+      <p>Every covering LP (Vertex Cover, Set Cover, Hitting Set) has a packing dual (Matching, Packing, Set Packing). The LP dual swaps the covering/packing perspective. Strong duality says their optima are equal.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-title">Pattern 4: Weak Duality = Free Bounds</div>
+      <p>In every rounding proof, the chain is: Rounded ≤ α·LP_OPT ≤ α·OPT (for min). The second ≤ comes from weak duality. You never need to find OPT itself, just bound it via LP_OPT.</p>
+    </div>
+  </div>
+
+  <h2>Exam Checklist: The Four Questions</h2>
+  <p>For each problem (IS, Clique, Knapsack, Hitting Set), the exam asks four things. Here is your recipe:</p>
+
+  <div class="interactive">
+    <div class="int-title">The Four-Part Recipe</div>
+    <table>
+      <tr><th>#</th><th>Question</th><th>What to write</th></tr>
+      <tr>
+        <td><strong>(i)</strong></td>
+        <td>Greedy approximation</td>
+        <td>State the greedy rule (what to pick at each step). Prove the ratio by bounding ALG in terms of OPT using a counting/charging argument.</td>
+      </tr>
+      <tr>
+        <td><strong>(ii)</strong></td>
+        <td>ILP formulation</td>
+        <td>Define binary variables. Write objective (max or min). Write constraints (one per "covering" or "packing" requirement). Don't forget x ∈ {0,1}.</td>
+      </tr>
+      <tr>
+        <td><strong>(iii)</strong></td>
+        <td>Dual of the LP relaxation</td>
+        <td>Drop integrality to get LP. Apply the mechanical recipe: swap max/min, transpose A, swap c and b, flip inequality directions. Name the dual variables and interpret them.</td>
+      </tr>
+      <tr>
+        <td><strong>(iv)</strong></td>
+        <td>Rounding algorithm</td>
+        <td>Solve LP relaxation. State the rounding rule (threshold 1/f for min problems). Prove feasibility via pigeonhole. Prove ratio via the chain: Rounded ≤ α·LP_OPT ≤ α·OPT. For IS/Clique: explain why rounding fails (unbounded gap). For Knapsack: round down + best single item = 2-approx.</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>LP Modeling Checklist (DPV Ch. 7)</h2>
+  <div class="interactive">
+    <div class="int-title">What to Remember for LP Modeling Questions</div>
+    <table>
+      <tr><th>Topic</th><th>Key Points</th></tr>
+      <tr><td>Standard form</td><td>max c&#7488;x, s.t. Ax ≤ b, x ≥ 0. Convert min → max by negating c. Convert ≥ → ≤ by multiplying by -1. Convert = → two inequalities.</td></tr>
+      <tr><td>Writing the Dual</td><td>Mechanical recipe from Part 1. One dual variable per constraint. Transpose A, swap c↔b, flip direction.</td></tr>
+      <tr><td>Weak Duality</td><td>Any feasible primal ≤ any feasible dual (for max/min pair). Gives free bounds. Proof: one line of algebra.</td></tr>
+      <tr><td>Strong Duality</td><td>At optimality, primal = dual. Max-Flow Min-Cut is a special case.</td></tr>
+      <tr><td>Modeling trick</td><td>Variables = decisions. Constraints = rules. Objective = goal. If something is "at most" → ≤. If "at least" → ≥. If "exactly" → =.</td></tr>
+    </table>
+  </div>
+
+  <div class="callout success">✅ You now have the complete toolkit for Exam 3. For LP questions: write standard form, write dual, cite weak duality. For approximation: greedy + ratio analysis, ILP formulation, dual, and rounding (with feasibility + ratio proof). Good luck!</div>
+
+  <div class="nav-footer">
+    <span class="nav-link" onclick="goTo(7)">← LP Modeling</span>
+    <span class="nav-link" onclick="goTo(1)">↺ Start Over</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════  JAVASCRIPT  ══════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<script>
+// ── NAVIGATION ──
+const PARTS = 8;
+const partTitles = [
+  'Writing Duals', 'Weak Duality', 'Independent Set', 'Clique',
+  'Hitting Set', 'Knapsack ILP', 'LP Modeling', 'Complete Toolkit'
+];
+let currentPart = 1;
+
+function buildNav() {
+  const nav = document.getElementById('partNav');
+  nav.innerHTML = '';
+  for (let i = 1; i <= PARTS; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'part-btn' + (i === currentPart ? ' active' : '');
+    btn.textContent = `Part ${i}`;
+    btn.title = partTitles[i-1];
+    btn.onclick = () => goTo(i);
+    nav.appendChild(btn);
+  }
+}
+
+function goTo(n) {
+  currentPart = n;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('part' + n).classList.add('active');
+  buildNav();
+  window.scrollTo({ top: document.querySelector('.hero').offsetHeight, behavior: 'smooth' });
+}
+
+// ── SPOILER TOGGLE ──
+function toggleSpoiler(btn) {
+  btn.parentElement.classList.toggle('open');
+}
+
+// ── DUAL BUILDER (Part 1) ──
+const dualStepsData = [
+  {
+    title: 'Start: Identify the Primal',
+    content: `<div class="math-block" style="font-size:14px;">PRIMAL:
+maximize  3x₁ + 5x₂
+s.t.  x₁ + x₂  ≤ 100   ← constraint 1 (land)
+      2x₁ + 4x₂ ≤ 280   ← constraint 2 (water)
+      x₁, x₂ ≥ 0</div>
+<p style="color:var(--text2);font-size:16px;">This is a <strong>max</strong> problem with <strong>≤</strong> constraints and <strong>≥ 0</strong> variables. Standard form.</p>`
+  },
+  {
+    title: 'Step 1: Create Dual Variables',
+    content: `<p style="color:var(--text2);font-size:16px;">One dual variable per primal constraint:</p>
+<p style="color:var(--text);font-size:16px;"><strong>y₁</strong> for the land constraint (x₁ + x₂ ≤ 100)</p>
+<p style="color:var(--text);font-size:16px;"><strong>y₂</strong> for the water constraint (2x₁ + 4x₂ ≤ 280)</p>
+<p style="color:var(--text2);font-size:16px;">Primal has ≤ constraints in a max → dual variables are <strong>≥ 0</strong>.</p>`
+  },
+  {
+    title: 'Step 2: Dual Objective',
+    content: `<p style="color:var(--text2);font-size:16px;">Dual objective uses the primal RHS values (b vector):</p>
+<div class="math-block" style="font-size:14px;">minimize  100y₁ + 280y₂</div>
+<p style="color:var(--text2);font-size:16px;">Max → min. The coefficients 100 and 280 come from the right-hand sides of the primal constraints.</p>`
+  },
+  {
+    title: 'Step 3: Dual Constraints',
+    content: `<p style="color:var(--text2);font-size:16px;">One dual constraint per primal variable. Transpose the coefficient columns:</p>
+<div class="math-block" style="font-size:14px;">x₁ column: [1, 2] → constraint: 1·y₁ + 2·y₂ ≥ 3
+x₂ column: [1, 4] → constraint: 1·y₁ + 4·y₂ ≥ 5</div>
+<p style="color:var(--text2);font-size:16px;">RHS comes from objective coefficients c = [3, 5]. Direction ≥ because primal variables are ≥ 0 in a max problem.</p>`
+  },
+  {
+    title: 'Complete Dual',
+    content: `<div class="math-block" style="font-size:14px;">DUAL:
+minimize  100y₁ + 280y₂
+s.t.  y₁ + 2y₂ ≥ 3    (from x₁)
+      y₁ + 4y₂ ≥ 5    (from x₂)
+      y₁, y₂ ≥ 0</div>
+<p style="color:var(--text2);font-size:16px;">✅ Done! <strong>Weak duality check:</strong> try y₁=1, y₂=1. Dual obj = 100+280 = 380. Primal optimal was also 380 (at x₁=60, x₂=40). They match → strong duality confirms both are optimal.</p>`
+  }
+];
+
+let dualIdx = 0;
+function renderDualStep() {
+  const bar = document.getElementById('dualSteps');
+  bar.innerHTML = '';
+  for (let i = 0; i < dualStepsData.length; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i < dualIdx ? ' done' : '') + (i === dualIdx ? ' active' : '');
+    d.style.flex = '1';
+    bar.appendChild(d);
+  }
+  document.getElementById('dualStepContent').innerHTML =
+    `<div style="font-family:var(--sans);font-size:14px;color:var(--accent);margin-bottom:8px;">${dualStepsData[dualIdx].title}</div>` +
+    dualStepsData[dualIdx].content;
+  document.getElementById('dualPrev').disabled = dualIdx === 0;
+  document.getElementById('dualNext').disabled = dualIdx === dualStepsData.length - 1;
+}
+function dualStep(d) {
+  dualIdx = Math.max(0, Math.min(dualStepsData.length - 1, dualIdx + d));
+  renderDualStep();
+}
+
+// ── INDEPENDENT SET INTERACTIVE (Part 3) ──
+const isNodes = [
+  {id:'A', x:80, y:50}, {id:'B', x:340, y:50}, {id:'C', x:210, y:130},
+  {id:'D', x:80, y:220}, {id:'E', x:340, y:220}
+];
+const isEdges = [
+  ['A','B'],['A','C'],['B','C'],['B','D'],['C','D'],['C','E'],['D','E']
+];
+let isSelected = new Set();
+
+function drawIS() {
+  const svg = document.getElementById('isGraph');
+  svg.innerHTML = '';
+  // edges
+  isEdges.forEach(([a,b]) => {
+    const na = isNodes.find(n=>n.id===a), nb = isNodes.find(n=>n.id===b);
+    const conflict = isSelected.has(a) && isSelected.has(b);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    Object.entries({x1:na.x,y1:na.y,x2:nb.x,y2:nb.y,stroke:conflict?'#f87171':'#2d3a4f','stroke-width':conflict?3:2}).forEach(([k,v])=>line.setAttribute(k,v));
+    line.classList.add('edge');
+    svg.appendChild(line);
+  });
+  // nodes
+  isNodes.forEach(n => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.classList.add('node');
+    g.style.cursor = 'pointer';
+    g.onclick = () => { isSelected.has(n.id) ? isSelected.delete(n.id) : isSelected.add(n.id); drawIS(); };
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    const sel = isSelected.has(n.id);
+    Object.entries({cx:n.x,cy:n.y,r:22,fill:sel?'#34d399':'#1e293b',stroke:sel?'#34d399':'#3b4a63','stroke-width':2}).forEach(([k,v])=>c.setAttribute(k,v));
+    g.appendChild(c);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    Object.entries({x:n.x,y:n.y+5,'text-anchor':'middle',fill:sel?'#0a0e17':'#e2e8f0','font-family':'Space Grotesk','font-size':'15','font-weight':'600'}).forEach(([k,v])=>t.setAttribute(k,v));
+    t.textContent = n.id;
+    g.appendChild(t);
+    svg.appendChild(g);
+  });
+  // stats
+  let conflicts = 0;
+  isEdges.forEach(([a,b]) => { if(isSelected.has(a)&&isSelected.has(b)) conflicts++; });
+  document.getElementById('isSize').textContent = isSelected.size;
+  document.getElementById('isConflicts').textContent = conflicts;
+  const st = document.getElementById('isStatus');
+  if (conflicts === 0 && isSelected.size > 0) { st.textContent = 'Valid IS ✓'; st.style.color = '#34d399'; }
+  else if (conflicts > 0) { st.textContent = 'Conflicts! Not an IS'; st.style.color = '#f87171'; }
+  else { st.textContent = 'Empty set'; st.style.color = '#64748b'; }
+}
+
+// ── GREEDY IS ANIMATION (Part 3) ──
+let greedyISState = null;
+function greedyISReset() {
+  greedyISState = {
+    remaining: new Set(['A','B','C','D','E']),
+    selected: new Set(),
+    removed: new Set(),
+    step: 0,
+    done: false
+  };
+  document.getElementById('greedyISLog').textContent = 'Vertices remaining: A, B, C, D, E. Click "Next Step" to begin.';
+  document.getElementById('greedyISBtn').disabled = false;
+  drawGreedyIS();
+}
+
+function getDegreesIn(remaining) {
+  const deg = {};
+  remaining.forEach(v => deg[v] = 0);
+  isEdges.forEach(([a,b]) => {
+    if (remaining.has(a) && remaining.has(b)) { deg[a]++; deg[b]++; }
+  });
+  return deg;
+}
+
+function greedyISStep() {
+  if (!greedyISState || greedyISState.done) return;
+  const s = greedyISState;
+  if (s.remaining.size === 0) { s.done = true; document.getElementById('greedyISBtn').disabled = true; document.getElementById('greedyISLog').textContent = `Done! Greedy IS = {${[...s.selected].join(', ')}}, size = ${s.selected.size}. Max degree Δ = 4, so (Δ+1) = 5. Guarantee: |S| ≥ n/(Δ+1) = 5/5 = 1. We got ${s.selected.size}, much better!`; return; }
+  const deg = getDegreesIn(s.remaining);
+  let minDeg = Infinity, pick = null;
+  s.remaining.forEach(v => { if (deg[v] < minDeg) { minDeg = deg[v]; pick = v; } });
+  s.selected.add(pick);
+  // find neighbors of pick in remaining
+  const neighbors = new Set();
+  isEdges.forEach(([a,b]) => {
+    if (a === pick && s.remaining.has(b)) neighbors.add(b);
+    if (b === pick && s.remaining.has(a)) neighbors.add(a);
+  });
+  s.remaining.delete(pick);
+  neighbors.forEach(nb => { s.remaining.delete(nb); s.removed.add(nb); });
+  s.step++;
+  document.getElementById('greedyISLog').innerHTML = `<strong>Step ${s.step}:</strong> Degrees: ${Object.entries(deg).filter(([k])=>greedyISState.selected.has(k)||s.remaining.has(k)||k===pick||neighbors.has(k)).map(([k,v])=>k+'='+v).join(', ')}. Pick <span style="color:#34d399">${pick}</span> (degree ${minDeg}). Remove neighbors: {${[...neighbors].join(', ') || 'none'}}. Remaining: {${[...s.remaining].join(', ') || 'none'}}.`;
+  drawGreedyIS();
+  if (s.remaining.size === 0) { s.done = true; document.getElementById('greedyISBtn').disabled = true; document.getElementById('greedyISLog').innerHTML += `<br><strong>Result:</strong> Greedy IS = {${[...s.selected].join(', ')}}, size = ${s.selected.size}.`; }
+}
+
+function drawGreedyIS() {
+  if (!greedyISState) return;
+  const svg = document.getElementById('greedyIS');
+  svg.innerHTML = '';
+  const s = greedyISState;
+  isEdges.forEach(([a,b]) => {
+    const na = isNodes.find(n=>n.id===a), nb = isNodes.find(n=>n.id===b);
+    const dimA = s.removed.has(a) || !s.remaining.has(a) && !s.selected.has(a);
+    const dimB = s.removed.has(b) || !s.remaining.has(b) && !s.selected.has(b);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    Object.entries({x1:na.x,y1:na.y,x2:nb.x,y2:nb.y,stroke:(dimA||dimB)?'#1a2236':'#2d3a4f','stroke-width':2}).forEach(([k,v])=>line.setAttribute(k,v));
+    svg.appendChild(line);
+  });
+  isNodes.forEach(n => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const sel = s.selected.has(n.id);
+    const rem = s.removed.has(n.id);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    let fill = '#1e293b', stroke = '#3b4a63', opacity = '1';
+    if (sel) { fill = '#34d399'; stroke = '#34d399'; }
+    else if (rem) { fill = '#1a2236'; stroke = '#2d3a4f'; opacity = '0.4'; }
+    Object.entries({cx:n.x,cy:n.y,r:22,fill,stroke,'stroke-width':2,opacity}).forEach(([k,v])=>c.setAttribute(k,v));
+    g.appendChild(c);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    Object.entries({x:n.x,y:n.y+5,'text-anchor':'middle',fill:sel?'#0a0e17':(rem?'#3b4a63':'#e2e8f0'),'font-family':'Space Grotesk','font-size':'15','font-weight':'600',opacity}).forEach(([k,v])=>t.setAttribute(k,v));
+    t.textContent = n.id;
+    g.appendChild(t);
+    svg.appendChild(g);
+  });
+}
+
+// ── CLIQUE GRAPH & COMPLEMENT (Part 4) ──
+function drawCliqueGraphs() {
+  const nodes = [
+    {id:'A',x:100,y:30},{id:'B',x:40,y:90},{id:'C',x:70,y:170},{id:'D',x:140,y:170},{id:'E',x:170,y:90}
+  ];
+  const allPairs = [];
+  for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++) allPairs.push([nodes[i].id,nodes[j].id]);
+  const edges = [['A','B'],['A','E'],['B','C'],['B','D'],['C','D'],['D','E']];
+  const edgeSet = new Set(edges.map(e=>e.join(',')));
+  const complement = allPairs.filter(([a,b]) => !edgeSet.has(a+','+b) && !edgeSet.has(b+','+a));
+
+  [['cliqueG', edges, '#3b4a63'], ['cliqueGbar', complement, '#3b4a63']].forEach(([svgId, edgeList, clr]) => {
+    const svg = document.getElementById(svgId);
+    svg.innerHTML = '';
+    edgeList.forEach(([a,b]) => {
+      const na = nodes.find(n=>n.id===a), nb = nodes.find(n=>n.id===b);
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      Object.entries({x1:na.x,y1:na.y,x2:nb.x,y2:nb.y,stroke:clr,'stroke-width':2}).forEach(([k,v])=>line.setAttribute(k,v));
+      svg.appendChild(line);
+    });
+    nodes.forEach(n => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      Object.entries({cx:n.x,cy:n.y,r:18,fill:'#1e293b',stroke:'#64748b','stroke-width':2}).forEach(([k,v])=>c.setAttribute(k,v));
+      svg.appendChild(c);
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      Object.entries({x:n.x,y:n.y+5,'text-anchor':'middle',fill:'#e2e8f0','font-family':'Space Grotesk','font-size':'13','font-weight':'600'}).forEach(([k,v])=>t.setAttribute(k,v));
+      t.textContent = n.id;
+      svg.appendChild(t);
+    });
+  });
+}
+
+// ── HITTING SET INTERACTIVE (Part 5) ──
+const hsUniverse = [1,2,3,4,5];
+const hsSets = [{name:'S₁',elems:[1,2,3]},{name:'S₂',elems:[2,4]},{name:'S₃',elems:[3,5]},{name:'S₄',elems:[4,5]}];
+let hsSelected = new Set();
+
+function drawHS() {
+  // elements
+  const elDiv = document.getElementById('hsElements');
+  elDiv.innerHTML = '';
+  hsUniverse.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'btn' + (hsSelected.has(e) ? ' primary' : '');
+    btn.textContent = e;
+    btn.style.width = '48px';
+    btn.style.fontSize = '16px';
+    btn.onclick = () => { hsSelected.has(e) ? hsSelected.delete(e) : hsSelected.add(e); drawHS(); };
+    elDiv.appendChild(btn);
+  });
+  // sets
+  const sDiv = document.getElementById('hsSets');
+  sDiv.innerHTML = '';
+  let hitCount = 0;
+  hsSets.forEach(s => {
+    const hit = s.elems.some(e => hsSelected.has(e));
+    if (hit) hitCount++;
+    const d = document.createElement('div');
+    d.style.cssText = `display:inline-block;margin:4px 8px;padding:8px 16px;border-radius:8px;font-family:var(--sans);font-size:14px;border:1px solid ${hit?'rgba(52,211,153,0.4)':'var(--border)'};background:${hit?'rgba(52,211,153,0.1)':'var(--surface)'};color:${hit?'#34d399':'var(--text2)'}`;
+    d.textContent = `${s.name} = {${s.elems.join(',')}} ${hit?'✓':'✗'}`;
+    sDiv.appendChild(d);
+  });
+  document.getElementById('hsSize').textContent = hsSelected.size;
+  document.getElementById('hsHit').textContent = hitCount;
+  const st = document.getElementById('hsStatus');
+  if (hitCount === hsSets.length) { st.textContent = 'Valid hitting set ✓'; st.style.color = '#34d399'; }
+  else { st.textContent = 'Not a valid hitting set'; st.style.color = '#f87171'; }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  buildNav();
+  goTo(1);
+  renderDualStep();
+  drawIS();
+  greedyISReset();
+  drawCliqueGraphs();
+  drawHS();
+});
+</script>
+</body>
+</html>
