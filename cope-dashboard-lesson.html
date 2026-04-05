@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full-Stack Deep Dive: COPE Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #05080f;
+  --bg-primary: #0b1120;
+  --bg-card: #111b2e;
+  --bg-card-hover: #152036;
+  --bg-code: #080d1a;
+  --bg-inline: rgba(56,189,248,0.08);
+  --accent: #38bdf8;
+  --accent-dim: rgba(56,189,248,0.15);
+  --accent2: #a78bfa;
+  --accent2-dim: rgba(167,139,250,0.12);
+  --accent3: #34d399;
+  --accent3-dim: rgba(52,211,153,0.12);
+  --accent4: #fb923c;
+  --accent4-dim: rgba(251,146,60,0.12);
+  --accent5: #f472b6;
+  --accent5-dim: rgba(244,114,182,0.12);
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #475569;
+  --border: rgba(148,163,184,0.08);
+  --border-hover: rgba(148,163,184,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--bg-deep);
+  color:var(--text);
+  font-family:'Sora',sans-serif;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56,189,248,0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(167,139,250,0.04), transparent);
+  pointer-events:none;z-index:0;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px;position:relative;z-index:1;}
+
+/* ---- HERO ---- */
+.hero{padding:70px 0 50px;text-align:center;}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-dim);
+  padding:5px 14px;border-radius:20px;border:1px solid rgba(56,189,248,0.2);margin-bottom:20px;
+}
+.hero h1{
+  font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;margin-bottom:14px;
+  background:linear-gradient(135deg,#f1f5f9 40%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{font-size:1.05rem;color:var(--text-dim);max-width:620px;margin:0 auto;}
+
+/* ---- SIDEBAR NAV ---- */
+.layout{display:flex;gap:0;margin-top:36px;position:relative;}
+.sidebar{
+  width:220px;flex-shrink:0;position:sticky;top:24px;align-self:flex-start;
+  display:flex;flex-direction:column;gap:3px;padding-right:20px;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border:none;background:transparent;
+  color:var(--text-muted);font-family:'Sora',sans-serif;font-size:.82rem;font-weight:500;
+  border-radius:10px;cursor:pointer;transition:all .2s;text-align:left;width:100%;
+  border:1px solid transparent;
+}
+.nav-btn:hover{color:var(--text-dim);background:rgba(255,255,255,0.02);}
+.nav-btn.active{color:var(--accent);background:var(--accent-dim);border-color:rgba(56,189,248,0.15);}
+.nav-num{
+  font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:600;
+  width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;
+  background:rgba(255,255,255,0.04);flex-shrink:0;
+}
+.nav-btn.active .nav-num{background:rgba(56,189,248,0.2);color:var(--accent);}
+.main-content{flex:1;min-width:0;}
+
+/* ---- SECTIONS ---- */
+.section{display:none;animation:fadeIn .35s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:32px;margin-bottom:24px;position:relative;
+}
+.card h2{font-size:1.4rem;font-weight:700;margin-bottom:6px;}
+.card h3{font-size:1.05rem;font-weight:700;color:var(--accent);margin:24px 0 8px;}
+.card p,.card li{color:var(--text-dim);font-size:.95rem;}
+.card ul,.card ol{padding-left:20px;margin:10px 0;}
+.card li{margin-bottom:6px;}
+
+/* ---- CODE ---- */
+.codeblk{
+  background:var(--bg-code);border:1px solid var(--border);border-radius:10px;
+  margin:14px 0;overflow:hidden;
+}
+.codeblk-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
+}
+.codeblk-file{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent);}
+.codeblk-lang{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+.codeblk pre{
+  padding:14px 18px;overflow-x:auto;
+  font-family:'IBM Plex Mono',monospace;font-size:.8rem;line-height:1.85;color:#c9d1d9;
+  margin:0;
+}
+.kw{color:#ff7b72;} .fn{color:#d2a8ff;} .str{color:#a5d6ff;} .cm{color:#6e7681;font-style:italic;}
+.ty{color:#79c0ff;} .num{color:#f2cc60;} .pr{color:#7ee787;} .op{color:#ff7b72;}
+
+code{
+  font-family:'IBM Plex Mono',monospace;font-size:.84em;
+  background:var(--bg-inline);color:var(--accent);padding:2px 6px;border-radius:4px;
+}
+
+/* ---- CALLOUT ---- */
+.callout{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  display:flex;gap:12px;align-items:flex-start;font-size:.9rem;
+}
+.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+.callout strong{color:var(--text);}
+.callout-info{background:var(--accent-dim);border:1px solid rgba(56,189,248,0.18);color:var(--text-dim);}
+.callout-warn{background:var(--accent4-dim);border:1px solid rgba(251,146,60,0.18);color:var(--text-dim);}
+.callout-ok{background:var(--accent3-dim);border:1px solid rgba(52,211,153,0.18);color:var(--text-dim);}
+
+/* ---- ANALOGY BOX ---- */
+.analogy{
+  background:linear-gradient(135deg,rgba(167,139,250,0.06),rgba(56,189,248,0.06));
+  border:1px solid rgba(167,139,250,0.15);border-radius:12px;
+  padding:22px 24px;margin:18px 0;
+}
+.analogy-title{font-weight:700;color:var(--accent2);font-size:.9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.analogy p{color:var(--text-dim);font-size:.9rem;margin:0;}
+
+/* ---- COMPARE GRID ---- */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}
+@media(max-width:640px){.compare{grid-template-columns:1fr;}}
+.compare-box{
+  background:rgba(255,255,255,0.015);border:1px solid var(--border);border-radius:10px;padding:18px;
+}
+.compare-label{font-weight:700;font-size:.85rem;margin-bottom:8px;}
+
+/* ---- FLOW VIS ---- */
+.flowvis{
+  background:var(--bg-code);border:1px solid var(--border);border-radius:12px;
+  padding:28px 16px;margin:20px 0;overflow-x:auto;
+}
+.flowvis-row{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:nowrap;min-width:600px;}
+.flowvis-box{
+  padding:12px 16px;border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;
+  text-align:center;min-width:110px;white-space:nowrap;
+}
+.flowvis-box small{display:block;font-weight:400;opacity:.7;font-size:.62rem;margin-top:3px;}
+.fb-blue{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);}
+.fb-purple{background:var(--accent2-dim);border:1px solid rgba(167,139,250,0.25);color:var(--accent2);}
+.fb-amber{background:var(--accent4-dim);border:1px solid rgba(251,146,60,0.25);color:var(--accent4);}
+.fb-green{background:var(--accent3-dim);border:1px solid rgba(52,211,153,0.25);color:var(--accent3);}
+.fb-pink{background:var(--accent5-dim);border:1px solid rgba(244,114,182,0.25);color:var(--accent5);}
+.flowvis-arrow{font-size:1.2rem;color:var(--text-muted);margin:0 6px;flex-shrink:0;}
+.flowvis-caption{text-align:center;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text-muted);}
+
+/* ---- LAYER DIAGRAM ---- */
+.layers{margin:20px 0;display:flex;flex-direction:column;gap:0;}
+.layer{
+  padding:18px 22px;border:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .2s;
+  position:relative;
+}
+.layer:first-child{border-radius:12px 12px 0 0;}
+.layer:last-child{border-radius:0 0 12px 12px;}
+.layer:not(:last-child){border-bottom:none;}
+.layer:hover{background:rgba(255,255,255,0.015);}
+.layer.layer-active{z-index:1;}
+
+.layer-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:600;
+  padding:4px 10px;border-radius:6px;white-space:nowrap;
+}
+.layer-info{flex:1;}
+.layer-name{font-weight:600;font-size:.92rem;}
+.layer-desc{font-size:.82rem;color:var(--text-dim);margin-top:2px;}
+.layer-file{
+  font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text-muted);
+  background:rgba(255,255,255,0.03);padding:3px 8px;border-radius:5px;
+}
+
+.layer-expand{
+  display:none;padding:14px 22px 18px 22px;
+  background:rgba(255,255,255,0.01);border-left:1px solid var(--border);border-right:1px solid var(--border);
+  font-size:.87rem;color:var(--text-dim);
+}
+.layer-expand.open{display:block;animation:fadeIn .25s ease;}
+
+.lb-blue .layer-badge{background:rgba(56,189,248,0.12);color:var(--accent);}
+.lb-purple .layer-badge{background:var(--accent2-dim);color:var(--accent2);}
+.lb-amber .layer-badge{background:var(--accent4-dim);color:var(--accent4);}
+.lb-green .layer-badge{background:var(--accent3-dim);color:var(--accent3);}
+
+/* ---- STEP-BY-STEP INTERACTIVE ---- */
+.stepper{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0;}
+.stepper-head{
+  padding:12px 18px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
+  font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.stepper-controls{display:flex;gap:6px;}
+.stepper-btn{
+  padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;
+  color:var(--text-dim);font-family:'Sora',sans-serif;font-size:.72rem;cursor:pointer;transition:all .15s;
+}
+.stepper-btn:hover{border-color:var(--accent);color:var(--accent);}
+.stepper-btn:disabled{opacity:.3;cursor:default;border-color:var(--border);color:var(--text-muted);}
+.stepper-body{padding:0;background:var(--bg-code);}
+
+.step-item{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:all .2s;display:flex;gap:14px;align-items:flex-start;
+}
+.step-item:last-child{border-bottom:none;}
+.step-item:hover{background:rgba(255,255,255,0.015);}
+.step-item.highlighted{background:rgba(56,189,248,0.06);border-left:3px solid var(--accent);}
+
+.step-num{
+  font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:600;
+  color:var(--text-muted);background:rgba(255,255,255,0.04);
+  width:26px;height:26px;line-height:26px;text-align:center;border-radius:7px;flex-shrink:0;
+  transition:all .2s;
+}
+.step-item.highlighted .step-num{background:rgba(56,189,248,0.15);color:var(--accent);}
+.step-title-text{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:3px;}
+.step-sub{font-size:.82rem;color:var(--text-dim);}
+
+.step-detail{
+  display:none;margin-top:12px;padding:14px 16px;
+  background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid var(--border);
+  font-size:.87rem;color:var(--text-dim);line-height:1.7;
+}
+.step-item.highlighted .step-detail{display:block;animation:fadeIn .3s ease;}
+.step-detail p{margin-bottom:8px;}
+.step-detail p:last-child{margin-bottom:0;}
+
+/* ---- PROGRESS BAR ---- */
+.progress-bar{height:3px;background:rgba(255,255,255,0.04);border-radius:2px;margin:12px 0 4px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease;}
+
+/* ---- GRID CARDS ---- */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:16px 0;}
+.gcard{
+  background:rgba(255,255,255,0.015);border:1px solid var(--border);border-radius:10px;padding:18px;
+  transition:border-color .2s;
+}
+.gcard:hover{border-color:var(--border-hover);}
+.gcard-icon{font-size:1.5rem;margin-bottom:10px;}
+.gcard-title{font-weight:700;font-size:.9rem;margin-bottom:6px;}
+.gcard-text{font-size:.83rem;color:var(--text-dim);}
+
+/* ---- QUIZ ---- */
+.quiz{background:var(--bg-code);border:1px solid var(--border);border-radius:10px;padding:22px;margin:14px 0;}
+.quiz-q{font-weight:700;font-size:1rem;margin-bottom:14px;}
+.quiz-opts{display:flex;flex-direction:column;gap:6px;}
+.quiz-opt{
+  padding:11px 16px;border:1px solid var(--border);border-radius:8px;
+  background:transparent;color:var(--text-dim);font-family:'Sora',sans-serif;font-size:.88rem;
+  cursor:pointer;text-align:left;transition:all .2s;
+}
+.quiz-opt:hover{border-color:var(--text-muted);color:var(--text);}
+.quiz-opt.correct{border-color:var(--accent3);background:var(--accent3-dim);color:var(--accent3);}
+.quiz-opt.wrong{border-color:var(--accent5);background:var(--accent5-dim);color:var(--accent5);}
+.quiz-opt.locked{pointer-events:none;opacity:.45;}
+.quiz-fb{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.85rem;display:none;}
+.quiz-fb.show{display:block;}
+.quiz-fb.fb-correct{background:var(--accent3-dim);border:1px solid rgba(52,211,153,0.18);color:var(--accent3);}
+.quiz-fb.fb-wrong{background:var(--accent5-dim);border:1px solid rgba(244,114,182,0.18);color:var(--accent5);}
+
+/* ---- FOOTER ---- */
+.footer{text-align:center;padding:40px 0;color:var(--text-muted);font-size:.78rem;}
+
+/* ---- MOBILE ---- */
+@media(max-width:768px){
+  .layout{flex-direction:column;}
+  .sidebar{
+    width:100%;position:static;flex-direction:row;overflow-x:auto;
+    padding-right:0;padding-bottom:12px;gap:4px;
+    border-bottom:1px solid var(--border);margin-bottom:20px;
+  }
+  .nav-btn{white-space:nowrap;min-width:auto;padding:8px 12px;font-size:.76rem;}
+  .card{padding:22px 16px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-chip">Tutoring Session &bull; April 6, 2026</div>
+  <h1>Full-Stack Deep Dive:<br>Your COPE Dashboard</h1>
+  <p>Everything you need to understand about how your frontend, backend, and database connect to show real data on screen.</p>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <button class="nav-btn active" onclick="showSection(0)"><span class="nav-num">1</span>What is an API?</button>
+  <button class="nav-btn" onclick="showSection(1)"><span class="nav-num">2</span>Vue, Nuxt, Nitro</button>
+  <button class="nav-btn" onclick="showSection(2)"><span class="nav-num">3</span>Prisma &amp; SQLite</button>
+  <button class="nav-btn" onclick="showSection(3)"><span class="nav-num">4</span>The 4 Layers</button>
+  <button class="nav-btn" onclick="showSection(4)"><span class="nav-num">5</span>Backend Code</button>
+  <button class="nav-btn" onclick="showSection(5)"><span class="nav-num">6</span>Frontend Code</button>
+  <button class="nav-btn" onclick="showSection(6)"><span class="nav-num">7</span>10-Step Flow</button>
+  <button class="nav-btn" onclick="showSection(7)"><span class="nav-num">8</span>Quiz</button>
+</nav>
+
+<!-- MAIN -->
+<div class="main-content">
+
+<!-- ==================== SECTION 1: WHAT IS AN API ==================== -->
+<div class="section active" id="sec0">
+<div class="card">
+  <h2>What Is an API?</h2>
+  <p>Before we touch any code, let's understand the most important concept in full-stack development.</p>
+
+  <h3>The Simple Definition</h3>
+  <p>API stands for <strong>Application Programming Interface</strong>. It's a way for two programs to talk to each other. In web development, it almost always means: <em>the frontend sends a request to a URL, and the backend sends back data.</em></p>
+
+  <div class="analogy">
+    <div class="analogy-title">🍕 The Pizza Analogy</div>
+    <p>Think of ordering pizza by phone. You (the frontend) call the pizza shop (the backend). You don't walk into the kitchen yourself. You tell them what you want through a known channel (the phone number, which is like the API URL). The kitchen prepares the pizza (queries the database, processes data) and delivers it back to you (JSON response). The phone number + the menu is the API. You don't need to know how they make the pizza, you just need to know what to order and where to call.</p>
+  </div>
+
+  <h3>In Your Dashboard Project</h3>
+  <p>Your dashboard page needs to show stats: how many messages were sent today, how many active keywords there are, etc. That data lives in a database. But the browser (frontend) can't talk to the database directly, that would be a massive security risk. So instead:</p>
+
+  <div class="flowvis">
+    <div class="flowvis-row">
+      <div class="flowvis-box fb-blue">Browser<small>(your Vue page)</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-purple">API Request<small>GET /api/dashboard</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-amber">Server<small>(your .ts file)</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-green">Database<small>(SQLite file)</small></div>
+    </div>
+    <div class="flowvis-caption">← JSON response travels back the same path ←</div>
+  </div>
+
+  <p>The API is the middleman. The frontend asks for data by hitting a URL. The backend handles the request, grabs data from the database, and sends it back as JSON (which is just a structured text format that JavaScript can easily read).</p>
+
+  <h3>What Does JSON Look Like?</h3>
+  <p>JSON is the "language" the API speaks. Here's what your dashboard API sends back:</p>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">API Response</span><span class="codeblk-lang">JSON</span></div>
+    <pre>{
+  <span class="pr">"messages"</span>: [
+    {
+      <span class="pr">"id"</span>: <span class="str">"abc-123"</span>,
+      <span class="pr">"phone"</span>: <span class="str">"+15551234567"</span>,
+      <span class="pr">"keywordDetected"</span>: <span class="str">"HELP"</span>,
+      <span class="pr">"messageText"</span>: <span class="str">"I need help with my baby"</span>,
+      <span class="pr">"status"</span>: <span class="str">"delivered"</span>
+    }
+  ],
+  <span class="pr">"stats"</span>: {
+    <span class="pr">"messagesToday"</span>: <span class="num">12</span>,
+    <span class="pr">"activeKeywords"</span>: <span class="num">4</span>,
+    <span class="pr">"activeCaregivers"</span>: <span class="num">15</span>
+  }
+}</pre>
+  </div>
+  <p>It's just key-value pairs. The frontend receives this object and uses it to fill in the stat cards and the table rows you see on the dashboard.</p>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">🔑</span>
+    <div><strong>Key takeaway:</strong> An API is just a URL that accepts requests and returns data. Your <code>dashboard.get.ts</code> file IS the API endpoint. When the frontend calls <code>/api/dashboard</code>, that file runs, queries the database, and returns JSON.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 2: VUE + NUXT + NITRO ==================== -->
+<div class="section" id="sec1">
+<div class="card">
+  <h2>Vue, Nuxt, and Nitro: What's What?</h2>
+  <p>These three names come up a lot. Here's how they relate, starting from the bottom.</p>
+
+  <h3>Vue.js = The UI Library</h3>
+  <p>Vue is a JavaScript library for building user interfaces. It gives you components, reactivity (when data changes the screen updates automatically), templates with directives like <code>v-for</code> and <code>v-if</code>, and tools like <code>ref()</code> and <code>computed()</code>. Vue handles <em>only the frontend</em>. It runs in the browser. It has no idea what a database is.</p>
+
+  <h3>Nuxt = The Full-Stack Framework (Built on Vue)</h3>
+  <p>Nuxt wraps around Vue and adds everything Vue is missing. You're still writing Vue components (same syntax, same reactivity), but now you also get:</p>
+
+  <div class="grid3">
+    <div class="gcard">
+      <div class="gcard-icon">📁</div>
+      <div class="gcard-title">File-Based Routing</div>
+      <div class="gcard-text">Create a file at <code>pages/dashboard/index.vue</code> and it automatically becomes the <code>/dashboard</code> URL. No router config needed.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-icon">⚙️</div>
+      <div class="gcard-title">Built-in Server</div>
+      <div class="gcard-text">Write API routes in <code>server/api/</code>. No need to set up a separate Express or Fastify server yourself.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-icon">🔄</div>
+      <div class="gcard-title">Composables</div>
+      <div class="gcard-text">Helper functions like <code>useFetch()</code> that make calling your API dead simple. One line to fetch, parse, and store data reactively.</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">🏗️ The Building Analogy</div>
+    <p>If Vue is the bricks and mortar (you can build anything, but you have to do all the plumbing and wiring yourself), then Nuxt is the pre-built house with plumbing and electrical already installed. You're still using the same bricks (Vue components), but Nuxt gives you the structure and infrastructure around them.</p>
+  </div>
+
+  <h3>Nitro = The Backend Engine Inside Nuxt</h3>
+  <p>When you write files inside the <code>server/</code> folder, those run on Node.js, NOT in the browser. The engine that powers those server routes is called <strong>Nitro</strong>. You rarely interact with Nitro directly. The key function you'll see is <code>defineEventHandler()</code>, which is Nitro's way of creating a route handler (like Express's <code>app.get()</code>).</p>
+
+  <h3>How File Names Become Routes</h3>
+  <p>This is the convention that makes Nuxt "magical." The file path and name determine the URL and HTTP method:</p>
+
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">File-Based Routing Rules</span><span class="codeblk-lang">Convention</span></div>
+    <pre><span class="cm">// PAGES (frontend, what the user sees in the browser)</span>
+app/pages/index.vue           <span class="cm">→  /</span>
+app/pages/dashboard/index.vue <span class="cm">→  /dashboard</span>
+app/pages/flows/[id].vue      <span class="cm">→  /flows/123  (dynamic param)</span>
+
+<span class="cm">// API ROUTES (backend, runs on the server)</span>
+server/api/dashboard.get.ts   <span class="cm">→  GET  /api/dashboard</span>
+server/api/auth/login.post.ts <span class="cm">→  POST /api/auth/login</span>
+server/api/flows/[id].put.ts  <span class="cm">→  PUT  /api/flows/123</span></pre>
+  </div>
+
+  <p>The <code>.get</code> / <code>.post</code> / <code>.put</code> suffix tells Nuxt which HTTP method the route responds to. The folder path becomes the URL path. <code>[id]</code> is a dynamic segment that matches any value.</p>
+
+  <div class="callout callout-ok">
+    <span class="callout-icon">✅</span>
+    <div><strong>Bottom line:</strong> You're writing Vue components like normal, but Nuxt organizes them and gives you a backend. Your <code>dashboard.vue</code> is a standard Vue component. Your <code>dashboard.get.ts</code> is a Nuxt/Nitro server route. Same project, two different worlds (browser vs server), connected by HTTP requests.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3: PRISMA + SQLITE ==================== -->
+<div class="section" id="sec2">
+<div class="card">
+  <h2>Prisma &amp; SQLite: The Data Layer</h2>
+
+  <h3>SQLite: The Simplest Database</h3>
+  <p>Most databases (MySQL, PostgreSQL) are separate servers you install and connect to over a network. SQLite is different: it's just a <strong>single file</strong> sitting in your project folder, usually called <code>sqlite.db</code> or <code>dev.db</code>. No server to install, no port, no password. Your app reads and writes directly to that file.</p>
+  <p>In this project, that file lives at <code>/db/sqlite.db</code> inside the repo on Trisha's machine. When the app runs with <code>npm run dev</code>, Prisma talks to that file. That file IS the database, containing all the tables: messages, keywords, caregivers, workflow steps, logs, etc.</p>
+
+  <h3>Prisma: The Translator Between TypeScript and SQL</h3>
+  <p>Prisma is an <strong>ORM (Object-Relational Mapper)</strong>. It lets you interact with your database using TypeScript instead of writing raw SQL queries.</p>
+
+  <div class="compare">
+    <div class="compare-box">
+      <div class="compare-label" style="color:var(--accent4);">Without Prisma (raw SQL)</div>
+      <div class="codeblk" style="margin:8px 0 0;">
+        <div class="codeblk-head"><span class="codeblk-file">query.sql</span><span class="codeblk-lang">SQL</span></div>
+        <pre><span class="kw">SELECT COUNT</span>(*) 
+<span class="kw">FROM</span> caregivers 
+<span class="kw">WHERE</span> status = <span class="str">'ACTIVE'</span>;</pre>
+      </div>
+    </div>
+    <div class="compare-box">
+      <div class="compare-label" style="color:var(--accent3);">With Prisma (TypeScript)</div>
+      <div class="codeblk" style="margin:8px 0 0;">
+        <div class="codeblk-head"><span class="codeblk-file">query.ts</span><span class="codeblk-lang">TS</span></div>
+        <pre>prisma.caregiver.<span class="fn">count</span>({
+  <span class="pr">where</span>: { <span class="pr">status</span>: <span class="str">"ACTIVE"</span> }
+})</pre>
+      </div>
+    </div>
+  </div>
+  <p>Both produce the exact same result. Prisma translates the TypeScript method call into SQL, sends it to the SQLite file, and returns a JavaScript value.</p>
+
+  <h3>How Prisma Knows Your Tables: The Schema</h3>
+  <p>There's a file called <code>prisma/schema.prisma</code> in the project. It defines every table (Prisma calls them "models"), their columns, and relationships:</p>
+
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">prisma/schema.prisma</span><span class="codeblk-lang">Prisma Schema</span></div>
+    <pre><span class="kw">model</span> <span class="ty">Message</span> {
+  <span class="pr">id</span>          <span class="ty">String</span>   <span class="fn">@id</span> <span class="fn">@default</span>(<span class="fn">uuid</span>())
+  <span class="pr">phone</span>       <span class="ty">String</span>
+  <span class="pr">messageText</span> <span class="ty">String</span>
+  <span class="pr">direction</span>   <span class="ty">String</span>    <span class="cm">// "inbound" or "outbound"</span>
+  <span class="pr">createdAt</span>   <span class="ty">DateTime</span> <span class="fn">@default</span>(<span class="fn">now</span>())
+  <span class="pr">logs</span>        <span class="ty">Log</span>[]    <span class="cm">// one message has many logs (relation)</span>
+}
+
+<span class="kw">model</span> <span class="ty">Log</span> {
+  <span class="pr">id</span>        <span class="ty">String</span>   <span class="fn">@id</span>
+  <span class="pr">status</span>    <span class="ty">String</span>   <span class="cm">// "delivered", "failed", etc.</span>
+  <span class="pr">messageId</span> <span class="ty">String</span>
+  <span class="pr">message</span>   <span class="ty">Message</span>  <span class="fn">@relation</span>(<span class="pr">fields</span>: [<span class="pr">messageId</span>], <span class="pr">references</span>: [<span class="pr">id</span>])
+  <span class="pr">createdAt</span> <span class="ty">DateTime</span>
+}</pre>
+  </div>
+
+  <p>When you run <code>npx prisma generate</code>, Prisma reads this schema and generates a <strong>typed client library</strong> customized to your tables. That's why you can write <code>prisma.message.findMany()</code> and get autocomplete for fields like <code>phone</code> and <code>messageText</code>.</p>
+
+  <h3>Prisma Methods Used in This Project</h3>
+  <div class="grid3">
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);"><code>findMany()</code></div>
+      <div class="gcard-text">Returns an <strong>array</strong> of records matching a filter. Equivalent to <code>SELECT * FROM ...</code></div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);"><code>count()</code></div>
+      <div class="gcard-text">Returns a <strong>number</strong> (the count). Equivalent to <code>SELECT COUNT(*) FROM ...</code></div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);"><code>include: {}</code></div>
+      <div class="gcard-text">Fetches <strong>related records</strong> too (like a SQL JOIN). <code>include: { logs: { take: 1 } }</code> grabs the most recent log for each message.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">🔑</span>
+    <div><strong>The full chain:</strong> Schema defines the structure → <code>prisma generate</code> creates the client → your code uses <code>prisma.model.method()</code> → Prisma converts it to SQL → SQL runs against the SQLite file → results come back as JavaScript objects.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4: THE 4 LAYERS ==================== -->
+<div class="section" id="sec3">
+<div class="card">
+  <h2>The 4 Layers of This App</h2>
+  <p>Click each layer to expand it and see what it does, what files belong to it, and how it connects to the next layer.</p>
+
+  <div class="layers" id="layerStack">
+    <div class="layer lb-blue" onclick="toggleLayer(0)">
+      <span class="layer-badge">LAYER 1</span>
+      <div class="layer-info">
+        <div class="layer-name">Vue Template (What You See)</div>
+        <div class="layer-desc">The HTML with stat cards, table rows, filters, and pagination buttons.</div>
+      </div>
+      <span class="layer-file">&lt;template&gt;</span>
+    </div>
+    <div class="layer-expand" id="layerExp0">
+      <p>This is the <code>&lt;template&gt;</code> section of the Vue file. It's HTML with Vue directives sprinkled in: <code>{{ stats?.messagesToday }}</code> displays a number. <code>v-for="msg in pageMessages"</code> loops through messages to create table rows. <code>v-if</code> conditionally shows icons. <code>@click</code> handles button presses.</p>
+      <p>This layer doesn't fetch data or know where it comes from. It just reads from reactive variables that the script layer provides.</p>
+      <p><strong>Connects to Layer 2 by:</strong> reading <code>stats</code>, <code>pageMessages</code>, <code>filteredMessages</code>, and other reactive variables.</p>
+    </div>
+
+    <div class="layer lb-purple" onclick="toggleLayer(1)">
+      <span class="layer-badge">LAYER 2</span>
+      <div class="layer-info">
+        <div class="layer-name">Vue Script (Reactive Logic)</div>
+        <div class="layer-desc">Fetches data, filters it, paginates it, handles user interactions.</div>
+      </div>
+      <span class="layer-file">&lt;script setup&gt;</span>
+    </div>
+    <div class="layer-expand" id="layerExp1">
+      <p>This is the <code>&lt;script setup&gt;</code> section. It runs when the page loads. Its job: call <code>useFetch('/api/dashboard')</code> to get data from the backend, then process that data using <code>computed()</code> properties (filtering by time, keyword, search text, then slicing for pagination).</p>
+      <p>It also manages user interaction state with <code>ref()</code>: which page they're on (<code>currentPage</code>), what they typed in search (<code>search</code>), which keywords they toggled (<code>selectedKeywords</code>).</p>
+      <p><strong>Connects to Layer 3 by:</strong> calling <code>useFetch('/api/dashboard')</code>, which sends an HTTP GET request to the server.</p>
+    </div>
+
+    <div class="layer lb-amber" onclick="toggleLayer(2)">
+      <span class="layer-badge">LAYER 3</span>
+      <div class="layer-info">
+        <div class="layer-name">Nuxt Server Route (API Backend)</div>
+        <div class="layer-desc">Receives the HTTP request, runs database queries, returns JSON.</div>
+      </div>
+      <span class="layer-file">dashboard.get.ts</span>
+    </div>
+    <div class="layer-expand" id="layerExp2">
+      <p>This file runs ONLY on the server (Node.js), never in the browser. When the frontend hits <code>/api/dashboard</code>, Nuxt routes the request here because of the naming convention.</p>
+      <p>Inside <code>defineEventHandler</code>, it calculates UTC date boundaries, fires 5 Prisma queries in parallel using <code>Promise.all</code>, processes the results (percent change, message status mapping), and returns a JSON object.</p>
+      <p><strong>Connects to Layer 4 by:</strong> calling Prisma methods like <code>prisma.message.findMany()</code> and <code>prisma.caregiver.count()</code>.</p>
+    </div>
+
+    <div class="layer lb-green" onclick="toggleLayer(3)">
+      <span class="layer-badge">LAYER 4</span>
+      <div class="layer-info">
+        <div class="layer-name">Prisma + SQLite (Database)</div>
+        <div class="layer-desc">Translates TypeScript to SQL, reads/writes the database file on disk.</div>
+      </div>
+      <span class="layer-file">schema.prisma + sqlite.db</span>
+    </div>
+    <div class="layer-expand" id="layerExp3">
+      <p>Prisma takes each method call and translates it into SQL. It sends that SQL to the SQLite file and returns the result as JavaScript values.</p>
+      <p>The schema defines the structure (what tables exist, what columns they have, how tables relate). The SQLite file is the actual storage, a single binary file on disk.</p>
+      <p><strong>This is the bottom of the stack.</strong> Data flows back up: SQLite → Prisma → Server Route → useFetch → computed() → template → your screen.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-ok">
+    <span class="callout-icon">✅</span>
+    <div><strong>The rule:</strong> Each layer only talks to its immediate neighbor. The template reads from the script. The script calls the API. The API calls Prisma. Prisma queries SQLite. No layer skips over another.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5: BACKEND CODE ==================== -->
+<div class="section" id="sec4">
+<div class="card">
+  <h2>Backend Breakdown: dashboard.get.ts</h2>
+  <p>Let's go through the actual code piece by piece.</p>
+
+  <h3>1. The Import and Handler Wrapper</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.get.ts</span><span class="codeblk-lang">Lines 1-4</span></div>
+    <pre><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">'../utils/prisma'</span>
+
+<span class="kw">export default</span> <span class="fn">defineEventHandler</span>(<span class="kw">async</span> (event) => {
+  <span class="cm">// everything happens in here</span>
+})</pre>
+  </div>
+  <p>Line 1 imports the Prisma client (a pre-configured instance ready to query the database). The rest wraps everything in <code>defineEventHandler</code>, Nuxt/Nitro's way of defining an API route handler. The <code>async</code> keyword is necessary because database queries are asynchronous (they take time, you have to wait).</p>
+
+  <h3>2. Date Boundaries (Why UTC Matters)</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.get.ts</span><span class="codeblk-lang">Lines 6-12</span></div>
+    <pre><span class="kw">const</span> now = <span class="kw">new</span> <span class="ty">Date</span>()
+
+<span class="cm">// "Today" = midnight UTC today to midnight UTC tomorrow</span>
+<span class="kw">const</span> todayStart = <span class="kw">new</span> <span class="ty">Date</span>(<span class="ty">Date</span>.<span class="fn">UTC</span>(
+  now.<span class="fn">getUTCFullYear</span>(),  <span class="cm">// 2026</span>
+  now.<span class="fn">getUTCMonth</span>(),     <span class="cm">// 3 (months are 0-indexed, 3 = April)</span>
+  now.<span class="fn">getUTCDate</span>(),      <span class="cm">// 6</span>
+  <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>              <span class="cm">// hours, min, sec, ms all zeroed</span>
+))</pre>
+  </div>
+
+  <div class="callout callout-warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>Why UTC?</strong> The database stores timestamps in UTC. If you used local Central Time (UTC-5), a message created at 11 PM Central on April 5th is actually 4 AM April 6th in UTC. Using UTC boundaries prevents this mismatch. The database speaks UTC, so we ask questions in UTC.</div>
+  </div>
+
+  <h3>3. Promise.all: Running 5 Queries at Once</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.get.ts</span><span class="codeblk-lang">Lines 14-33</span></div>
+    <pre><span class="kw">const</span> [
+  messagesMonthList,      <span class="cm">// Query 1: all messages this month</span>
+  messagesYesterdayCount, <span class="cm">// Query 2: count of yesterday's messages</span>
+  keyword,                <span class="cm">// Query 3: count of active keywords</span>
+  workflowStep,           <span class="cm">// Query 4: count of workflow steps</span>
+  caregiverCount          <span class="cm">// Query 5: count of active caregivers</span>
+] = <span class="kw">await</span> <span class="ty">Promise</span>.<span class="fn">all</span>([
+  prisma.message.<span class="fn">findMany</span>({<span class="cm">/* month filter + include logs */</span>}),
+  prisma.message.<span class="fn">count</span>({<span class="cm">/* yesterday filter */</span>}),
+  prisma.keyword.<span class="fn">count</span>({ <span class="pr">where</span>: { <span class="pr">isActive</span>: <span class="kw">true</span> } }),
+  prisma.workflowStep.<span class="fn">count</span>(),
+  prisma.caregiver.<span class="fn">count</span>({ <span class="pr">where</span>: { <span class="pr">status</span>: <span class="str">"ACTIVE"</span> } })
+])</pre>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">🍳 The Breakfast Analogy for Promise.all</div>
+    <p>Making breakfast one thing at a time: toast bread (2 min), then fry eggs (3 min), then pour juice (30 sec) = 5.5 minutes. Making breakfast in parallel with Promise.all: start everything at the same time, finish when the slowest is done = 3 minutes. Same results, much faster. That's what Promise.all does with database queries.</p>
+  </div>
+
+  <p>The left side uses <strong>array destructuring</strong>: the results come back as <code>[result1, result2, result3, result4, result5]</code>, and we give each one a name. Order matters, the first name matches the first query.</p>
+
+  <h3>4. Post-Processing and Return</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.get.ts</span><span class="codeblk-lang">Lines 35-60</span></div>
+    <pre><span class="cm">// Filter the month list to count just today's messages</span>
+<span class="kw">const</span> messagesToday = messagesMonthList.<span class="fn">filter</span>(msg => {
+  <span class="kw">const</span> created = <span class="kw">new</span> <span class="ty">Date</span>(msg.createdAt)
+  <span class="kw">return</span> created >= todayStart && created < tomorrowStart
+}).length  <span class="cm">// .length gives the count after filtering</span>
+
+<span class="cm">// Compute % change vs yesterday</span>
+<span class="kw">let</span> percentChange = <span class="num">0</span>
+<span class="kw">if</span> (yesterdayCount === <span class="num">0</span>) {
+  percentChange = messagesToday === <span class="num">0</span> ? <span class="num">0</span> : <span class="num">100</span>
+} <span class="kw">else</span> {
+  percentChange = Math.<span class="fn">round</span>(
+    ((messagesToday - yesterdayCount) / yesterdayCount) * <span class="num">100</span>
+  )
+}
+
+<span class="cm">// Return the final JSON response</span>
+<span class="kw">return</span> {
+  <span class="pr">messages</span>: <span class="cm">/* mapped array with clean shape */</span>,
+  <span class="pr">stats</span>: { <span class="pr">messagesToday</span>, <span class="pr">percentChange</span>, <span class="pr">activeKeywords</span>, ... }
+}</pre>
+  </div>
+
+  <p>Whatever you <code>return</code>, Nuxt automatically converts it to JSON and sends it as the HTTP response. The frontend receives this exact shape.</p>
+</div>
+</div>
+
+<!-- ==================== SECTION 6: FRONTEND CODE ==================== -->
+<div class="section" id="sec5">
+<div class="card">
+  <h2>Frontend Breakdown: dashboard.vue</h2>
+
+  <h3>1. Fetching Data</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.vue</span><span class="codeblk-lang">Line 7</span></div>
+    <pre><span class="kw">const</span> { data } = <span class="kw">await</span> <span class="fn">useFetch</span>(<span class="str">'/api/dashboard'</span>)</pre>
+  </div>
+  <p>This single line sends an HTTP GET request to <code>/api/dashboard</code>, waits for the JSON response, and stores it in a <strong>reactive</strong> variable called <code>data</code>. "Reactive" means if this value changes, anything on screen that depends on it re-renders automatically.</p>
+
+  <h3>2. ref() vs computed()</h3>
+  <div class="compare">
+    <div class="compare-box">
+      <div class="compare-label" style="color:var(--accent);">ref() = A box you put things in</div>
+      <p style="font-size:.85rem;color:var(--text-dim);margin-top:6px;">A value you can directly read and write. User types in search? That updates a <code>ref</code>. User clicks page 2? That updates a <code>ref</code>.</p>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-top:4px;">Examples: <code>search</code>, <code>currentPage</code>, <code>selectedKeywords</code></p>
+    </div>
+    <div class="compare-box">
+      <div class="compare-label" style="color:var(--accent4);">computed() = An Excel formula</div>
+      <p style="font-size:.85rem;color:var(--text-dim);margin-top:6px;">A value that <em>derives</em> from other values. You never set it directly. It recalculates automatically when its inputs change.</p>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-top:4px;">Examples: <code>messages</code>, <code>filteredMessages</code>, <code>totalPages</code>, <code>pageMessages</code></p>
+    </div>
+  </div>
+
+  <h3>3. The Operators: ?. and ??</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">Operator Cheatsheet</span><span class="codeblk-lang">JS/TS</span></div>
+    <pre><span class="cm">// ?. = Optional Chaining</span>
+<span class="cm">// "Access .messages, but if data.value is null, just return</span>
+<span class="cm">//  undefined instead of crashing."</span>
+data.value?.<span class="pr">messages</span>
+
+<span class="cm">// ?? = Nullish Coalescing</span>
+<span class="cm">// "If the left side is null or undefined, use the right side."</span>
+data.value?.<span class="pr">messages</span> ?? []
+<span class="cm">// = "Give me messages, or an empty array if there aren't any."</span></pre>
+  </div>
+
+  <h3>4. The Filtering Pipeline</h3>
+  <div class="flowvis">
+    <div class="flowvis-row">
+      <div class="flowvis-box fb-blue">All Messages<small>from API</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-amber">Time Filter<small>today/week/month</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-purple">Keyword Filter<small>HELP/COPE/etc</small></div>
+      <div class="flowvis-arrow">→</div>
+      <div class="flowvis-box fb-green">Search Filter<small>text matching</small></div>
+    </div>
+    <div class="flowvis-caption">Each step narrows the list. 50 msgs → 20 (this week) → 8 (HELP only) → 3 (matching "555")</div>
+  </div>
+  <p>Each filter uses JavaScript's <code>.filter()</code> method, which returns a new array with only the items that pass the test. They chain: the output of one becomes the input of the next.</p>
+
+  <h3>5. Pagination Math</h3>
+  <div class="codeblk">
+    <div class="codeblk-head"><span class="codeblk-file">dashboard.vue</span><span class="codeblk-lang">Pagination</span></div>
+    <pre><span class="kw">const</span> pageSize = <span class="num">4</span>  <span class="cm">// 4 messages per page</span>
+
+<span class="cm">// 12 messages / 4 per page = 3 pages</span>
+<span class="kw">const</span> totalPages = <span class="fn">computed</span>(() =>
+  Math.<span class="fn">ceil</span>(filteredMessages.value.length / pageSize)
+)
+
+<span class="cm">// Which 4 to show? Page 2 = items 4,5,6,7</span>
+<span class="kw">const</span> pageMessages = <span class="fn">computed</span>(() => {
+  <span class="kw">const</span> start = (currentPage.value - <span class="num">1</span>) * pageSize
+  <span class="kw">return</span> filteredMessages.value.<span class="fn">slice</span>(start, start + pageSize)
+})</pre>
+  </div>
+
+  <h3>6. Vue Template Cheatsheet</h3>
+  <div class="grid3">
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>{{ value }}</code></div>
+      <div class="gcard-text">Inserts a value into HTML. "Mustache syntax."</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>v-for</code></div>
+      <div class="gcard-text">Loop. Repeats an element for each item. Needs <code>:key</code>.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>v-if / v-else</code></div>
+      <div class="gcard-text">Only renders if condition is true.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>v-model</code></div>
+      <div class="gcard-text">Two-way sync between input field and a <code>ref()</code>.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>@click</code></div>
+      <div class="gcard-text">Runs code on click. Short for <code>v-on:click</code>.</div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-title" style="color:var(--accent);font-size:.82rem;"><code>:style / :class</code></div>
+      <div class="gcard-text">Dynamic binding. Sets styles/classes from data.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 7: 10-STEP FLOW ==================== -->
+<div class="section" id="sec6">
+<div class="card">
+  <h2>The Complete 10-Step Journey</h2>
+  <p>The entire lifecycle from page load to pixels on screen. Click each step, or use the Prev/Next buttons to walk through.</p>
+
+  <div class="stepper">
+    <div class="stepper-head">
+      <span>▶ Data Lifecycle Walkthrough</span>
+      <div class="stepper-controls">
+        <button class="stepper-btn" id="prevBtn" onclick="stepperPrev()" disabled>← Prev</button>
+        <span id="stepCounter" style="font-size:.72rem;color:var(--text-muted);padding:0 6px;">1 / 10</span>
+        <button class="stepper-btn" id="nextBtn" onclick="stepperNext()">Next →</button>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
+    <div class="stepper-body" id="stepperBody">
+
+      <div class="step-item highlighted" onclick="stepperGo(0)">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title-text">User opens /dashboard in the browser</div>
+          <div class="step-sub">Nuxt matches the URL to <code>app/pages/dashboard/index.vue</code></div>
+          <div class="step-detail">
+            <p>The browser requests the <code>/dashboard</code> page. Nuxt's file-based router finds <code>dashboard/index.vue</code> and loads it. No manual route config exists, it's all automatic from the file path.</p>
+            <p><strong>Where:</strong> Nuxt router (automatic).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(1)">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title-text">Vue runs the &lt;script setup&gt; block</div>
+          <div class="step-sub">Variables, computed properties, and the useFetch call initialize</div>
+          <div class="step-detail">
+            <p><code>&lt;script setup&gt;</code> executes top to bottom. It creates <code>ref()</code> variables for user state (search, currentPage, selectedKeywords), defines all the <code>computed()</code> properties, and hits the critical <code>useFetch</code> line.</p>
+            <p><strong>Where:</strong> <code>dashboard.vue</code>, lines 1-127.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(2)">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title-text">useFetch('/api/dashboard') fires an HTTP GET</div>
+          <div class="step-sub">The frontend asks the backend for data</div>
+          <div class="step-detail">
+            <p><code>useFetch</code> sends an HTTP GET to <code>/api/dashboard</code>. Since both frontend and backend live in the same Nuxt project, no full URL is needed. The <code>await</code> pauses execution until the response arrives.</p>
+            <p><strong>Where:</strong> <code>dashboard.vue</code>, line 7.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(3)">
+        <div class="step-num">04</div>
+        <div>
+          <div class="step-title-text">Nuxt routes the request to dashboard.get.ts</div>
+          <div class="step-sub">File-based API routing: the filename IS the route</div>
+          <div class="step-detail">
+            <p>Nuxt sees GET <code>/api/dashboard</code> and looks for <code>server/api/dashboard.get.ts</code>. Found. It runs the <code>defineEventHandler</code> function. Just like Express's <code>app.get('/api/dashboard', handler)</code>, but without manual setup.</p>
+            <p><strong>Where:</strong> Nuxt/Nitro routing (automatic).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(4)">
+        <div class="step-num">05</div>
+        <div>
+          <div class="step-title-text">Handler calculates UTC date boundaries</div>
+          <div class="step-sub">todayStart, tomorrowStart, weekStart, monthStart, yesterdayStart</div>
+          <div class="step-detail">
+            <p>Before querying, the code creates Date objects for midnight boundaries in UTC. These become the <code>WHERE</code> clause boundaries: "give me messages between todayStart and tomorrowStart."</p>
+            <p><strong>Where:</strong> <code>dashboard.get.ts</code>, lines 6-12.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(5)">
+        <div class="step-num">06</div>
+        <div>
+          <div class="step-title-text">Promise.all fires 5 Prisma queries in parallel</div>
+          <div class="step-sub">Month messages, yesterday count, keywords, workflows, caregivers</div>
+          <div class="step-detail">
+            <p>All 5 database queries start at the same time. The function waits until ALL complete, then destructures results into named variables. Much faster than running them sequentially.</p>
+            <p><strong>Where:</strong> <code>dashboard.get.ts</code>, lines 14-33.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(6)">
+        <div class="step-num">07</div>
+        <div>
+          <div class="step-title-text">Prisma translates to SQL, queries SQLite</div>
+          <div class="step-sub"><code>prisma.caregiver.count({where: {status: "ACTIVE"}})</code> → <code>SELECT COUNT(*) FROM caregivers WHERE status='ACTIVE'</code></div>
+          <div class="step-detail">
+            <p>Each Prisma method call becomes a SQL query, executed against the <code>sqlite.db</code> file on disk. Results are converted back to JavaScript values. The <code>include: { logs: { take: 1 } }</code> creates a JOIN to fetch the latest log per message.</p>
+            <p><strong>Where:</strong> Prisma Client (internal), <code>db/sqlite.db</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(7)">
+        <div class="step-num">08</div>
+        <div>
+          <div class="step-title-text">Backend processes results and returns JSON</div>
+          <div class="step-sub">Computes messagesToday, percentChange, maps statuses, shapes the response object</div>
+          <div class="step-detail">
+            <p>The handler filters month messages to count today's, calculates percent change vs yesterday, maps each message to a clean shape (extracting status from logs), then <code>return</code>s the final object. Nuxt auto-serializes it to JSON.</p>
+            <p><strong>Where:</strong> <code>dashboard.get.ts</code>, lines 35-60.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(8)">
+        <div class="step-num">09</div>
+        <div>
+          <div class="step-title-text">useFetch receives JSON, stores in data</div>
+          <div class="step-sub">computed() chain recalculates: messages → filteredMessages → pageMessages</div>
+          <div class="step-detail">
+            <p>The JSON arrives. <code>useFetch</code> stores it in the <code>data</code> ref. Vue's reactivity kicks in: every <code>computed()</code> that depends on <code>data</code> recalculates. <code>messages</code> gets the array, <code>stats</code> gets the stats, <code>filteredMessages</code> applies filters, <code>pageMessages</code> slices for the current page.</p>
+            <p><strong>Where:</strong> <code>dashboard.vue</code>, lines 7-11 + computed chain.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item" onclick="stepperGo(9)">
+        <div class="step-num">10</div>
+        <div>
+          <div class="step-title-text">Template renders: stat cards fill, table rows appear</div>
+          <div class="step-sub"><code>{{ stats?.messagesToday }}</code> shows the count, <code>v-for</code> creates table rows</div>
+          <div class="step-detail">
+            <p>Vue reads the reactive values and renders. Stat cards show numbers. <code>v-for</code> creates one <code>&lt;tr&gt;</code> per message. <code>v-if</code> picks the right status icon. The user sees the dashboard with live data from the database. The full journey is complete!</p>
+            <p><strong>Where:</strong> <code>dashboard.vue</code>, <code>&lt;template&gt;</code> section.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== SECTION 8: QUIZ ==================== -->
+<div class="section" id="sec7">
+<div class="card">
+  <h2>Quiz: Test Your Understanding</h2>
+  <p>See if the concepts clicked. Pick the best answer for each.</p>
+
+  <div class="quiz" id="q1">
+    <div class="quiz-q">1. What is the relationship between Vue and Nuxt?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q1',this,false)">They are completely separate frameworks</button>
+      <button class="quiz-opt" onclick="answer('q1',this,true)">Nuxt is built on top of Vue, adding server, routing, and backend capabilities</button>
+      <button class="quiz-opt" onclick="answer('q1',this,false)">Vue replaced Nuxt in 2024</button>
+      <button class="quiz-opt" onclick="answer('q1',this,false)">Nuxt is a CSS framework for Vue</button>
+    </div>
+    <div class="quiz-fb" id="q1fb"></div>
+  </div>
+
+  <div class="quiz" id="q2">
+    <div class="quiz-q">2. Why can't the browser query the database directly?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q2',this,false)">Browsers don't support JavaScript</button>
+      <button class="quiz-opt" onclick="answer('q2',this,true)">Security risk: anyone could read or modify all the data</button>
+      <button class="quiz-opt" onclick="answer('q2',this,false)">SQLite files are encrypted</button>
+      <button class="quiz-opt" onclick="answer('q2',this,false)">The database is too slow for browsers</button>
+    </div>
+    <div class="quiz-fb" id="q2fb"></div>
+  </div>
+
+  <div class="quiz" id="q3">
+    <div class="quiz-q">3. What does <code>useFetch('/api/dashboard')</code> do?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q3',this,false)">Imports and runs dashboard.get.ts in the browser</button>
+      <button class="quiz-opt" onclick="answer('q3',this,true)">Sends an HTTP GET to the server, receives JSON, stores it reactively</button>
+      <button class="quiz-opt" onclick="answer('q3',this,false)">Creates the database tables</button>
+      <button class="quiz-opt" onclick="answer('q3',this,false)">Renders the template</button>
+    </div>
+    <div class="quiz-fb" id="q3fb"></div>
+  </div>
+
+  <div class="quiz" id="q4">
+    <div class="quiz-q">4. How does Nuxt know that GET /api/dashboard maps to dashboard.get.ts?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q4',this,false)">Manual config in nuxt.config.ts</button>
+      <button class="quiz-opt" onclick="answer('q4',this,true)">File-based routing: file path = URL, .get suffix = GET method</button>
+      <button class="quiz-opt" onclick="answer('q4',this,false)">defineEventHandler registers it by name</button>
+      <button class="quiz-opt" onclick="answer('q4',this,false)">A separate routes.json file</button>
+    </div>
+    <div class="quiz-fb" id="q4fb"></div>
+  </div>
+
+  <div class="quiz" id="q5">
+    <div class="quiz-q">5. What does Prisma do?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q5',this,false)">CSS framework for databases</button>
+      <button class="quiz-opt" onclick="answer('q5',this,true)">Translates TypeScript method calls into SQL queries for the database</button>
+      <button class="quiz-opt" onclick="answer('q5',this,false)">Sends HTTP requests between frontend and backend</button>
+      <button class="quiz-opt" onclick="answer('q5',this,false)">Creates frontend components</button>
+    </div>
+    <div class="quiz-fb" id="q5fb"></div>
+  </div>
+
+  <div class="quiz" id="q6">
+    <div class="quiz-q">6. Why use Promise.all for the 5 database queries?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q6',this,true)">Runs all 5 at the same time instead of one after another, much faster</button>
+      <button class="quiz-opt" onclick="answer('q6',this,false)">Combines them into one SQL statement</button>
+      <button class="quiz-opt" onclick="answer('q6',this,false)">Required by Prisma</button>
+      <button class="quiz-opt" onclick="answer('q6',this,false)">Makes queries run on separate CPU cores</button>
+    </div>
+    <div class="quiz-fb" id="q6fb"></div>
+  </div>
+
+  <div class="quiz" id="q7">
+    <div class="quiz-q">7. What is the difference between ref() and computed()?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q7',this,false)">ref() is backend, computed() is frontend</button>
+      <button class="quiz-opt" onclick="answer('q7',this,true)">ref() is state you modify directly, computed() auto-derives from other reactive data</button>
+      <button class="quiz-opt" onclick="answer('q7',this,false)">ref() is faster</button>
+      <button class="quiz-opt" onclick="answer('q7',this,false)">Same thing, different syntax</button>
+    </div>
+    <div class="quiz-fb" id="q7fb"></div>
+  </div>
+
+  <div class="quiz" id="q8">
+    <div class="quiz-q">8. What does <code>data.value?.messages ?? []</code> mean?</div>
+    <div class="quiz-opts">
+      <button class="quiz-opt" onclick="answer('q8',this,false)">Delete messages and replace with empty array</button>
+      <button class="quiz-opt" onclick="answer('q8',this,true)">Safely access messages (don't crash if null), fall back to empty array if missing</button>
+      <button class="quiz-opt" onclick="answer('q8',this,false)">Check if messages equals an empty array</button>
+      <button class="quiz-opt" onclick="answer('q8',this,false)">Create a new array called messages</button>
+    </div>
+    <div class="quiz-fb" id="q8fb"></div>
+  </div>
+
+  <div id="quizScore" style="margin-top:20px;padding:18px 22px;border-radius:10px;background:var(--accent-dim);border:1px solid rgba(56,189,248,0.18);display:none;">
+    <span style="font-weight:700;color:var(--accent);font-size:1.1rem;" id="scoreText"></span>
+  </div>
+</div>
+</div>
+
+</div><!-- /main-content -->
+</div><!-- /layout -->
+
+<div class="footer">COPE Dashboard Full-Stack Lesson &bull; Vladimir C. Tutoring &bull; April 2026</div>
+
+</div><!-- /wrap -->
+
+<script>
+// SECTION SWITCHING
+function showSection(i){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec'+i).classList.add('active');
+  document.querySelectorAll('.nav-btn')[i].classList.add('active');
+  window.scrollTo({top:document.querySelector('.layout').offsetTop-20,behavior:'smooth'});
+}
+
+// LAYER EXPAND
+function toggleLayer(i){
+  const exp=document.getElementById('layerExp'+i);
+  const wasOpen=exp.classList.contains('open');
+  document.querySelectorAll('.layer-expand').forEach(e=>e.classList.remove('open'));
+  document.querySelectorAll('.layer').forEach(l=>l.classList.remove('layer-active'));
+  if(!wasOpen){
+    exp.classList.add('open');
+    exp.previousElementSibling.classList.add('layer-active');
+  }
+}
+
+// STEPPER
+let currentStep=0;
+const totalSteps=10;
+function stepperGo(i){
+  currentStep=i;
+  const items=document.querySelectorAll('#stepperBody .step-item');
+  items.forEach((el,idx)=>el.classList.toggle('highlighted',idx===i));
+  document.getElementById('stepCounter').textContent=(i+1)+' / '+totalSteps;
+  document.getElementById('progressFill').style.width=((i+1)/totalSteps*100)+'%';
+  document.getElementById('prevBtn').disabled=i===0;
+  document.getElementById('nextBtn').disabled=i===totalSteps-1;
+  items[i].scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function stepperNext(){if(currentStep<totalSteps-1)stepperGo(currentStep+1);}
+function stepperPrev(){if(currentStep>0)stepperGo(currentStep-1);}
+
+// QUIZ
+const fb={
+  q1:{y:"Correct! Vue handles the UI. Nuxt wraps it and adds routing, a server, composables, and more.",n:"Not quite. Nuxt is built ON TOP of Vue. You still write Vue components, but Nuxt adds server, routing, and backend capabilities."},
+  q2:{y:"Exactly. If browsers could query your database, anyone visiting your site could read or change all your data. The server is the gatekeeper.",n:"It's about security. If any browser could talk to the database directly, anyone could read, modify, or delete data. The server controls access."},
+  q3:{y:"Right! It sends an HTTP request. The server responds with JSON. useFetch stores it reactively so the UI auto-updates.",n:"useFetch sends an HTTP request to the backend. The .ts file runs on the server, not the browser. The JSON result comes back and gets stored reactively."},
+  q4:{y:"Yes! The file path under server/api/ becomes the URL, and the .get suffix means it handles GET requests. No config file needed.",n:"Nuxt uses file-based routing. The file path and .get/.post suffix determine the URL and HTTP method automatically."},
+  q5:{y:"Exactly! Prisma is the translator between TypeScript and SQL. You write prisma.model.method() and it generates and runs the SQL.",n:"Prisma is an ORM. It translates TypeScript method calls into SQL, runs them against the database, and returns JavaScript objects."},
+  q6:{y:"Right! Parallel means the total wait is roughly the slowest query, not the sum of all 5.",n:"Promise.all runs all queries concurrently. Instead of waiting for each sequentially, they all start at the same time."},
+  q7:{y:"Exactly! ref() is a variable you set. computed() is a formula that auto-updates when its inputs change, like Excel.",n:"ref() is for mutable state (user inputs, page number). computed() automatically derives a value from other reactive data."},
+  q8:{y:"Right! The ?. prevents a crash if null. The ?? provides a fallback so the template always has something safe to render.",n:"The ?. is optional chaining (safe access). The ?? is nullish coalescing (default value if null/undefined)."}
+};
+let answered=0,correct=0;
+function answer(qId,btn,isCorrect){
+  const card=document.getElementById(qId);
+  const fbEl=document.getElementById(qId+'fb');
+  card.querySelectorAll('.quiz-opt').forEach(o=>{o.classList.add('locked');o.classList.remove('correct','wrong');});
+  answered++;
+  if(isCorrect){
+    btn.classList.add('correct');
+    fbEl.className='quiz-fb show fb-correct';
+    fbEl.textContent=fb[qId].y;
+    correct++;
+  } else {
+    btn.classList.add('wrong');
+    fbEl.className='quiz-fb show fb-wrong';
+    fbEl.textContent=fb[qId].n;
+  }
+  if(answered===8){
+    const sc=document.getElementById('quizScore');
+    sc.style.display='block';
+    document.getElementById('scoreText').textContent='Score: '+correct+' / 8'+
+      (correct>=7?' — Excellent understanding!':
+       correct>=5?' — Good foundation, review what you missed.':
+       ' — Let\'s revisit the material together.');
+    sc.scrollIntoView({behavior:'smooth'});
+  }
+}
+</script>
+</body>
+</html>
