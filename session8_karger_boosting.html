@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 8 — Conditional Probability, Karger's Analysis & Boosting</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f1117;
+  --bg2: #161822;
+  --bg3: #1c1f2e;
+  --card: #1a1d2b;
+  --border: #2a2d3e;
+  --text: #d4d7e5;
+  --text2: #9498ab;
+  --accent: #6c9bff;
+  --accent2: #4a7adf;
+  --green: #5ce0a8;
+  --green-bg: rgba(92, 224, 168, 0.08);
+  --red: #ff6b7a;
+  --red-bg: rgba(255, 107, 122, 0.08);
+  --yellow: #ffd76c;
+  --yellow-bg: rgba(255, 215, 108, 0.08);
+  --purple: #b494f7;
+  --orange: #ff9b5e;
+  --code-bg: #121420;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 17px;
+}
+
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15,17,23,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 16px;
+  overflow-x: auto;
+}
+.topbar .label {
+  font-size: 13px; font-weight: 600; color: var(--accent);
+  white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.topbar .parts { display: flex; gap: 6px; }
+.topbar .part-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text2); padding: 5px 14px; border-radius: 6px;
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.topbar .part-btn:hover { border-color: var(--accent); color: var(--text); }
+.topbar .part-btn.active {
+  background: var(--accent); color: #0f1117; border-color: var(--accent); font-weight: 600;
+}
+
+.section {
+  display: none; max-width: 820px; margin: 0 auto;
+  padding: 100px 28px 80px;
+  animation: fadeUp 0.4s ease;
+}
+.section.active { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  font-family: 'Source Serif 4', serif;
+  font-size: 2.6em; font-weight: 700; line-height: 1.2; margin-bottom: 12px;
+}
+h1 em { font-style: italic; color: var(--accent); }
+h2 {
+  font-family: 'Source Serif 4', serif;
+  font-size: 1.65em; font-weight: 600; margin: 48px 0 16px;
+  color: var(--text); line-height: 1.3;
+}
+h3 {
+  font-size: 1.15em; font-weight: 600; margin: 32px 0 10px; color: var(--accent);
+}
+p { margin: 12px 0; }
+strong { color: var(--text); font-weight: 600; }
+
+.subtitle {
+  font-size: 1.1em; color: var(--text2); margin-bottom: 40px; line-height: 1.6;
+}
+.session-tag {
+  font-size: 13px; font-weight: 600; color: var(--accent);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px 28px; margin: 24px 0;
+  box-shadow: var(--shadow);
+}
+.card.accent-border { border-left: 3px solid var(--accent); }
+.card.green-border { border-left: 3px solid var(--green); }
+.card.yellow-border { border-left: 3px solid var(--yellow); }
+.card.red-border { border-left: 3px solid var(--red); }
+
+.card-label {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; margin-bottom: 10px;
+}
+.card-label.blue { color: var(--accent); }
+.card-label.green { color: var(--green); }
+.card-label.yellow { color: var(--yellow); }
+.card-label.red { color: var(--red); }
+.card-label.purple { color: var(--purple); }
+
+.math {
+  font-family: 'Source Serif 4', serif; font-size: 1.08em; color: var(--text);
+}
+.math-block {
+  font-family: 'Source Serif 4', serif; font-size: 1.2em;
+  text-align: center; padding: 20px; margin: 20px 0;
+  background: var(--code-bg); border-radius: 10px;
+  border: 1px solid var(--border); color: var(--text); overflow-x: auto;
+}
+.math-block.big { font-size: 1.45em; }
+.pronun {
+  color: var(--yellow); font-family: 'DM Sans', sans-serif;
+  font-size: 0.82em; font-weight: 500;
+}
+
+table {
+  width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95em;
+}
+th {
+  background: var(--bg3); text-align: left; padding: 12px 16px;
+  font-weight: 600; border-bottom: 2px solid var(--border);
+  color: var(--accent); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;
+}
+td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top;
+}
+tr:hover td { background: rgba(108,155,255,0.03); }
+
+.interactive-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px; margin: 28px 0; position: relative;
+}
+.interactive-box::before {
+  content: "⚡ INTERACTIVE"; position: absolute; top: -10px; left: 20px;
+  background: var(--accent); color: #0f1117;
+  font-size: 11px; font-weight: 700; padding: 2px 10px;
+  border-radius: 4px; letter-spacing: 1px;
+}
+
+button, .btn {
+  font-family: 'DM Sans', sans-serif; padding: 10px 22px;
+  border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--accent); color: #0f1117; border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { background: var(--bg3); color: var(--text); }
+.btn-secondary:hover { background: var(--border); }
+
+.reveal-container { margin: 20px 0; }
+.reveal-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--accent); padding: 12px 24px; border-radius: 8px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600; width: 100%;
+  text-align: left; transition: all 0.2s;
+}
+.reveal-btn:hover { border-color: var(--accent); background: var(--bg2); }
+.reveal-content {
+  display: none; padding: 20px 24px; margin-top: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; animation: fadeUp 0.3s ease;
+}
+.reveal-content.show { display: block; }
+
+.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+@media (max-width: 680px) { .columns { grid-template-columns: 1fr; } }
+
+.nav-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--border);
+}
+.nav-footer button {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 12px 28px; border-radius: 8px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.nav-footer button:hover { border-color: var(--accent); color: var(--accent); }
+
+.quiz-option {
+  display: block; width: 100%;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 14px 20px; border-radius: 8px;
+  margin: 8px 0; cursor: pointer; text-align: left;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; transition: all 0.2s;
+}
+.quiz-option:hover { border-color: var(--accent); }
+.quiz-option.correct {
+  border-color: var(--green); background: var(--green-bg); color: var(--green);
+}
+.quiz-option.wrong {
+  border-color: var(--red); background: var(--red-bg); color: var(--red);
+}
+.quiz-feedback {
+  margin-top: 12px; padding: 14px 18px; border-radius: 8px;
+  font-size: 0.95em; display: none;
+}
+.quiz-feedback.show { display: block; }
+
+.slider-row {
+  display: flex; align-items: center; gap: 14px; margin: 12px 0;
+}
+.slider-row label { font-weight: 600; min-width: 40px; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--accent); height: 6px; }
+.slider-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  color: var(--accent); min-width: 48px; text-align: right;
+}
+
+.step-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; margin: 16px 0;
+  position: relative; transition: all 0.3s;
+}
+.step-box.active-step { border-color: var(--accent); background: var(--card); }
+.step-box.done-step { border-color: var(--green); }
+.step-num {
+  position: absolute; top: -12px; left: 16px;
+  background: var(--bg); padding: 0 10px;
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.step-box.active-step .step-num { color: var(--accent); }
+.step-box.done-step .step-num { color: var(--green); }
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--code-bg); padding: 2px 7px; border-radius: 4px;
+  font-size: 0.88em; color: var(--green);
+}
+.highlight { color: var(--accent); font-weight: 600; }
+.highlight-green { color: var(--green); font-weight: 600; }
+.highlight-yellow { color: var(--yellow); font-weight: 600; }
+.highlight-red { color: var(--red); font-weight: 600; }
+.highlight-purple { color: var(--purple); font-weight: 600; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+ul, ol { margin: 12px 0 12px 28px; }
+li { margin: 6px 0; }
+.text-center { text-align: center; }
+.mt-2 { margin-top: 16px; }
+.mt-4 { margin-top: 32px; }
+.mb-2 { margin-bottom: 16px; }
+.small { font-size: 0.88em; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TOP NAV ═══════════════════════ -->
+<div class="topbar">
+  <span class="label">Session 8</span>
+  <div class="parts" id="navParts"></div>
+</div>
+
+<!-- ═══════════════════════ PART 1: RECAP ═══════════════════════ -->
+<div class="section active" id="part1">
+  <div class="session-tag">CS 6515 · Session 8 of 8 · 60 min</div>
+  <h1>Karger's <em>Analysis</em> & Boosting</h1>
+  <p class="subtitle">
+    Conditional probability, independence, the full proof that Karger's works, and how repeating a bad algorithm makes it great.
+  </p>
+  <p class="small" style="margin-bottom: 36px;">← Session 7 covered: Las Vegas vs Monte Carlo · Probability foundations · Bernoulli, Binomial, Geometric · Expectation · Linearity of expectation · Karger's contraction algorithm (no analysis yet). Today: the math behind <em>why</em> Karger's works.</p>
+
+  <h2>Quick Recap: Where We Left Off</h2>
+  <p>Last session we learned Karger's algorithm: repeatedly contract a random edge until only 2 super-vertices remain. The edges between them form a cut. But we left the biggest question unanswered:</p>
+
+  <div class="card yellow-border">
+    <div class="card-label yellow">🔑 The Open Question From Session 7</div>
+    <p style="font-size:1.1em;">What is the probability that Karger's algorithm outputs the <strong>correct</strong> minimum cut?</p>
+  </div>
+
+  <p>To answer this, we need two new probability tools: <strong>conditional probability</strong> and <strong>independence</strong>. These are the last pieces of the probability toolkit before we can do the full analysis.</p>
+
+  <h2>Quick Warm-Up Quiz</h2>
+  <div class="interactive-box">
+    <p><strong>From Session 7: If X ~ Geometric(1/5), what is E[X]?</strong></p>
+    <div id="quiz0">
+      <button class="quiz-option" onclick="checkQuiz('quiz0', this, false)">1/5</button>
+      <button class="quiz-option" data-correct="true" onclick="checkQuiz('quiz0', this, true)">5 (E[Geometric(p)] = 1/p = 1/(1/5) = 5)</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz0', this, false)">25</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz0', this, false)">4/5</button>
+    </div>
+    <div class="quiz-feedback" id="quiz0-fb"></div>
+  </div>
+
+  <div class="nav-footer">
+    <span></span>
+    <button onclick="goTo(2)">Conditional Probability →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 2: CONDITIONAL PROBABILITY ═══════════════════════ -->
+<div class="section" id="part2">
+  <div class="session-tag">Part 2 / 8</div>
+  <h1><em>Conditional</em> Probability</h1>
+  <p class="subtitle">How does knowing that one event happened change the probability of another?</p>
+
+  <h2>The Definition</h2>
+  <p>Let A and B be two events (subsets of the sample space Ω). The <strong>conditional probability of A given B</strong> is:</p>
+
+  <div class="math-block big">
+    P(A | B) = P(A ∩ B) / P(B)
+  </div>
+
+  <p>Read <span class="math">P(A | B)</span> as "the probability of A, given that B happened." The vertical bar "|" means "given" or "knowing that."</p>
+
+  <p>Intuitively: once we know B happened, the sample space "shrinks" to just the outcomes in B. The conditional probability asks what fraction of those outcomes in B also satisfy A.</p>
+
+  <div class="card accent-border">
+    <div class="card-label blue">⚠️ Important</div>
+    <p>P(B) must be greater than 0 for this to make sense. You can't condition on an event that's impossible.</p>
+  </div>
+
+  <h3>Concrete Example: Two Dice</h3>
+  <div class="card green-border">
+    <div class="card-label green">Worked Example</div>
+    <p>Roll two fair dice. Let:</p>
+    <ul>
+      <li>A = "the sum is 8"</li>
+      <li>B = "the first die shows a 3"</li>
+    </ul>
+    <p><strong>Without</strong> conditioning: P(A) = 5/36 (the pairs summing to 8 are (2,6), (3,5), (4,4), (5,3), (6,2)).</p>
+    <p><strong>With</strong> conditioning on B: if we know the first die is 3, the only way to get sum 8 is (3, 5). Out of the 6 equally likely outcomes where the first die is 3, exactly 1 gives sum 8.</p>
+    <div class="math-block">
+      P(A | B) = P(A ∩ B) / P(B) = (1/36) / (6/36) = 1/6
+    </div>
+    <p class="small">Knowing the first die is 3 changed the probability of "sum is 8" from 5/36 ≈ 0.139 to 1/6 ≈ 0.167. The information shifted things slightly upward.</p>
+  </div>
+
+  <h2>Interactive: Conditional Probability with Cards</h2>
+  <div class="interactive-box">
+    <p><strong>A standard deck has 52 cards: 4 suits × 13 ranks.</strong></p>
+    <p class="small mb-2">Choose event A and event B, and see how P(A|B) compares to P(A).</p>
+
+    <div class="columns" style="gap:12px;">
+      <div>
+        <label style="font-size:13px; color:var(--text2); font-weight:600;">Event A:</label>
+        <select id="eventA" onchange="updateCondProb()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg3); color:var(--text); border:1px solid var(--border); font-family:'DM Sans',sans-serif; font-size:14px; margin-top:6px;">
+          <option value="heart">Card is a Heart</option>
+          <option value="face">Card is a Face card (J, Q, K)</option>
+          <option value="ace">Card is an Ace</option>
+          <option value="red">Card is Red</option>
+          <option value="even">Card has even rank (2,4,6,8,10)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:13px; color:var(--text2); font-weight:600;">Event B (given):</label>
+        <select id="eventB" onchange="updateCondProb()" style="width:100%; padding:10px; border-radius:8px; background:var(--bg3); color:var(--text); border:1px solid var(--border); font-family:'DM Sans',sans-serif; font-size:14px; margin-top:6px;">
+          <option value="red">Card is Red</option>
+          <option value="face">Card is a Face card (J, Q, K)</option>
+          <option value="heart">Card is a Heart</option>
+          <option value="ace">Card is an Ace</option>
+          <option value="even">Card has even rank (2,4,6,8,10)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:20px;">
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(A)</p>
+        <p style="font-size:1.5em; font-weight:700; color:var(--text);" id="cpPA">—</p>
+      </div>
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(A ∩ B)</p>
+        <p style="font-size:1.5em; font-weight:700; color:var(--yellow);" id="cpPAB">—</p>
+      </div>
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(A | B)</p>
+        <p style="font-size:1.5em; font-weight:700; color:var(--accent);" id="cpPAgivenB">—</p>
+      </div>
+    </div>
+    <p class="text-center small mt-2" id="cpExplanation"></p>
+  </div>
+
+  <h2>The Chain Rule (Rearranging the Definition)</h2>
+  <p>If we multiply both sides of the definition by P(B), we get the <strong>chain rule</strong>:</p>
+  <div class="math-block">
+    P(A ∩ B) = P(B) · P(A | B)
+  </div>
+  <p>This is extremely useful: it lets us compute the probability that <em>both</em> events happen by breaking it into two pieces: the probability of the first event, times the conditional probability of the second given the first. We'll use this pattern repeatedly in the Karger proof.</p>
+
+  <p>More generally, for a sequence of events E₁, E₂, …, Eₙ:</p>
+  <div class="math-block" style="font-size:1.05em;">
+    P(E₁ ∩ E₂ ∩ … ∩ Eₙ) = P(E₁) · P(E₂ | E₁) · P(E₃ | E₁ ∩ E₂) · … · P(Eₙ | E₁ ∩ … ∩ Eₙ₋₁)
+  </div>
+  <p class="small">This is the <strong>generalized chain rule</strong>, and it's the exact tool we'll use to analyze Karger's algorithm step by step.</p>
+
+  <h2>Quick Check</h2>
+  <div class="interactive-box">
+    <p><strong>You draw one card from a deck. Given that it's a face card (J, Q, K), what's the probability it's a King?</strong></p>
+    <p class="small">There are 12 face cards total (4 Jacks + 4 Queens + 4 Kings), and 4 of them are Kings.</p>
+    <div id="quiz1">
+      <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">4/52 = 1/13</button>
+      <button class="quiz-option" data-correct="true" onclick="checkQuiz('quiz1', this, true)">4/12 = 1/3 (given it's a face card, only 12 cards remain, 4 are Kings)</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">1/4 (one suit out of four)</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz1', this, false)">3/13</button>
+    </div>
+    <div class="quiz-feedback" id="quiz1-fb"></div>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(1)">← Recap</button>
+    <button onclick="goTo(3)">Independence →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 3: INDEPENDENCE ═══════════════════════ -->
+<div class="section" id="part3">
+  <div class="session-tag">Part 3 / 8</div>
+  <h1><em>Independence</em></h1>
+  <p class="subtitle">When knowing one event tells you nothing about another.</p>
+
+  <h2>Definition: Independent Events</h2>
+  <p>Two events A and B are <strong>independent</strong> if knowing B happened does not change the probability of A:</p>
+  <div class="math-block big">
+    P(A | B) = P(A)
+  </div>
+  <p>Using the definition of conditional probability, this is equivalent to:</p>
+  <div class="math-block big">
+    P(A ∩ B) = P(A) · P(B)
+  </div>
+  <p>This second form is the one you'll use most often, because it doesn't require P(B) > 0 as a prerequisite and is symmetric in A and B.</p>
+
+  <div class="card accent-border">
+    <div class="card-label blue">💡 Key Intuition</div>
+    <p><strong>Independent</strong> = the events don't affect each other. Flipping a coin twice: the result of flip 1 doesn't change the probabilities for flip 2.</p>
+    <p style="margin-top:8px;"><strong>Not independent (dependent)</strong> = knowing one changes the other. Drawing cards without replacement: if the first card is an Ace, there are fewer Aces left, changing probabilities for the second draw.</p>
+  </div>
+
+  <h3>Concrete Example</h3>
+  <div class="card green-border">
+    <div class="card-label green">Worked Example</div>
+    <p>Roll a fair die. Let:</p>
+    <ul>
+      <li>A = "the result is even" = {2, 4, 6}, so P(A) = 3/6 = 1/2</li>
+      <li>B = "the result is ≤ 3" = {1, 2, 3}, so P(B) = 3/6 = 1/2</li>
+    </ul>
+    <p>A ∩ B = {2} (the only outcome that is both even and ≤ 3), so P(A ∩ B) = 1/6.</p>
+    <p>Check: P(A) · P(B) = (1/2)(1/2) = 1/4. But P(A ∩ B) = 1/6 ≠ 1/4.</p>
+    <p style="color:var(--red); font-weight:600; margin-top:8px;">A and B are NOT independent.</p>
+    <p class="small mt-2">Knowing the die is ≤ 3 changes the probability of even: P(A | B) = P({2})/P({1,2,3}) = (1/6)/(3/6) = 1/3, which is different from P(A) = 1/2. So knowing B makes A less likely.</p>
+  </div>
+
+  <h2>Independence of Random Variables</h2>
+  <p>Two random variables X and Y are <strong>independent</strong> if for every pair of sets A and B:</p>
+  <div class="math-block">
+    P(X ∈ A, Y ∈ B) = P(X ∈ A) · P(Y ∈ B)
+  </div>
+  <p>In practice: if X and Y are computed from completely separate random experiments (like two different coin flips, or two separate random edge choices), they're independent. If they share any source of randomness, they might not be.</p>
+
+  <div class="card yellow-border">
+    <div class="card-label yellow">⚠️ Common Mistake</div>
+    <p><strong>Independent ≠ mutually exclusive.</strong> These are totally different concepts!</p>
+    <ul>
+      <li><strong>Mutually exclusive:</strong> A ∩ B = ∅ (they can't both happen). This means P(A ∩ B) = 0.</li>
+      <li><strong>Independent:</strong> P(A ∩ B) = P(A)·P(B) (knowing one doesn't affect the other).</li>
+    </ul>
+    <p class="small mt-2">If two events both have positive probability, they CANNOT be both mutually exclusive and independent. Mutually exclusive events are actually <em>maximally dependent</em>: if A happens, B definitely didn't.</p>
+  </div>
+
+  <h2>Quick Check</h2>
+  <div class="interactive-box">
+    <p><strong>You flip two fair coins. Let A = "first coin is heads" and B = "second coin is heads." Are A and B independent?</strong></p>
+    <div id="quiz2">
+      <button class="quiz-option" data-correct="true" onclick="checkQuiz('quiz2', this, true)">Yes, P(A∩B) = 1/4 = P(A)·P(B) = (1/2)(1/2). The coins don't affect each other.</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz2', this, false)">No, because they're the same type of experiment.</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz2', this, false)">No, because P(A∩B) ≠ 0.</button>
+    </div>
+    <div class="quiz-feedback" id="quiz2-fb"></div>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(2)">← Conditional Probability</button>
+    <button onclick="goTo(4)">Karger's Setup →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 4: KARGER SETUP ═══════════════════════ -->
+<div class="section" id="part4">
+  <div class="session-tag">Part 4 / 8</div>
+  <h1>Analyzing <em>Karger's</em>: The Setup</h1>
+  <p class="subtitle">Setting up the proof by defining the right events and identifying the key claim.</p>
+
+  <h2>The Algorithm (Quick Refresher)</h2>
+  <div class="card">
+    <div style="background:var(--code-bg); padding:16px 20px; border-radius:8px; font-family:'JetBrains Mono', monospace; font-size:14px; line-height:2;">
+      <span style="color:var(--purple);">Algorithm</span> Karger(G = (V, E)):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--purple);">while</span> |V| > 2:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pick edge e uniformly at random<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G ← G<sub>e</sub>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--text2);">// contract e</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--purple);">return</span> G&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--text2);">// edges between the 2 remaining super-vertices</span>
+    </div>
+  </div>
+
+  <p>Let n = |V| (number of vertices). The algorithm performs exactly <strong>n − 2</strong> contractions. Let's call the randomly chosen edges e₁, e₂, …, eₙ₋₂ in order.</p>
+
+  <h2>The Question</h2>
+  <p>Fix a specific min-cut <span class="math">Δ</span> <span class="pronun">(capital Greek letter Delta, "DEL-tuh")</span>. This is the set of edges that cross the min-cut. Let |Δ| be the number of edges in the min-cut (i.e., the min-cut value).</p>
+
+  <p>The algorithm succeeds (returns Δ) if and only if <strong>none</strong> of the contracted edges belong to Δ. If we ever contract an edge from Δ, we merge two vertices that should be on opposite sides, destroying the cut forever.</p>
+
+  <div class="card accent-border">
+    <div class="card-label blue">🎯 What We Need to Prove</div>
+    <div class="math-block">
+      P(W returns Δ) = P(e₁ ∉ Δ, e₂ ∉ Δ, …, eₙ₋₂ ∉ Δ)
+    </div>
+    <p>Using the <strong>chain rule</strong> from Part 2, this equals:</p>
+    <div class="math-block" style="font-size:1.05em;">
+      P(e₁ ∉ Δ) · P(e₂ ∉ Δ | e₁ ∉ Δ) · P(e₃ ∉ Δ | e₁,e₂ ∉ Δ) · … · P(eₙ₋₂ ∉ Δ | e₁,…,eₙ₋₃ ∉ Δ)
+    </div>
+    <p class="small">We'll bound each factor separately. This is where conditional probability becomes essential.</p>
+  </div>
+
+  <h2>The Key Claim</h2>
+  <p>Before bounding the first factor, we need one crucial observation about min-cuts:</p>
+
+  <div class="card green-border">
+    <div class="card-label green">Claim</div>
+    <p>If Δ is a min-cut of graph G, then <strong>every vertex v has degree at least |Δ|</strong>.</p>
+    <div style="margin: 16px 0;">
+      <p><strong>Why?</strong> Consider any single vertex v. The set of edges touching v (its "star") forms a cut: {v} on one side, everyone else on the other. This cut has value = deg(v). Since Δ is the <em>minimum</em> cut, its value |Δ| must be ≤ every other cut's value. So |Δ| ≤ deg(v).</p>
+    </div>
+    <p>In other words: <span class="math">deg(v) ≥ |Δ|</span> for all v ∈ V.</p>
+  </div>
+
+  <h3>Why This Matters</h3>
+  <p>From the claim, we can derive a bound on the total number of edges:</p>
+  <div class="math-block">
+    2|E| = <span style="font-size:0.85em;">∑</span><sub>v ∈ V</sub> deg(v) ≥ |V| · |Δ| = n · |Δ|
+  </div>
+  <p class="small">(The left side uses the handshaking lemma: every edge contributes 2 to the sum of degrees.)</p>
+  <p>Rearranging:</p>
+  <div class="math-block">
+    |E| ≥ n · |Δ| / 2 &nbsp;&nbsp;&nbsp; which means &nbsp;&nbsp;&nbsp; |Δ| / |E| ≤ 2/n
+  </div>
+  <p>This ratio |Δ|/|E| is the probability that a randomly chosen edge lands in the min-cut. So the probability of <em>not</em> hitting the min-cut is at least 1 − 2/n. This is the starting point for Step 1 of the proof.</p>
+
+  <h2>Quick Check</h2>
+  <div class="interactive-box">
+    <p><strong>A graph has 10 vertices and a min-cut of value 4. Using the claim, what is the minimum possible number of edges?</strong></p>
+    <p class="small">Recall: 2|E| ≥ n · |Δ|</p>
+    <div id="quiz3">
+      <button class="quiz-option" onclick="checkQuiz('quiz3', this, false)">10</button>
+      <button class="quiz-option" data-correct="true" onclick="checkQuiz('quiz3', this, true)">20 (2|E| ≥ 10 × 4 = 40, so |E| ≥ 20)</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz3', this, false)">40</button>
+      <button class="quiz-option" onclick="checkQuiz('quiz3', this, false)">14</button>
+    </div>
+    <div class="quiz-feedback" id="quiz3-fb"></div>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(3)">← Independence</button>
+    <button onclick="goTo(5)">The Full Proof →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 5: THE FULL PROOF ═══════════════════════ -->
+<div class="section" id="part5">
+  <div class="session-tag">Part 5 / 8</div>
+  <h1>The Full <em>Proof</em></h1>
+  <p class="subtitle">Step by step through the probability calculation, using conditional probability and a beautiful telescoping product.</p>
+
+  <p>We'll walk through each step of the proof. Click "Next Step" to reveal each one, and make sure you understand it before moving on.</p>
+
+  <div id="proofSteps">
+    <!-- STEP 1 -->
+    <div class="step-box active-step" id="proofStep1">
+      <div class="step-num">Step 1: First Contraction</div>
+      <h3 style="margin-top:8px;">P(e₁ ∉ Δ)</h3>
+      <p>The first edge e₁ is chosen uniformly at random from all |E| edges. The "bad" edges (the ones in Δ) number |Δ|. So:</p>
+      <div class="math-block">
+        P(e₁ ∈ Δ) = |Δ| / |E|
+      </div>
+      <p>Therefore:</p>
+      <div class="math-block">
+        P(e₁ ∉ Δ) = 1 − |Δ| / |E|
+      </div>
+      <p>From Part 4, we showed |Δ|/|E| ≤ 2/n. So:</p>
+      <div class="math-block" style="border-color:var(--green);">
+        P(e₁ ∉ Δ) ≥ 1 − 2/n = <strong style="color:var(--green);">(n − 2) / n</strong>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-box" id="proofStep2" style="opacity:0.4;">
+      <div class="step-num">Step 2: Second Contraction</div>
+      <h3 style="margin-top:8px;">P(e₂ ∉ Δ | e₁ ∉ Δ)</h3>
+      <div id="step2content" style="display:none;">
+        <p>Given that e₁ ∉ Δ (we didn't destroy the min-cut in step 1), the graph has been contracted once. The new graph G<sub>e₁</sub> has:</p>
+        <ul>
+          <li><strong>n − 1</strong> vertices (one pair was merged)</li>
+          <li>Δ is <strong>still a min-cut</strong> of this contracted graph (since we didn't touch any edge in Δ)</li>
+        </ul>
+        <p>By the exact same argument as Step 1, but now with n − 1 vertices:</p>
+        <div class="math-block" style="border-color:var(--green);">
+          P(e₂ ∉ Δ | e₁ ∉ Δ) ≥ 1 − 2/(n − 1) = <strong style="color:var(--green);">(n − 3) / (n − 1)</strong>
+        </div>
+        <p class="small">This is the crucial insight: after a safe contraction, the graph shrinks by 1 vertex, but the min-cut is preserved, so the same degree-based argument applies again.</p>
+      </div>
+    </div>
+
+    <!-- STEP K -->
+    <div class="step-box" id="proofStep3" style="opacity:0.4;">
+      <div class="step-num">Step 3: General Step k</div>
+      <h3 style="margin-top:8px;">P(eₖ ∉ Δ | e₁, …, eₖ₋₁ ∉ Δ)</h3>
+      <div id="step3content" style="display:none;">
+        <p>After k − 1 safe contractions, the graph has <strong>n − (k − 1) = n − k + 1</strong> vertices. Δ is still a min-cut. So:</p>
+        <div class="math-block" style="border-color:var(--green);">
+          P(eₖ ∉ Δ | e₁, …, eₖ₋₁ ∉ Δ) ≥ 1 − 2/(n − k + 1) = <strong style="color:var(--green);">(n − k − 1) / (n − k + 1)</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- MULTIPLY -->
+    <div class="step-box" id="proofStep4" style="opacity:0.4;">
+      <div class="step-num">Step 4: Multiply Everything Together</div>
+      <h3 style="margin-top:8px;">The Telescoping Product</h3>
+      <div id="step4content" style="display:none;">
+        <p>By the chain rule, the probability that ALL n − 2 contractions avoid Δ is the product of all the conditional probabilities:</p>
+        <div class="math-block" style="font-size:1.0em;">
+          P(W returns Δ) ≥ <span style="font-size:0.9em;">(n−2)/n</span> · <span style="font-size:0.9em;">(n−3)/(n−1)</span> · <span style="font-size:0.9em;">(n−4)/(n−2)</span> · … · <span style="font-size:0.9em;">1/3</span>
+        </div>
+        <p>Look what happens: the numerator of each fraction cancels with the denominator two terms later! This is a <strong>telescoping product</strong>:</p>
+        <div class="math-block" style="font-size:1.0em;">
+          = <span style="font-size:0.9em;">
+          <span style="text-decoration:line-through; color:var(--text2);">(n−2)</span>/n ·
+          <span style="text-decoration:line-through; color:var(--text2);">(n−3)</span>/(n−1) ·
+          <span style="text-decoration:line-through; color:var(--text2);">(n−4)</span>/<span style="text-decoration:line-through; color:var(--text2);">(n−2)</span> ·
+          <span style="text-decoration:line-through; color:var(--text2);">(n−5)</span>/<span style="text-decoration:line-through; color:var(--text2);">(n−3)</span> · … ·
+          2/<span style="text-decoration:line-through; color:var(--text2);">4</span> ·
+          1/3
+          </span>
+        </div>
+        <p>After cancellation, only two terms survive in the denominator (n and n−1) and two in the numerator (2 and 1):</p>
+        <div class="math-block big" style="border-color:var(--green);">
+          P(W returns Δ) ≥ <strong style="color:var(--green);">2 / (n(n − 1))</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <button class="btn btn-primary" id="nextStepBtn" onclick="revealNextStep()">Next Step →</button>
+    <button class="btn btn-secondary" onclick="resetSteps()" style="margin-left:8px;">Reset</button>
+  </div>
+
+  <div id="proofSummary" style="display:none;">
+    <div class="card green-border mt-4">
+      <div class="card-label green">✅ Theorem (Karger's Success Probability)</div>
+      <p>For a graph with n vertices, a single run of Karger's contraction algorithm returns the correct min-cut with probability at least:</p>
+      <div class="math-block big">
+        2 / (n(n − 1)) = 2 / <span style="font-size:0.85em;">(</span><sup style="font-size:0.7em;">n</sup><sub style="font-size:0.7em;">2</sub><span style="font-size:0.85em;">)</span>⁻¹ ≈ 2/n²
+      </div>
+      <p class="small">For n = 100 vertices, that's about 2/9900 ≈ 0.02%. Sounds terrible, but we can fix it.</p>
+    </div>
+  </div>
+
+  <h2 style="margin-top:48px;">Interactive: See the Numbers</h2>
+  <div class="interactive-box">
+    <p><strong>Plug in a graph size to see the success probability.</strong></p>
+    <div class="slider-row">
+      <label>n =</label>
+      <input type="range" id="nSlider" min="3" max="100" value="10" oninput="updateProofCalc()">
+      <span class="slider-val" id="nVal">10</span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;">
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">Contractions needed</p>
+        <p style="font-size:1.6em; font-weight:700; color:var(--text);" id="calcContractions">8</p>
+      </div>
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(success) ≥</p>
+        <p style="font-size:1.6em; font-weight:700; color:var(--accent);" id="calcProb">2.22%</p>
+      </div>
+    </div>
+    <p class="text-center small mt-2" id="calcExact"></p>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(4)">← Karger's Setup</button>
+    <button onclick="goTo(6)">Boosting →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 6: BOOSTING ═══════════════════════ -->
+<div class="section" id="part6">
+  <div class="session-tag">Part 6 / 8</div>
+  <h1><em>Boosting</em> the Probability</h1>
+  <p class="subtitle">Running a bad algorithm many times to make it great. The power of repetition.</p>
+
+  <h2>The Idea</h2>
+  <p>A single run of Karger's succeeds with probability ≥ 2/n². That's small. But what if we run it <strong>N times</strong> and keep the best (smallest) cut we find?</p>
+
+  <div class="card">
+    <div style="background:var(--code-bg); padding:16px 20px; border-radius:8px; font-family:'JetBrains Mono', monospace; font-size:14px; line-height:2;">
+      <span style="color:var(--purple);">Algorithm</span> BoostedKarger(G, N):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;best ← ∞<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--purple);">for</span> i = 1 to N:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cut ← Karger(G)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--purple);">if</span> value(cut) < best:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;best ← cut<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--purple);">return</span> best
+    </div>
+  </div>
+
+  <p>Each run is <strong>independent</strong> (fresh random choices). The algorithm fails only if <em>all N runs</em> fail to find the min-cut.</p>
+
+  <h2>The Math</h2>
+  <p>Let p = 2/n² be (a lower bound on) the success probability of one run. Then:</p>
+
+  <div class="math-block">
+    P(single run fails) ≤ 1 − 2/n²
+  </div>
+  <div class="math-block">
+    P(all N runs fail) ≤ (1 − 2/n²)<sup>N</sup>
+  </div>
+  <p>Since the runs are independent, we just multiply the failure probabilities. So:</p>
+  <div class="math-block">
+    P(at least one run succeeds) ≥ 1 − (1 − 2/n²)<sup>N</sup>
+  </div>
+
+  <h2>The Key Limit</h2>
+  <p>To simplify this, we use a fundamental calculus fact:</p>
+  <div class="card accent-border">
+    <div class="card-label blue">Useful Limit</div>
+    <div class="math-block">
+      lim<sub>m→∞</sub> (1 + α/m)<sup>m</sup> = e<sup>α</sup>
+    </div>
+    <p class="small"><span class="math">e</span> <span class="pronun">(Euler's number, "OY-lerz", ≈ 2.718)</span> is the base of the natural logarithm. This limit appears everywhere in probability.</p>
+    <p style="margin-top:8px;">In our case, α = −2 and m = n². So (1 − 2/n²)<sup>n²</sup> ≈ e<sup>−2</sup> ≈ 0.135.</p>
+  </div>
+
+  <h2>Choosing N</h2>
+  <p>The choice of N determines how confident we are:</p>
+
+  <div class="columns">
+    <div class="card green-border">
+      <div class="card-label green">Choice 1: N = n²/2</div>
+      <div class="math-block" style="font-size:1.0em;">
+        P(success) ≥ 1 − e<sup>−1</sup> ≈ <strong style="color:var(--green);">63.2%</strong>
+      </div>
+      <p class="small">A single round of n²/2 runs gives >63% chance. Decent but not great.</p>
+    </div>
+    <div class="card green-border">
+      <div class="card-label green">Choice 2: N = n²</div>
+      <div class="math-block" style="font-size:1.0em;">
+        P(success) ≥ 1 − e<sup>−2</sup> ≈ <strong style="color:var(--green);">86.5%</strong>
+      </div>
+      <p class="small">Almost 87%. Getting much better.</p>
+    </div>
+  </div>
+
+  <div class="card accent-border" style="border-left-color:var(--green);">
+    <div class="card-label green">⭐ Choice 3: N = n² · ln(n)</div>
+    <p>This is the important one for the exam. Using the limit with N = n² ln(n):</p>
+    <div class="math-block">
+      (1 − 2/n²)<sup>n² ln(n)</sup> ≈ (e<sup>−2</sup>)<sup>ln(n)</sup> = e<sup>−2 ln(n)</sup> = n<sup>−2</sup> = 1/n²
+    </div>
+    <p>So:</p>
+    <div class="math-block big" style="border-color:var(--green);">
+      P(success) ≥ 1 − 1/n² 
+    </div>
+    <p class="small">For n = 100: P(success) ≥ 1 − 1/10000 = 99.99%. The algorithm is now almost certain to find the min-cut!</p>
+    <p class="small mt-2"><strong>Runtime:</strong> Each run of Karger's takes O(n²) time. With N = n² ln(n) runs, total time is O(n⁴ ln n). That's polynomial!</p>
+  </div>
+
+  <h2>Interactive: Boosting Simulator</h2>
+  <div class="interactive-box">
+    <p><strong>See how the success probability grows with the number of runs.</strong></p>
+    <div class="slider-row">
+      <label>n =</label>
+      <input type="range" id="boostN" min="4" max="50" value="10" oninput="updateBoost()">
+      <span class="slider-val" id="boostNVal">10</span>
+    </div>
+    <div class="slider-row">
+      <label>N =</label>
+      <input type="range" id="boostRuns" min="1" max="1000" value="50" oninput="updateBoost()">
+      <span class="slider-val" id="boostRunsVal">50</span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px;">
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(1 run succeeds)</p>
+        <p style="font-size:1.3em; font-weight:700; color:var(--red);" id="boostSingle">—</p>
+      </div>
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">P(≥1 of N succeeds)</p>
+        <p style="font-size:1.3em; font-weight:700; color:var(--green);" id="boostTotal">—</p>
+      </div>
+      <div class="card" style="margin:0; text-align:center;">
+        <p class="small">Total runtime</p>
+        <p style="font-size:1.3em; font-weight:700; color:var(--text);" id="boostRuntime">—</p>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <p class="small mb-2">Suggested N values (click to set):</p>
+      <button class="btn btn-secondary" onclick="setBoostN('half')" style="font-size:12px; padding:6px 14px;">N = n²/2</button>
+      <button class="btn btn-secondary" onclick="setBoostN('full')" style="font-size:12px; padding:6px 14px; margin-left:6px;">N = n²</button>
+      <button class="btn btn-primary" onclick="setBoostN('log')" style="font-size:12px; padding:6px 14px; margin-left:6px;">N = n² ln(n) ⭐</button>
+    </div>
+
+    <!-- success probability bar -->
+    <div style="margin-top:20px; background:var(--bg3); border-radius:8px; height:32px; overflow:hidden; position:relative;">
+      <div id="boostBar" style="height:100%; background:linear-gradient(90deg, var(--accent), var(--green)); border-radius:8px; transition:width 0.3s; width:0%;"></div>
+      <div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600;" id="boostBarLabel">0%</div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(5)">← The Full Proof</button>
+    <button onclick="goTo(7)">Practice Problems →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 7: PRACTICE ═══════════════════════ -->
+<div class="section" id="part7">
+  <div class="session-tag">Part 7 / 8</div>
+  <h1>Practice <em>Problems</em></h1>
+  <p class="subtitle">Work through these to solidify everything from today. Paper first, then check.</p>
+
+  <!-- PROBLEM 1 -->
+  <h2>Problem 1: Conditional Probability Basics</h2>
+  <div class="card">
+    <p>A bag contains 5 red balls and 3 blue balls. You draw two balls <strong>without replacement</strong>.</p>
+    <ol style="list-style-type: lower-alpha;">
+      <li>What is P(2nd ball is red | 1st ball is red)?</li>
+      <li>What is P(both balls are red)?</li>
+      <li>Are the events "1st ball is red" and "2nd ball is red" independent? Why or why not?</li>
+    </ol>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p><strong>(a)</strong> If the 1st ball is red, 4 red and 3 blue remain (7 total). So P(2nd red | 1st red) = <strong>4/7</strong>.</p>
+      <p><strong>(b)</strong> Using the chain rule: P(both red) = P(1st red) · P(2nd red | 1st red) = (5/8) · (4/7) = <strong>20/56 = 5/14 ≈ 0.357</strong>.</p>
+      <p><strong>(c)</strong> <strong>NOT independent.</strong> P(2nd red) = 5/8 (by symmetry, each ball is equally likely to be in any position). But P(2nd red | 1st red) = 4/7 ≠ 5/8. Drawing the first ball changes the composition of what remains, so the events are dependent.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 2 -->
+  <h2>Problem 2: Independence Check</h2>
+  <div class="card">
+    <p>Roll a fair die. Let A = "result is prime" = {2, 3, 5} and B = "result is odd" = {1, 3, 5}.</p>
+    <ol style="list-style-type: lower-alpha;">
+      <li>Compute P(A), P(B), and P(A ∩ B).</li>
+      <li>Are A and B independent? Check using the product rule.</li>
+      <li>Compute P(A | B). Is it different from P(A)?</li>
+    </ol>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p><strong>(a)</strong> P(A) = 3/6 = 1/2. P(B) = 3/6 = 1/2. A ∩ B = {3, 5}, so P(A ∩ B) = 2/6 = 1/3.</p>
+      <p><strong>(b)</strong> P(A) · P(B) = (1/2)(1/2) = 1/4. But P(A ∩ B) = 1/3 ≠ 1/4. <strong>NOT independent.</strong></p>
+      <p><strong>(c)</strong> P(A | B) = P(A ∩ B)/P(B) = (1/3)/(1/2) = <strong>2/3</strong>. This is different from P(A) = 1/2, confirming dependence. Knowing the result is odd makes "prime" more likely (2/3 vs 1/2), because most odd numbers on a die happen to be prime.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 3 -->
+  <h2>Problem 3: Karger's Probability Calculation</h2>
+  <div class="card">
+    <p>A graph has n = 6 vertices.</p>
+    <ol style="list-style-type: lower-alpha;">
+      <li>How many contractions does Karger's algorithm perform?</li>
+      <li>What is the lower bound on the probability that a single run finds the correct min-cut?</li>
+      <li>Write out the telescoping product explicitly (all 4 factors).</li>
+      <li>Verify that the product simplifies to your answer in (b).</li>
+    </ol>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p><strong>(a)</strong> n − 2 = 6 − 2 = <strong>4 contractions</strong>.</p>
+      <p><strong>(b)</strong> 2/(n(n−1)) = 2/(6 · 5) = 2/30 = <strong>1/15 ≈ 6.67%</strong>.</p>
+      <p><strong>(c)</strong> The four factors are:</p>
+      <p style="font-family:'Source Serif 4',serif; font-size:1.1em; text-align:center; padding:8px;">
+        (6−2)/6 · (6−3)/(6−1) · (6−4)/(6−2) · (6−5)/(6−3)<br>
+        = 4/6 · 3/5 · 2/4 · 1/3
+      </p>
+      <p><strong>(d)</strong> 4/6 · 3/5 · 2/4 · 1/3:</p>
+      <p>Numerator: 4 · 3 · 2 · 1 = 24</p>
+      <p>Denominator: 6 · 5 · 4 · 3 = 360</p>
+      <p>24/360 = 1/15 ✓ (matches 2/(6·5) = 2/30 = 1/15).</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 4 -->
+  <h2>Problem 4: Boosting Calculation</h2>
+  <div class="card">
+    <p>For a graph with n = 20 vertices:</p>
+    <ol style="list-style-type: lower-alpha;">
+      <li>What is the success probability of a single Karger run?</li>
+      <li>If we run Karger's N = n² = 400 times, what is the (approximate) probability of finding the min-cut?</li>
+      <li>How many runs N = n² ln(n) do we need to get success probability ≥ 1 − 1/n²? What is that numerical probability?</li>
+    </ol>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p><strong>(a)</strong> 2/(n(n−1)) = 2/(20 · 19) = 2/380 = <strong>1/190 ≈ 0.526%</strong>.</p>
+      <p><strong>(b)</strong> P(success with 400 runs) ≥ 1 − (1 − 2/400)⁴⁰⁰ ≈ 1 − (1 − 1/200)⁴⁰⁰ ≈ 1 − e⁻² ≈ <strong>86.5%</strong>.</p>
+      <p class="small">(More precisely: 1 − 1/190 per run, so (1 − 1/190)⁴⁰⁰ ≈ e⁻⁴⁰⁰/¹⁹⁰ = e⁻²·¹⁰⁵ ≈ 0.122, giving about 87.8%.)</p>
+      <p><strong>(c)</strong> N = n² ln(n) = 400 · ln(20) ≈ 400 · 2.996 ≈ <strong>1,198 runs</strong>.</p>
+      <p>Success probability ≥ 1 − 1/n² = 1 − 1/400 = <strong>99.75%</strong>.</p>
+      <p class="small">Total runtime: N · O(n²) = 1198 · O(400) = O(n⁴ ln n) = O(479,200) operations. Very manageable.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 5 -->
+  <h2>Problem 5: Chain Rule Application</h2>
+  <div class="card">
+    <p>A deck has 52 cards. You draw 3 cards <strong>without replacement</strong>. What is the probability that all 3 are Aces?</p>
+    <p class="small">Use the chain rule: P(A₁ ∩ A₂ ∩ A₃) = P(A₁) · P(A₂ | A₁) · P(A₃ | A₁ ∩ A₂)</p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p>Let Aᵢ = "the i-th card drawn is an Ace."</p>
+      <p>P(A₁) = 4/52 (4 Aces in a 52-card deck)</p>
+      <p>P(A₂ | A₁) = 3/51 (3 Aces remain in 51 cards)</p>
+      <p>P(A₃ | A₁ ∩ A₂) = 2/50 (2 Aces remain in 50 cards)</p>
+      <p>P(all 3 Aces) = (4/52) · (3/51) · (2/50) = 24/132600 = <strong>1/5525 ≈ 0.0181%</strong></p>
+      <p class="small">This is exactly the same pattern as the Karger proof: a chain of conditional probabilities where the "pool" shrinks each step.</p>
+    </div>
+  </div>
+
+  <!-- PROBLEM 6 -->
+  <h2>Problem 6: Full Karger Pipeline</h2>
+  <div class="card">
+    <p>You have a graph with 50 vertices and want to find its min-cut using Karger's algorithm. You want to be at least 99% confident in the answer.</p>
+    <ol style="list-style-type: lower-alpha;">
+      <li>What is the success probability of a single run?</li>
+      <li>How many runs N do you need so that (1 − 2/n²)<sup>N</sup> ≤ 0.01?</li>
+      <li>Compare this N with n² ln(n). Which is larger?</li>
+    </ol>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button>
+    <div class="reveal-content">
+      <p><strong>(a)</strong> 2/(50 · 49) = 2/2450 ≈ <strong>0.0816%</strong>.</p>
+      <p><strong>(b)</strong> We need (1 − 2/2500)<sup>N</sup> ≤ 0.01. Taking natural log of both sides:</p>
+      <p>N · ln(1 − 2/2500) ≤ ln(0.01)</p>
+      <p>N · (−0.0008003) ≤ −4.605</p>
+      <p>N ≥ 4.605 / 0.0008003 ≈ <strong>5,754 runs</strong>.</p>
+      <p><strong>(c)</strong> n² ln(n) = 2500 · ln(50) ≈ 2500 · 3.912 ≈ 9,780 runs, which gives P(success) ≥ 1 − 1/2500 = 99.96%.</p>
+      <p>So 5,754 runs suffices for 99%, while the n² ln(n) formula gives ~9,780 runs for 99.96%. The n² ln(n) formula overshoots a bit for 99% confidence, but it's the standard formula because the 1 − 1/n² guarantee is clean.</p>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(6)">← Boosting</button>
+    <button onclick="goTo(8)">Summary & Reference →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PART 8: SUMMARY ═══════════════════════ -->
+<div class="section" id="part8">
+  <div class="session-tag">Part 8 / 8</div>
+  <h1>Summary & <em>Reference</em></h1>
+  <p class="subtitle">Everything from Sessions 7 and 8 in one place.</p>
+
+  <h2>What We Covered (Sessions 7 + 8)</h2>
+  <div class="card green-border">
+    <div class="card-label green">✅ Complete Topic List</div>
+    <table>
+      <tr><td><strong>Las Vegas vs Monte Carlo</strong></td><td>Two types of randomized algorithms</td></tr>
+      <tr><td><strong>Probability Foundations</strong></td><td>Sample space Ω, axioms, events</td></tr>
+      <tr><td><strong>Random Variables</strong></td><td>Bernoulli(p), Binomial(n,p), Geometric(p)</td></tr>
+      <tr><td><strong>Expectation</strong></td><td>E[X] definition, E[Bernoulli]=p, E[Binomial]=np, E[Geometric]=1/p</td></tr>
+      <tr><td><strong>Linearity of Expectation</strong></td><td>E[X+Y] = E[X]+E[Y], always</td></tr>
+      <tr><td><strong>Conditional Probability</strong></td><td>P(A|B) = P(A∩B)/P(B)</td></tr>
+      <tr><td><strong>Independence</strong></td><td>P(A∩B) = P(A)P(B)</td></tr>
+      <tr><td><strong>Chain Rule</strong></td><td>P(A∩B) = P(A)·P(B|A), generalized to n events</td></tr>
+      <tr><td><strong>Karger's Algorithm</strong></td><td>Random contraction, n−2 steps, Monte Carlo</td></tr>
+      <tr><td><strong>Karger's Analysis</strong></td><td>P(success) ≥ 2/(n(n−1)), via telescoping product</td></tr>
+      <tr><td><strong>Boosting</strong></td><td>N = n² ln(n) runs gives P(success) ≥ 1 − 1/n²</td></tr>
+    </table>
+  </div>
+
+  <h2>Formula Reference Card</h2>
+  <div class="card" style="font-family:'Source Serif 4', serif;">
+    <table>
+      <tr><th style="width:42%;">Name</th><th>Formula</th></tr>
+      <tr><td>Conditional Probability</td><td>P(A|B) = P(A ∩ B) / P(B)</td></tr>
+      <tr><td>Independence Test</td><td>P(A ∩ B) = P(A) · P(B)</td></tr>
+      <tr><td>Chain Rule (2 events)</td><td>P(A ∩ B) = P(A) · P(B|A)</td></tr>
+      <tr><td>Chain Rule (n events)</td><td>P(E₁ ∩ … ∩ Eₙ) = P(E₁) · P(E₂|E₁) · … · P(Eₙ|E₁∩…∩Eₙ₋₁)</td></tr>
+      <tr><td>Karger single run</td><td>P(success) ≥ 2/(n(n−1)) ≈ 2/n²</td></tr>
+      <tr><td>Karger Step k bound</td><td>P(eₖ safe | prev safe) ≥ (n−k−1)/(n−k+1)</td></tr>
+      <tr><td>Boosted Karger (N runs)</td><td>P(success) ≥ 1 − (1 − 2/n²)<sup>N</sup></td></tr>
+      <tr><td>N = n² ln(n)</td><td>P(success) ≥ 1 − 1/n²</td></tr>
+      <tr><td>Useful limit</td><td>lim (1 + α/m)<sup>m</sup> = e<sup>α</sup></td></tr>
+    </table>
+  </div>
+
+  <h2>The Big Picture: How It All Connects</h2>
+  <div class="card accent-border">
+    <div class="card-label blue">🗺️ The Story Arc</div>
+    <p>Sessions 1-6 were about dealing with NP-hard problems via <strong>approximation</strong>: we accepted giving up optimality but kept determinism (the answer is always within a guaranteed ratio of optimal).</p>
+    <p style="margin-top:12px;">Sessions 7-8 are about a different tradeoff: <strong>randomization</strong>. Karger's algorithm gives the exact optimal answer, but only <em>sometimes</em>. We give up guaranteed correctness in exchange for simplicity and speed, then use <strong>boosting</strong> (repetition) to make the failure probability negligible.</p>
+    <p style="margin-top:12px;">These are two of the three main strategies for coping with computational hardness. (The third, which this course may or may not cover, is parameterized algorithms.)</p>
+  </div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(7)">← Practice Problems</button>
+    <span></span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+// ── NAVIGATION ──
+const partNames = [
+  "Recap & Warm-Up",
+  "Conditional Probability",
+  "Independence",
+  "Karger's Setup",
+  "The Full Proof",
+  "Boosting",
+  "Practice Problems",
+  "Summary & Reference"
+];
+
+const navContainer = document.getElementById('navParts');
+partNames.forEach((name, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'part-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = (i + 1) + '. ' + name;
+  btn.onclick = () => goTo(i + 1);
+  navContainer.appendChild(btn);
+});
+
+function goTo(n) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('part' + n).classList.add('active');
+  document.querySelectorAll('.part-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === n - 1);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── QUIZ ──
+function checkQuiz(id, btn, isCorrect) {
+  const container = document.getElementById(id);
+  const fb = document.getElementById(id + '-fb');
+  if (container.dataset.answered) return;
+  container.dataset.answered = 'true';
+
+  container.querySelectorAll('.quiz-option').forEach(b => {
+    b.style.cursor = 'default'; b.style.opacity = '0.5';
+  });
+
+  if (isCorrect) {
+    btn.className = 'quiz-option correct'; btn.style.opacity = '1';
+    fb.textContent = '✓ Correct!';
+    fb.style.background = 'var(--green-bg)'; fb.style.color = 'var(--green)';
+  } else {
+    btn.className = 'quiz-option wrong'; btn.style.opacity = '1';
+    fb.textContent = '✗ Not quite. The correct answer is highlighted in green.';
+    fb.style.background = 'var(--red-bg)'; fb.style.color = 'var(--red)';
+    container.querySelectorAll('.quiz-option[data-correct="true"]').forEach(b2 => {
+      b2.className = 'quiz-option correct'; b2.style.opacity = '1';
+    });
+  }
+  fb.classList.add('show');
+}
+
+// ── REVEAL ──
+function toggleReveal(btn) {
+  const content = btn.nextElementSibling;
+  const showing = content.classList.contains('show');
+  content.classList.toggle('show');
+  btn.textContent = showing ? '▶ Show Solution' : '▼ Hide Solution';
+}
+
+// ── CONDITIONAL PROBABILITY INTERACTIVE ──
+function cardEventSize(ev) {
+  switch(ev) {
+    case 'heart': return 13;
+    case 'face': return 12;
+    case 'ace': return 4;
+    case 'red': return 26;
+    case 'even': return 20;
+  }
+}
+function cardIntersection(a, b) {
+  const map = {
+    'heart,heart': 13, 'heart,face': 3, 'heart,ace': 1, 'heart,red': 13, 'heart,even': 5,
+    'face,heart': 3, 'face,face': 12, 'face,ace': 0, 'face,red': 6, 'face,even': 0,
+    'ace,heart': 1, 'ace,face': 0, 'ace,ace': 4, 'ace,red': 2, 'ace,even': 0,
+    'red,heart': 13, 'red,face': 6, 'red,ace': 2, 'red,red': 26, 'red,even': 10,
+    'even,heart': 5, 'even,face': 0, 'even,ace': 0, 'even,red': 10, 'even,even': 20
+  };
+  return map[a + ',' + b] || 0;
+}
+function updateCondProb() {
+  const a = document.getElementById('eventA').value;
+  const b = document.getElementById('eventB').value;
+  const pA = cardEventSize(a) / 52;
+  const pB = cardEventSize(b) / 52;
+  const pAB = cardIntersection(a, b) / 52;
+  const pAgivenB = pB > 0 ? pAB / pB : 0;
+
+  document.getElementById('cpPA').textContent = pA.toFixed(4) + ' (' + cardEventSize(a) + '/52)';
+  document.getElementById('cpPAB').textContent = pAB.toFixed(4) + ' (' + cardIntersection(a, b) + '/52)';
+  document.getElementById('cpPAgivenB').textContent = pAgivenB.toFixed(4);
+
+  let relation = '';
+  if (Math.abs(pAgivenB - pA) < 0.0001) {
+    relation = 'P(A|B) = P(A), so A and B are independent!';
+  } else if (pAgivenB > pA) {
+    relation = 'P(A|B) > P(A): knowing B makes A more likely.';
+  } else {
+    relation = 'P(A|B) < P(A): knowing B makes A less likely.';
+  }
+  document.getElementById('cpExplanation').textContent = relation;
+}
+
+// ── PROOF STEPPER ──
+let currentStep = 1;
+function revealNextStep() {
+  currentStep++;
+  if (currentStep > 4) {
+    document.getElementById('proofSummary').style.display = 'block';
+    document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('nextStepBtn').textContent = 'Proof Complete ✓';
+    document.getElementById('proofStep4').classList.add('done-step');
+    return;
+  }
+
+  const prev = document.getElementById('proofStep' + (currentStep - 1));
+  prev.classList.remove('active-step');
+  prev.classList.add('done-step');
+
+  const cur = document.getElementById('proofStep' + currentStep);
+  cur.style.opacity = '1';
+  cur.classList.add('active-step');
+  const content = document.getElementById('step' + currentStep + 'content');
+  if (content) content.style.display = 'block';
+
+  if (currentStep === 4) {
+    document.getElementById('nextStepBtn').textContent = 'Show Final Result →';
+  }
+
+  cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetSteps() {
+  currentStep = 1;
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('proofStep' + i);
+    step.classList.remove('active-step', 'done-step');
+    if (i === 1) { step.classList.add('active-step'); step.style.opacity = '1'; }
+    else { step.style.opacity = '0.4'; }
+    const content = document.getElementById('step' + i + 'content');
+    if (content) content.style.display = 'none';
+  }
+  document.getElementById('proofSummary').style.display = 'none';
+  document.getElementById('nextStepBtn').disabled = false;
+  document.getElementById('nextStepBtn').textContent = 'Next Step →';
+}
+
+// ── PROOF CALCULATOR ──
+function updateProofCalc() {
+  const n = parseInt(document.getElementById('nSlider').value);
+  document.getElementById('nVal').textContent = n;
+  document.getElementById('calcContractions').textContent = n - 2;
+  const prob = 2 / (n * (n - 1));
+  document.getElementById('calcProb').textContent = (prob * 100).toFixed(4) + '%';
+  document.getElementById('calcExact').textContent = '2/(' + n + '·' + (n-1) + ') = 2/' + (n*(n-1)) + ' = ' + prob.toFixed(6);
+}
+
+// ── BOOSTING INTERACTIVE ──
+function updateBoost() {
+  const n = parseInt(document.getElementById('boostN').value);
+  const N = parseInt(document.getElementById('boostRuns').value);
+  document.getElementById('boostNVal').textContent = n;
+  document.getElementById('boostRunsVal').textContent = N;
+
+  const pSingle = 2 / (n * n);
+  const pFail = Math.pow(1 - pSingle, N);
+  const pSuccess = 1 - pFail;
+
+  document.getElementById('boostSingle').textContent = (pSingle * 100).toFixed(3) + '%';
+  document.getElementById('boostTotal').textContent = (pSuccess * 100).toFixed(2) + '%';
+  document.getElementById('boostRuntime').textContent = 'O(' + (N * n * n).toLocaleString() + ')';
+
+  document.getElementById('boostBar').style.width = (pSuccess * 100) + '%';
+  document.getElementById('boostBarLabel').textContent = (pSuccess * 100).toFixed(1) + '% success';
+}
+
+function setBoostN(mode) {
+  const n = parseInt(document.getElementById('boostN').value);
+  let N;
+  if (mode === 'half') N = Math.round(n * n / 2);
+  else if (mode === 'full') N = n * n;
+  else N = Math.round(n * n * Math.log(n));
+
+  N = Math.min(N, 1000);
+  document.getElementById('boostRuns').value = N;
+  updateBoost();
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  updateCondProb();
+  updateProofCalc();
+  updateBoost();
+});
+</script>
+
+</body>
+</html>
