@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 1 · Pattern Matching (P.1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "ss02";
+    min-height: 100vh;
+  }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .part-meta .accent { color: var(--accent); }
+  h1 { font-family: 'Fraunces', serif; font-size: 52px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--text-muted); max-width: 720px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; margin: 56px 0 16px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin: 36px 0 14px; }
+  h4 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin-bottom: 18px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .callout { margin: 24px 0; padding: 18px 22px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 16px; line-height: 1.65; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .callout-header::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+  .vscode-block { margin: 28px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .vscode-block-header { padding: 12px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .vscode-block-header::before { content: "▶"; color: var(--accent); font-size: 10px; }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+  details.practice { margin: 22px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  details.practice summary { padding: 14px 20px; cursor: pointer; background: var(--surface-elevated); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+  .problem-box { margin: 20px 0; padding: 22px; background: var(--surface); border: 1px dashed var(--border-light); border-radius: 10px; }
+  .problem-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .problem-label .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Inter', sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface); }
+  .cheat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .cheat-card { padding: 16px 18px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; }
+  .cheat-card h4 { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; margin: 0 0 10px; }
+  .cheat-card pre { margin: 0; padding: 0 !important; background: none !important; border: none; font-size: 12.5px !important; }
+  .cheat-card p { font-size: 13px; color: var(--text-muted); margin: 8px 0 0; font-family: 'Inter', sans-serif; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+
+  /* Trace blocks for walking through problems */
+  .trace {
+    margin: 22px 0;
+    padding: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .trace-header {
+    padding: 14px 20px;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--info);
+    font-weight: 500;
+  }
+  .trace-body { padding: 18px 22px; font-size: 15.5px; }
+  .trace-body p { margin-bottom: 12px; }
+  .trace-step {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 6px;
+    border-left: 2px solid var(--accent-dim);
+  }
+  .trace-step .step-num {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 600;
+    padding-top: 3px;
+  }
+  .trace-step .step-body { flex: 1; font-size: 15px; }
+  .trace-step .step-body code { font-size: 0.92em; }
+  .trace-answer {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(134, 184, 108, 0.08);
+    border-left: 3px solid var(--success);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: var(--success);
+    font-size: 15px;
+  }
+  .trace-answer .answer-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; margin-right: 10px; }
+
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 01 · Pattern Matching (P.1)</span>
+      <span class="dot">·</span>
+      <span>~75 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · Concept</button>
+      <button class="tab" data-part="2">02 · Values</button>
+      <button class="tab" data-part="3">03 · Lists</button>
+      <button class="tab" data-part="4">04 · Tuples &amp; _</button>
+      <button class="tab" data-part="5">05 · Constructors</button>
+      <button class="tab" data-part="6">06 · Exam Walkthrough</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · Concept</div>
+  <h1>Pattern <em>matching</em></h1>
+  <p class="lede">Pattern matching is how Haskell <strong>destructures data and branches on its shape in a single move</strong>. It's the replacement for most <code>if</code>/<code>else</code>, most attribute access, and most "check then extract" logic you'd write in Python or Java. Master this and the rest of Haskell unfolds naturally.</p>
+
+  <h2>The idea in one sentence</h2>
+  <p>A <em>pattern</em> is a template that describes the shape of some data. When you call a function, Haskell tries to match the input against each pattern top-to-bottom. If it matches, variables in the pattern get <strong>bound</strong> to the corresponding pieces of the input, and that equation runs.</p>
+
+  <h2>Why it matters</h2>
+  <p>In Python you'd write:</p>
+  <pre><code class="language-python">def describe(n):
+    if n == 0:
+        return "zero"
+    elif n == 1:
+        return "one"
+    else:
+        return "something else"</code></pre>
+
+  <p>In Haskell, the same logic:</p>
+  <pre><code class="language-haskell">describe :: Int -&gt; String
+describe 0 = "zero"
+describe 1 = "one"
+describe n = "something else"</code></pre>
+
+  <p>Three equations for the same function. Haskell picks the first one that matches. No explicit <code>if</code>. The "condition" is baked into the pattern itself.</p>
+
+  <h2>Why this is powerful</h2>
+  <p>Pattern matching isn't just about specific values. It can:</p>
+  <ul>
+    <li>Match the <strong>shape</strong> of a list (empty? non-empty? at least three elements?)</li>
+    <li>Match a <strong>tuple</strong> and pull out its pieces</li>
+    <li>Match a specific <strong>constructor</strong> from a custom data type</li>
+    <li><strong>Nest</strong>, a pattern inside a pattern inside a pattern</li>
+    <li>Use <strong>wildcards</strong> to ignore parts you don't care about</li>
+  </ul>
+
+  <p>All with the same unified syntax. That's what makes it the backbone of Haskell programming.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">The teaching mental model</div>
+    <p>Every pattern-matching problem answers one question: <strong>"Given this input, which equation matches, and what do the variables bind to?"</strong> If your student holds that question in mind, they'll solve every P.1 problem.</p>
+  </div>
+
+  <h2>The pattern-matching checklist</h2>
+  <p>Walk your student through this every time he sees a pattern:</p>
+  <ol>
+    <li><strong>Identify the shape.</strong> Is the data a list? A tuple? A constructor?</li>
+    <li><strong>Work outside-in.</strong> Match the outermost shape first, then what's inside.</li>
+    <li><strong>Check each binding.</strong> For every name in the pattern, what piece of the input does it grab?</li>
+    <li><strong>Check for failure.</strong> If shapes don't line up (list pattern on a non-list, too few elements, etc.), the match <em>fails</em>.</li>
+  </ol>
+
+  <p>Over the next five parts we'll build this skill up layer by layer: values, lists, tuples, wildcards, constructors. Part 6 walks through all six of his exam problems with this checklist in action.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Matching on values</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · Basics</div>
+  <h1>Matching on <em>values</em></h1>
+  <p class="lede">Start simple: patterns that match specific literal values, and the rule that decides which equation runs when you have multiple. Understand this layer and the rest is variation.</p>
+
+  <h2>Multiple equations, same function</h2>
+  <p>In Haskell you can define the same function <em>multiple times</em> with different patterns for the argument. Haskell tries them in order, using the first one that matches.</p>
+
+  <pre><code class="language-haskell">describe :: Int -&gt; String
+describe 0 = "zero"
+describe 1 = "one"
+describe 2 = "two"
+describe n = "some other number"</code></pre>
+
+  <p>Call <code>describe 0</code>, first equation matches, return <code>"zero"</code>. Call <code>describe 42</code>, first three equations have specific values that don't match, fall through to the last equation where <code>n</code> binds to <code>42</code>, return <code>"some other number"</code>.</p>
+
+  <h2>The rules</h2>
+  <ol>
+    <li><strong>Top-down.</strong> Haskell tries equations in the order you wrote them.</li>
+    <li><strong>First match wins.</strong> Once a pattern matches, that equation runs. Later equations are ignored.</li>
+    <li><strong>A variable matches anything.</strong> <code>n</code> in the last equation is a catch-all, any Int binds to it.</li>
+    <li><strong>Lowercase = variable, not value.</strong> <code>describe n</code> doesn't mean "match the value n", it means "bind the input to the name <code>n</code>."</li>
+  </ol>
+
+  <div class="callout warning">
+    <div class="callout-header">Order matters</div>
+    <p>If you reversed the order, putting <code>describe n = "other"</code> first, it would catch <em>everything</em> and the specific cases for 0, 1, 2 would never run. Specific patterns go first, general patterns last.</p>
+  </div>
+
+  <h2>Literal patterns</h2>
+  <p>Any literal value can be a pattern: numbers, characters, strings, booleans.</p>
+
+  <pre><code class="language-haskell">reply :: Bool -&gt; String
+reply True  = "yes"
+reply False = "no"
+
+greet :: Char -&gt; String
+greet 'h' = "greeting"
+greet 'b' = "farewell"
+greet _   = "unknown"</code></pre>
+
+  <p>The <code>_</code> (underscore) is a wildcard, matches anything, doesn't bind a name. We'll see more of it in Part 4.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Put it in practice.hs &amp; test</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">describe :: Int -&gt; String
+describe 0 = "zero"
+describe 1 = "one"
+describe 2 = "two"
+describe n = "something else"
+
+reply :: Bool -&gt; String
+reply True  = "yes"
+reply False = "no"</code></pre>
+      <p>Save, in ghci type <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">describe 0
+describe 1
+describe 42
+reply True
+reply False</code></pre>
+    </div>
+  </div>
+
+  <h2>Combining with guards</h2>
+  <p>You've seen guards in Lesson 0. You can combine them with patterns:</p>
+
+  <pre><code class="language-haskell">classify :: Int -&gt; String
+classify 0 = "zero"
+classify n
+  | n &gt; 0     = "positive"
+  | otherwise = "negative"</code></pre>
+
+  <p>First equation matches specifically for <code>0</code>. Second equation catches any other <code>n</code>, then uses guards to branch further.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Key takeaway</div>
+    <p>"Multiple equations" is just <strong>pattern matching with specific values</strong>. It's the same mechanism that will later match list shapes, tuples, and constructors. Everything builds on this.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Concept</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">Matching on lists</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · Lists</div>
+  <h1>Matching on <em>lists</em></h1>
+  <p class="lede">This is the big one. Nearly every Haskell function on lists uses pattern matching. Once you internalize the two basic list patterns, <code>[]</code> and <code>(x:xs)</code>, and how they chain, you can solve any list-shape problem.</p>
+
+  <h2>Lists have two shapes</h2>
+  <p>Recall from Lesson 0: a Haskell list is always either:</p>
+  <ol>
+    <li><strong>Empty</strong>, written <code>[]</code>.</li>
+    <li><strong>A head followed by a tail</strong>, written <code>(x:xs)</code>, read "x cons xs."</li>
+  </ol>
+
+  <p>That's it. Every list matches one of these two patterns. The pattern <code>[1, 2, 3]</code> is really <code>1 : 2 : 3 : []</code> underneath.</p>
+
+  <h2>The cons pattern <code>(x:xs)</code></h2>
+  <p>The pattern <code>(x:xs)</code> means: "match a non-empty list. Bind the first element to <code>x</code>, bind the rest (which is itself a list) to <code>xs</code>."</p>
+
+  <pre><code class="language-haskell">myHead :: [Int] -&gt; Int
+myHead (x:_) = x
+
+myLength :: [Int] -&gt; Int
+myLength []     = 0
+myLength (_:xs) = 1 + myLength xs
+
+mySum :: [Int] -&gt; Int
+mySum []     = 0
+mySum (x:xs) = x + mySum xs</code></pre>
+
+  <p>Let's read each:</p>
+  <ul>
+    <li><code>myHead (x:_)</code>: take the first element, ignore the rest. The <code>_</code> means "I don't need this."</li>
+    <li><code>myLength []</code>: empty list has length 0. <code>myLength (_:xs)</code>: length is 1 plus length of the rest. Classic recursion.</li>
+    <li><code>mySum</code>: same structure, but uses <code>x</code> because we need the value, not just "there's an element here."</li>
+  </ul>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Paste &amp; test</div>
+    <div class="vscode-block-body">
+      <p>Put these in <code>practice.hs</code>:</p>
+      <pre><code class="language-haskell">myHead :: [Int] -&gt; Int
+myHead (x:_) = x
+
+myLength :: [Int] -&gt; Int
+myLength []     = 0
+myLength (_:xs) = 1 + myLength xs
+
+mySum :: [Int] -&gt; Int
+mySum []     = 0
+mySum (x:xs) = x + mySum xs</code></pre>
+      <p>Save, <code>:r</code>, then try:</p>
+      <pre><code class="language-haskell">myHead [5, 10, 15]
+myLength [1, 2, 3, 4, 5]
+mySum [1, 2, 3, 4, 5]</code></pre>
+    </div>
+  </div>
+
+  <h2>Chaining cons</h2>
+  <p>You can chain <code>:</code> to match deeper into a list.</p>
+
+  <table>
+    <tr><th>Pattern</th><th>Meaning</th></tr>
+    <tr><td><code>(x:xs)</code></td><td>At least 1 element. x = first, xs = rest.</td></tr>
+    <tr><td><code>(x:y:xs)</code></td><td>At least 2 elements. x = first, y = second, xs = rest.</td></tr>
+    <tr><td><code>(x:y:z:xs)</code></td><td>At least 3 elements.</td></tr>
+    <tr><td><code>(_:y:_)</code></td><td>At least 2 elements, bind only the second.</td></tr>
+  </table>
+
+  <p>The <em>last</em> name before nothing always grabs "everything else as a list" (which could be empty).</p>
+
+  <h3>Example</h3>
+  <pre><code class="language-haskell">firstThree :: [Int] -&gt; (Int, Int, Int)
+firstThree (a:b:c:_) = (a, b, c)
+
+secondElement :: [Int] -&gt; Int
+secondElement (_:y:_) = y</code></pre>
+
+  <p>Call <code>firstThree [10, 20, 30, 40]</code>: matches with <code>a = 10</code>, <code>b = 20</code>, <code>c = 30</code>, <code>_ = [40]</code>. Returns <code>(10, 20, 30)</code>.</p>
+
+  <h2>Exact-length patterns</h2>
+  <p>Square-bracket patterns match lists of a <em>specific</em> length.</p>
+
+  <table>
+    <tr><th>Pattern</th><th>Matches</th></tr>
+    <tr><td><code>[]</code></td><td>Exactly empty.</td></tr>
+    <tr><td><code>[x]</code></td><td>Exactly one element.</td></tr>
+    <tr><td><code>[x, y]</code></td><td>Exactly two elements.</td></tr>
+    <tr><td><code>[x, y, z]</code></td><td>Exactly three.</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <div class="callout-header">Huge distinction</div>
+    <p><code>[x, y]</code> means <em>exactly two</em> elements. <code>(x:y:xs)</code> means <em>at least two</em>. They look similar but behave very differently.</p>
+    <pre style="margin: 10px 0 0;"><code class="language-haskell">f [x, y]     = "exactly 2"
+f (x:y:_)    = "at least 2"
+-- f [1,2,3] matches the second, NOT the first</code></pre>
+  </div>
+
+  <h2>What you can't do</h2>
+  <p>You <strong>can't</strong> pattern match on the <em>end</em> of a list. There's no <code>(xs:y)</code> meaning "everything then last." Lists are front-accessible by design, you'd use <code>drop</code>, <code>last</code>, or <code>reverse</code> for tail access. Every P.1 problem involves front-access, so this limitation won't bite your student.</p>
+
+  <h2>Can you reuse names?</h2>
+  <p><strong>No.</strong> Each name in a pattern must be unique. <code>(x:x:xs)</code> is an error ("conflicting definitions for x"). Use <code>_</code> if you want to match without binding: <code>(_:_:xs)</code> is fine, <code>_</code> is the one name allowed to repeat.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching drill</div>
+    <p>Give your student a pattern and ask: (1) what's the minimum length it matches? (2) what does each variable bind to for input <code>[1,2,3,4,5]</code>? Do this for <code>(x:xs)</code>, <code>(x:y:xs)</code>, <code>[x, y]</code>, <code>(_:y:_)</code>. If he gets those four right, he's ready for the exam.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Matching on values</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">Tuples &amp; wildcards</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · Tuples &amp; wildcards</div>
+  <h1>Tuples &amp; <em>wildcards</em></h1>
+  <p class="lede">Tuples match by position. The wildcard <code>_</code> is the universal "I don't care" pattern. Together they let you slice data apart cleanly without naming things you don't need.</p>
+
+  <h2>Tuple patterns</h2>
+  <p>A tuple pattern matches a tuple of the <em>same size</em>, binding each element by position.</p>
+
+  <pre><code class="language-haskell">getFirst :: (Int, Int) -&gt; Int
+getFirst (a, b) = a
+
+addPair :: (Int, Int) -&gt; Int
+addPair (x, y) = x + y
+
+swap :: (a, b) -&gt; (b, a)
+swap (x, y) = (y, x)</code></pre>
+
+  <p>Notice how clean <code>swap</code> is compared to the <code>fst</code>/<code>snd</code> version from Lesson 0. This is the power of pattern matching.</p>
+
+  <h3>Larger tuples</h3>
+  <pre><code class="language-haskell">middleOfThree :: (Int, Int, Int) -&gt; Int
+middleOfThree (_, m, _) = m
+
+sumFour :: (Int, Int, Int, Int) -&gt; Int
+sumFour (a, b, c, d) = a + b + c + d</code></pre>
+
+  <h2>The wildcard <code>_</code></h2>
+  <p><code>_</code> matches <em>anything</em> without binding a name. Use it for parts you don't need.</p>
+
+  <pre><code class="language-haskell">dropFirst :: (Int, Int, Int) -&gt; (Int, Int)
+dropFirst (_, b, c) = (b, c)
+
+secondOfList :: [Int] -&gt; Int
+secondOfList (_:y:_) = y</code></pre>
+
+  <p>Unlike other names, <code>_</code> can appear <em>multiple times</em> in a single pattern, because it doesn't actually bind anything.</p>
+
+  <h2>Critical: <code>[]</code> vs <code>_</code></h2>
+  <p>This trips up every beginner. They look similar but do opposite things.</p>
+
+  <table>
+    <tr><th>Pattern</th><th>Meaning</th><th>Matches <code>[]</code>?</th><th>Matches <code>[1,2,3]</code>?</th></tr>
+    <tr><td><code>[]</code></td><td>Specifically the empty list</td><td>✅ Yes</td><td>❌ No</td></tr>
+    <tr><td><code>_</code></td><td>Anything (wildcard)</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+  </table>
+
+  <pre><code class="language-haskell">-- Example: using [] and _ together
+describeList :: [Int] -&gt; String
+describeList [] = "empty"
+describeList _  = "non-empty"</code></pre>
+
+  <p>First equation catches empty lists specifically. Second catches everything else (the first didn't match, so we fall through).</p>
+
+  <div class="callout warning">
+    <div class="callout-header">Order still matters</div>
+    <p>If you reversed them, <code>describeList _</code> would catch <em>all</em> lists including empty ones, and <code>describeList []</code> would never run. Haskell might even warn you "this pattern is unreachable."</p>
+  </div>
+
+  <h2>Nested patterns</h2>
+  <p>You can put a pattern <em>inside</em> another pattern.</p>
+
+  <pre><code class="language-haskell">firstOfFirstPair :: [(Int, Int)] -&gt; Int
+firstOfFirstPair ((x, _):_) = x</code></pre>
+
+  <p>Let's read this carefully:</p>
+  <ul>
+    <li>Outer: <code>(...):_</code> means "a non-empty list; first element matches <code>(...)</code>, rest is ignored."</li>
+    <li>Inner: <code>(x, _)</code> means "the first element is a tuple; first of the tuple binds to <code>x</code>, second is ignored."</li>
+  </ul>
+
+  <p>Combined: take a list of pairs, grab the first pair, grab the first of that pair.</p>
+
+  <p>Call <code>firstOfFirstPair [(1, 2), (3, 4), (5, 6)]</code>: <code>x = 1</code>. Returns <code>1</code>.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try it</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">firstOfFirstPair :: [(Int, Int)] -&gt; Int
+firstOfFirstPair ((x, _):_) = x
+
+sumPairs :: [(Int, Int)] -&gt; Int
+sumPairs [] = 0
+sumPairs ((a, b):rest) = a + b + sumPairs rest</code></pre>
+      <pre><code class="language-haskell">firstOfFirstPair [(1, 2), (3, 4)]
+sumPairs [(1, 2), (3, 4), (5, 6)]
+-- 1
+-- 21</code></pre>
+    </div>
+  </div>
+
+  <h2>The <code>@</code> (as-pattern)</h2>
+  <p>Sometimes you want to both destructure a value <em>and</em> keep the whole thing named. Use <code>name@pattern</code>.</p>
+
+  <pre><code class="language-haskell">describeList :: [Int] -&gt; String
+describeList [] = "empty"
+describeList all@(x:xs) =
+  "the list " ++ show all ++
+  " starts with " ++ show x</code></pre>
+
+  <p><code>all@(x:xs)</code> means: match a non-empty list, bind the whole list to <code>all</code>, bind the head to <code>x</code>, bind the tail to <code>xs</code>. You get all three names to work with.</p>
+
+  <p>As-patterns show up on his exam (Problem 2 uses one), so don't skip this.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">Matching on lists</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Constructors</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · Constructors</div>
+  <h1>Matching on <em>constructors</em></h1>
+  <p class="lede">His exam introduces custom data types (fully covered in Lesson 2) and then asks P.1 questions about patterns involving them. Here's the <em>minimum</em> you need to know about constructors so the exam problems make sense, the full story comes in P.2.</p>
+
+  <h2>Custom types have constructors</h2>
+  <p>A custom data type in Haskell is defined by listing its possible "shapes," called <strong>constructors</strong>. We'll cover this fully in Lesson 2. For now, know the syntax looks like:</p>
+
+  <pre><code class="language-haskell">data Magic = Charm Integer
+           | Spell Char</code></pre>
+
+  <p>Read: "A <code>Magic</code> is either a <code>Charm</code> wrapping an <code>Integer</code>, or a <code>Spell</code> wrapping a <code>Char</code>."</p>
+
+  <p>So <code>Charm 5</code> is a <code>Magic</code>. <code>Spell 'J'</code> is also a <code>Magic</code>. Different constructors, same type.</p>
+
+  <h2>Matching on constructors</h2>
+  <p>Pattern matching on a constructor checks <em>which constructor was used</em> and <em>binds the data inside it</em>.</p>
+
+  <pre><code class="language-haskell">describe :: Magic -&gt; String
+describe (Charm n) = "a charm with number " ++ show n
+describe (Spell c) = "a spell with char " ++ [c]</code></pre>
+
+  <p>Pattern <code>(Charm n)</code> matches any <code>Charm</code>, binds the <code>Integer</code> inside to <code>n</code>. Pattern <code>(Spell c)</code> matches any <code>Spell</code>, binds the <code>Char</code> inside to <code>c</code>.</p>
+
+  <h2>Matching specific data inside a constructor</h2>
+  <p>You can narrow further by matching on the specific value inside.</p>
+
+  <pre><code class="language-haskell">isFive :: Magic -&gt; Bool
+isFive (Charm 5) = True
+isFive _         = False</code></pre>
+
+  <p><code>(Charm 5)</code> matches <em>only</em> a Charm holding exactly 5. <code>Charm 7</code>, <code>Spell 'x'</code>, anything else, all fall through to the wildcard.</p>
+
+  <h2>Nested constructor patterns</h2>
+  <p>This is where his exam gets interesting. Constructors can contain other constructors, lists, tuples. Patterns nest to match.</p>
+
+  <pre><code class="language-haskell">data Victory = Self [Integer]
+             | Help [Magic]</code></pre>
+
+  <p>So <code>Self [2,4,6,8]</code> is a <code>Victory</code> containing a list of integers. <code>Help [Spell 'J', Charm 4]</code> is a <code>Victory</code> containing a list of <code>Magic</code>s.</p>
+
+  <p>A pattern can peel through multiple layers at once:</p>
+
+  <pre><code class="language-haskell">firstMagic :: Victory -&gt; Magic
+firstMagic (Help (m:_)) = m</code></pre>
+
+  <p>Reading <code>(Help (m:_))</code>:</p>
+  <ul>
+    <li>Outer: <code>Help (...)</code> means "a Help constructor wrapping something."</li>
+    <li>Inner: <code>(m:_)</code> means "a non-empty list; bind the head to <code>m</code>, ignore the rest."</li>
+  </ul>
+
+  <p>So it matches a <code>Help</code> whose list has at least one element, and binds that first <code>Magic</code> to <code>m</code>.</p>
+
+  <h2>Pattern failure</h2>
+  <p>This is crucial for Problem 5 on his exam. <strong>A pattern fails when shapes don't match</strong>, even at runtime.</p>
+
+  <p>Example: the pattern <code>((Self _):h)</code> expects a <em>list</em> whose first element is a <code>Self</code>. If you give it a bare <code>Self [2,4,6,8]</code> (which is a <code>Victory</code>, not a list), the match fails at the outermost layer. The list cons pattern <code>(...):h</code> demands a list, and a <code>Victory</code> isn't a list.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">The shape must match</div>
+    <p>Before checking names, check the <em>shape</em>. A list pattern won't match a tuple, a tuple pattern won't match a constructor, a constructor pattern won't match a list. Wrong shape = no match.</p>
+  </div>
+
+  <h2>Summary: four kinds of patterns</h2>
+  <p>Everything on his exam uses some combination of these four:</p>
+
+  <table>
+    <tr><th>Pattern kind</th><th>Example</th><th>Matches</th></tr>
+    <tr><td>Value</td><td><code>0</code>, <code>True</code>, <code>'a'</code></td><td>Exactly that literal value</td></tr>
+    <tr><td>Variable</td><td><code>x</code>, <code>xs</code>, <code>name</code></td><td>Anything, binds to name</td></tr>
+    <tr><td>Wildcard</td><td><code>_</code></td><td>Anything, doesn't bind</td></tr>
+    <tr><td>Constructor</td><td><code>(x:xs)</code>, <code>(a,b)</code>, <code>Help m</code>, <code>Self [1,2]</code></td><td>Data of that shape, binds interior pieces</td></tr>
+  </table>
+
+  <p>All four can nest inside each other.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">Tuples &amp; wildcards</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">His exam problems</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Exam walkthrough</div>
+  <h1>His <em>exam</em> problems</h1>
+  <p class="lede">All six P.1 problems from his study guide, worked step-by-step with the checklist from Part 1: <strong>identify shape → work outside-in → check bindings → check for failure</strong>. Each solution includes code you can paste into VS Code to verify.</p>
+
+  <h2>The setup</h2>
+  <p>These data types are given at the top of his exam:</p>
+
+  <pre><code class="language-haskell">data Magic = Charm Integer
+           | Spell Char
+
+data Victory = Self [Integer]
+             | Help [Magic]
+
+one, two :: Victory
+one = Self [2,4,6,8]
+two = Help [Spell 'J', Charm 4]
+
+three :: [Victory]
+three = [Self [10,15], Help [Spell '#'], Self [3,9,8]]
+
+four :: (Magic, Magic)
+four = (Charm 5, Spell 'G')</code></pre>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Paste into practice.hs so you can verify</div>
+    <div class="vscode-block-body">
+      <p>Add <code>deriving (Show)</code> so ghci can print these:</p>
+      <pre><code class="language-haskell">data Magic = Charm Integer
+           | Spell Char
+           deriving (Show)
+
+data Victory = Self [Integer]
+             | Help [Magic]
+             deriving (Show)
+
+one, two :: Victory
+one = Self [2,4,6,8]
+two = Help [Spell 'J', Charm 4]
+
+three :: [Victory]
+three = [Self [10,15], Help [Spell '#'], Self [3,9,8]]
+
+four :: (Magic, Magic)
+four = (Charm 5, Spell 'G')</code></pre>
+      <p>Save, <code>:r</code> in ghci. Now you can type <code>one</code>, <code>two</code>, <code>three</code>, <code>four</code> to inspect them.</p>
+    </div>
+  </div>
+
+  <h2>Problem 1 · Pattern <code>(y:_:r)</code>, Data <code>three</code></h2>
+  <p>Give the resulting value for <code>r</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> <code>(y:_:r)</code> is a list pattern with <em>at least 2</em> elements. <code>three</code> is a list with 3 elements, good, shape matches.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Bindings:</strong> <code>y</code> = first element, <code>_</code> = second (ignored), <code>r</code> = rest of the list.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><code>three = [Self [10,15], Help [Spell '#'], Self [3,9,8]]</code>.<br>So <code>y = Self [10,15]</code>, <code>_ = Help [Spell '#']</code>, <code>r = [Self [3,9,8]]</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Note:</strong> <code>r</code> is the "rest" of the list after removing the first two elements. Since the list had 3 elements and we removed 2, <code>r</code> has 1 element, wrapped in <code>[...]</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Answer</span><code>r = [Self [3,9,8]]</code></div>
+    </div>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify in ghci</div>
+    <div class="vscode-block-body">
+      <p>Add this to <code>practice.hs</code>:</p>
+      <pre><code class="language-haskell">p1 :: [Victory]
+p1 = case three of (y:_:r) -&gt; r</code></pre>
+      <p>Save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">p1
+-- [Self [3,9,8]]</code></pre>
+    </div>
+  </div>
+
+  <h2>Problem 2 · Pattern <code>y@(d, Self g)</code>, Data <code>([], one)</code></h2>
+  <p>Give the resulting value for <code>g</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> <code>y@(d, Self g)</code> is an as-pattern. The inner pattern <code>(d, Self g)</code> is a <em>tuple of size 2</em>. The data is <code>([], one)</code>, also a 2-tuple, shape matches.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Outer bindings:</strong> <code>y</code> is the whole tuple, <code>y = ([], one)</code>. Then the tuple matches:<br><code>d</code> = first element = <code>[]</code>.<br>Second element must match <code>Self g</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><code>one = Self [2,4,6,8]</code>, which is a <code>Self</code> constructor. Matching <code>Self g</code> against <code>Self [2,4,6,8]</code> binds <code>g = [2,4,6,8]</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Answer</span><code>g = [2,4,6,8]</code></div>
+    </div>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify in ghci</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">p2 :: [Integer]
+p2 = case ([] :: [Integer], one) of y@(d, Self g) -&gt; g</code></pre>
+      <pre><code class="language-haskell">p2
+-- [2,4,6,8]</code></pre>
+    </div>
+  </div>
+
+  <h2>Problem 3 · Pattern <code>(Help (a:w:q))</code>, Data <code>two</code></h2>
+  <p>Give the resulting value for <code>w</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> Outer is <code>Help (...)</code>, a <code>Help</code> constructor. <code>two = Help [Spell 'J', Charm 4]</code>, matches.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Inner pattern:</strong> <code>(a:w:q)</code>, a list with at least 2 elements. The inside of <code>Help</code> is <code>[Spell 'J', Charm 4]</code>, exactly 2 elements, matches.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Bindings:</strong> <code>a</code> = first element = <code>Spell 'J'</code>. <code>w</code> = second element = <code>Charm 4</code>. <code>q</code> = rest = <code>[]</code> (empty, no more elements).</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Answer</span><code>w = Charm 4</code></div>
+    </div>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">p3 :: Magic
+p3 = case two of (Help (a:w:q)) -&gt; w</code></pre>
+      <pre><code class="language-haskell">p3
+-- Charm 4</code></pre>
+    </div>
+  </div>
+
+  <h2>Problem 4 · Pattern <code>(u, d)</code>, Data <code>four</code></h2>
+  <p>Give the resulting value for <code>u</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> <code>(u, d)</code> is a 2-tuple pattern. <code>four = (Charm 5, Spell 'G')</code>, a 2-tuple. Matches.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Bindings:</strong> <code>u</code> = first = <code>Charm 5</code>. <code>d</code> = second = <code>Spell 'G'</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Answer</span><code>u = Charm 5</code></div>
+    </div>
+  </div>
+
+  <h2>Problem 5 · Pattern <code>((Self _):h)</code>, Data <code>one</code></h2>
+  <p>Give the resulting value for <code>h</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> Outer is <code>(...):h</code>. That's a <em>list</em> cons pattern, first element is <code>(Self _)</code>, rest is <code>h</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Check the data's shape:</strong> <code>one = Self [2,4,6,8]</code>. That's a <code>Victory</code>, <em>not a list</em>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body">The pattern demands a list; the data is a <code>Victory</code>. <strong>Shapes don't match.</strong> Pattern match <em>fails</em> at the outermost layer.</div>
+      </div>
+      <div class="trace-answer" style="color: var(--warning); background: rgba(228, 122, 90, 0.08); border-left-color: var(--warning);"><span class="answer-label">Answer</span><strong>No match.</strong> The pattern expects a list but <code>one</code> is a <code>Victory</code> (constructor type), not a list.</div>
+    </div>
+  </div>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching note</div>
+    <p>Problem 5 is the classic trap. Students see <code>Self</code> in both the pattern and the data and assume it matches. But the outer shape is wrong, a list pattern <code>(_:h)</code> cannot match a single <code>Victory</code>. <strong>Always check the outermost shape first.</strong></p>
+  </div>
+
+  <h2>Problem 6 · Pattern <code>((Self x):i:_)</code>, Data <code>three</code></h2>
+  <p>Give the resulting value for <code>i</code>.</p>
+
+  <div class="trace">
+    <div class="trace-header">Step-by-step trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Shape:</strong> <code>((Self x):i:_)</code> is a list pattern with at least 2 elements. First element must be <code>(Self x)</code>, a <code>Self</code> constructor. <code>three</code> is a list of 3 elements, matches by size.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>First element check:</strong> <code>three</code>'s first element is <code>Self [10,15]</code>. Matches <code>(Self x)</code>, binds <code>x = [10,15]</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Remaining bindings:</strong> <code>i</code> = second element = <code>Help [Spell '#']</code>. <code>_</code> = rest of list (ignored).</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Answer</span><code>i = Help [Spell '#']</code></div>
+    </div>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify all of them</div>
+    <div class="vscode-block-body">
+      <p>Add to <code>practice.hs</code>:</p>
+      <pre><code class="language-haskell">p1 = case three of (y:_:r) -&gt; r
+p2 = case ([] :: [Integer], one) of y@(d, Self g) -&gt; g
+p3 = case two of (Help (a:w:q)) -&gt; w
+p4 = case four of (u, d) -&gt; u
+-- p5 would crash because the match fails
+p6 = case three of ((Self x):i:_) -&gt; i</code></pre>
+      <p>Save, <code>:r</code>, then in ghci:</p>
+      <pre><code class="language-haskell">p1    -- [Self [3,9,8]]
+p2    -- [2,4,6,8]
+p3    -- Charm 4
+p4    -- Charm 5
+p6    -- Help [Spell '#']</code></pre>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-header">Teaching summary</div>
+    <p>Every P.1 problem fits the same template: (1) identify the outer shape, (2) check the data has that shape, (3) peel inward layer by layer, (4) report the bindings. If the outer shape fails, the match fails, don't look deeper.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Constructors</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; Cheat Sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Fresh problems in the same style as his exam. Work each one with the checklist before revealing the answer. Cheat sheet at the bottom for quick reference.</p>
+
+  <h2>The practice setup</h2>
+  <p>These problems use the same <code>Magic</code> and <code>Victory</code> types from his exam. Make sure they're in your <code>practice.hs</code>.</p>
+
+  <pre><code class="language-haskell">data Magic = Charm Integer | Spell Char deriving (Show)
+data Victory = Self [Integer] | Help [Magic] deriving (Show)
+
+alpha = Help [Charm 1, Spell 'A', Charm 9]
+beta  = Self [100, 200, 300]
+gamma = [(Charm 7, Self [1,2]), (Spell 'Z', Self [])]
+delta = Help []</code></pre>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · List cons</div>
+    <p>Pattern: <code>(x:y:rest)</code>&nbsp;&nbsp; Data: <code>[10, 20, 30, 40]</code></p>
+    <p>Give the resulting value for <code>rest</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Pattern needs at least 2 elements. Data has 4, ok.</p>
+      <ul>
+        <li><code>x = 10</code> (first)</li>
+        <li><code>y = 20</code> (second)</li>
+        <li><code>rest = [30, 40]</code> (everything after the first two)</li>
+      </ul>
+      <pre><code class="language-haskell">Answer: rest = [30, 40]</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · Constructor destructuring</div>
+    <p>Pattern: <code>(Help ms)</code>&nbsp;&nbsp; Data: <code>alpha</code></p>
+    <p>Give the resulting value for <code>ms</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><code>alpha = Help [Charm 1, Spell 'A', Charm 9]</code>. Pattern <code>(Help ms)</code> matches a <code>Help</code> constructor, binds the <code>[Magic]</code> inside to <code>ms</code>.</p>
+      <pre><code class="language-haskell">Answer: ms = [Charm 1, Spell 'A', Charm 9]</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Nested list in constructor</div>
+    <p>Pattern: <code>(Help (_:second:_))</code>&nbsp;&nbsp; Data: <code>alpha</code></p>
+    <p>Give the resulting value for <code>second</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Outer: <code>Help (...)</code> matches the Help constructor. Inner: <code>(_:second:_)</code> matches a list with at least 2 elements.</p>
+      <p><code>alpha</code> is <code>Help [Charm 1, Spell 'A', Charm 9]</code>. Inner list has 3 elements.</p>
+      <ul>
+        <li><code>_</code> = first = <code>Charm 1</code></li>
+        <li><code>second</code> = second = <code>Spell 'A'</code></li>
+        <li><code>_</code> = rest = <code>[Charm 9]</code></li>
+      </ul>
+      <pre><code class="language-haskell">Answer: second = Spell 'A'</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 4</span> · Pattern failure</div>
+    <p>Pattern: <code>(Self (x:xs))</code>&nbsp;&nbsp; Data: <code>delta</code></p>
+    <p>Give the resulting value for <code>x</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Outer pattern is <code>Self (...)</code>. But <code>delta = Help []</code>, a <code>Help</code> constructor. Wrong constructor.</p>
+      <p style="color: var(--warning);"><strong>No match.</strong> The pattern expects <code>Self</code> but the data uses <code>Help</code>. Pattern match fails at the outermost constructor.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 5</span> · Another pattern failure</div>
+    <p>Pattern: <code>(Help (x:xs))</code>&nbsp;&nbsp; Data: <code>delta</code></p>
+    <p>Give the resulting value for <code>x</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Outer: <code>Help (...)</code>. <code>delta = Help []</code>, matches the Help constructor ✓.</p>
+      <p>Inner: <code>(x:xs)</code> demands a <em>non-empty</em> list. But the list inside <code>delta</code> is <code>[]</code>, <em>empty</em>. Pattern fails.</p>
+      <p style="color: var(--warning);"><strong>No match.</strong> The inner pattern <code>(x:xs)</code> cannot match an empty list.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 6</span> · Tuple-list combo</div>
+    <p>Pattern: <code>((m, Self ns):rest)</code>&nbsp;&nbsp; Data: <code>gamma</code></p>
+    <p>Give the resulting values for <code>m</code> and <code>ns</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><code>gamma = [(Charm 7, Self [1,2]), (Spell 'Z', Self [])]</code>, a list of 2 tuples.</p>
+      <p>Outer: <code>(...):rest</code>, non-empty list pattern. First element → inner pattern, rest → <code>rest</code>.</p>
+      <p>Inner: <code>(m, Self ns)</code>, a 2-tuple; first element binds to <code>m</code>, second must be a <code>Self</code> binding its inside to <code>ns</code>.</p>
+      <p>First element of <code>gamma</code> is <code>(Charm 7, Self [1,2])</code>:</p>
+      <ul>
+        <li><code>m = Charm 7</code></li>
+        <li>Second tuple element is <code>Self [1,2]</code>, matches <code>Self ns</code>, so <code>ns = [1,2]</code></li>
+        <li><code>rest = [(Spell 'Z', Self [])]</code></li>
+      </ul>
+      <pre><code class="language-haskell">Answer: m = Charm 7, ns = [1,2]</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 7</span> · As-pattern</div>
+    <p>Pattern: <code>all@(Self (n:_))</code>&nbsp;&nbsp; Data: <code>beta</code></p>
+    <p>Give the resulting values for <code>all</code> and <code>n</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><code>beta = Self [100, 200, 300]</code>.</p>
+      <p>As-pattern: <code>all</code> binds to the whole thing, the inner pattern still matches too.</p>
+      <ul>
+        <li><code>all = Self [100, 200, 300]</code></li>
+        <li>Inner: <code>Self (n:_)</code> matches, with the list inside being <code>[100,200,300]</code>. So <code>n = 100</code>.</li>
+      </ul>
+      <pre><code class="language-haskell">Answer: all = Self [100, 200, 300], n = 100</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 8</span> · Exact length</div>
+    <p>Pattern: <code>[a, b, c]</code>&nbsp;&nbsp; Data: <code>[10, 20]</code></p>
+    <p>Give the resulting value for <code>b</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><code>[a, b, c]</code> matches <em>exactly</em> 3 elements. Data has 2.</p>
+      <p style="color: var(--warning);"><strong>No match.</strong> The exact-length pattern fails because the list doesn't have 3 elements.</p>
+      <p>(Compare: <code>(a:b:c:_)</code> would also fail here for the same reason, needs at least 3.)</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>Every pattern type from this lesson in one place.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>Literal</h4>
+      <pre><code class="language-haskell">f 0 = "zero"
+f 1 = "one"
+f n = "other"</code></pre>
+      <p>Match specific values.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Variable</h4>
+      <pre><code class="language-haskell">f x = x * 2</code></pre>
+      <p>Lowercase. Matches anything.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Wildcard</h4>
+      <pre><code class="language-haskell">f _ = "anything"
+f (_, b) = b</code></pre>
+      <p>Matches anything. Doesn't bind.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Empty list</h4>
+      <pre><code class="language-haskell">f [] = 0</code></pre>
+      <p>Only empty list matches.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Cons (head:tail)</h4>
+      <pre><code class="language-haskell">f (x:xs) = x
+f (_:y:_) = y
+f (a:b:c:_) = ...</code></pre>
+      <p>At least N elements.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Exact length</h4>
+      <pre><code class="language-haskell">f [x] = x
+f [a, b] = a + b
+f [_, y, _] = y</code></pre>
+      <p>Exactly N elements.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Tuple</h4>
+      <pre><code class="language-haskell">f (a, b) = a + b
+f (_, m, _) = m</code></pre>
+      <p>Size-fixed, positional.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Constructor</h4>
+      <pre><code class="language-haskell">f (Just x) = x
+f (Self ns) = ns
+f (Help ms) = ms</code></pre>
+      <p>Match specific constructor, bind data.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Nested</h4>
+      <pre><code class="language-haskell">f (Help (m:_)) = m
+f ((a, b):_) = a + b</code></pre>
+      <p>Patterns inside patterns.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>As-pattern</h4>
+      <pre><code class="language-haskell">f all@(x:xs) =
+  show all</code></pre>
+      <p>Bind whole + pieces.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Pattern fails when...</h4>
+      <pre><code>wrong constructor
+wrong shape
+wrong length
+specific value mismatch</code></pre>
+      <p>Match fails. Move on.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>The checklist</h4>
+      <pre><code>1. Identify shape
+2. Work outside-in
+3. Check bindings
+4. Check for failure</code></pre>
+      <p>Every P.1 problem.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Look at a pattern and know its minimum list length at a glance.</li>
+      <li>Spot the difference between <code>[]</code>, <code>_</code>, <code>[x]</code>, and <code>(x:xs)</code>.</li>
+      <li>Work through a nested pattern layer by layer.</li>
+      <li>Identify when a pattern match will fail (wrong shape, wrong length, wrong constructor).</li>
+      <li>Read an as-pattern <code>name@pattern</code> and list all bindings.</li>
+      <li>Solve every problem in Part 6 without looking at the trace.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">Next: <strong style="color: var(--accent);">Lesson 2 · Algebraic Data Types (P.2)</strong>. Now we design our own types, like the <code>Magic</code> and <code>Victory</code> ones you've been pattern-matching against. The <code>Flower</code>/<code>Service</code> problem from his study guide lives here.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Exam walkthrough</span></button>
+    <button class="nav-btn next" disabled><span class="label">Next</span><span class="title">Lesson 2 · coming up</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>

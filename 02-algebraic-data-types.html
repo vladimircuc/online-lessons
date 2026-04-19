@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 2 · Algebraic Data Types (P.2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "ss02";
+    min-height: 100vh;
+  }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .part-meta .accent { color: var(--accent); }
+  h1 { font-family: 'Fraunces', serif; font-size: 52px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--text-muted); max-width: 720px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; margin: 56px 0 16px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin: 36px 0 14px; }
+  h4 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin-bottom: 18px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .callout { margin: 24px 0; padding: 18px 22px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 16px; line-height: 1.65; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .callout-header::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+  .vscode-block { margin: 28px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .vscode-block-header { padding: 12px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .vscode-block-header::before { content: "▶"; color: var(--accent); font-size: 10px; }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+  details.practice { margin: 22px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  details.practice summary { padding: 14px 20px; cursor: pointer; background: var(--surface-elevated); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+  .problem-box { margin: 20px 0; padding: 22px; background: var(--surface); border: 1px dashed var(--border-light); border-radius: 10px; }
+  .problem-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .problem-label .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Inter', sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface); }
+  .cheat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .cheat-card { padding: 16px 18px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; }
+  .cheat-card h4 { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; margin: 0 0 10px; }
+  .cheat-card pre { margin: 0; padding: 0 !important; background: none !important; border: none; font-size: 12.5px !important; }
+  .cheat-card p { font-size: 13px; color: var(--text-muted); margin: 8px 0 0; font-family: 'Inter', sans-serif; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .trace { margin: 22px 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .trace-header { padding: 14px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--info); font-weight: 500; }
+  .trace-body { padding: 18px 22px; font-size: 15.5px; }
+  .trace-body p { margin-bottom: 12px; }
+  .trace-step { display: flex; gap: 14px; margin: 12px 0; padding: 10px 14px; background: var(--bg); border-radius: 6px; border-left: 2px solid var(--accent-dim); }
+  .trace-step .step-num { flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--accent); font-weight: 600; padding-top: 3px; }
+  .trace-step .step-body { flex: 1; font-size: 15px; }
+  .trace-step .step-body code { font-size: 0.92em; }
+  .trace-answer { margin-top: 16px; padding: 12px 16px; background: rgba(134, 184, 108, 0.08); border-left: 3px solid var(--success); border-radius: 6px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--success); font-size: 15px; }
+  .trace-answer .answer-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; margin-right: 10px; }
+
+  /* Type tree visualizer */
+  .type-tree {
+    margin: 22px 0;
+    padding: 20px 24px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .type-tree .tt-type { color: var(--info); font-weight: 600; }
+  .type-tree .tt-cons { color: var(--accent); font-weight: 600; }
+  .type-tree .tt-field { color: var(--text); }
+  .type-tree .tt-note { color: var(--text-dim); font-style: italic; font-family: 'Fraunces', serif; font-size: 14px; margin-left: 12px; }
+  .type-tree .tt-line { margin-left: 20px; }
+
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 02 · Algebraic Data Types (P.2)</span>
+      <span class="dot">·</span>
+      <span>~90 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · Concept</button>
+      <button class="tab" data-part="2">02 · Simple Types</button>
+      <button class="tab" data-part="3">03 · Constructors w/ Data</button>
+      <button class="tab" data-part="4">04 · The 4-Step Template</button>
+      <button class="tab" data-part="5">05 · Exam: special</button>
+      <button class="tab" data-part="6">06 · Exam: yellows</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · Concept</div>
+  <h1>Algebraic <em>data types</em></h1>
+  <p class="lede">Pattern matching in Lesson 1 was reactive, matching against data someone else defined. Now you design your <em>own</em> data types. Custom types let you model a problem precisely, eliminate impossible states at the type level, and write functions that handle every case the compiler can verify.</p>
+
+  <h2>What's an algebraic data type?</h2>
+  <p>An <strong>algebraic data type</strong> (ADT) is a user-defined type whose values fall into a fixed set of "shapes," called <strong>constructors</strong>. You list the shapes, Haskell makes the type.</p>
+
+  <p>The simplest kind is an enum, like <code>Bool</code>, which is actually built from exactly this machinery:</p>
+
+  <pre><code class="language-haskell">data Bool = True | False</code></pre>
+
+  <p>That's the real definition. <code>Bool</code> is a type. <code>True</code> and <code>False</code> are its two constructors. The <code>|</code> means "or."</p>
+
+  <h2>Why it's called "algebraic"</h2>
+  <p>Because types combine like algebra:</p>
+  <ul>
+    <li><strong>Sum</strong> (OR): a value is <em>this</em> or <em>that</em>. The <code>|</code> in a data definition.</li>
+    <li><strong>Product</strong> (AND): a constructor wraps multiple fields. Fields next to each other.</li>
+  </ul>
+
+  <p>Every ADT is a sum of products. "A <code>Shape</code> is EITHER a Circle with 1 radius, OR a Rectangle with 2 sides, OR a Triangle with 3 sides." You'll see this combo constantly.</p>
+
+  <h2>Why ADTs matter</h2>
+  <p>In Python you'd model something like a traffic light with strings, constants, or an Enum. Errors are possible: someone writes <code>"Geen"</code> instead of <code>"Green"</code> and nothing complains until runtime.</p>
+
+  <p>In Haskell, the compiler tracks the type:</p>
+
+  <pre><code class="language-haskell">data TrafficLight = Red | Yellow | Green
+
+action :: TrafficLight -&gt; String
+action Red    = "stop"
+action Yellow = "slow"
+action Green  = "go"</code></pre>
+
+  <p>Misspell a case and the compiler complains immediately. Forget a case and it warns. Pass the wrong type and it errors. The bugs you'd hunt for hours in Python are impossible here.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching framing</div>
+    <p>The big shift for a Python/Java student: <strong>types encode your problem's structure</strong>. You don't use strings and dictionaries to pretend you have a Flower, you <em>define</em> a Flower type and the compiler enforces it. This is the heart of Haskell's "if it compiles, it works" reputation.</p>
+  </div>
+
+  <h2>Three things you'll learn this lesson</h2>
+  <ol>
+    <li><strong>Defining types</strong>, both simple enums and constructors that carry data.</li>
+    <li><strong>Writing functions over them</strong>, using pattern matching on each constructor.</li>
+    <li><strong>Solving his exam's <code>special</code> and <code>yellows</code> problems</strong>, step-by-step.</li>
+  </ol>
+
+  <p>The 4-step template in Part 4 works for every ADT problem you'll see. Your student will internalize it and every P.2 question becomes mechanical.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Simple types</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · Basics</div>
+  <h1>Simple <em>types</em></h1>
+  <p class="lede">Start with the easiest shape: an enum-style type where each constructor is just a tag with no data attached. This is a stepping stone, constructors that hold data come in Part 3.</p>
+
+  <h2>The syntax</h2>
+  <pre><code class="language-haskell">data TypeName = Constructor1 | Constructor2 | Constructor3</code></pre>
+
+  <p>Rules:</p>
+  <ul>
+    <li><code>data</code> is a keyword.</li>
+    <li>The type name must start with an <strong>uppercase letter</strong>.</li>
+    <li>Each constructor name must also start with an uppercase letter.</li>
+    <li>Constructors are separated by <code>|</code>.</li>
+    <li>You can put them on one line or spread across many.</li>
+  </ul>
+
+  <h2>Examples</h2>
+
+  <pre><code class="language-haskell">data TrafficLight = Red | Yellow | Green
+
+data Direction = North | South | East | West
+
+data DayOfWeek = Mon | Tue | Wed | Thu | Fri | Sat | Sun</code></pre>
+
+  <p>Now <code>Red</code>, <code>Green</code>, <code>North</code>, <code>Mon</code>, etc. are values. Their type is the type you declared.</p>
+
+  <h2>The <code>deriving (Show)</code> magic</h2>
+  <p>If you try to print a value of your type in ghci:</p>
+  <pre><code>ghci&gt; Red
+&lt;interactive&gt;:1:1: error: No instance for (Show TrafficLight)
+   arising from a use of `print'</code></pre>
+
+  <p>Haskell doesn't know how to display your type yet. Fix: add <code>deriving (Show)</code>. This tells Haskell to auto-generate a way to turn the value into text.</p>
+
+  <pre><code class="language-haskell">data TrafficLight = Red | Yellow | Green deriving (Show)</code></pre>
+
+  <p>Now <code>ghci&gt; Red</code> prints <code>Red</code>. Every <code>data</code> definition on his exam uses <code>deriving (Show)</code>.</p>
+
+  <h2>Functions over simple types</h2>
+  <p>Write one equation per constructor. Pattern matching picks the right one.</p>
+
+  <pre><code class="language-haskell">action :: TrafficLight -&gt; String
+action Red    = "stop"
+action Yellow = "slow down"
+action Green  = "go"
+
+opposite :: Direction -&gt; Direction
+opposite North = South
+opposite South = North
+opposite East  = West
+opposite West  = East</code></pre>
+
+  <p>Notice: no <code>if</code>, no <code>switch</code>. Just one equation per case. This is the ADT pattern-match idiom.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">Exhaustiveness</div>
+    <p>If you forget a case, Haskell warns: <em>"Non-exhaustive patterns in function action"</em>. And if someone passes the missing case, your program crashes. <strong>Always handle every constructor</strong>, or use a wildcard <code>_</code> as a catch-all.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try it in practice.hs</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">data TrafficLight = Red | Yellow | Green deriving (Show)
+
+action :: TrafficLight -&gt; String
+action Red    = "stop"
+action Yellow = "slow down"
+action Green  = "go"</code></pre>
+      <p>Save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">action Red
+action Yellow
+action Green</code></pre>
+    </div>
+  </div>
+
+  <h2>Equality with <code>deriving (Eq)</code></h2>
+  <p>By default you can't compare values of your custom type with <code>==</code> or <code>/=</code>. To enable it, add <code>Eq</code> to the deriving list:</p>
+
+  <pre><code class="language-haskell">data TrafficLight = Red | Yellow | Green deriving (Show, Eq)</code></pre>
+
+  <p>Now <code>Red == Red</code> is <code>True</code>, <code>Red == Green</code> is <code>False</code>.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">His exam warns against this</div>
+    <p>Look at the problem statement carefully: <em>"These types do not belong to the Eq class, so you will not be able to use <code>==</code> or <code>/=</code>."</em> His types <strong>don't derive Eq on purpose</strong>, to force him to use pattern matching instead of comparison. Teach him to never reach for <code>==</code> on a custom type. Pattern match.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Concept</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">Constructors with data</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · Real ADTs</div>
+  <h1>Constructors with <em>data</em></h1>
+  <p class="lede">Here's where ADTs become powerful. Each constructor can carry its own data, and different constructors can carry <em>different</em> data. This is how you model real-world problems in Haskell.</p>
+
+  <h2>The syntax</h2>
+  <pre><code class="language-haskell">data TypeName = Constructor1 Field1Type Field2Type
+              | Constructor2 OtherFieldType
+              | Constructor3</code></pre>
+
+  <p>Constructor names followed by the types of the fields they wrap. Each constructor can have zero, one, two, or more fields, independently.</p>
+
+  <h2>Example: Shapes</h2>
+
+  <pre><code class="language-haskell">data Shape = Circle Double
+           | Rectangle Double Double
+           | Triangle Double Double Double
+           deriving (Show)</code></pre>
+
+  <p>Read: "A <code>Shape</code> is either:</p>
+  <ul>
+    <li>a <code>Circle</code> wrapping one <code>Double</code> (radius)</li>
+    <li>a <code>Rectangle</code> wrapping two <code>Double</code>s (width, height)</li>
+    <li>a <code>Triangle</code> wrapping three <code>Double</code>s (three sides)</li>
+  </ul>
+
+  <p>Now these are all valid <code>Shape</code> values:</p>
+  <pre><code class="language-haskell">Circle 5.0                  -- a Shape
+Rectangle 3.0 4.0           -- a Shape
+Triangle 3.0 4.0 5.0        -- a Shape</code></pre>
+
+  <p>To create a value, write the constructor followed by its data, space-separated. Same syntax as calling a function (because constructors <em>are</em> functions under the hood).</p>
+
+  <h2>Functions that destructure constructors</h2>
+  <p>Pattern match on the constructor AND bind names to the data inside.</p>
+
+  <pre><code class="language-haskell">area :: Shape -&gt; Double
+area (Circle r)          = 3.14159 * r * r
+area (Rectangle w h)     = w * h
+area (Triangle a b c)    =
+  let s = (a + b + c) / 2
+  in sqrt (s * (s-a) * (s-b) * (s-c))</code></pre>
+
+  <p>Each equation matches a different constructor. The names inside the parens bind to the fields.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Add &amp; test</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">data Shape = Circle Double
+           | Rectangle Double Double
+           | Triangle Double Double Double
+           deriving (Show)
+
+area :: Shape -&gt; Double
+area (Circle r)          = 3.14159 * r * r
+area (Rectangle w h)     = w * h
+area (Triangle a b c)    =
+  let s = (a + b + c) / 2
+  in sqrt (s * (s-a) * (s-b) * (s-c))</code></pre>
+      <p>Save, <code>:r</code>, test:</p>
+      <pre><code class="language-haskell">area (Circle 5)
+area (Rectangle 3 4)
+area (Triangle 3 4 5)
+-- 78.53975
+-- 12.0
+-- 6.0</code></pre>
+    </div>
+  </div>
+
+  <h2>Constructors can hold any type</h2>
+  <p>A constructor's fields can be any type at all: primitives, lists, tuples, even other ADTs you defined.</p>
+
+  <pre><code class="language-haskell">data Event = Login String               -- holds a username
+           | Purchase String Double     -- item and price
+           | Logout
+           deriving (Show)</code></pre>
+
+  <p>Examples:</p>
+  <pre><code class="language-haskell">Login "vlad"
+Purchase "laptop" 899.99
+Logout</code></pre>
+
+  <h2>Nesting types: his exam setup</h2>
+  <p>His study guide defines a tree of types where one ADT's constructors use another ADT. This is normal, encouraged, and how you build realistic models.</p>
+
+  <pre><code class="language-haskell">data Flower = Daffodil
+            | Rose Color
+            | Lily Color
+            deriving (Show)
+
+data Color = Blue | Pink | Red | Yellow
+           deriving (Show)
+
+data Service = Mulch Integer          -- cubic yards
+             | Trim String            -- customer's instructions
+             | Plant [Flower]         -- list of flowers!
+             deriving (Show)</code></pre>
+
+  <p>Let's decompose each type.</p>
+
+  <div class="type-tree">
+<span class="tt-type">Flower</span>
+<span class="tt-line">├── <span class="tt-cons">Daffodil</span> <span class="tt-note">(no data, all daffodils are yellow)</span></span>
+<span class="tt-line">├── <span class="tt-cons">Rose</span> <span class="tt-field">Color</span> <span class="tt-note">(a rose carries its color)</span></span>
+<span class="tt-line">└── <span class="tt-cons">Lily</span> <span class="tt-field">Color</span> <span class="tt-note">(a lily carries its color)</span></span>
+
+<span class="tt-type">Color</span>
+<span class="tt-line">├── <span class="tt-cons">Blue</span></span>
+<span class="tt-line">├── <span class="tt-cons">Pink</span></span>
+<span class="tt-line">├── <span class="tt-cons">Red</span></span>
+<span class="tt-line">└── <span class="tt-cons">Yellow</span></span>
+
+<span class="tt-type">Service</span>
+<span class="tt-line">├── <span class="tt-cons">Mulch</span> <span class="tt-field">Integer</span> <span class="tt-note">(how many cubic yards)</span></span>
+<span class="tt-line">├── <span class="tt-cons">Trim</span> <span class="tt-field">String</span> <span class="tt-note">(customer's instructions)</span></span>
+<span class="tt-line">└── <span class="tt-cons">Plant</span> <span class="tt-field">[Flower]</span> <span class="tt-note">(a list of flowers)</span></span>
+  </div>
+
+  <h3>Building values</h3>
+  <p>Reading bottom-up:</p>
+
+  <pre><code class="language-haskell">Daffodil                           -- a Flower
+Rose Blue                          -- a Flower (Rose holding Blue)
+Lily Pink                          -- a Flower
+
+Mulch 5                            -- a Service (5 cubic yards)
+Trim "oak tree in back"            -- a Service
+Plant [Daffodil, Rose Red]         -- a Service wrapping 2 flowers</code></pre>
+
+  <p>From the exam:</p>
+  <pre><code class="language-haskell">order1, order2 :: Service
+order1 = Plant [Rose Blue, Lily Pink]
+order2 = Plant [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code></pre>
+
+  <p><code>order1</code> is a <code>Service</code>, specifically a <code>Plant</code>, wrapping a list of 2 flowers. <code>order2</code> is also a <code>Plant</code> wrapping a list of 5 flowers.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching check</div>
+    <p>Before moving to Part 4, make sure your student can: (1) read a <code>data</code> declaration and list all the constructors, (2) write a value of each constructor, (3) say what data each constructor wraps. If he can do those three, he's ready for the template.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Add the exam types to practice.hs</div>
+    <div class="vscode-block-body">
+      <p>Put these in your file, we'll build <code>special</code> and <code>yellows</code> against them in Parts 5 and 6.</p>
+      <pre><code class="language-haskell">data Flower = Daffodil
+            | Rose Color
+            | Lily Color
+            deriving (Show)
+
+data Color = Blue | Pink | Red | Yellow
+           deriving (Show)
+
+data Service = Mulch Integer
+             | Trim String
+             | Plant [Flower]
+             deriving (Show)
+
+order1, order2 :: Service
+order1 = Plant [Rose Blue, Lily Pink]
+order2 = Plant [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code></pre>
+      <p>Save, <code>:r</code>, then type <code>order1</code> and <code>order2</code> to see them print.</p>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Simple types</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">The 4-step template</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · The template</div>
+  <h1>The <em>4-step</em> template</h1>
+  <p class="lede">Every P.2 problem asks you to write a function over an ADT. There's one template that works for all of them. If your student memorizes this, every P.2 question becomes fill-in-the-blanks.</p>
+
+  <h2>The template</h2>
+
+  <div class="callout try">
+    <div class="callout-header">Universal ADT function template</div>
+    <ol style="margin: 12px 0 0;">
+      <li><strong>Read the type.</strong> List every constructor and what data each wraps.</li>
+      <li><strong>Write one equation per constructor.</strong> Haskell's exhaustiveness guarantee.</li>
+      <li><strong>Pattern match to destructure.</strong> Grab names for the data inside each constructor.</li>
+      <li><strong>Use guards if needed.</strong> Branch further on the data you just destructured.</li>
+    </ol>
+  </div>
+
+  <h2>Walking through an example</h2>
+  <p>Let's write a function <code>describe :: Shape -&gt; String</code> using the template.</p>
+
+  <h4>Step 1 · Read the type</h4>
+  <pre><code class="language-haskell">data Shape = Circle Double
+           | Rectangle Double Double
+           | Triangle Double Double Double</code></pre>
+  <p>Three constructors: <code>Circle</code> (one Double), <code>Rectangle</code> (two Doubles), <code>Triangle</code> (three Doubles).</p>
+
+  <h4>Step 2 · Write one equation per constructor</h4>
+  <pre><code class="language-haskell">describe :: Shape -&gt; String
+describe ??? = ???    -- Circle
+describe ??? = ???    -- Rectangle
+describe ??? = ???    -- Triangle</code></pre>
+
+  <h4>Step 3 · Pattern match to destructure</h4>
+  <p>Bind names to the data inside each constructor.</p>
+  <pre><code class="language-haskell">describe :: Shape -&gt; String
+describe (Circle r)       = ???
+describe (Rectangle w h)  = ???
+describe (Triangle a b c) = ???</code></pre>
+
+  <h4>Step 4 · Use guards if needed</h4>
+  <p>No branching needed here, just return the description:</p>
+  <pre><code class="language-haskell">describe :: Shape -&gt; String
+describe (Circle r)       = "circle of radius " ++ show r
+describe (Rectangle w h)  = "rectangle " ++ show w ++ " by " ++ show h
+describe (Triangle a b c) = "triangle with sides " ++ show a ++ ", " ++ show b ++ ", " ++ show c</code></pre>
+
+  <p>Done. The template works, no guesswork.</p>
+
+  <h2>When to use guards (step 4)</h2>
+  <p>Add guards when you need to branch on the destructured data.</p>
+
+  <p>Example: discount based on size.</p>
+  <pre><code class="language-haskell">discount :: Shape -&gt; Double
+discount (Circle r)
+  | r &gt; 10    = 0.15
+  | otherwise = 0.0
+discount (Rectangle w h)
+  | w * h &gt; 50 = 0.20
+  | otherwise  = 0.05
+discount (Triangle _ _ _) = 0.10</code></pre>
+
+  <p>One equation per constructor (step 2). Destructure the fields (step 3). Guard on them (step 4).</p>
+
+  <h2>Matching on specific data inside</h2>
+  <p>Sometimes you want to match not just the constructor but a specific value inside it. You already saw this in Lesson 1, it works in function definitions too.</p>
+
+  <pre><code class="language-haskell">isYellow :: Flower -&gt; Bool
+isYellow Daffodil       = True
+isYellow (Rose Yellow)  = True
+isYellow (Lily Yellow)  = True
+isYellow _              = False</code></pre>
+
+  <p>Breakdown:</p>
+  <ul>
+    <li><code>Daffodil</code>, match this exact constructor (no data needed). Returns True.</li>
+    <li><code>(Rose Yellow)</code>, match a <code>Rose</code> holding specifically <code>Yellow</code>. Returns True.</li>
+    <li><code>(Lily Yellow)</code>, match a <code>Lily</code> holding specifically <code>Yellow</code>.</li>
+    <li><code>_</code>, catch-all. Any other flower (like <code>Rose Blue</code> or <code>Lily Pink</code>) returns False.</li>
+  </ul>
+
+  <div class="callout warning">
+    <div class="callout-header">Order matters (again)</div>
+    <p>Just like Lesson 1, patterns are checked top-to-bottom. Put specific cases first, wildcards last. If <code>isYellow _</code> came first it would catch everything.</p>
+  </div>
+
+  <h2>Nested destructuring in function definitions</h2>
+  <p>Since an ADT's fields can be any type, including lists and other ADTs, you can destructure multiple layers in one pattern.</p>
+
+  <pre><code class="language-haskell">firstFlower :: Service -&gt; Maybe Flower
+firstFlower (Plant (f:_)) = Just f
+firstFlower _             = Nothing</code></pre>
+
+  <p>Reading <code>(Plant (f:_))</code>:</p>
+  <ul>
+    <li>Outer: <code>Plant (...)</code>, a <code>Plant</code> constructor.</li>
+    <li>Inner: <code>(f:_)</code>, a non-empty list; first element binds to <code>f</code>.</li>
+  </ul>
+
+  <p>(Don't worry about <code>Maybe</code> for now, it's another ADT built into Haskell: <code>data Maybe a = Nothing | Just a</code>. You'd rarely use it on this exam.)</p>
+
+  <div class="callout teach">
+    <div class="callout-header">The mental shortcut</div>
+    <p>When your student sees a P.2 problem, ask him to <strong>count the constructors first</strong>. If the type has 3 constructors, his function needs (at minimum) 3 equations. This prevents the #1 mistake: forgetting a case.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">Constructors with data</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Exam: special</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · Exam problem 1</div>
+  <h1>Exam: <em>special</em></h1>
+  <p class="lede">First of two exam functions. <code>special</code> applies the gardening shop's sales promotion to an order. We'll build it step-by-step using the 4-step template, verify against every example, then move to <code>yellows</code>.</p>
+
+  <h2>The problem statement</h2>
+  <p>From his study guide:</p>
+  <blockquote style="margin: 20px 0; padding: 16px 22px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 6px;">
+    <p style="margin-bottom: 8px;"><strong>Sales promotion:</strong></p>
+    <ul style="margin-bottom: 0;">
+      <li>Anyone buying <strong>at least 3 cubic yards</strong> of mulch will receive an additional cubic yard for free.</li>
+      <li>Anyone having <strong>at least 3 flowers</strong> planted will have a <strong>pink rose bush</strong> planted for free.</li>
+    </ul>
+  </blockquote>
+
+  <p>The function signature:</p>
+  <pre><code class="language-haskell">special :: Service -&gt; Service</code></pre>
+
+  <p>Takes a <code>Service</code>, returns the same <code>Service</code> with the promo applied.</p>
+
+  <h2>Expected outputs</h2>
+  <table>
+    <tr><th>Input</th><th>Expected output</th></tr>
+    <tr><td><code>special (Mulch 4)</code></td><td><code>Mulch 5</code></td></tr>
+    <tr><td><code>special (Mulch 2)</code></td><td><code>Mulch 2</code></td></tr>
+    <tr><td><code>special (Trim "oak tree in back")</code></td><td><code>Trim "oak tree in back"</code></td></tr>
+    <tr><td><code>special order1</code><br><em>(Plant [Rose Blue, Lily Pink])</em></td><td><code>Plant [Rose Blue, Lily Pink]</code><br><em>(only 2 flowers, no promo)</em></td></tr>
+    <tr><td><code>special order2</code><br><em>(Plant with 5 flowers)</em></td><td><code>Plant [Rose Pink, Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code></td></tr>
+  </table>
+
+  <h2>Applying the template</h2>
+
+  <h4>Step 1 · Read the type</h4>
+  <p><code>Service</code> has 3 constructors: <code>Mulch Integer</code>, <code>Trim String</code>, <code>Plant [Flower]</code>.</p>
+
+  <h4>Step 2 · Write one equation per constructor</h4>
+  <pre><code class="language-haskell">special :: Service -&gt; Service
+special (Mulch n)       = ???
+special (Trim s)        = ???
+special (Plant flowers) = ???</code></pre>
+
+  <h4>Step 3 · Pattern match to destructure</h4>
+  <p>Already done in step 2. Each constructor has its fields bound to names.</p>
+
+  <h4>Step 4 · Use guards for the promos</h4>
+
+  <p><strong>Mulch case:</strong> if <code>n &gt;= 3</code>, return <code>Mulch (n + 1)</code>, else <code>Mulch n</code>.</p>
+
+  <pre><code class="language-haskell">special (Mulch n)
+  | n &gt;= 3    = Mulch (n + 1)
+  | otherwise = Mulch n</code></pre>
+
+  <p><strong>Trim case:</strong> no promo applies. Return as-is.</p>
+
+  <pre><code class="language-haskell">special (Trim s) = Trim s</code></pre>
+
+  <p><strong>Plant case:</strong> if the list has 3+ flowers, prepend a pink rose bush.</p>
+
+  <pre><code class="language-haskell">special (Plant flowers)
+  | length flowers &gt;= 3 = Plant (Rose Pink : flowers)
+  | otherwise           = Plant flowers</code></pre>
+
+  <p>Recall from Lesson 0: <code>:</code> prepends an element to a list. <code>Rose Pink : flowers</code> is a new list with <code>Rose Pink</code> at the front, followed by all original flowers.</p>
+
+  <h2>The complete function</h2>
+
+  <pre><code class="language-haskell">special :: Service -&gt; Service
+special (Mulch n)
+  | n &gt;= 3    = Mulch (n + 1)
+  | otherwise = Mulch n
+special (Trim s) = Trim s
+special (Plant flowers)
+  | length flowers &gt;= 3 = Plant (Rose Pink : flowers)
+  | otherwise           = Plant flowers</code></pre>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify each example</div>
+    <div class="vscode-block-body">
+      <p>Add <code>special</code> to <code>practice.hs</code>, save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">special (Mulch 4)
+-- Mulch 5
+
+special (Mulch 2)
+-- Mulch 2
+
+special (Trim "oak tree in back")
+-- Trim "oak tree in back"
+
+special order1
+-- Plant [Rose Blue,Lily Pink]
+
+special order2
+-- Plant [Rose Pink,Daffodil,Rose Red,Lily Blue,Rose Yellow,Daffodil]</code></pre>
+    </div>
+  </div>
+
+  <h2>Walking through <code>special order2</code> in detail</h2>
+  <p>Let's trace this one because it uses every feature.</p>
+
+  <div class="trace">
+    <div class="trace-header">Trace · special order2</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><code>order2 = Plant [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code>. Pattern <code>(Plant flowers)</code> matches, binding <code>flowers = [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body">Evaluate first guard: <code>length flowers &gt;= 3</code>. <code>length = 5</code>, <code>5 &gt;= 3</code> is <code>True</code>. Take this branch.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body">Build the result: <code>Plant (Rose Pink : flowers)</code>. The cons operator prepends <code>Rose Pink</code> to the existing list.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><code>Rose Pink : [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code><br>= <code>[Rose Pink, Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Result</span><code>Plant [Rose Pink, Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code></div>
+    </div>
+  </div>
+
+  <h2>Common mistakes</h2>
+
+  <div class="callout warning">
+    <div class="callout-header">Forgetting to re-wrap with the constructor</div>
+    <p>A common error is writing <code>Rose Pink : flowers</code> by itself. But that's a <code>[Flower]</code>, not a <code>Service</code>. The function signature says we must return a <code>Service</code>, so we need to wrap the list back in <code>Plant</code>: <code>Plant (Rose Pink : flowers)</code>.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Using &gt; instead of &gt;=</div>
+    <p>The problem says "at least 3," which is <code>&gt;= 3</code>, not <code>&gt; 3</code>. If your student writes <code>&gt; 3</code>, the example <code>special (Mulch 3)</code> would fail. <strong>Always re-read the problem wording</strong>, "at least" includes the boundary.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Trying to use ==</div>
+    <p>Reminder from Part 2: the types don't derive <code>Eq</code>. If your student writes something like <code>flowers == []</code> he'll get a compile error. Use pattern matching (<code>[]</code> as a pattern) or length checks instead.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">The 4-step template</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">Exam: yellows</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Exam problem 2</div>
+  <h1>Exam: <em>yellows</em></h1>
+  <p class="lede">Second exam function. <code>yellows</code> extracts all yellow flowers from an order. It introduces a helper function and shows when and why to pattern match on constructors' <em>specific</em> contents, not just the constructor type.</p>
+
+  <h2>The problem statement</h2>
+  <p>From the study guide:</p>
+  <blockquote style="margin: 20px 0; padding: 16px 22px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 6px;">
+    <p style="margin-bottom: 0;"><code>yellows order</code> produces a list that contains all of the yellow flowers included in <code>order</code>.</p>
+  </blockquote>
+
+  <p>Signature:</p>
+  <pre><code class="language-haskell">yellows :: Service -&gt; [Flower]</code></pre>
+
+  <h2>Expected outputs</h2>
+  <table>
+    <tr><th>Input</th><th>Expected output</th></tr>
+    <tr><td><code>yellows (Mulch 4)</code></td><td><code>[]</code> <em>(not a plant order)</em></td></tr>
+    <tr><td><code>yellows (Trim "hello")</code></td><td><code>[]</code> <em>(not a plant order)</em></td></tr>
+    <tr><td><code>yellows order1</code></td><td><code>[]</code> <em>(no yellows in Rose Blue, Lily Pink)</em></td></tr>
+    <tr><td><code>yellows order2</code></td><td><code>[Daffodil, Rose Yellow, Daffodil]</code></td></tr>
+  </table>
+
+  <h2>The two sub-problems</h2>
+  <ol>
+    <li><strong>Which flowers count as yellow?</strong> Daffodils (all yellow), Rose Yellow, Lily Yellow. Write a helper for this.</li>
+    <li><strong>Extract the list of flowers from the service</strong>, then filter the yellows.</li>
+  </ol>
+
+  <h2>Step 1 · The helper: isYellow</h2>
+  <p>We already saw this in Part 4.</p>
+
+  <pre><code class="language-haskell">isYellow :: Flower -&gt; Bool
+isYellow Daffodil       = True
+isYellow (Rose Yellow)  = True
+isYellow (Lily Yellow)  = True
+isYellow _              = False</code></pre>
+
+  <p>Notice the use of specific-data matching: <code>(Rose Yellow)</code> only matches a Rose whose color is exactly <code>Yellow</code>. Any other color falls through to the wildcard.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching detail</div>
+    <p>Ask your student to list every <code>Flower</code> value that returns <code>True</code>: <code>Daffodil</code>, <code>Rose Yellow</code>, <code>Lily Yellow</code>. That's it. Every other flower (<code>Rose Blue</code>, <code>Lily Pink</code>, <code>Rose Red</code>, etc.) returns <code>False</code> via the wildcard.</p>
+  </div>
+
+  <h2>Step 2 · The main function using the template</h2>
+
+  <h4>Template step 1 · Read the type</h4>
+  <p>3 <code>Service</code> constructors: <code>Mulch</code>, <code>Trim</code>, <code>Plant</code>.</p>
+
+  <h4>Template step 2 · One equation per constructor</h4>
+  <p>But wait: <code>Mulch</code> and <code>Trim</code> both have zero yellow flowers, both return <code>[]</code>. We can combine them with a wildcard.</p>
+
+  <pre><code class="language-haskell">yellows :: Service -&gt; [Flower]
+yellows (Plant flowers) = ???
+yellows _               = []</code></pre>
+
+  <p>The <code>Plant</code> case must come <em>first</em> so it's tried before the wildcard.</p>
+
+  <h4>Template step 3 · Pattern match &amp; process</h4>
+  <p>We have <code>flowers</code>, a <code>[Flower]</code>. We want only the yellow ones. That's exactly what <code>filter</code> does.</p>
+
+  <pre><code class="language-haskell">yellows (Plant flowers) = filter isYellow flowers
+yellows _               = []</code></pre>
+
+  <p>Done. <code>filter isYellow flowers</code> keeps each flower where <code>isYellow</code> returns True.</p>
+
+  <h2>The complete solution</h2>
+
+  <pre><code class="language-haskell">yellows :: Service -&gt; [Flower]
+yellows (Plant flowers) = filter isYellow flowers
+yellows _               = []
+
+isYellow :: Flower -&gt; Bool
+isYellow Daffodil       = True
+isYellow (Rose Yellow)  = True
+isYellow (Lily Yellow)  = True
+isYellow _              = False</code></pre>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify every example</div>
+    <div class="vscode-block-body">
+      <p>Add both functions, save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">yellows (Mulch 4)
+-- []
+
+yellows (Trim "hello")
+-- []
+
+yellows order1
+-- []
+
+yellows order2
+-- [Daffodil,Rose Yellow,Daffodil]</code></pre>
+    </div>
+  </div>
+
+  <h2>Walking through <code>yellows order2</code></h2>
+
+  <div class="trace">
+    <div class="trace-header">Trace · yellows order2</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><code>order2 = Plant [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code>. Matches <code>(Plant flowers)</code>, binds <code>flowers = [Daffodil, Rose Red, Lily Blue, Rose Yellow, Daffodil]</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body">Evaluate <code>filter isYellow flowers</code>. Walk through each element:<br>
+        · <code>Daffodil</code> → <code>isYellow Daffodil = True</code>, keep.<br>
+        · <code>Rose Red</code> → falls through to wildcard, <code>False</code>, drop.<br>
+        · <code>Lily Blue</code> → wildcard, drop.<br>
+        · <code>Rose Yellow</code> → matches <code>(Rose Yellow)</code>, <code>True</code>, keep.<br>
+        · <code>Daffodil</code> → keep.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body">Result: the kept elements, in order: <code>[Daffodil, Rose Yellow, Daffodil]</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Result</span><code>[Daffodil, Rose Yellow, Daffodil]</code></div>
+    </div>
+  </div>
+
+  <h2>Alternative without filter: explicit recursion</h2>
+  <p>To deepen understanding, here's the same function written recursively, no <code>filter</code>. This connects directly to Lesson 3 (converting between styles).</p>
+
+  <pre><code class="language-haskell">yellows :: Service -&gt; [Flower]
+yellows (Plant flowers) = collectYellows flowers
+yellows _               = []
+
+collectYellows :: [Flower] -&gt; [Flower]
+collectYellows [] = []
+collectYellows (f:fs)
+  | isYellow f = f : collectYellows fs
+  | otherwise  = collectYellows fs</code></pre>
+
+  <p>Same behavior. <code>filter</code> is just a shorthand for this recursive pattern. If your student is still fuzzy on higher-order functions, start with this version, then show that <code>filter isYellow</code> does the same thing.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">The big unlock</div>
+    <p>Every P.2 problem follows: <strong>pattern match the outer ADT → do list processing on the interior</strong>. Once your student sees this two-layer structure, the exam becomes mechanical. Outer: ADT pattern. Inner: whatever you learned about lists in Lessons 0 &amp; 1 (and 3).</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Exam: special</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; Cheat Sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Fresh problems using new types in the same style as his exam. Work each with the 4-step template before revealing the answer. Cheat sheet at the bottom for quick reference.</p>
+
+  <h2>The practice setup</h2>
+  <p>Paste these types into <code>practice.hs</code> below everything else:</p>
+
+  <pre><code class="language-haskell">data Size = Small | Medium | Large deriving (Show)
+
+data Drink = Coffee Size
+           | Tea Size
+           | Water
+           | Smoothie [String]   -- list of ingredient names
+           deriving (Show)
+
+data Order = Dine Drink
+           | Takeaway Drink
+           | Combo Drink Drink
+           deriving (Show)</code></pre>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · Simple ADT function</div>
+    <p>Write <code>sizeLabel :: Size -&gt; String</code> that returns <code>"S"</code>, <code>"M"</code>, or <code>"L"</code> for each size.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">sizeLabel :: Size -&gt; String
+sizeLabel Small  = "S"
+sizeLabel Medium = "M"
+sizeLabel Large  = "L"</code></pre>
+      <p>Template in action: one equation per constructor. <code>Size</code> has 3, so 3 equations. No data inside, so no destructuring needed.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · Constructor with data</div>
+    <p>Write <code>price :: Drink -&gt; Double</code>. Coffee: Small $3, Medium $4, Large $5. Tea: always $3. Water: $1. Smoothie: $6 + $0.50 per ingredient.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">price :: Drink -&gt; Double
+price (Coffee Small)  = 3
+price (Coffee Medium) = 4
+price (Coffee Large)  = 5
+price (Tea _)         = 3
+price Water           = 1
+price (Smoothie ingredients) = 6 + 0.5 * fromIntegral (length ingredients)</code></pre>
+      <p>Notes:</p>
+      <ul>
+        <li>Coffee has 3 sub-cases, one per Size. Using specific-data matching.</li>
+        <li>Tea ignores the size (always $3). Use <code>_</code> to match any Size.</li>
+        <li>Water has no data, no parens needed.</li>
+        <li>Smoothie destructures the list of ingredients. <code>fromIntegral</code> converts <code>length</code>'s Int result to a Double.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Nested pattern</div>
+    <p>Write <code>isCold :: Drink -&gt; Bool</code> that returns True for Water and any Smoothie, False for any Coffee or Tea.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">isCold :: Drink -&gt; Bool
+isCold Water        = True
+isCold (Smoothie _) = True
+isCold _            = False</code></pre>
+      <p>Specific cases first (True), wildcard catches everything else. The wildcard in <code>(Smoothie _)</code> ignores the ingredients list since we only care about the constructor.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 4</span> · Specific sub-value match</div>
+    <p>Write <code>hasLargeCoffee :: Drink -&gt; Bool</code> that returns True only for a Large Coffee, False for anything else.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">hasLargeCoffee :: Drink -&gt; Bool
+hasLargeCoffee (Coffee Large) = True
+hasLargeCoffee _              = False</code></pre>
+      <p>Match the specific combination. The pattern <code>(Coffee Large)</code> requires both the constructor AND the specific Size value. Everything else falls through to the wildcard.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 5</span> · Using a helper + list processing</div>
+    <p>Write <code>coldDrinks :: [Drink] -&gt; [Drink]</code> that returns only the cold drinks from the list. Use <code>filter</code> and the <code>isCold</code> helper from Problem 3.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">coldDrinks :: [Drink] -&gt; [Drink]
+coldDrinks ds = filter isCold ds</code></pre>
+      <p><code>filter isCold ds</code> keeps elements where <code>isCold</code> returns True. Identical pattern to <code>yellows</code> from the exam walkthrough, just with a different helper.</p>
+      <p>Test: <code>coldDrinks [Water, Coffee Small, Smoothie ["banana"]]</code> → <code>[Water, Smoothie ["banana"]]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 6</span> · Order type (nested ADT)</div>
+    <p>Write <code>orderPrice :: Order -&gt; Double</code>. A <code>Dine</code> adds $1 service charge. A <code>Takeaway</code> has no extra charge. A <code>Combo</code> is the sum of both drinks minus $2 (combo discount). Use the <code>price</code> function from Problem 2.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">orderPrice :: Order -&gt; Double
+orderPrice (Dine d)       = price d + 1
+orderPrice (Takeaway d)   = price d
+orderPrice (Combo d1 d2)  = price d1 + price d2 - 2</code></pre>
+      <p>One equation per <code>Order</code> constructor. Each destructures the <code>Drink</code>(s) inside. Then we call the existing <code>price</code> helper, exactly the kind of composition Haskell encourages.</p>
+      <p>Test: <code>orderPrice (Combo (Coffee Large) Water)</code> → <code>5 + 1 - 2 = 4.0</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 7</span> · Guards inside an ADT equation</div>
+    <p>Write <code>discount :: Drink -&gt; Double</code> that returns 0.10 (10% off) for a Smoothie with 5 or more ingredients, 0.05 for a Large Coffee, and 0 for everything else.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">discount :: Drink -&gt; Double
+discount (Smoothie ingredients)
+  | length ingredients &gt;= 5 = 0.10
+  | otherwise               = 0
+discount (Coffee Large)     = 0.05
+discount _                  = 0</code></pre>
+      <p>Uses guards for the Smoothie case (step 4 of the template). Specific sub-value match for <code>(Coffee Large)</code>. Wildcard for everything else.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 8</span> · Transform and rewrap</div>
+    <p>Write <code>supersize :: Drink -&gt; Drink</code>. If it's a Coffee or Tea, upgrade to Large. Water and Smoothie unchanged.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">supersize :: Drink -&gt; Drink
+supersize (Coffee _)     = Coffee Large
+supersize (Tea _)        = Tea Large
+supersize d              = d</code></pre>
+      <p>For Coffee and Tea, ignore the current size (<code>_</code>) and rebuild with <code>Large</code>. For others, bind the whole drink to <code>d</code> and return it unchanged.</p>
+      <p>Important: <code>supersize d = d</code> as a catch-all. This is the ADT version of "no change."</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>Everything from this lesson in one place.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>Simple ADT</h4>
+      <pre><code class="language-haskell">data Color = Red | Blue
+  deriving (Show)</code></pre>
+      <p>Enum-style. Just tags.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>With data</h4>
+      <pre><code class="language-haskell">data Shape = Circle Double
+           | Rect Double Double</code></pre>
+      <p>Each constructor wraps fields.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Building values</h4>
+      <pre><code class="language-haskell">Red
+Circle 5.0
+Rect 3 4</code></pre>
+      <p>Constructor + data, no commas.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Pattern matching</h4>
+      <pre><code class="language-haskell">f Red = ...
+f (Circle r) = ...
+f (Rect w h) = ...</code></pre>
+      <p>One equation per constructor.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Specific sub-value</h4>
+      <pre><code class="language-haskell">f (Rose Yellow) = ...
+f (Coffee Large) = ...</code></pre>
+      <p>Match constructor + specific data.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Ignoring data</h4>
+      <pre><code class="language-haskell">f (Tea _) = ...
+f (Rect _ h) = h</code></pre>
+      <p>Wildcard for unused fields.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Guards inside</h4>
+      <pre><code class="language-haskell">f (Mulch n)
+  | n &gt;= 3 = ...
+  | otherwise = ...</code></pre>
+      <p>Branch on destructured data.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Wildcard equation</h4>
+      <pre><code class="language-haskell">f (Plant xs) = ...
+f _ = []</code></pre>
+      <p>Catch remaining constructors.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>deriving</h4>
+      <pre><code class="language-haskell">deriving (Show)
+deriving (Show, Eq)</code></pre>
+      <p>Auto-generate printing, equality.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>No deriving Eq = no ==</h4>
+      <pre><code class="language-haskell">-- Can't use == on types
+-- without deriving Eq
+-- Pattern match instead!</code></pre>
+      <p>His exam types explicitly avoid Eq.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Nested destructure</h4>
+      <pre><code class="language-haskell">f (Plant (x:_)) = x
+f (Plant []) = ...</code></pre>
+      <p>Pattern inside pattern.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>The 4 steps</h4>
+      <pre><code>1. Read type
+2. One eq per constructor
+3. Destructure data
+4. Guards if needed</code></pre>
+      <p>Every P.2 problem.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Read a <code>data</code> declaration and list every constructor plus its fields.</li>
+      <li>Build example values of each constructor.</li>
+      <li>Write a function with one equation per constructor without prompting.</li>
+      <li>Destructure nested data (ADT containing a list, list containing ADTs).</li>
+      <li>Use guards inside an equation to branch on a destructured field.</li>
+      <li>Reproduce <code>special</code> and <code>yellows</code> from memory.</li>
+      <li>Explain why his exam's types don't derive <code>Eq</code>.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">Next: <strong style="color: var(--accent);">Lesson 3 · Converting Styles (P.3)</strong>. Same list processing, expressed three ways: recursion, list comprehensions, higher-order functions. Translation between them is mechanical once you see the structure.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Exam: yellows</span></button>
+    <button class="nav-btn next" disabled><span class="label">Next</span><span class="title">Lesson 3 · coming up</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>

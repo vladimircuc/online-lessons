@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 5 · Writing Tree Functions (T.2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Fraunces', Georgia, serif; font-size: 18px; line-height: 1.7; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; font-feature-settings: "ss01", "ss02"; min-height: 100vh; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .part-meta .accent { color: var(--accent); }
+  h1 { font-family: 'Fraunces', serif; font-size: 52px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--text-muted); max-width: 720px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; margin: 56px 0 16px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin: 36px 0 14px; }
+  h4 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin-bottom: 18px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .callout { margin: 24px 0; padding: 18px 22px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 16px; line-height: 1.65; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .callout-header::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+  .vscode-block { margin: 28px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .vscode-block-header { padding: 12px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .vscode-block-header::before { content: "▶"; color: var(--accent); font-size: 10px; }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+  details.practice { margin: 22px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  details.practice summary { padding: 14px 20px; cursor: pointer; background: var(--surface-elevated); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+  .problem-box { margin: 20px 0; padding: 22px; background: var(--surface); border: 1px dashed var(--border-light); border-radius: 10px; }
+  .problem-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .problem-label .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Inter', sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface); }
+  .cheat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .cheat-card { padding: 16px 18px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; }
+  .cheat-card h4 { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; margin: 0 0 10px; }
+  .cheat-card pre { margin: 0; padding: 0 !important; background: none !important; border: none; font-size: 12.5px !important; }
+  .cheat-card p { font-size: 13px; color: var(--text-muted); margin: 8px 0 0; font-family: 'Inter', sans-serif; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .tree-diagram { margin: 22px 0; padding: 24px 28px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.8; overflow-x: auto; }
+  .tree-diagram pre { background: none !important; border: none; padding: 0 !important; margin: 0; font-size: 15px !important; line-height: 1.8; }
+  .tree-diagram .tree-node { color: var(--accent); font-weight: 600; }
+  .tree-diagram .tree-empty { color: var(--text-dim); font-style: italic; }
+  .tree-diagram .tree-line { color: var(--border-light); }
+  .trace { margin: 22px 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .trace-header { padding: 14px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--info); font-weight: 500; }
+  .trace-body { padding: 18px 22px; font-size: 15.5px; }
+  .trace-body p { margin-bottom: 12px; }
+  .trace-step { display: flex; gap: 14px; margin: 12px 0; padding: 10px 14px; background: var(--bg); border-radius: 6px; border-left: 2px solid var(--accent-dim); }
+  .trace-step .step-num { flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--accent); font-weight: 600; padding-top: 3px; }
+  .trace-step .step-body { flex: 1; font-size: 15px; }
+  .trace-step .step-body code { font-size: 0.92em; }
+  .trace-answer { margin-top: 16px; padding: 12px 16px; background: rgba(134, 184, 108, 0.08); border-left: 3px solid var(--success); border-radius: 6px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--success); font-size: 15px; }
+  .trace-answer .answer-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; margin-right: 10px; }
+
+  /* Template fill-in boxes */
+  .template-box {
+    margin: 24px 0;
+    padding: 22px 28px;
+    background: var(--surface);
+    border: 1px solid var(--accent-dim);
+    border-radius: 10px;
+    position: relative;
+  }
+  .template-box::before {
+    content: "TEMPLATE";
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    padding: 2px 12px;
+    background: var(--bg);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+  .template-box pre { margin: 0; border: none; background: var(--code-bg) !important; }
+
+  /* Thought process box */
+  .thought {
+    margin: 22px 0;
+    padding: 18px 24px;
+    background: linear-gradient(180deg, rgba(106, 176, 204, 0.05) 0%, transparent 100%);
+    border-left: 3px solid var(--info);
+    border-radius: 6px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .thought .thought-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--info);
+    font-style: normal;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 05 · Writing Tree Functions (T.2)</span>
+      <span class="dot">·</span>
+      <span>~90 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · The Template</button>
+      <button class="tab" data-part="2">02 · Warmup Fns</button>
+      <button class="tab" data-part="3">03 · The 3 Questions</button>
+      <button class="tab" data-part="4">04 · Exam: smallLeaf</button>
+      <button class="tab" data-part="5">05 · Exam: prune</button>
+      <button class="tab" data-part="6">06 · Rebuilding</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · The foundation</div>
+  <h1>The <em>universal</em> template</h1>
+  <p class="lede">This is the hardest topic on his exam, but it's not because the problems are complex. It's because most students don't have a template. Once you give them one, every T.2 problem becomes fill-in-the-blank. This lesson drills that template until it's automatic.</p>
+
+  <h2>The universal tree-function template</h2>
+
+  <p>Every recursive function over a <code>BTree</code> looks like this:</p>
+
+  <div class="template-box">
+<pre><code class="language-haskell">funcName :: BTree a -&gt; ResultType
+funcName Empty                = baseCase
+funcName (BNode v left right) = combine v (funcName left) (funcName right)</code></pre>
+  </div>
+
+  <p>Two equations. Always. For every T.2 problem your student sees.</p>
+
+  <ul>
+    <li><strong>Equation 1: the Empty case.</strong> What's the "nothing" answer? A number like <code>0</code>, a boolean like <code>False</code>, a list like <code>[]</code>, or an empty tree <code>Empty</code>.</li>
+    <li><strong>Equation 2: the BNode case.</strong> Destructure into <code>v</code>, <code>left</code>, <code>right</code>. Combine the current value with the recursive results.</li>
+  </ul>
+
+  <h2>Why it works for every problem</h2>
+
+  <p>A <code>BTree</code> is either <code>Empty</code> or a <code>BNode</code>, those are the only two shapes. Two equations = exhaustive coverage. And because a <code>BNode</code> contains two more <code>BTree</code>s (left and right), recursion is the natural tool. The template encodes exactly this structure.</p>
+
+  <h2>Concrete example: sumTree</h2>
+
+  <p>Sum all the integer values in a tree.</p>
+
+  <div class="template-box">
+<pre><code class="language-haskell">sumTree :: BTree Integer -&gt; Integer
+sumTree Empty                = 0
+sumTree (BNode v left right) = v + sumTree left + sumTree right</code></pre>
+  </div>
+
+  <ul>
+    <li><strong>Empty case</strong>: an empty tree sums to <code>0</code>.</li>
+    <li><strong>BNode case</strong>: the sum is <code>v</code> (current value) plus the sum of the left subtree plus the sum of the right subtree. Plus-combine.</li>
+  </ul>
+
+  <h2>Another: treeDepth</h2>
+
+  <p>Compute the depth (height) of a tree.</p>
+
+  <div class="template-box">
+<pre><code class="language-haskell">treeDepth :: BTree a -&gt; Int
+treeDepth Empty                = 0
+treeDepth (BNode _ left right) = 1 + max (treeDepth left) (treeDepth right)</code></pre>
+  </div>
+
+  <ul>
+    <li><strong>Empty case</strong>: no depth, <code>0</code>.</li>
+    <li><strong>BNode case</strong>: the current node adds <code>1</code>, plus whichever subtree is deeper. (We use <code>_</code> because we don't need the value itself.)</li>
+  </ul>
+
+  <h2>Another: mirror</h2>
+
+  <p>Build a new tree with left and right children swapped at every node.</p>
+
+  <div class="template-box">
+<pre><code class="language-haskell">mirror :: BTree a -&gt; BTree a
+mirror Empty                = Empty
+mirror (BNode v left right) = BNode v (mirror right) (mirror left)</code></pre>
+  </div>
+
+  <ul>
+    <li><strong>Empty case</strong>: mirror of nothing is nothing.</li>
+    <li><strong>BNode case</strong>: rebuild with <code>v</code>, and the recursive-mirrored subtrees <strong>swapped</strong>.</li>
+  </ul>
+
+  <h2>What makes the bodies different?</h2>
+
+  <p>Look at the three examples side by side. Same skeleton, different combinations:</p>
+
+  <table>
+    <tr><th>Function</th><th>Empty</th><th>Combine</th></tr>
+    <tr><td><code>sumTree</code></td><td><code>0</code></td><td><code>v + left + right</code></td></tr>
+    <tr><td><code>treeDepth</code></td><td><code>0</code></td><td><code>1 + max left right</code></td></tr>
+    <tr><td><code>mirror</code></td><td><code>Empty</code></td><td><code>BNode v right left</code> (swapped!)</td></tr>
+  </table>
+
+  <p>The skeleton is identical. What changes is (1) what the empty answer is and (2) how you combine the current value with the recursive results.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Your teaching superpower</div>
+    <p>If your student can write this template from memory, <strong>80% of T.2 problems are solved</strong>. The rest is figuring out two small pieces: the base case value, and the combining logic. Drill the template first, then practice filling it in.</p>
+  </div>
+
+  <h2>The two variations you'll actually see</h2>
+
+  <p>His exam adds two wrinkles to the basic template. Both are covered in later parts:</p>
+
+  <ol>
+    <li><strong>Extra pattern for leaves</strong>: sometimes you need a third equation for "<code>BNode v Empty Empty</code>" (a leaf), to handle it specially. The <code>smallLeaf</code> problem uses this.</li>
+    <li><strong>Guards to decide between two behaviors</strong>: sometimes the function prunes or transforms based on the value. The <code>prune</code> problem uses this.</li>
+  </ol>
+
+  <p>We'll see both in Parts 4 and 5. Both are small additions to the base template, not replacements.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Warmup functions</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · Warmup</div>
+  <h1>Warmup: <em>filling in</em> the template</h1>
+  <p class="lede">Before the exam problems, let's practice plugging into the template. Four small functions, each showing how the base case and combine differ. If these feel easy, the exam will feel easy.</p>
+
+  <h2>Function 1: countNodes</h2>
+
+  <p>Count the total number of <code>BNode</code>s in a tree.</p>
+
+  <div class="thought">
+    <span class="thought-label">Thinking it through</span>
+    An empty tree has 0 nodes. A non-empty tree has 1 node (this one) plus however many are in the left subtree, plus however many in the right. So combine is <code>1 + left + right</code>, independent of the node's value.
+  </div>
+
+  <div class="template-box">
+<pre><code class="language-haskell">countNodes :: BTree a -&gt; Int
+countNodes Empty                = 0
+countNodes (BNode _ left right) = 1 + countNodes left + countNodes right</code></pre>
+  </div>
+
+  <p>Notice the <code>_</code>: we don't need the value, we're just counting.</p>
+
+  <h2>Function 2: countLeaves</h2>
+
+  <p>Count only <em>leaf</em> nodes (nodes where both children are <code>Empty</code>).</p>
+
+  <div class="thought">
+    <span class="thought-label">Thinking it through</span>
+    Empty contributes 0 leaves. But wait, we need a special case for leaves themselves: a <code>BNode</code> with both children <code>Empty</code> counts as 1. An internal <code>BNode</code> (at least one non-empty child) contributes 0 for itself, but recurses. This is our first time using the "extra pattern for leaves" trick.
+  </div>
+
+  <div class="template-box">
+<pre><code class="language-haskell">countLeaves :: BTree a -&gt; Int
+countLeaves Empty                  = 0
+countLeaves (BNode _ Empty Empty)  = 1
+countLeaves (BNode _ left right)   = countLeaves left + countLeaves right</code></pre>
+  </div>
+
+  <p>Three equations now. Haskell tries them top to bottom:</p>
+  <ol>
+    <li>If <code>Empty</code> → <code>0</code>.</li>
+    <li>Else if <code>BNode</code> with both children <code>Empty</code> (a leaf) → <code>1</code>.</li>
+    <li>Else (internal node) → recurse.</li>
+  </ol>
+
+  <div class="callout warning">
+    <div class="callout-header">Order matters</div>
+    <p>The leaf pattern must come <em>before</em> the general BNode pattern. Otherwise the general pattern catches everything and the leaf case never fires.</p>
+  </div>
+
+  <h2>Function 3: hasValue</h2>
+
+  <p>Return <code>True</code> if the tree contains a specific target value.</p>
+
+  <div class="thought">
+    <span class="thought-label">Thinking it through</span>
+    Empty tree contains nothing, so False. For a BNode: either this node IS the target (True), or we need to look in either subtree. Combine with OR.
+  </div>
+
+  <div class="template-box">
+<pre><code class="language-haskell">hasValue :: Integer -&gt; BTree Integer -&gt; Bool
+hasValue _ Empty = False
+hasValue target (BNode v left right) =
+  v == target || hasValue target left || hasValue target right</code></pre>
+  </div>
+
+  <p>Here the function takes <em>two</em> arguments: the target and the tree. Note the <code>_</code> on the first argument in the Empty case, since we don't care about the target when the tree is empty.</p>
+
+  <p>The combine is <strong>OR-combine</strong>: True if any of the three parts is True.</p>
+
+  <h2>Function 4: doubleAll</h2>
+
+  <p>Return a new tree where every integer has been doubled.</p>
+
+  <div class="thought">
+    <span class="thought-label">Thinking it through</span>
+    Empty maps to Empty (nothing to double). For a BNode, we return a new BNode with <code>v * 2</code> and recursively-doubled subtrees. This is a <strong>rebuild</strong>, the shape stays the same but we create a new tree.
+  </div>
+
+  <div class="template-box">
+<pre><code class="language-haskell">doubleAll :: BTree Integer -&gt; BTree Integer
+doubleAll Empty                = Empty
+doubleAll (BNode v left right) = BNode (v * 2) (doubleAll left) (doubleAll right)</code></pre>
+  </div>
+
+  <p>When the return type is <code>BTree</code>, the combine is usually <code>BNode (some v) (recurse left) (recurse right)</code>. Rebuild the tree with transformed parts.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Rebuild, don't modify</div>
+    <p>Critical Haskell concept: trees are immutable. <code>doubleAll</code> doesn't change the original tree; it <em>constructs a brand new one</em>. The original is untouched. This idea is central to the <code>prune</code> problem in Part 5.</p>
+  </div>
+
+  <h2>What we just practiced</h2>
+
+  <p>Four functions. Four combines. Same skeleton.</p>
+
+  <table>
+    <tr><th>Function</th><th>Empty value</th><th>Combine</th></tr>
+    <tr><td><code>countNodes</code></td><td><code>0</code></td><td><code>1 + left + right</code></td></tr>
+    <tr><td><code>countLeaves</code></td><td><code>0</code></td><td><code>left + right</code> (with leaf special case)</td></tr>
+    <tr><td><code>hasValue</code></td><td><code>False</code></td><td><code>v == target ∣∣ left ∣∣ right</code></td></tr>
+    <tr><td><code>doubleAll</code></td><td><code>Empty</code></td><td><code>BNode (v*2) left right</code></td></tr>
+  </table>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try them in practice.hs</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">data BTree a = Empty | BNode a (BTree a) (BTree a) deriving (Show)
+
+tiny :: BTree Integer
+tiny = BNode 5 (BNode 3 Empty Empty) (BNode 7 Empty Empty)
+
+countNodes :: BTree a -&gt; Int
+countNodes Empty                = 0
+countNodes (BNode _ left right) = 1 + countNodes left + countNodes right
+
+countLeaves :: BTree a -&gt; Int
+countLeaves Empty                  = 0
+countLeaves (BNode _ Empty Empty)  = 1
+countLeaves (BNode _ left right)   = countLeaves left + countLeaves right
+
+hasValue :: Integer -&gt; BTree Integer -&gt; Bool
+hasValue _ Empty = False
+hasValue target (BNode v left right) =
+  v == target || hasValue target left || hasValue target right
+
+doubleAll :: BTree Integer -&gt; BTree Integer
+doubleAll Empty                = Empty
+doubleAll (BNode v left right) = BNode (v * 2) (doubleAll left) (doubleAll right)</code></pre>
+      <p>Test:</p>
+      <pre><code class="language-haskell">countNodes tiny
+countLeaves tiny
+hasValue 3 tiny
+hasValue 99 tiny
+doubleAll tiny
+-- 3, 2, True, False, BNode 10 (BNode 6 Empty Empty) (BNode 14 Empty Empty)</code></pre>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">The template</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">The 3 questions</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · The method</div>
+  <h1>The <em>3 questions</em></h1>
+  <p class="lede">Before writing any T.2 function, your student should ask himself three questions. The answers determine everything. This is the meta-skill: a checklist that converts a word problem into a completed function, every time.</p>
+
+  <h2>The checklist</h2>
+
+  <div class="callout try">
+    <div class="callout-header">The 3 questions for every T.2 problem</div>
+    <ol style="margin: 12px 0 0;">
+      <li><strong>What's the Empty answer?</strong> If the tree is empty, what should the function return? (A number, a boolean, a list, an Empty tree?)</li>
+      <li><strong>What data do I need from the current node?</strong> Do I need <code>v</code>? Do I need both <code>left</code> and <code>right</code>? Or just one?</li>
+      <li><strong>How do I combine the value with the recursive results?</strong> Addition? OR? Rebuild with <code>BNode</code>? Conditional on a guard?</li>
+    </ol>
+  </div>
+
+  <p>Answer those three, and the function writes itself. Let's see it in action.</p>
+
+  <h2>Applying the checklist</h2>
+
+  <h3>Example · treeMax</h3>
+
+  <p><em>Find the largest value in a non-empty tree.</em></p>
+
+  <div class="thought">
+    <span class="thought-label">Answering the 3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li>Empty answer: <strong>problem says non-empty</strong>, so we don't need to handle Empty cleanly. We'll still need base cases, though, for leaves where children are Empty.</li>
+      <li>Data needed: <strong><code>v</code></strong> (the candidate max), plus recurse on left and right.</li>
+      <li>Combine: take the <strong>max</strong> of <code>v</code> and the subtree maxes.</li>
+    </ol>
+  </div>
+
+  <p>Based on those answers, we write:</p>
+
+  <pre><code class="language-haskell">treeMax :: BTree Integer -&gt; Integer
+treeMax (BNode v Empty Empty) = v
+treeMax (BNode v Empty right) = max v (treeMax right)
+treeMax (BNode v left Empty)  = max v (treeMax left)
+treeMax (BNode v left right)  = max v (max (treeMax left) (treeMax right))</code></pre>
+
+  <p>Four cases because "<code>treeMax Empty</code>" isn't defined. For each shape of BNode (leaf, one child missing, both children), we compute the right max. No Empty equation at all.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">When to skip Empty</div>
+    <p>Usually you <strong>always</strong> handle Empty. The rare exception is when the problem explicitly says "non-empty input" (like <code>treeMax</code>). Even then, you still need leaf-level base cases.</p>
+  </div>
+
+  <h3>Example · insertLeft</h3>
+
+  <p><em>Insert a new value as a leaf on the leftmost path of a tree, replacing the leftmost Empty.</em></p>
+
+  <div class="thought">
+    <span class="thought-label">Answering the 3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li>Empty answer: <strong>create a new leaf</strong> holding the target value. <code>BNode target Empty Empty</code>.</li>
+      <li>Data needed: <strong><code>v</code></strong> and <strong><code>left</code></strong>. Right stays put.</li>
+      <li>Combine: rebuild the node with the same <code>v</code>, the recursively-updated <code>left</code>, and <code>right</code> unchanged.</li>
+    </ol>
+  </div>
+
+  <pre><code class="language-haskell">insertLeft :: Integer -&gt; BTree Integer -&gt; BTree Integer
+insertLeft target Empty                = BNode target Empty Empty
+insertLeft target (BNode v left right) = BNode v (insertLeft target left) right</code></pre>
+
+  <p>Clean template. Empty case creates the new leaf. BNode case rebuilds, recursing only on the left.</p>
+
+  <h3>Example · sumEvens</h3>
+
+  <p><em>Sum only the even-valued nodes in a tree.</em></p>
+
+  <div class="thought">
+    <span class="thought-label">Answering the 3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li>Empty answer: <strong><code>0</code></strong> (no evens in nothing).</li>
+      <li>Data needed: <strong><code>v</code></strong> (to check if even), plus recurse on both.</li>
+      <li>Combine: if <code>v</code> is even, add it; otherwise don't. Either way, always sum the subtree sums. <strong>Guard needed.</strong></li>
+    </ol>
+  </div>
+
+  <pre><code class="language-haskell">sumEvens :: BTree Integer -&gt; Integer
+sumEvens Empty = 0
+sumEvens (BNode v left right)
+  | even v    = v + sumEvens left + sumEvens right
+  | otherwise = sumEvens left + sumEvens right</code></pre>
+
+  <p>This introduces <strong>guards on the BNode case</strong>. Same idea as guards everywhere: branch based on a condition, here we branch on whether we include <code>v</code> in the sum or not. The recursion on both subtrees happens regardless.</p>
+
+  <h2>Spotting each pattern</h2>
+
+  <p>Over enough problems, you'll see the same handful of combine patterns repeat:</p>
+
+  <table>
+    <tr><th>Result type</th><th>Typical combine</th><th>Example problem</th></tr>
+    <tr><td><code>Integer</code></td><td><code>v + left + right</code> or similar arithmetic</td><td>sum all values</td></tr>
+    <tr><td><code>Int</code></td><td><code>1 + left + right</code></td><td>count nodes</td></tr>
+    <tr><td><code>Bool</code></td><td><code>f v ∣∣ left ∣∣ right</code></td><td>does any node match?</td></tr>
+    <tr><td><code>Bool</code></td><td><code>f v &amp;&amp; left &amp;&amp; right</code></td><td>do all nodes match?</td></tr>
+    <tr><td><code>[a]</code></td><td><code>left ++ [v] ++ right</code></td><td>in-order traversal</td></tr>
+    <tr><td><code>BTree a</code></td><td><code>BNode (g v) left right</code></td><td>transform each value</td></tr>
+    <tr><td><code>BTree a</code></td><td><code>BNode v right left</code></td><td>mirror</td></tr>
+  </table>
+
+  <p>Memorize this table. When your student sees a problem, he matches the result type, finds the typical combine, and adjusts. Speeds everything up.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">The meta-strategy</div>
+    <p>Ask your student to <strong>state the 3 answers out loud</strong> before writing any code. "Empty returns X. I need Y from the node. I combine with Z." Once he can do that verbally, writing the code is trivial.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Warmup functions</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">Exam: smallLeaf</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · Exam problem 1</div>
+  <h1>Exam: <em>smallLeaf</em></h1>
+  <p class="lede">First of the two exam functions. <code>smallLeaf</code> asks whether the tree has at least one leaf whose label is a lowercase letter. We'll apply the 3 questions, handle the "leaf" pattern trick, and verify against his examples.</p>
+
+  <h2>The problem statement</h2>
+
+  <blockquote style="margin: 20px 0; padding: 16px 22px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 6px;">
+    <p style="margin-bottom: 0;"><code>smallLeaf tr</code> determines whether there is at least one leaf node in <code>tr</code> whose label is a lowercase letter.</p>
+  </blockquote>
+
+  <p>Signature:</p>
+  <pre><code class="language-haskell">smallLeaf :: BTree Char -&gt; Bool</code></pre>
+
+  <h2>The examples we must match</h2>
+
+  <p>Recall the example trees:</p>
+
+  <pre><code class="language-haskell">pear = BNode 'A' (BNode '?' Empty Empty)
+                 (BNode 'c' (BNode 'b' Empty Empty) (BNode 'G' Empty Empty))
+
+fig  = BNode 'r' (BNode 'c' (BNode 'E' Empty Empty) (BNode '#' Empty Empty))
+                 (BNode 'M' (BNode 'Q' Empty Empty) Empty)</code></pre>
+
+  <div class="tree-diagram">
+<pre>      <span class="tree-node">pear</span>                            <span class="tree-node">fig</span>
+       A                              r
+      / \                            / \
+     ?   c                          c   M
+        / \                        / \  /
+       <span style="color: var(--success);">b</span>   G                      E   #  Q</pre>
+  </div>
+
+  <p>Expected:</p>
+  <ul>
+    <li><code>smallLeaf pear</code> = <strong>True</strong>, because leaf <code>'b'</code> is lowercase.</li>
+    <li><code>smallLeaf fig</code> = <strong>False</strong>, because leaves are <code>'E'</code>, <code>'#'</code>, <code>'Q'</code>, none lowercase.</li>
+  </ul>
+
+  <div class="callout warning">
+    <div class="callout-header">Critical definition</div>
+    <p>A <strong>leaf</strong> is a node with BOTH children being <code>Empty</code>. In <code>pear</code>, the letter <code>'c'</code> is NOT a leaf (it has children <code>b</code> and <code>G</code>). Only <code>'?'</code>, <code>'b'</code>, and <code>'G'</code> are leaves. Internal node labels don't count, even if they're lowercase.</p>
+  </div>
+
+  <h2>Applying the 3 questions</h2>
+
+  <div class="thought">
+    <span class="thought-label">Answering the 3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li><strong>Empty answer</strong>: there are no leaves in an empty tree, so return <strong>False</strong>.</li>
+      <li><strong>Data from current node</strong>: we need <code>v</code> (to check if lowercase), and whether this node is a leaf (both children Empty). So we'll need a special pattern for leaves.</li>
+      <li><strong>Combine</strong>: for a leaf with lowercase <code>v</code>, return True. For any other BNode, recurse on both subtrees and combine with <strong>OR</strong>. ("True if either side finds one.")</li>
+    </ol>
+  </div>
+
+  <h2>Building the function</h2>
+
+  <p>We need three equations:</p>
+
+  <ol>
+    <li><code>smallLeaf Empty = False</code>  (Empty case)</li>
+    <li><code>smallLeaf (BNode v Empty Empty) = isLower v</code>  (leaf case)</li>
+    <li><code>smallLeaf (BNode _ left right) = smallLeaf left || smallLeaf right</code>  (internal case)</li>
+  </ol>
+
+  <p>Here's the full function:</p>
+
+  <pre><code class="language-haskell">import Data.Char    -- for isLower
+
+smallLeaf :: BTree Char -&gt; Bool
+smallLeaf Empty = False
+smallLeaf (BNode v Empty Empty) = isLower v
+smallLeaf (BNode _ left right)  = smallLeaf left || smallLeaf right</code></pre>
+
+  <p>Reading each equation:</p>
+  <ul>
+    <li><strong>Line 1 (Empty)</strong>: no leaves, no lowercase.</li>
+    <li><strong>Line 2 (leaf)</strong>: this is a leaf (both children are <code>Empty</code>). Check if its label is lowercase with <code>isLower</code>.</li>
+    <li><strong>Line 3 (internal)</strong>: not a leaf. Ignore the value (<code>_</code>), check both subtrees with OR.</li>
+  </ul>
+
+  <div class="callout warning">
+    <div class="callout-header">Order of equations matters</div>
+    <p>The leaf pattern (line 2) must come <em>before</em> the general BNode pattern (line 3). Otherwise the general pattern catches all BNodes and the leaf check never fires.</p>
+  </div>
+
+  <h2>Trace · smallLeaf pear</h2>
+
+  <div class="trace">
+    <div class="trace-header">Walking through it</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><code>smallLeaf (BNode 'A' (BNode '?' Empty Empty) (BNode 'c' ...))</code>. Not Empty. Not a leaf (right child is not Empty). Matches line 3. Returns <code>smallLeaf left || smallLeaf right</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Left subtree</strong>: <code>smallLeaf (BNode '?' Empty Empty)</code>. Matches line 2 (leaf). <code>isLower '?'</code> = False. Returns False.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Right subtree</strong>: <code>smallLeaf (BNode 'c' (BNode 'b' ...) (BNode 'G' ...))</code>. Not Empty. Not a leaf. Matches line 3. Returns <code>smallLeaf left || smallLeaf right</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body">&nbsp;&nbsp;&nbsp;&nbsp;<strong>Inner left</strong>: <code>smallLeaf (BNode 'b' Empty Empty)</code>. Leaf! <code>isLower 'b'</code> = True. Returns True.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">5</div>
+        <div class="step-body">At step 3, we have <code>True || smallLeaf right</code>. The first True short-circuits, return True.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">6</div>
+        <div class="step-body">Back at step 1, we have <code>False || True</code> = True.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Result</span><code>smallLeaf pear = True</code></div>
+    </div>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify in ghci</div>
+    <div class="vscode-block-body">
+      <p>Add to <code>practice.hs</code> with <code>import Data.Char</code> at the top:</p>
+      <pre><code class="language-haskell">pear = BNode 'A' (BNode '?' Empty Empty)
+                 (BNode 'c' (BNode 'b' Empty Empty) (BNode 'G' Empty Empty))
+fig  = BNode 'r' (BNode 'c' (BNode 'E' Empty Empty) (BNode '#' Empty Empty))
+                 (BNode 'M' (BNode 'Q' Empty Empty) Empty)</code></pre>
+      <pre><code class="language-haskell">smallLeaf pear
+-- True
+
+smallLeaf fig
+-- False
+
+smallLeaf Empty
+-- False
+
+smallLeaf (BNode 'z' Empty Empty)
+-- True (a leaf with lowercase label)</code></pre>
+    </div>
+  </div>
+
+  <h2>Common mistakes on this problem</h2>
+
+  <div class="callout warning">
+    <div class="callout-header">Missing the leaf pattern</div>
+    <p>Writing only 2 equations (Empty, general BNode) and checking <code>isLower v</code> in the general case. That would count any lowercase node, not just leaves. Problem requires leaf specifically.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Wrong combine for internal nodes</div>
+    <p>Using <code>&amp;&amp;</code> instead of <code>||</code>. The problem says "at least one" leaf, which means OR. Using AND would require every subtree to have a small leaf.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Order flipped</div>
+    <p>Putting the general BNode equation before the leaf equation. The general pattern catches every BNode including leaves, so the leaf case never fires.</p>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-header">Strong pattern: "leaf-aware recursion"</div>
+    <p>Any time a problem treats leaves differently from internal nodes, you need 3 equations: Empty, leaf (<code>BNode v Empty Empty</code>), general BNode. Memorize this shape, it's reusable.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">The 3 questions</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Exam: prune</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · Exam problem 2</div>
+  <h1>Exam: <em>prune</em></h1>
+  <p class="lede">The harder of the two. <code>prune</code> removes nodes below a threshold AND their descendants, returning a new tree. This one showcases the "rebuild" pattern: instead of returning a number or boolean, you return a restructured tree. Master this and you can handle any tree-transformation problem.</p>
+
+  <h2>The problem statement</h2>
+
+  <blockquote style="margin: 20px 0; padding: 16px 22px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 6px;">
+    <p><code>prune num tr</code> returns the tree obtained from <code>tr</code> by removing any node (plus its descendants) whose label is less than <code>num</code>.</p>
+    <p style="margin-bottom: 0;"><em>Recall that removing a node is equivalent to replacing it with an empty tree.</em></p>
+  </blockquote>
+
+  <p>Signature:</p>
+  <pre><code class="language-haskell">prune :: Integer -&gt; BTree Integer -&gt; BTree Integer</code></pre>
+
+  <h2>The example tree</h2>
+
+  <pre><code class="language-haskell">lime :: BTree Integer
+lime = BNode 53 (BNode 24 (BNode 14 Empty Empty) (BNode 67 Empty Empty))
+                (BNode 23 (BNode 50 Empty Empty) (BNode 18 Empty Empty))</code></pre>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">            53</span>
+<span class="tree-line">          /    \</span>
+<span class="tree-node">        24      23</span>
+<span class="tree-line">       /  \    /  \</span>
+<span class="tree-node">      14  67  50  18</span></pre>
+  </div>
+
+  <h2>Expected outputs</h2>
+
+  <table>
+    <tr><th>Call</th><th>Expected result</th></tr>
+    <tr><td><code>prune 25 lime</code></td><td><code>BNode 53 Empty Empty</code></td></tr>
+    <tr><td><code>prune 20 lime</code></td><td><code>BNode 53 (BNode 24 Empty (BNode 67 Empty Empty)) (BNode 23 (BNode 50 Empty Empty) Empty)</code></td></tr>
+  </table>
+
+  <h2>Understanding "remove node plus descendants"</h2>
+
+  <p>When a node's value is below <code>num</code>, we throw away that <em>entire subtree</em>, not just the one node. Example: if <code>24 &lt; 25</code>, then removing node <code>24</code> also removes its children <code>14</code> and <code>67</code>, even though <code>67 &gt; 25</code>.</p>
+
+  <p>This is counterintuitive. Even a "valid" node can be removed if its <em>ancestor</em> is too small.</p>
+
+  <h2>Applying the 3 questions</h2>
+
+  <div class="thought">
+    <span class="thought-label">Answering the 3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li><strong>Empty answer</strong>: pruning nothing gives <strong><code>Empty</code></strong>.</li>
+      <li><strong>Data from current node</strong>: we need <code>v</code> (to compare against <code>num</code>), plus <code>left</code> and <code>right</code> to recursively prune them.</li>
+      <li><strong>Combine</strong>: if <code>v &lt; num</code>, return <code>Empty</code> (kill this subtree). Otherwise, rebuild a BNode with <code>v</code> and the <em>pruned</em> versions of both subtrees.</li>
+    </ol>
+  </div>
+
+  <h2>Writing the function</h2>
+
+  <pre><code class="language-haskell">prune :: Integer -&gt; BTree Integer -&gt; BTree Integer
+prune _   Empty = Empty
+prune num (BNode v left right)
+  | v &lt; num   = Empty
+  | otherwise = BNode v (prune num left) (prune num right)</code></pre>
+
+  <p>Reading each equation:</p>
+  <ul>
+    <li><strong>Line 1</strong>: pruning an empty tree gives an empty tree. Nothing to do. Use <code>_</code> for <code>num</code> since it's unused here.</li>
+    <li><strong>Line 2-3</strong>: if the current value is below the threshold, nuke the whole subtree by returning <code>Empty</code>. Descendants disappear because we never recurse into them.</li>
+    <li><strong>Line 4</strong>: otherwise, keep this node. Rebuild with <code>v</code> unchanged, and <em>pruned</em> versions of both subtrees.</li>
+  </ul>
+
+  <h2>The critical insight: "kill by returning Empty"</h2>
+
+  <div class="callout teach">
+    <div class="callout-header">How removal works in a functional language</div>
+    <p>We don't "delete" nodes, we construct a new tree that doesn't contain them. When <code>v &lt; num</code>, we return <code>Empty</code>, and the <em>caller</em> (the parent node's rebuild) uses that <code>Empty</code> in place of the old subtree. The descendants exist in the original tree but not in the new one we're constructing.</p>
+  </div>
+
+  <h2>Trace · prune 25 lime</h2>
+
+  <div class="trace">
+    <div class="trace-header">Walking through it</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body">Call 1: <code>prune 25 (BNode 53 L R)</code> where L = BNode 24 ... and R = BNode 23 ....<br>Guard: <code>53 &lt; 25</code>? No. Take otherwise.<br>Expr: <code>BNode 53 (prune 25 L) (prune 25 R)</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body">Call 2: <code>prune 25 (BNode 24 (BNode 14 ...) (BNode 67 ...))</code>.<br>Guard: <code>24 &lt; 25</code>? Yes. Return <code>Empty</code>.<br><em>Note: children 14 and 67 never visited, never pruned individually.</em></div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body">Call 3: <code>prune 25 (BNode 23 (BNode 50 ...) (BNode 18 ...))</code>.<br>Guard: <code>23 &lt; 25</code>? Yes. Return <code>Empty</code>.<br><em>Again, children 50 and 18 never visited.</em></div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body">Back at Call 1: <code>BNode 53 Empty Empty</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Result</span><code>BNode 53 Empty Empty</code></div>
+    </div>
+  </div>
+
+  <h2>Trace · prune 20 lime</h2>
+
+  <div class="trace">
+    <div class="trace-header">Walking through it</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body">Call 1: <code>prune 20 (BNode 53 L R)</code>. <code>53 &lt; 20</code>? No. Rebuild.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body">Call 2 (left): <code>prune 20 (BNode 24 ...)</code>. <code>24 &lt; 20</code>? No. Rebuild.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body">&nbsp;&nbsp;&nbsp;&nbsp;Call 3: <code>prune 20 (BNode 14 Empty Empty)</code>. <code>14 &lt; 20</code>? Yes. Return <code>Empty</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body">&nbsp;&nbsp;&nbsp;&nbsp;Call 4: <code>prune 20 (BNode 67 Empty Empty)</code>. <code>67 &lt; 20</code>? No. Rebuild with Empty Empty as children (both Empty sub-recurse to Empty). Returns <code>BNode 67 Empty Empty</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">5</div>
+        <div class="step-body">Back at Call 2: <code>BNode 24 Empty (BNode 67 Empty Empty)</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">6</div>
+        <div class="step-body">Call 5 (right): <code>prune 20 (BNode 23 ...)</code>. <code>23 &lt; 20</code>? No. Rebuild.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">7</div>
+        <div class="step-body">&nbsp;&nbsp;&nbsp;&nbsp;Call 6: <code>prune 20 (BNode 50 Empty Empty)</code>. <code>50 &lt; 20</code>? No. Returns <code>BNode 50 Empty Empty</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">8</div>
+        <div class="step-body">&nbsp;&nbsp;&nbsp;&nbsp;Call 7: <code>prune 20 (BNode 18 Empty Empty)</code>. <code>18 &lt; 20</code>? Yes. Returns <code>Empty</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">9</div>
+        <div class="step-body">Back at Call 5: <code>BNode 23 (BNode 50 Empty Empty) Empty</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">10</div>
+        <div class="step-body">Back at Call 1: <code>BNode 53 (BNode 24 Empty (BNode 67 Empty Empty)) (BNode 23 (BNode 50 Empty Empty) Empty)</code>.</div>
+      </div>
+      <div class="trace-answer"><span class="answer-label">Result</span><code>BNode 53 (BNode 24 Empty (BNode 67 Empty Empty)) (BNode 23 (BNode 50 Empty Empty) Empty)</code></div>
+    </div>
+  </div>
+
+  <p>Visually, the result of <code>prune 20 lime</code>:</p>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">            53</span>
+<span class="tree-line">          /    \</span>
+<span class="tree-node">        24      23</span>
+<span class="tree-line">          \    /</span>
+<span class="tree-node">          67  50</span></pre>
+  </div>
+
+  <p>14 and 18 are gone (both were below 20). 67 and 50 survived. The tree shape is different, but 53, 24, 67, 23, 50 all remain.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">prune :: Integer -&gt; BTree Integer -&gt; BTree Integer
+prune _   Empty = Empty
+prune num (BNode v left right)
+  | v &lt; num   = Empty
+  | otherwise = BNode v (prune num left) (prune num right)
+
+lime = BNode 53 (BNode 24 (BNode 14 Empty Empty) (BNode 67 Empty Empty))
+                (BNode 23 (BNode 50 Empty Empty) (BNode 18 Empty Empty))</code></pre>
+      <pre><code class="language-haskell">prune 25 lime
+-- BNode 53 Empty Empty
+
+prune 20 lime
+-- BNode 53 (BNode 24 Empty (BNode 67 Empty Empty))
+--          (BNode 23 (BNode 50 Empty Empty) Empty)
+
+prune 100 lime
+-- Empty  (everything pruned)
+
+prune 0 lime
+-- lime unchanged  (nothing is less than 0)</code></pre>
+    </div>
+  </div>
+
+  <h2>Why this is the hardest problem</h2>
+
+  <div class="callout teach">
+    <div class="callout-header">What makes prune hard for students</div>
+    <p>Three reasons: (1) the return type is <code>BTree</code>, not a simple value, so the combine is a <code>BNode</code> construction; (2) the "kill subtree" branch doesn't recurse, breaking the usual pattern of "always recurse on both sides"; (3) thinking about "remove node plus descendants" requires understanding that returning Empty at one level propagates up. If your student gets this one, he can handle any tree-transformation problem.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">Exam: smallLeaf</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">Rebuilding trees</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Deep concepts</div>
+  <h1>Rebuilding, not <em>mutating</em></h1>
+  <p class="lede">One concept separates students who "get" Haskell trees from those who don't: you never modify a tree, you construct a new one. This part cements the mental model and shows patterns that come up constantly.</p>
+
+  <h2>The core principle</h2>
+
+  <p>Haskell is <strong>immutable</strong>. You cannot change a <code>BTree</code> value. What you can do is construct a brand new <code>BTree</code> and return it. The original still exists unchanged. Your function just <em>describes</em> the new tree.</p>
+
+  <h2>Example: doubleAll revisited</h2>
+
+  <pre><code class="language-haskell">doubleAll :: BTree Integer -&gt; BTree Integer
+doubleAll Empty                = Empty
+doubleAll (BNode v left right) = BNode (v * 2) (doubleAll left) (doubleAll right)</code></pre>
+
+  <p>In Python, you'd probably write code that walks the tree and mutates each node in place. Here, we instead:</p>
+  <ol>
+    <li>Recursively describe a new left subtree where every value is doubled.</li>
+    <li>Recursively describe a new right subtree.</li>
+    <li>Build a fresh <code>BNode</code> combining them with the doubled current value.</li>
+  </ol>
+
+  <p>If you do <code>let newTree = doubleAll oldTree</code> in ghci, <code>oldTree</code> is still the original. Nothing was modified.</p>
+
+  <h2>Shape preservation vs shape change</h2>
+
+  <p>Two useful patterns:</p>
+
+  <h3>Shape preserving (doubleAll, mirror)</h3>
+
+  <pre><code class="language-haskell">preserveShape :: BTree a -&gt; BTree b
+preserveShape Empty                = Empty
+preserveShape (BNode v left right) = BNode (transform v) (preserveShape left) (preserveShape right)</code></pre>
+
+  <p>Every node in the original has a corresponding node in the new tree. Only the values change.</p>
+
+  <h3>Shape changing (prune)</h3>
+
+  <pre><code class="language-haskell">possiblyRemove :: BTree a -&gt; BTree a
+possiblyRemove Empty = Empty
+possiblyRemove (BNode v left right)
+  | shouldRemove v = Empty
+  | otherwise      = BNode v (possiblyRemove left) (possiblyRemove right)</code></pre>
+
+  <p>Some branches of the original might not exist in the new tree (replaced with <code>Empty</code>). Shape can shrink.</p>
+
+  <h2>What about growing?</h2>
+
+  <p>You can also grow trees. Example: <code>insertLeft</code> from Part 3 extends the leftmost path by one leaf.</p>
+
+  <pre><code class="language-haskell">insertLeft :: Integer -&gt; BTree Integer -&gt; BTree Integer
+insertLeft target Empty                = BNode target Empty Empty
+insertLeft target (BNode v left right) = BNode v (insertLeft target left) right</code></pre>
+
+  <p>When we hit an <code>Empty</code>, instead of returning <code>Empty</code>, we return <code>BNode target Empty Empty</code>. That grows the tree.</p>
+
+  <h2>The returning-a-tree pattern cheat sheet</h2>
+
+  <p>When your function's result type is <code>BTree</code>, here's what the body looks like:</p>
+
+  <table>
+    <tr><th>Intent</th><th>BNode body</th></tr>
+    <tr><td>Transform every value</td><td><code>BNode (f v) (recurse left) (recurse right)</code></td></tr>
+    <tr><td>Swap left/right</td><td><code>BNode v (recurse right) (recurse left)</code></td></tr>
+    <tr><td>Conditionally remove</td><td><code>guard on v: if kill then Empty else BNode v (recurse) (recurse)</code></td></tr>
+    <tr><td>Only recurse on one side</td><td><code>BNode v (recurse left) right</code> (or other side)</td></tr>
+    <tr><td>Grow (replace Empty)</td><td>Empty case returns a new BNode instead of Empty</td></tr>
+  </table>
+
+  <h2>Equational reasoning: why this is safer than mutation</h2>
+
+  <div class="callout teach">
+    <div class="callout-header">The mental model</div>
+    <p>In Haskell, <code>prune 20 lime</code> and <code>lime</code> are two values. The first is derived from the second by applying <code>prune</code>. Both exist independently. If you write <code>let x = prune 20 lime; y = prune 100 lime</code>, you now have three values: <code>lime</code>, <code>x</code>, <code>y</code>. No one was modified. This is called <strong>equational reasoning</strong>, it's why Haskell programs are easier to reason about.</p>
+  </div>
+
+  <h2>Practical: what about performance?</h2>
+
+  <p>You might worry: "doesn't constructing a new tree every time use tons of memory?" Answer: Haskell's runtime shares structure cleverly. If you rebuild a tree and most of it stays the same, the new tree <em>shares</em> those subtrees with the original. Only changed parts are actually new.</p>
+
+  <p>Your student doesn't need to know this for the exam. Just tell him: "Haskell handles it. Focus on correctness."</p>
+
+  <h2>One more worked example: replaceValue</h2>
+
+  <p><em>Replace every occurrence of <code>old</code> with <code>new</code> in a tree of integers.</em></p>
+
+  <div class="thought">
+    <span class="thought-label">3 questions</span>
+    <ol style="font-style: normal; margin: 10px 0 0;">
+      <li>Empty answer: <code>Empty</code>.</li>
+      <li>Data needed: <code>v</code>, <code>left</code>, <code>right</code>, the old value, the new value.</li>
+      <li>Combine: rebuild. If <code>v == old</code>, use <code>new</code> as the value; otherwise use <code>v</code>. Recurse on both sides either way.</li>
+    </ol>
+  </div>
+
+  <pre><code class="language-haskell">replaceValue :: Integer -&gt; Integer -&gt; BTree Integer -&gt; BTree Integer
+replaceValue _ _ Empty = Empty
+replaceValue old new (BNode v left right)
+  | v == old  = BNode new (replaceValue old new left) (replaceValue old new right)
+  | otherwise = BNode v   (replaceValue old new left) (replaceValue old new right)</code></pre>
+
+  <p>Or more compactly using a helper value:</p>
+
+  <pre><code class="language-haskell">replaceValue :: Integer -&gt; Integer -&gt; BTree Integer -&gt; BTree Integer
+replaceValue _ _ Empty = Empty
+replaceValue old new (BNode v left right) =
+  BNode (if v == old then new else v)
+        (replaceValue old new left)
+        (replaceValue old new right)</code></pre>
+
+  <p>Both work. The first uses guards, the second uses an inline <code>if</code>. For his exam, guards are more idiomatic.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Exam: prune</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; Cheat Sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Eight fresh problems in the exam's style. Apply the 3 questions, use the template, check your answer. Cheat sheet at the bottom. If your student can do all 8 without peeking, he's ready.</p>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · Basic count</div>
+    <p>Write <code>countOdds :: BTree Integer -&gt; Int</code> that counts how many values in the tree are odd.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty: 0. Combine: if <code>v</code> odd, <code>1 +</code> subtree counts; otherwise <code>0 +</code> subtree counts. Guards.</p>
+      <pre><code class="language-haskell">countOdds :: BTree Integer -&gt; Int
+countOdds Empty = 0
+countOdds (BNode v left right)
+  | odd v     = 1 + countOdds left + countOdds right
+  | otherwise = countOdds left + countOdds right</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · All-nodes predicate</div>
+    <p>Write <code>allPositive :: BTree Integer -&gt; Bool</code> that returns True if every value in the tree is positive. Empty tree is considered True (vacuously).</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty: True. Combine: current node positive AND both subtrees all positive. Use <code>&amp;&amp;</code>.</p>
+      <pre><code class="language-haskell">allPositive :: BTree Integer -&gt; Bool
+allPositive Empty = True
+allPositive (BNode v left right) = v &gt; 0 &amp;&amp; allPositive left &amp;&amp; allPositive right</code></pre>
+      <p><strong>Note</strong>: <code>&amp;&amp;</code> short-circuits. If <code>v &gt; 0</code> is False, the recursive calls don't even run.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Leaf-aware</div>
+    <p>Write <code>maxLeaf :: BTree Integer -&gt; Integer</code> that returns the largest value among the leaves of a non-empty tree. You can assume the tree is non-empty.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>No Empty case needed (non-empty tree). Leaf case: return <code>v</code>. Internal: handle up-to-3 possibilities (one or both children Empty).</p>
+      <pre><code class="language-haskell">maxLeaf :: BTree Integer -&gt; Integer
+maxLeaf (BNode v Empty Empty) = v
+maxLeaf (BNode _ Empty right) = maxLeaf right
+maxLeaf (BNode _ left Empty)  = maxLeaf left
+maxLeaf (BNode _ left right)  = max (maxLeaf left) (maxLeaf right)</code></pre>
+      <p>Note: internal nodes' values are ignored (the <code>_</code>), we only care about leaves.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 4</span> · Transform each value</div>
+    <p>Write <code>addOne :: BTree Integer -&gt; BTree Integer</code> that returns a new tree where every value is incremented by 1.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty → Empty. BNode → rebuild with <code>v + 1</code> and recursed children.</p>
+      <pre><code class="language-haskell">addOne :: BTree Integer -&gt; BTree Integer
+addOne Empty                = Empty
+addOne (BNode v left right) = BNode (v + 1) (addOne left) (addOne right)</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 5</span> · Collect all values to a list</div>
+    <p>Write <code>flatten :: BTree a -&gt; [a]</code> that returns all values in the tree as a list, left-to-right (in-order traversal).</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty → empty list. BNode → left list ++ [v] ++ right list.</p>
+      <pre><code class="language-haskell">flatten :: BTree a -&gt; [a]
+flatten Empty                = []
+flatten (BNode v left right) = flatten left ++ [v] ++ flatten right</code></pre>
+      <p>For <code>tiny = BNode 5 (BNode 3 Empty Empty) (BNode 7 Empty Empty)</code> → <code>[3, 5, 7]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 6</span> · Conditional removal (prune-style)</div>
+    <p>Write <code>dropNegatives :: BTree Integer -&gt; BTree Integer</code> that removes any node with a negative value AND all its descendants.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Same shape as <code>prune</code>. Empty → Empty. Negative node → Empty. Otherwise → rebuild.</p>
+      <pre><code class="language-haskell">dropNegatives :: BTree Integer -&gt; BTree Integer
+dropNegatives Empty = Empty
+dropNegatives (BNode v left right)
+  | v &lt; 0     = Empty
+  | otherwise = BNode v (dropNegatives left) (dropNegatives right)</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 7</span> · Leaf predicate</div>
+    <p>Write <code>anyLeafPositive :: BTree Integer -&gt; Bool</code> that returns True if at least one leaf has a positive value.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty: False. Leaf: <code>v &gt; 0</code>. Internal: OR the subtrees.</p>
+      <pre><code class="language-haskell">anyLeafPositive :: BTree Integer -&gt; Bool
+anyLeafPositive Empty = False
+anyLeafPositive (BNode v Empty Empty) = v &gt; 0
+anyLeafPositive (BNode _ left right)  = anyLeafPositive left || anyLeafPositive right</code></pre>
+      <p>Same shape as <code>smallLeaf</code>. Drill this pattern, you'll see it again.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 8</span> · Transform with rebuild</div>
+    <p>Write <code>capLeaves :: Integer -&gt; BTree Integer -&gt; BTree Integer</code> that returns a new tree where every <strong>leaf's</strong> value is capped at <code>n</code> (i.e., if a leaf's value exceeds <code>n</code>, replace it with <code>n</code>). Internal node values stay unchanged.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Empty → Empty. Leaf → cap value. Internal → rebuild with unchanged value, recurse on both sides.</p>
+      <pre><code class="language-haskell">capLeaves :: Integer -&gt; BTree Integer -&gt; BTree Integer
+capLeaves _ Empty = Empty
+capLeaves n (BNode v Empty Empty) = BNode (min v n) Empty Empty
+capLeaves n (BNode v left right)  = BNode v (capLeaves n left) (capLeaves n right)</code></pre>
+      <p>Three-equation shape (Empty, leaf, internal). Same structure as <code>smallLeaf</code> but returning a <code>BTree</code> instead of a <code>Bool</code>.</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>Everything from this lesson in one page.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>Universal template</h4>
+      <pre><code class="language-haskell">f Empty = baseCase
+f (BNode v l r) =
+  combine v (f l) (f r)</code></pre>
+      <p>Two equations. Always.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>The 3 questions</h4>
+      <pre><code>1. Empty = ?
+2. Need v? both children?
+3. How to combine?</code></pre>
+      <p>Answer first. Code after.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Leaf-aware template</h4>
+      <pre><code class="language-haskell">f Empty = ...
+f (BNode v Empty Empty) = ...
+f (BNode _ left right) = ...</code></pre>
+      <p>When leaves differ.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Conditional prune</h4>
+      <pre><code class="language-haskell">f (BNode v l r)
+  | kill = Empty
+  | otherwise =
+      BNode v (f l) (f r)</code></pre>
+      <p>Kill = return Empty.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Result: Int</h4>
+      <pre><code>combine: arithmetic
+v + f left + f right</code></pre>
+      <p>sumTree, countNodes</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Result: Bool (any)</h4>
+      <pre><code>combine: OR
+f v || f left || f right</code></pre>
+      <p>hasValue, smallLeaf</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Result: Bool (all)</h4>
+      <pre><code>combine: AND
+f v &amp;&amp; f left &amp;&amp; f right</code></pre>
+      <p>allPositive</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Result: [a]</h4>
+      <pre><code>combine: ++
+f left ++ [v] ++ f right</code></pre>
+      <p>flatten</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Result: BTree</h4>
+      <pre><code>combine: rebuild
+BNode (g v) (f l) (f r)</code></pre>
+      <p>doubleAll, mirror</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Order matters</h4>
+      <pre><code>Specific patterns FIRST
+General pattern LAST</code></pre>
+      <p>Leaf before internal.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Never mutate</h4>
+      <pre><code>Build new trees.
+Original unchanged.</code></pre>
+      <p>Immutability always.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Kill by Empty</h4>
+      <pre><code>To "remove" a subtree
+→ return Empty</code></pre>
+      <p>Ancestors propagate it up.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Write the universal template from memory without looking.</li>
+      <li>Answer the 3 questions aloud for any tree problem before coding.</li>
+      <li>Spot when you need a leaf-aware 3-equation version.</li>
+      <li>Write <code>smallLeaf</code> and <code>prune</code> from scratch.</li>
+      <li>Know when the combine is plus, OR, AND, <code>++</code>, or a rebuild.</li>
+      <li>Solve all 8 practice problems without peeking at the answers.</li>
+      <li>Explain the "rebuild not mutate" principle in your own words.</li>
+    </ul>
+  </div>
+
+  <div class="callout try" style="margin-top: 40px;">
+    <div class="callout-header">🎉 Congrats, the course is complete</div>
+    <p>You've now covered all five of his exam's learning targets:</p>
+    <ul style="margin-bottom: 0;">
+      <li><strong>P.1</strong> · Pattern matching</li>
+      <li><strong>P.2</strong> · Algebraic data types</li>
+      <li><strong>P.3</strong> · Converting styles</li>
+      <li><strong>T.1</strong> · Tracing recursive tree functions</li>
+      <li><strong>T.2</strong> · Writing recursive tree functions</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">To teach him: walk through Lesson 0 for fundamentals, then one lesson per topic depending on how much runway you have. Have him write code alongside in <code>practice.hs</code> and test in ghci as you go. Prioritize T.2, that's where students struggle most.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Rebuilding trees</span></button>
+    <button class="nav-btn next" disabled><span class="label">Course complete</span><span class="title">You're ready to teach</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>

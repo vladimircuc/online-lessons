@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 0 · Haskell Foundations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "ss02";
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .topbar-left {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+
+  /* LAYOUT */
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* HEADERS */
+  .part-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .part-meta .accent { color: var(--accent); }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 52px;
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+
+  .lede {
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 56px 0 16px;
+    line-height: 1.25;
+  }
+  h2:first-of-type { margin-top: 0; }
+  h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 36px 0 14px;
+  }
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  p { margin-bottom: 18px; }
+
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--surface-elevated);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  pre {
+    background: var(--code-bg) !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px !important;
+    margin: 18px 0;
+    overflow-x: auto;
+    font-size: 13.5px !important;
+    line-height: 1.65;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    border: none;
+    color: var(--text);
+    font-size: 13.5px;
+    white-space: pre;
+  }
+
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+  /* CALLOUTS */
+  .callout {
+    margin: 24px 0;
+    padding: 18px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .callout-header::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+
+  /* VS CODE BLOCKS */
+  .vscode-block {
+    margin: 28px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .vscode-block-header {
+    padding: 12px 20px;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .vscode-block-header::before {
+    content: "▶";
+    color: var(--accent);
+    font-size: 10px;
+  }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+
+  /* PRACTICE / DETAILS */
+  details.practice {
+    margin: 22px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  details.practice summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    background: var(--surface-elevated);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--accent);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+  }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before {
+    content: "▸";
+    transition: transform 0.2s;
+    color: var(--accent);
+  }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+
+  .problem-box {
+    margin: 20px 0;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px dashed var(--border-light);
+    border-radius: 10px;
+  }
+  .problem-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .problem-label .accent { color: var(--accent); }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-weight: 600;
+    background: var(--surface);
+  }
+
+  /* CHEAT SHEET */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .cheat-card {
+    padding: 16px 18px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .cheat-card h4 {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    margin: 0 0 10px;
+  }
+  .cheat-card pre {
+    margin: 0;
+    padding: 0 !important;
+    background: none !important;
+    border: none;
+    font-size: 12.5px !important;
+  }
+  .cheat-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 8px 0 0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* FOOTER NAV */
+  .footer-nav {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .nav-btn {
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    max-width: 260px;
+    text-align: left;
+  }
+  .nav-btn:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--accent-dim);
+    background: var(--surface-elevated);
+  }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+  .nav-btn .title {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+
+  /* PROGRESS BAR */
+  .progress {
+    position: sticky;
+    top: 54px;
+    height: 2px;
+    background: var(--border);
+    z-index: 49;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+
+  /* PRISM */
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 00 · Foundations</span>
+      <span class="dot">·</span>
+      <span>~60 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · Overview</button>
+      <button class="tab" data-part="2">02 · Setup</button>
+      <button class="tab" data-part="3">03 · REPL</button>
+      <button class="tab" data-part="4">04 · Functions</button>
+      <button class="tab" data-part="5">05 · Data</button>
+      <button class="tab" data-part="6">06 · Locals &amp; HOF</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · Orientation</div>
+  <h1>What <em>is</em> Haskell?</h1>
+  <p class="lede">Before we set up any tools, let's understand what you're about to teach. Haskell is a <strong>pure, lazy, statically typed functional</strong> language. Those four words are the whole personality, and understanding them upfront will save you a dozen "why doesn't this work like Python?" moments with your student.</p>
+
+  <h2>Pure</h2>
+  <p>In Python and Java, you can write <code>x = 5</code> and later <code>x = 6</code>. You changed what <code>x</code> refers to. In Haskell, <strong>you cannot do that</strong>. Once <code>x</code> equals <code>5</code>, it equals <code>5</code> forever. Values never change. Functions never have hidden side effects. Given the same input, a function <em>always</em> returns the same output.</p>
+  <p>This sounds restrictive. It pays off enormously: code becomes dramatically easier to reason about, test, and refactor.</p>
+
+  <h2>Lazy</h2>
+  <p>Haskell doesn't compute anything until something actually needs the result. You can define an infinite list and it won't crash, because only the elements you actually ask for get generated.</p>
+  <pre><code class="language-haskell">take 5 [1..]    -- [1, 2, 3, 4, 5]</code></pre>
+  <p>The <code>[1..]</code> is an infinite list of integers. Haskell is happy to define it because nothing forces it to compute the whole thing. When you ask for the first 5, it generates just those.</p>
+
+  <h2>Statically typed</h2>
+  <p>Every expression has a type, checked <em>before</em> your program runs. Like Java, but you rarely have to write the types yourself, Haskell's compiler figures them out (this is called <em>type inference</em>). You get safety without the verbosity.</p>
+
+  <h2>Functional</h2>
+  <p>The core unit of thought is the function, not the object or the loop. You don't iterate through a list, you transform it. You don't mutate, you map.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching framing</div>
+    <p>When a student coming from Python or Java first meets Haskell, the instinct is to ask "where's the <code>for</code> loop?" The honest answer: <strong>it doesn't exist</strong>. Everything a loop does, Haskell does through recursion, list comprehensions, or functions like <code>map</code> and <code>filter</code>. This mindset shift is the whole course.</p>
+  </div>
+
+  <h2>Why is it taught in college?</h2>
+  <p>Because it forces a different way of thinking. If you only know Python, you solve every problem with a for loop. Haskell takes that tool away and makes you learn:</p>
+  <ul>
+    <li><strong>Recursion</strong> as a natural way of thinking</li>
+    <li><strong>Pattern matching</strong> to destructure data</li>
+    <li><strong>Higher-order functions</strong> (functions as arguments)</li>
+    <li><strong>Algebraic data types</strong> to model problems precisely</li>
+    <li><strong>Thinking in transformations</strong> rather than step-by-step instructions</li>
+  </ul>
+  <p>These are the five skills his exam tests. No coincidence.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Setup &amp; Installation</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · Environment</div>
+  <h1>Setup &amp; <em>installation</em></h1>
+  <p class="lede">Let's get Haskell running on your machine. You'll install the compiler + REPL via GHCup, then wire up VS Code for a clean editing experience. Total time: about 10 minutes plus waiting for downloads.</p>
+
+  <h2>Step 1 · Install GHCup</h2>
+  <p>GHCup is the official installer. It installs the compiler, REPL, build tools, and the language server in one shot.</p>
+
+  <h4>Windows</h4>
+  <p>Open <strong>PowerShell</strong> and paste this (all one line):</p>
+  <pre><code class="language-powershell">Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; try { Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-WebRequest https://www.haskell.org/ghcup/sh/bootstrap-haskell.ps1 -UseBasicParsing))) -ArgumentList $true } catch { Write-Error $_ }</code></pre>
+
+  <h4>macOS or Linux</h4>
+  <pre><code class="language-bash">curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh</code></pre>
+
+  <div class="callout try">
+    <div class="callout-header">During install</div>
+    <p>Answer <strong>Yes</strong> when it asks about HLS (Haskell Language Server). Press Enter to accept defaults for everything else. Downloading GHC itself takes 5-15 minutes.</p>
+  </div>
+
+  <h2>Step 2 · Verify the install</h2>
+  <p>After installation finishes, <strong>close your terminal completely</strong> and open a fresh one. The installer modifies your <code>PATH</code>, and only new terminals pick it up.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">In a fresh terminal</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-bash">ghci</code></pre>
+      <p>You should see something like:</p>
+      <pre><code>GHCi, version 9.6.7: https://www.haskell.org/ghc/  :? for help
+ghci&gt;</code></pre>
+      <p>Test with:</p>
+      <pre><code class="language-haskell">2 + 3</code></pre>
+      <p>Should return <code>5</code>. Type <code>:q</code> to quit.</p>
+    </div>
+  </div>
+
+  <h2>Step 3 · What did I install?</h2>
+  <table>
+    <tr><th>Tool</th><th>What it does</th></tr>
+    <tr><td><code>ghc</code></td><td>The compiler. Turns <code>.hs</code> files into programs. You rarely call it directly.</td></tr>
+    <tr><td><code>ghci</code></td><td>The interactive REPL. Where you'll spend 90% of your time.</td></tr>
+    <tr><td><code>cabal</code></td><td>Package manager. Like <code>pip</code> or <code>npm</code>. Ignore for now.</td></tr>
+    <tr><td><code>HLS</code></td><td>The Language Server. Makes VS Code smart about Haskell.</td></tr>
+  </table>
+
+  <h2>Step 4 · VS Code setup</h2>
+  <ol>
+    <li>Open VS Code.</li>
+    <li>Click the <strong>Extensions</strong> icon on the left sidebar (four squares).</li>
+    <li>Search for <strong>Haskell</strong>.</li>
+    <li>Install the top result, published by "Haskell" with a lambda logo. <strong>Only install this one.</strong></li>
+    <li>Create a folder for Haskell work (e.g. <code>haskell-learning</code>).</li>
+    <li>In VS Code: <em>File → Open Folder</em>, pick that folder.</li>
+    <li>Create a new file: <em>Ctrl+N</em>, save as <code>practice.hs</code> with <em>Ctrl+S</em>.</li>
+  </ol>
+  <p>First time you save a <code>.hs</code> file, HLS may say "starting." Let it finish, can take a minute.</p>
+
+  <h2>Step 5 · Your workflow</h2>
+  <p>Etch this into muscle memory:</p>
+  <ol>
+    <li>Write code in <code>practice.hs</code> inside VS Code.</li>
+    <li>Open a terminal (<em>View → Terminal</em>, or <em>Ctrl + `</em>).</li>
+    <li>Run <code>ghci practice.hs</code>, loads your file into the REPL.</li>
+    <li>Call your functions at the <code>ghci&gt;</code> prompt to test them.</li>
+    <li>Edit the file, save, in ghci type <code>:r</code> to reload. Test again.</li>
+  </ol>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching tip</div>
+    <p>Keep VS Code on one side of the screen, terminal on the other. "Write → save → <code>:r</code> → test" should become a reflex for your student by the end of the first lesson.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Overview</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">The REPL</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · Tooling</div>
+  <h1>The <em>REPL</em> &amp; the basics</h1>
+  <p class="lede">GHCi is an interactive Haskell shell. Type an expression, get a result. This is the sandbox for exploration, and the primary way to learn the language.</p>
+
+  <h2>Playing in ghci</h2>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try these one at a time</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">2 + 3
+10 * 5
+2 ^ 10
+div 17 5
+mod 17 5</code></pre>
+      <p>Expected: <code>5</code>, <code>50</code>, <code>1024</code>, <code>3</code>, <code>2</code>.</p>
+    </div>
+  </div>
+
+  <h2>Useful GHCi commands</h2>
+  <p>Commands start with a colon.</p>
+  <table>
+    <tr><th>Command</th><th>Purpose</th></tr>
+    <tr><td><code>:q</code></td><td>Quit GHCi.</td></tr>
+    <tr><td><code>:l file.hs</code></td><td>Load a file.</td></tr>
+    <tr><td><code>:r</code></td><td>Reload the currently loaded file after editing.</td></tr>
+    <tr><td><code>:t expr</code></td><td>Show the type of an expression. <em>You'll use this constantly.</em></td></tr>
+    <tr><td><code>:i name</code></td><td>Show info about a function, type, or operator.</td></tr>
+  </table>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try :t to inspect types</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">:t 5
+:t "hello"
+:t True
+:t reverse
+:t map</code></pre>
+      <p>That last one, <code>:t map</code>, shows <code>map :: (a -&gt; b) -&gt; [a] -&gt; [b]</code>. Reads: "takes a function from <code>a</code> to <code>b</code>, and a list of <code>a</code>'s, returns a list of <code>b</code>'s." The lowercase <code>a</code> and <code>b</code> are type variables (like generics).</p>
+    </div>
+  </div>
+
+  <h2>Expressions &amp; values</h2>
+  <p>A Haskell program is essentially a set of <strong>definitions</strong>. A definition binds a name to a value. There are no statements, no assignments. Just equations.</p>
+  <pre><code class="language-haskell">x = 5
+greeting = "Hello"
+pi = 3.14159</code></pre>
+  <p>Once bound, these names can't be reassigned. <code>x</code> is <code>5</code>. End of story.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">Common confusion</div>
+    <p><code>x = x + 1</code> is <strong>not</strong> "increment x." It's a recursive definition meaning "x equals x plus one", which has no solution, so the program would hang. Haskell's <code>=</code> is closer to <code>==</code> in math than <code>=</code> in Python.</p>
+  </div>
+
+  <h2>Types</h2>
+  <p>Every value has a type. The built-ins you'll meet:</p>
+  <table>
+    <tr><th>Type</th><th>Examples</th><th>Notes</th></tr>
+    <tr><td><code>Int</code></td><td><code>5</code>, <code>-17</code></td><td>Fixed-size integers.</td></tr>
+    <tr><td><code>Integer</code></td><td><code>5</code>, <code>10^100</code></td><td>Unlimited size. Slower.</td></tr>
+    <tr><td><code>Double</code></td><td><code>3.14</code>, <code>2.0</code></td><td>Decimal. Default for math.</td></tr>
+    <tr><td><code>Bool</code></td><td><code>True</code>, <code>False</code></td><td>Capital T and F.</td></tr>
+    <tr><td><code>Char</code></td><td><code>'a'</code>, <code>'!'</code></td><td>Single character. Single quotes.</td></tr>
+    <tr><td><code>String</code></td><td><code>"hello"</code></td><td>A list of <code>Char</code>. Double quotes.</td></tr>
+    <tr><td><code>[Int]</code></td><td><code>[1, 2, 3]</code></td><td>List of <code>Int</code>.</td></tr>
+    <tr><td><code>(Int, Char)</code></td><td><code>(5, 'x')</code></td><td>Tuple of <code>Int</code> and <code>Char</code>.</td></tr>
+  </table>
+
+  <h2>Type signatures</h2>
+  <p>Type signatures describe what type a value has. They use <code>::</code>, read as <em>"has type"</em>.</p>
+  <pre><code class="language-haskell">name :: String
+name = "Vlad"
+
+age :: Int
+age = 28</code></pre>
+  <p>Type signatures are <em>optional</em>, the compiler can infer them. But <strong>always write them anyway</strong>. They're documentation, catch bugs early, and his exam always uses them.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Setup</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">Functions &amp; Guards</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · Core syntax</div>
+  <h1>Functions &amp; <em>guards</em></h1>
+  <p class="lede">Functions are the heart of Haskell. Defining them, calling them, and branching inside them follows a small set of rules very different from Python or Java. Get these right and you've unlocked the language.</p>
+
+  <h2>Defining a function</h2>
+  <pre><code class="language-haskell">double :: Int -&gt; Int
+double x = x * 2
+
+greet :: String -&gt; String
+greet name = "Hello, " ++ name ++ "!"
+
+add :: Int -&gt; Int -&gt; Int
+add x y = x + y</code></pre>
+
+  <h3>Reading type signatures</h3>
+  <p>The <code>-&gt;</code> means "takes, returns." Right-associative:</p>
+  <ul>
+    <li><code>Int -&gt; Int</code> = takes an <code>Int</code>, returns an <code>Int</code>.</li>
+    <li><code>String -&gt; String</code> = takes a <code>String</code>, returns a <code>String</code>.</li>
+    <li><code>Int -&gt; Int -&gt; Int</code> = two args, returns <code>Int</code>.</li>
+  </ul>
+
+  <h2>Calling a function</h2>
+  <p>Single biggest syntax difference from Python or Java. <strong>No parentheses around arguments.</strong> Just put them after the function name, space-separated.</p>
+  <pre><code class="language-haskell">double 5          -- returns 10
+greet "Sailor"    -- returns "Hello, Sailor!"
+add 3 4           -- returns 7</code></pre>
+
+  <p>Parentheses only group a complex argument:</p>
+  <pre><code class="language-haskell">double (3 + 4)    -- 14
+double 3 + 4      -- 10, because this means (double 3) + 4</code></pre>
+
+  <div class="callout warning">
+    <div class="callout-header">Negative numbers need parens</div>
+    <p><code>double -5</code> is read as <code>double - 5</code>, tries to subtract 5 from the function. Wrap negatives: <code>double (-5)</code>.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Put it in practice.hs</div>
+    <div class="vscode-block-body">
+      <p>Paste into <code>practice.hs</code>:</p>
+      <pre><code class="language-haskell">double :: Int -&gt; Int
+double x = x * 2
+
+greet :: String -&gt; String
+greet name = "Hello, " ++ name ++ "!"
+
+add :: Int -&gt; Int -&gt; Int
+add x y = x + y</code></pre>
+      <p>Save. In terminal: <code>ghci practice.hs</code>. Then:</p>
+      <pre><code class="language-haskell">double 5
+greet "Sailor"
+add 10 20
+double (3 + 4)</code></pre>
+    </div>
+  </div>
+
+  <h2>Guards</h2>
+  <p>Haskell has <code>if</code>/<code>then</code>/<code>else</code>, but <strong>guards</strong> are the preferred way to branch inside a function.</p>
+
+  <pre><code class="language-haskell">classify :: Int -&gt; String
+classify n
+  | n &lt; 0     = "negative"
+  | n == 0    = "zero"
+  | n &lt; 10    = "small"
+  | otherwise = "big"</code></pre>
+
+  <p>How to read it:</p>
+  <ul>
+    <li>Each line starting with <code>|</code> is a <strong>guard</strong>, a condition.</li>
+    <li>Haskell tries guards top to bottom. First <code>True</code> wins.</li>
+    <li><code>otherwise</code> is a synonym for <code>True</code>, always matches.</li>
+    <li>Indentation matters. Guards must be indented consistently.</li>
+  </ul>
+
+  <div class="callout teach">
+    <div class="callout-header">On his exam</div>
+    <p>Guards are used on nearly every problem. Combined with pattern matching (Lesson 1), you can solve 70% of his study guide.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Add &amp; test</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">classify :: Int -&gt; String
+classify n
+  | n &lt; 0     = "negative"
+  | n == 0    = "zero"
+  | n &lt; 10    = "small"
+  | otherwise = "big"</code></pre>
+      <p>Save, <code>:r</code>, test:</p>
+      <pre><code class="language-haskell">classify 0
+classify 5
+classify 100
+classify (-3)</code></pre>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">REPL &amp; Basics</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Lists, Strings, Tuples</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · Data structures</div>
+  <h1>Lists, strings, <em>tuples</em></h1>
+  <p class="lede">The two data structures you'll use most: lists (variable length, same type) and tuples (fixed length, mixed types). Strings are secretly just lists. Learn these cold, everything downstream depends on them.</p>
+
+  <h2>Lists</h2>
+  <p>A list holds a sequence of values of the <em>same type</em>. Square brackets, commas:</p>
+  <pre><code class="language-haskell">[1, 2, 3, 4, 5]   :: [Int]
+["a", "b", "c"]   :: [String]
+[True, False]     :: [Bool]</code></pre>
+
+  <h3>Ranges</h3>
+  <pre><code class="language-haskell">[1..10]       -- [1,2,3,4,5,6,7,8,9,10]
+[2,4..10]     -- [2,4,6,8,10] -- step of 2
+[1..]         -- infinite list, don't print it directly!
+['a'..'e']    -- "abcde"</code></pre>
+
+  <h3>Core list operations</h3>
+  <table>
+    <tr><th>Function</th><th>Example</th><th>Result</th></tr>
+    <tr><td><code>length</code></td><td><code>length [1,2,3]</code></td><td><code>3</code></td></tr>
+    <tr><td><code>head</code></td><td><code>head [1,2,3]</code></td><td><code>1</code></td></tr>
+    <tr><td><code>tail</code></td><td><code>tail [1,2,3]</code></td><td><code>[2,3]</code></td></tr>
+    <tr><td><code>reverse</code></td><td><code>reverse [1,2,3]</code></td><td><code>[3,2,1]</code></td></tr>
+    <tr><td><code>take</code></td><td><code>take 2 [1,2,3,4]</code></td><td><code>[1,2]</code></td></tr>
+    <tr><td><code>drop</code></td><td><code>drop 2 [1,2,3,4]</code></td><td><code>[3,4]</code></td></tr>
+    <tr><td><code>null</code></td><td><code>null []</code></td><td><code>True</code></td></tr>
+    <tr><td><code>sum</code></td><td><code>sum [1,2,3]</code></td><td><code>6</code></td></tr>
+    <tr><td><code>++</code></td><td><code>[1,2] ++ [3,4]</code></td><td><code>[1,2,3,4]</code></td></tr>
+    <tr><td><code>:</code> (cons)</td><td><code>1 : [2,3]</code></td><td><code>[1,2,3]</code></td></tr>
+  </table>
+
+  <h2>The cons operator <code>:</code></h2>
+  <p>This one deserves attention, it's central to how lists work internally. The operator <code>:</code>, pronounced <em>cons</em>, puts a single element on the front of a list.</p>
+  <pre><code class="language-haskell">1 : [2, 3, 4]        -- [1, 2, 3, 4]
+'h' : "ello"         -- "hello"
+1 : 2 : 3 : []       -- [1, 2, 3]</code></pre>
+
+  <p>The list <code>[1, 2, 3]</code> is internally just <code>1 : 2 : 3 : []</code>. A list is always either empty (<code>[]</code>) or an element consed onto another list. This matters enormously for pattern matching (Lesson 1).</p>
+
+  <h2>Strings are lists of characters</h2>
+  <p>Not a metaphor. <code>String</code> is <em>literally</em> defined as <code>[Char]</code>. Every list operation works on strings.</p>
+  <pre><code class="language-haskell">length "hello"       -- 5
+reverse "hello"      -- "olleh"
+'H' : "ello"         -- "Hello"
+"foo" ++ "bar"       -- "foobar"
+take 3 "hello"       -- "hel"</code></pre>
+
+  <div class="callout warning">
+    <div class="callout-header">Lists are homogeneous</div>
+    <p>Every element must be the same type. <code>[1, 'a']</code> is a type error. Use tuples when you need mixed types.</p>
+  </div>
+
+  <h2>Tuples</h2>
+  <p>A tuple holds a <em>fixed</em> number of values, each of potentially different types. Parentheses, commas:</p>
+  <pre><code class="language-haskell">(1, "hello")            :: (Int, String)
+(True, 'x', 3.14)       :: (Bool, Char, Double)
+(1, 2, 3, 4)            :: (Int, Int, Int, Int)</code></pre>
+
+  <p>Useful for returning "multiple things" from a function:</p>
+  <pre><code class="language-haskell">divMod' :: Int -&gt; Int -&gt; (Int, Int)
+divMod' x y = (x `div` y, x `mod` y)</code></pre>
+
+  <p>Access 2-tuple elements with <code>fst</code> and <code>snd</code>:</p>
+  <pre><code class="language-haskell">fst (1, "hello")     -- 1
+snd (1, "hello")     -- "hello"</code></pre>
+
+  <p>For larger tuples, you use pattern matching (next lesson).</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Tuple vs list</div>
+    <p>Tuples: <em>fixed size</em>, <em>mixed types</em>. Lists: <em>variable size</em>, <em>one type</em>. Use tuples to bundle a small, fixed group of different things. Use lists for sequences.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">Functions &amp; Guards</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">Locals &amp; HOF</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Scoping &amp; preview</div>
+  <h1>Locals, <em>map</em>, filter</h1>
+  <p class="lede">Two small patterns you'll use constantly: <code>where</code> for local definitions inside a function, and the higher-order functions <code>map</code> and <code>filter</code> for transforming lists. These set up everything in later lessons.</p>
+
+  <h2>where (local definitions)</h2>
+  <p>When a function needs a helper value, use a <code>where</code> clause. Everything defined inside is visible throughout the function, including in guards.</p>
+  <pre><code class="language-haskell">bmi :: Double -&gt; Double -&gt; String
+bmi weight height
+  | ratio &lt; 18.5 = "underweight"
+  | ratio &lt; 25   = "normal"
+  | ratio &lt; 30   = "overweight"
+  | otherwise    = "obese"
+  where
+    ratio = weight / (height * height)</code></pre>
+
+  <h2>let ... in (alternative)</h2>
+  <pre><code class="language-haskell">cylinderVolume :: Double -&gt; Double -&gt; Double
+cylinderVolume radius height =
+  let baseArea = 3.14159 * radius * radius
+  in baseArea * height</code></pre>
+
+  <div class="callout teach">
+    <div class="callout-header">Which to teach?</div>
+    <p>For his exam: <strong>teach <code>where</code></strong>. It's what his professor uses, reads top-down, and plays better with guards. Mention <code>let</code> exists, don't dwell on it.</p>
+  </div>
+
+  <h2>map: transform every element</h2>
+  <pre><code class="language-haskell">map double [1, 2, 3, 4]       -- [2, 4, 6, 8]
+map reverse ["abc", "hello"]  -- ["cba", "olleh"]
+map (+1) [10, 20, 30]         -- [11, 21, 31]</code></pre>
+
+  <p><code>(+1)</code> is an <strong>operator section</strong>, turns an operator into a one-arg function with one side filled in. <code>(+1)</code> is "add 1." <code>(*2)</code> is "double it." <code>(&gt;10)</code> is "greater than 10."</p>
+
+  <h2>filter: keep what passes a test</h2>
+  <pre><code class="language-haskell">filter even [1..10]             -- [2, 4, 6, 8, 10]
+filter (&gt;5) [1, 3, 6, 2, 9]     -- [6, 9]
+filter isUpper "Hello World"    -- "HW"</code></pre>
+  <p>For <code>isUpper</code>, add <code>import Data.Char</code> at the top of your file.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Play with higher-order</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">map (*3) [1, 2, 3, 4, 5]
+filter (&lt; 0) [-3, 5, -1, 7, -8, 0]
+map reverse (filter (\s -&gt; length s &gt; 3) ["hi", "hello", "yo", "world"])</code></pre>
+      <p>That last line uses a <strong>lambda</strong>: <code>\s -&gt; length s &gt; 3</code>. An anonymous function. The <code>\</code> is trying to look like Greek λ. Takes <code>s</code>, returns whether its length is greater than 3.</p>
+    </div>
+  </div>
+
+  <h2>Reading Haskell errors</h2>
+  <p>Haskell error messages are verbose but predictable. A common early one:</p>
+  <pre><code>&lt;interactive&gt;:7:10: error: [GHC-39999]
+    * No instance for `Num (Int -&gt; String)' arising from a use of `-'
+    * In the expression: classify - 4</code></pre>
+  <p>Translation: "you used <code>-</code> on something that isn't a number." Cause: <code>classify -4</code> was read as <code>classify - 4</code>. Fix: <code>classify (-4)</code>.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">Common early errors</div>
+    <ul>
+      <li><strong>"Variable not in scope"</strong> = called something that doesn't exist. Spelling? Did you save &amp; <code>:r</code>?</li>
+      <li><strong>"No instance for Num (X -&gt; Y)"</strong> = math on a function. Usually missing parens around a negative.</li>
+      <li><strong>"Parse error on input"</strong> = typo or indentation issue.</li>
+      <li><strong>"Couldn't match type X with Y"</strong> = wrong type somewhere.</li>
+    </ul>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Data Structures</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; Cheat Sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Work through these problems before revealing the answers. Each builds on what you learned. Use <code>practice.hs</code> and ghci to check your work. The cheat sheet at the bottom is a one-page reference for everything from this lesson.</p>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · Function definition</div>
+    <p>Write a function <code>square</code> that takes an <code>Int</code> and returns its square. Include the type signature.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">square :: Int -&gt; Int
+square x = x * x</code></pre>
+      <p>The type signature says: "takes an Int, returns an Int." The definition binds the argument to <code>x</code> and returns <code>x * x</code>.</p>
+      <p>Test: <code>square 5</code> gives <code>25</code>. <code>square (-3)</code> gives <code>9</code> (remember parens on negatives).</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · Multiple arguments</div>
+    <p>Write <code>areaRect</code> that takes a width and height (both <code>Double</code>) and returns the area of a rectangle.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">areaRect :: Double -&gt; Double -&gt; Double
+areaRect width height = width * height</code></pre>
+      <p>Two arrows in the signature means two arguments. Call with two values space-separated: <code>areaRect 3 4</code> returns <code>12.0</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Guards</div>
+    <p>Write <code>letterGrade</code> that takes an <code>Int</code> score (0 to 100) and returns a grade: "A" for 90+, "B" for 80-89, "C" for 70-79, "D" for 60-69, "F" otherwise.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">letterGrade :: Int -&gt; String
+letterGrade score
+  | score &gt;= 90 = "A"
+  | score &gt;= 80 = "B"
+  | score &gt;= 70 = "C"
+  | score &gt;= 60 = "D"
+  | otherwise   = "F"</code></pre>
+      <p>Guards are tried top-down. For <code>score = 85</code>: first guard <code>&gt;= 90</code> is False; second guard <code>&gt;= 80</code> is True, return "B".</p>
+      <p><strong>Watch out:</strong> if you wrote them in reverse order (60 first, then 70...), every score ≥ 60 would return "D". Order matters.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 4</span> · Lists &amp; map</div>
+    <p>Write <code>triple</code> that takes a list of <code>Int</code>s and returns a new list with each element tripled. Use <code>map</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">triple :: [Int] -&gt; [Int]
+triple xs = map (*3) xs</code></pre>
+      <p><code>map (*3) xs</code> applies "multiply by 3" to each element. <code>triple [1, 2, 3]</code> returns <code>[3, 6, 9]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 5</span> · Filter + where</div>
+    <p>Write <code>aboveAverage</code> that takes a list of <code>Double</code>s and returns only the elements above the list's average. Use <code>filter</code> and a <code>where</code> clause.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">aboveAverage :: [Double] -&gt; [Double]
+aboveAverage xs = filter (&gt; avg) xs
+  where
+    avg = sum xs / fromIntegral (length xs)</code></pre>
+      <ul>
+        <li><code>sum xs / length xs</code> would fail: <code>length</code> returns <code>Int</code>, <code>/</code> needs <code>Double</code>s. <code>fromIntegral</code> converts.</li>
+        <li><code>(&gt; avg)</code> is an operator section meaning "greater than avg."</li>
+      </ul>
+      <p>Test: <code>aboveAverage [1, 2, 3, 4, 5]</code> → <code>[4.0, 5.0]</code> (average is 3.0).</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 6</span> · Tuples</div>
+    <p>Write a function <code>swap</code> that takes a 2-tuple and returns a new tuple with the elements swapped. Use <code>fst</code> and <code>snd</code>.</p>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <pre><code class="language-haskell">swap :: (a, b) -&gt; (b, a)
+swap pair = (snd pair, fst pair)</code></pre>
+      <p>The <code>a</code> and <code>b</code> are <em>type variables</em>, like generics. Works for any types. <code>swap (1, "hi")</code> returns <code>("hi", 1)</code>.</p>
+      <p>In Lesson 1 you'll learn a cleaner way using pattern matching: <code>swap (x, y) = (y, x)</code>.</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>One-page reference for everything from Lesson 0.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>Type signature</h4>
+      <pre><code class="language-haskell">name :: Int -&gt; String</code></pre>
+      <p>"name takes Int, returns String."</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Function def</h4>
+      <pre><code class="language-haskell">double x = x * 2</code></pre>
+      <p>No <code>return</code>, no braces.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Calling</h4>
+      <pre><code class="language-haskell">double 5
+add 3 4</code></pre>
+      <p>Space-separated args. No parens.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Guards</h4>
+      <pre><code class="language-haskell">f n
+  | n &lt; 0 = "neg"
+  | otherwise = "pos"</code></pre>
+      <p>Top-down. First True wins.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>where</h4>
+      <pre><code class="language-haskell">f x = y + 1
+  where y = x * 2</code></pre>
+      <p>Locals after the body.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Lists</h4>
+      <pre><code class="language-haskell">[1, 2, 3]
+[1..10]
+1 : [2, 3]
+[1,2] ++ [3]</code></pre>
+      <p>Square brackets. <code>:</code> prepends.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Tuples</h4>
+      <pre><code class="language-haskell">(1, "hi")
+fst (1, "hi")  -- 1
+snd (1, "hi")  -- "hi"</code></pre>
+      <p>Fixed size. Mixed types.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>map / filter</h4>
+      <pre><code class="language-haskell">map (*2) [1,2,3]
+filter even [1..10]</code></pre>
+      <p>Transform / select.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Operator sections</h4>
+      <pre><code class="language-haskell">(+1)  (*2)  (&gt;0)</code></pre>
+      <p>Partially applied operators.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>GHCi commands</h4>
+      <pre><code>:l file.hs   load
+:r           reload
+:t expr      type
+:q           quit</code></pre>
+      <p>Start with colon.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Negatives</h4>
+      <pre><code class="language-haskell">f (-5)         -- parens!
+f -5           -- error</code></pre>
+      <p>Always wrap negatives.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Lambda</h4>
+      <pre><code class="language-haskell">\x -&gt; x * 2</code></pre>
+      <p>Anonymous function. <code>\</code> = λ.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Open GHCi, load a file, reload after editing.</li>
+      <li>Write a function with a type signature and test it.</li>
+      <li>Read <code>Int -&gt; Int -&gt; Int</code> and know it means "two args."</li>
+      <li>Use guards with <code>otherwise</code> as a fallback.</li>
+      <li>Tell the difference between a list and a tuple.</li>
+      <li>Call <code>map</code> and <code>filter</code> with a simple operator section.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">Next: <strong style="color: var(--accent);">Lesson 1 · Pattern Matching (P.1)</strong>. Where we destructure data and branch on its shape in one move. This is where real Haskell starts.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Locals &amp; HOF</span></button>
+    <button class="nav-btn next" disabled><span class="label">Next</span><span class="title">Lesson 1 · coming up</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => goTo(tab.dataset.part));
+  });
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) {
+      btn.addEventListener('click', () => goTo(btn.dataset.goto));
+    }
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>

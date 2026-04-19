@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 4 · Tracing Trees (T.1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Fraunces', Georgia, serif; font-size: 18px; line-height: 1.7; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; font-feature-settings: "ss01", "ss02"; min-height: 100vh; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .part-meta .accent { color: var(--accent); }
+  h1 { font-family: 'Fraunces', serif; font-size: 52px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--text-muted); max-width: 720px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; margin: 56px 0 16px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin: 36px 0 14px; }
+  h4 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin-bottom: 18px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .callout { margin: 24px 0; padding: 18px 22px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 16px; line-height: 1.65; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .callout-header::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+  .vscode-block { margin: 28px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .vscode-block-header { padding: 12px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .vscode-block-header::before { content: "▶"; color: var(--accent); font-size: 10px; }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+  details.practice { margin: 22px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  details.practice summary { padding: 14px 20px; cursor: pointer; background: var(--surface-elevated); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+  .problem-box { margin: 20px 0; padding: 22px; background: var(--surface); border: 1px dashed var(--border-light); border-radius: 10px; }
+  .problem-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .problem-label .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Inter', sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface); }
+  .cheat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .cheat-card { padding: 16px 18px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; }
+  .cheat-card h4 { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; margin: 0 0 10px; }
+  .cheat-card pre { margin: 0; padding: 0 !important; background: none !important; border: none; font-size: 12.5px !important; }
+  .cheat-card p { font-size: 13px; color: var(--text-muted); margin: 8px 0 0; font-family: 'Inter', sans-serif; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+
+  /* TREE DIAGRAM (ASCII art) */
+  .tree-diagram {
+    margin: 22px 0;
+    padding: 24px 28px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .tree-diagram pre { background: none !important; border: none; padding: 0 !important; margin: 0; font-size: 15px !important; line-height: 1.8; }
+  .tree-diagram .tree-node { color: var(--accent); font-weight: 600; }
+  .tree-diagram .tree-empty { color: var(--text-dim); font-style: italic; }
+  .tree-diagram .tree-line { color: var(--border-light); }
+
+  /* CALL STACK / TRACE */
+  .call-stack {
+    margin: 28px 0;
+    padding: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .call-stack-header {
+    padding: 14px 20px;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--info);
+    font-weight: 500;
+  }
+  .call-stack-body { padding: 16px 22px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.8; }
+
+  .call {
+    margin: 14px 0;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-left: 3px solid var(--accent-dim);
+    border-radius: 6px;
+  }
+  .call.depth-1 { margin-left: 0; }
+  .call.depth-2 { margin-left: 28px; border-left-color: var(--info); }
+  .call.depth-3 { margin-left: 56px; border-left-color: var(--warning); }
+  .call.depth-4 { margin-left: 84px; border-left-color: var(--success); }
+  .call-header {
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .call.depth-2 .call-header { color: var(--info); }
+  .call.depth-3 .call-header { color: var(--warning); }
+  .call.depth-4 .call-header { color: var(--success); }
+  .call-expr { color: var(--text); margin-bottom: 4px; }
+  .call-binding { color: var(--text-muted); font-size: 12.5px; margin-left: 12px; }
+  .call-binding .bind-var { color: var(--accent); }
+  .call-binding .bind-val { color: var(--text); }
+  .call-guard { color: var(--text-muted); font-size: 12.5px; margin-left: 12px; font-style: italic; font-family: 'Fraunces', serif; }
+  .call-return { color: var(--success); font-weight: 600; margin-top: 6px; font-size: 13px; }
+  .call-return::before { content: "→ "; }
+
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+    .call.depth-2 { margin-left: 14px; }
+    .call.depth-3 { margin-left: 28px; }
+    .call.depth-4 { margin-left: 42px; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 04 · Tracing Trees (T.1)</span>
+      <span class="dot">·</span>
+      <span>~75 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · Trees</button>
+      <button class="tab" data-part="2">02 · Reading Code</button>
+      <button class="tab" data-part="3">03 · The Template</button>
+      <button class="tab" data-part="4">04 · Warmup Trace</button>
+      <button class="tab" data-part="5">05 · Exam: charade</button>
+      <button class="tab" data-part="6">06 · Writing It Up</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · Trees</div>
+  <h1>The <em>BTree</em> data type</h1>
+  <p class="lede">Before we trace anything, your student needs to see trees clearly. Haskell represents trees as recursive ADTs, a direct application of Lesson 2's material. Read the definition carefully and everything else in this lesson follows.</p>
+
+  <h2>The definition</h2>
+
+  <pre><code class="language-haskell">data BTree a = Empty
+             | BNode a (BTree a) (BTree a)
+             deriving (Show)</code></pre>
+
+  <p>Three things to notice:</p>
+
+  <ol>
+    <li><strong><code>BTree a</code> is a generic type.</strong> The <code>a</code> is a type variable, like <code>[a]</code> for lists. <code>BTree Integer</code> means a tree of integers, <code>BTree Char</code> means a tree of characters.</li>
+    <li><strong>Two constructors.</strong> <code>Empty</code> (leaf-like placeholder, no data) and <code>BNode a (BTree a) (BTree a)</code> (a node holding a value of type <code>a</code> plus <em>two more trees</em>).</li>
+    <li><strong>The definition is recursive.</strong> A <code>BNode</code> contains <code>BTree</code>s inside itself. That's what makes it a tree.</li>
+  </ol>
+
+  <h2>Anatomy of a BNode</h2>
+
+  <p>Every <code>BNode</code> has exactly three pieces:</p>
+
+  <pre><code class="language-haskell">BNode value left right
+--    ^^^^^ ^^^^ ^^^^^
+--      |    |    |
+--      |    |    right child (itself a BTree)
+--      |    left child (itself a BTree)
+--      the value stored at this node</code></pre>
+
+  <p>If a child is missing (a leaf with no children below it), you use <code>Empty</code>.</p>
+
+  <h2>Example: maple</h2>
+
+  <p>His study guide defines:</p>
+
+  <pre><code class="language-haskell">maple :: BTree Integer
+maple = BNode 33 (BNode 44 (BNode 55 Empty Empty) Empty) (BNode 66 Empty Empty)</code></pre>
+
+  <p>That one-liner is a tree. Reading it visually:</p>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">            33</span>
+<span class="tree-line">           /  \</span>
+<span class="tree-node">          44    66</span>
+<span class="tree-line">         / \  </span>
+<span class="tree-node">        55</span>  <span class="tree-empty">Empty</span></pre>
+  </div>
+
+  <p>Let me peel back the nesting, you'll need to do this for every trace:</p>
+
+  <pre><code class="language-haskell">maple = BNode 33 LEFT_SUBTREE RIGHT_SUBTREE
+
+  where
+    LEFT_SUBTREE  = BNode 44 (BNode 55 Empty Empty) Empty
+    RIGHT_SUBTREE = BNode 66 Empty Empty</code></pre>
+
+  <p>And peel once more:</p>
+
+  <pre><code class="language-haskell">LEFT_SUBTREE of 44:
+  left  = BNode 55 Empty Empty   -- leaf with value 55
+  right = Empty                  -- no right child
+
+RIGHT_SUBTREE:
+  BNode 66 Empty Empty           -- leaf with value 66</code></pre>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching a student to read trees</div>
+    <p>Most students panic when they see <code>BNode 33 (BNode 44 (BNode 55 Empty Empty) Empty) (BNode 66 Empty Empty)</code>. Have him <strong>draw the tree on paper first</strong>, always. The visual makes the structure obvious. Only after drawing should he attempt a trace.</p>
+  </div>
+
+  <h2>Terminology</h2>
+
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td><strong>Root</strong></td><td>The topmost node. In <code>maple</code>, it's <code>33</code>.</td></tr>
+    <tr><td><strong>Leaf</strong></td><td>A node where both children are <code>Empty</code>. In <code>maple</code>: <code>55</code> and <code>66</code>.</td></tr>
+    <tr><td><strong>Internal node</strong></td><td>Any non-leaf node. <code>33</code> and <code>44</code>.</td></tr>
+    <tr><td><strong>Subtree</strong></td><td>A whole tree rooted at any node (including children).</td></tr>
+    <tr><td><strong>Depth</strong> / <strong>height</strong></td><td>Length of the longest path from root to any leaf. <code>maple</code>'s height is 3.</td></tr>
+  </table>
+
+  <h2>Another example: pear</h2>
+
+  <p>From his T.2 section:</p>
+
+  <pre><code class="language-haskell">pear :: BTree Char
+pear = BNode 'A' (BNode '?' Empty Empty)
+                 (BNode 'c' (BNode 'b' Empty Empty) (BNode 'G' Empty Empty))</code></pre>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">            A</span>
+<span class="tree-line">           / \</span>
+<span class="tree-node">          ?   c</span>
+<span class="tree-line">             / \</span>
+<span class="tree-node">            b   G</span></pre>
+  </div>
+
+  <p>Every leaf here (<code>?</code>, <code>b</code>, <code>G</code>) is a <code>BNode</code> with both children <code>Empty</code>. The ASCII art just doesn't show the Empties because they'd clutter the diagram.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Paste into practice.hs</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">data BTree a = Empty
+             | BNode a (BTree a) (BTree a)
+             deriving (Show)
+
+maple :: BTree Integer
+maple = BNode 33 (BNode 44 (BNode 55 Empty Empty) Empty) (BNode 66 Empty Empty)
+
+pear :: BTree Char
+pear = BNode 'A' (BNode '?' Empty Empty)
+                 (BNode 'c' (BNode 'b' Empty Empty) (BNode 'G' Empty Empty))</code></pre>
+      <p>Save, <code>:r</code>, then try:</p>
+      <pre><code class="language-haskell">maple
+pear</code></pre>
+      <p>You'll see Haskell print them (ugly, but shows the structure). Drawing on paper is still better.</p>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Reading the code</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · The code</div>
+  <h1>Reading a <em>recursive</em> tree function</h1>
+  <p class="lede">Before we trace, let's understand what we're tracing. His exam's <code>charade</code> function is a small recursive function on a tree with a guard. If your student can read it correctly, the trace is just careful bookkeeping.</p>
+
+  <h2>The function</h2>
+
+  <pre><code class="language-haskell">charade :: BTree Integer -&gt; [Integer]
+charade Empty = [0]
+charade (BNode v left right)
+  | even v    = [1] ++ charade left  ++ [v]
+  | otherwise = [2] ++ charade right ++ [v]</code></pre>
+
+  <p>Three equations. Let's read each line carefully.</p>
+
+  <h3>Line 1 · Type signature</h3>
+  <pre><code class="language-haskell">charade :: BTree Integer -&gt; [Integer]</code></pre>
+  <p>Takes a tree of integers, returns a list of integers.</p>
+
+  <h3>Line 2 · Empty case</h3>
+  <pre><code class="language-haskell">charade Empty = [0]</code></pre>
+  <p>If we hit an <code>Empty</code> node, return <code>[0]</code>. This is the <strong>base case</strong>, recursion stops here.</p>
+
+  <h3>Line 3 · Pattern match on BNode</h3>
+  <pre><code class="language-haskell">charade (BNode v left right)</code></pre>
+  <p>Match any <code>BNode</code>. Bind:</p>
+  <ul>
+    <li><code>v</code> = the value at this node</li>
+    <li><code>left</code> = the left subtree (itself a <code>BTree Integer</code>)</li>
+    <li><code>right</code> = the right subtree</li>
+  </ul>
+
+  <h3>Lines 4-5 · Guards</h3>
+  <pre><code class="language-haskell">  | even v    = [1] ++ charade left  ++ [v]
+  | otherwise = [2] ++ charade right ++ [v]</code></pre>
+  <p>Two guards. Haskell evaluates them top to bottom.</p>
+  <ul>
+    <li>If <code>v</code> is even: recurse on the <strong>left</strong> subtree. Return <code>[1] ++ (result of left) ++ [v]</code>.</li>
+    <li>Otherwise (v is odd): recurse on the <strong>right</strong> subtree. Return <code>[2] ++ (result of right) ++ [v]</code>.</li>
+  </ul>
+
+  <h2>The critical observation</h2>
+
+  <div class="callout warning">
+    <div class="callout-header">This function is NOT a full traversal</div>
+    <p>Based on whether <code>v</code> is even or odd, <strong>only one subtree gets recursed into</strong>. The other is ignored entirely. Students often assume recursive tree functions visit every node, this one doesn't. Pay attention to which branch the guard takes.</p>
+  </div>
+
+  <h2>Mechanically, what does each equation produce?</h2>
+
+  <p>When the function hits any node, it produces a list built from three parts concatenated with <code>++</code>:</p>
+
+  <div class="tree-diagram">
+<pre><span style="color: var(--accent);">[1]</span> or <span style="color: var(--accent);">[2]</span>    (a tag based on parity)
+<span style="color: var(--text-dim);">++</span>
+<span style="color: var(--info);">charade child</span>    (the recursive result, a LIST of integers)
+<span style="color: var(--text-dim);">++</span>
+<span style="color: var(--warning);">[v]</span>            (the current node's value, as a singleton list)</pre>
+  </div>
+
+  <h2>Why <code>++</code> matters</h2>
+
+  <p>The operator <code>++</code> concatenates two lists.</p>
+
+  <pre><code class="language-haskell">[1, 2] ++ [3, 4]       -- [1, 2, 3, 4]
+[0] ++ [5]             -- [0, 5]
+[1] ++ [] ++ [7]       -- [1, 7]</code></pre>
+
+  <p>Every <code>charade</code> call returns a list. When we see <code>[1] ++ charade left ++ [v]</code>, we're:</p>
+  <ol>
+    <li>Computing the recursive call (getting a list back),</li>
+    <li>Then concatenating <code>[1]</code>, that list, and <code>[v]</code> into one big list.</li>
+  </ol>
+
+  <h2>What we need to do in the trace</h2>
+
+  <p>For each call to <code>charade</code>, the trace must show:</p>
+  <ol>
+    <li>What call is happening (e.g. <code>charade (BNode 33 ...)</code>).</li>
+    <li>What pattern matched.</li>
+    <li>What bindings came out of the pattern (<code>v</code>, <code>left</code>, <code>right</code>).</li>
+    <li>Which guard was taken (or base case fired).</li>
+    <li>The expression to evaluate (e.g. <code>[2] ++ charade right ++ [33]</code>).</li>
+    <li>Recurse to resolve the inner call.</li>
+    <li>Substitute the inner result back in.</li>
+    <li>Compute the final list for this call.</li>
+  </ol>
+
+  <p>That's a lot of bookkeeping per call. The template in Part 3 makes it manageable.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Trees</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">The trace template</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · The template</div>
+  <h1>The trace <em>template</em></h1>
+  <p class="lede">Every trace uses the same structure. Drill this template into your student's muscle memory. Follow it and the trace writes itself, skip any step and he'll lose points or get tangled.</p>
+
+  <h2>The 6-line trace block</h2>
+
+  <p>For every recursive call, write <strong>six lines</strong>, always in this order:</p>
+
+  <div class="callout try">
+    <div class="callout-header">The universal call block</div>
+    <pre style="margin: 12px 0 0; font-family: 'JetBrains Mono', monospace;"><code>1.  CALL:     charade (BNode v_n left_n right_n)
+2.  PATTERN:  matched (BNode v left right)
+3.  BINDINGS: v = ..., left = ..., right = ...
+4.  GUARD:    even v = True/False  →  take this branch
+5.  EXPR:     [1] ++ charade left ++ [v]
+6.  RETURN:   ... (after recursion completes)</code></pre>
+  </div>
+
+  <p>Every call repeats this. If the call hits the base case (<code>Empty</code>), lines 4 and 5 collapse into "base case returns <code>[0]</code>."</p>
+
+  <h2>Full template for tracing a whole function</h2>
+
+  <div class="callout try">
+    <div class="callout-header">The full workflow</div>
+    <ol style="margin: 12px 0 0;">
+      <li><strong>Draw the tree on paper.</strong> Don't skip this. Even professionals draw the tree.</li>
+      <li><strong>Write out the function code</strong> at the top of your scratch paper for reference.</li>
+      <li><strong>For each call, write the 6-line block.</strong> Indent deeper calls so you can see nesting.</li>
+      <li><strong>When you recurse, pause the current call</strong> ("need charade left first"), start a new block below it indented further.</li>
+      <li><strong>When the recursive call returns a concrete list,</strong> go back to the paused call and substitute.</li>
+      <li><strong>Compute the final list</strong> by concatenating the three pieces.</li>
+      <li><strong>State the final answer</strong> at the bottom.</li>
+    </ol>
+  </div>
+
+  <h2>Visual: what a trace looks like on paper</h2>
+
+  <p>Here's the shape your student's written trace should take:</p>
+
+  <pre style="font-size: 13px !important;"><code>charade maple
+  CALL: charade (BNode 33 L R)      where L = ..., R = ...
+  BINDINGS: v=33, left=L, right=R
+  GUARD: even 33 = False → otherwise branch
+  EXPR: [2] ++ charade right ++ [33]
+  Need: charade right first.
+
+      charade right = charade (BNode 66 Empty Empty)
+        BINDINGS: v=66, left=Empty, right=Empty
+        GUARD: even 66 = True → even branch
+        EXPR: [1] ++ charade Empty ++ [66]
+        Need: charade Empty first.
+
+            charade Empty = [0]     (base case)
+
+        BACK: [1] ++ [0] ++ [66] = [1, 0, 66]
+        RETURN: [1, 0, 66]
+
+  BACK: [2] ++ [1, 0, 66] ++ [33]
+  RETURN: [2, 1, 0, 66, 33]
+
+FINAL: [2, 1, 0, 66, 33]</code></pre>
+
+  <p>Notice the <strong>indentation</strong>. Each inner call is indented further. The outer call is "paused" until the inner one returns. When the inner returns, we go back (outdent) and plug in the result.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Why indentation saves you</div>
+    <p>Without clear indentation, students mix up which call they're in. They substitute the wrong list, they lose track of bindings, they skip back to the wrong level. <strong>Indent religiously</strong>, even on a paper exam. It's the difference between full credit and half credit.</p>
+  </div>
+
+  <h2>The three kinds of calls you'll see</h2>
+
+  <h3>Base case call</h3>
+  <pre style="font-size: 13px !important;"><code>CALL: charade Empty
+PATTERN: matched Empty (base case)
+RETURN: [0]</code></pre>
+  <p>Short. No bindings, no guard, no recursion.</p>
+
+  <h3>Recursive call (even branch)</h3>
+  <pre style="font-size: 13px !important;"><code>CALL: charade (BNode 4 L R)
+PATTERN: matched (BNode v left right)
+BINDINGS: v=4, left=L, right=R
+GUARD: even 4 = True → even branch
+EXPR: [1] ++ charade left ++ [4]
+(recurse...)
+RETURN: [1] ++ (result) ++ [4]</code></pre>
+
+  <h3>Recursive call (odd / otherwise branch)</h3>
+  <pre style="font-size: 13px !important;"><code>CALL: charade (BNode 7 L R)
+PATTERN: matched (BNode v left right)
+BINDINGS: v=7, left=L, right=R
+GUARD: even 7 = False → otherwise branch
+EXPR: [2] ++ charade right ++ [7]
+(recurse...)
+RETURN: [2] ++ (result) ++ [7]</code></pre>
+
+  <h2>Minimum a full-credit answer shows</h2>
+
+  <p>His study guide says explicitly:</p>
+
+  <blockquote style="margin: 20px 0; padding: 16px 22px; background: var(--surface); border-left: 3px solid var(--accent); border-radius: 6px;">
+    <p style="margin-bottom: 0;">"for each recursive call, explicitly indicate the result of the pattern matching (i.e., the bindings to variables), how the result is evaluated, and the final result of that function call."</p>
+  </blockquote>
+
+  <p>Three things must be visible per call:</p>
+  <ol>
+    <li>The <strong>bindings</strong> (what <code>v</code>, <code>left</code>, <code>right</code> got set to).</li>
+    <li>The <strong>evaluation</strong> (which guard fired, what expression formed).</li>
+    <li>The <strong>final return value</strong> of that call.</li>
+  </ol>
+
+  <p>Skip any of these and he'll lose partial credit. The 6-line block covers all three with room to spare.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Reading the code</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">Warmup trace</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · Warmup</div>
+  <h1>Warmup: a <em>tiny</em> trace</h1>
+  <p class="lede">Before we tackle his actual exam, let's do a smaller trace to feel out the template. We'll use a simpler function on a tiny tree. Once you can do this one smoothly, the big one is just more of the same.</p>
+
+  <h2>The setup</h2>
+
+  <p>A simple recursive tree function:</p>
+
+  <pre><code class="language-haskell">sumTree :: BTree Integer -&gt; Integer
+sumTree Empty                = 0
+sumTree (BNode v left right) = v + sumTree left + sumTree right</code></pre>
+
+  <p>Reading it: for <code>Empty</code>, return <code>0</code>. For a node, return <code>v</code> plus the sum of the left subtree plus the sum of the right subtree. This is a classic full traversal, it visits every node.</p>
+
+  <h2>Our test tree: tiny</h2>
+
+  <pre><code class="language-haskell">tiny :: BTree Integer
+tiny = BNode 5 (BNode 3 Empty Empty) (BNode 7 Empty Empty)</code></pre>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">       5</span>
+<span class="tree-line">      / \</span>
+<span class="tree-node">     3   7</span></pre>
+  </div>
+
+  <p>We'll trace <code>sumTree tiny</code>. Expected answer: <code>5 + 3 + 7 = 15</code>.</p>
+
+  <h2>The full trace</h2>
+
+  <div class="call-stack">
+    <div class="call-stack-header">Trace · sumTree tiny</div>
+    <div class="call-stack-body">
+
+      <div class="call depth-1">
+        <div class="call-header">CALL #1 · sumTree tiny</div>
+        <div class="call-expr">CALL: <code style="background: none; padding: 0; border: none;">sumTree (BNode 5 (BNode 3 Empty Empty) (BNode 7 Empty Empty))</code></div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">(BNode v left right)</span></div>
+        <div class="call-binding">BINDINGS:<br>
+          <span class="bind-var">v</span> = <span class="bind-val">5</span><br>
+          <span class="bind-var">left</span> = <span class="bind-val">BNode 3 Empty Empty</span><br>
+          <span class="bind-var">right</span> = <span class="bind-val">BNode 7 Empty Empty</span>
+        </div>
+        <div class="call-binding">EXPR: <code style="background: none; padding: 0; border: none;">5 + sumTree left + sumTree right</code></div>
+        <div class="call-guard">Need <code style="background: none; padding: 0; border: none;">sumTree left</code> first...</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">CALL #2 · sumTree left</div>
+        <div class="call-expr">CALL: <code style="background: none; padding: 0; border: none;">sumTree (BNode 3 Empty Empty)</code></div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">(BNode v left right)</span></div>
+        <div class="call-binding">BINDINGS:<br>
+          <span class="bind-var">v</span> = <span class="bind-val">3</span><br>
+          <span class="bind-var">left</span> = <span class="bind-val">Empty</span><br>
+          <span class="bind-var">right</span> = <span class="bind-val">Empty</span>
+        </div>
+        <div class="call-binding">EXPR: <code style="background: none; padding: 0; border: none;">3 + sumTree Empty + sumTree Empty</code></div>
+      </div>
+
+      <div class="call depth-3">
+        <div class="call-header">CALL #3 · sumTree Empty (left of 3)</div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">Empty</span> (base case)</div>
+        <div class="call-return">returns 0</div>
+      </div>
+
+      <div class="call depth-3">
+        <div class="call-header">CALL #4 · sumTree Empty (right of 3)</div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">Empty</span> (base case)</div>
+        <div class="call-return">returns 0</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">BACK TO CALL #2</div>
+        <div class="call-expr">Substitute: <code style="background: none; padding: 0; border: none;">3 + 0 + 0 = 3</code></div>
+        <div class="call-return">returns 3</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">CALL #5 · sumTree right</div>
+        <div class="call-expr">CALL: <code style="background: none; padding: 0; border: none;">sumTree (BNode 7 Empty Empty)</code></div>
+        <div class="call-binding">BINDINGS: <span class="bind-var">v</span>=7, <span class="bind-var">left</span>=Empty, <span class="bind-var">right</span>=Empty</div>
+        <div class="call-binding">EXPR: <code style="background: none; padding: 0; border: none;">7 + sumTree Empty + sumTree Empty</code></div>
+      </div>
+
+      <div class="call depth-3">
+        <div class="call-header">CALL #6 · sumTree Empty</div>
+        <div class="call-return">returns 0</div>
+      </div>
+
+      <div class="call depth-3">
+        <div class="call-header">CALL #7 · sumTree Empty</div>
+        <div class="call-return">returns 0</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">BACK TO CALL #5</div>
+        <div class="call-expr">Substitute: <code style="background: none; padding: 0; border: none;">7 + 0 + 0 = 7</code></div>
+        <div class="call-return">returns 7</div>
+      </div>
+
+      <div class="call depth-1">
+        <div class="call-header">BACK TO CALL #1</div>
+        <div class="call-expr">Substitute: <code style="background: none; padding: 0; border: none;">5 + 3 + 7 = 15</code></div>
+        <div class="call-return">returns 15</div>
+      </div>
+
+    </div>
+  </div>
+
+  <h2>What to notice</h2>
+
+  <ol>
+    <li><strong>Each call has its own bindings.</strong> Call #1 has <code>v = 5</code>. Call #2 also has <code>v</code>, but it's <code>3</code>. The names get re-used, the values are local to each call.</li>
+    <li><strong>Indentation shows depth.</strong> Call #1 is leftmost. Calls #2 and #5 are its direct children, indented once. Calls #3, #4, #6, #7 are grandchildren, indented twice.</li>
+    <li><strong>Base case is one line.</strong> <code>Empty</code> just returns <code>0</code>. No need for bindings or guards.</li>
+    <li><strong>BACK TO CALL #X</strong> markers are critical. They show when you're resuming a paused call after recursion.</li>
+    <li><strong>Substitute, then compute.</strong> Once both sub-calls return concrete numbers, you plug them into the paused expression.</li>
+  </ol>
+
+  <div class="callout teach">
+    <div class="callout-header">Practice before the real one</div>
+    <p>Have your student write out this trace <em>by hand</em> on paper, copying the structure. Muscle memory matters. By the time he gets to <code>charade maple</code>, the structure should feel automatic.</p>
+  </div>
+
+  <h2>How many calls total?</h2>
+
+  <p>For a tree with <code>n</code> internal nodes, <code>sumTree</code> makes roughly <code>2n + (n+1)</code> calls (each internal node triggers 2 recursive calls, all leaves have 2 Empty children). For <code>tiny</code>, that's 3 internal nodes × 2 = 6 Empty calls + 3 node calls = 9 total... close to our 7 (the root only has 2 children as Empty-wrapping leaves). Point being: tree traces multiply fast. <strong>Write small, indent carefully.</strong></p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">The trace template</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Exam: charade</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · The real deal</div>
+  <h1>Exam: <em>charade</em> maple</h1>
+  <p class="lede">The full trace from his study guide. We'll walk the whole thing using the template. Notice how the guard makes this trace <em>much shorter</em> than a full traversal, only one subtree per node gets visited.</p>
+
+  <h2>Setup recap</h2>
+
+  <pre><code class="language-haskell">charade :: BTree Integer -&gt; [Integer]
+charade Empty = [0]
+charade (BNode v left right)
+  | even v    = [1] ++ charade left  ++ [v]
+  | otherwise = [2] ++ charade right ++ [v]
+
+maple :: BTree Integer
+maple = BNode 33 (BNode 44 (BNode 55 Empty Empty) Empty) (BNode 66 Empty Empty)</code></pre>
+
+  <div class="tree-diagram">
+<pre><span class="tree-node">            33</span>
+<span class="tree-line">           /  \</span>
+<span class="tree-node">          44    66</span>
+<span class="tree-line">         / \  </span>
+<span class="tree-node">        55</span>  <span class="tree-empty">Empty</span></pre>
+  </div>
+
+  <h2>Prediction before tracing</h2>
+
+  <p>Before going step-by-step, let's mentally predict the path charade will take. For each node, the guard picks left (even) or right (odd):</p>
+
+  <ul>
+    <li><code>33</code> is <strong>odd</strong> → go <strong>right</strong> → <code>66</code>.</li>
+    <li><code>66</code> is <strong>even</strong> → go <strong>left</strong> → <code>Empty</code>.</li>
+    <li><code>Empty</code> → base case, returns <code>[0]</code>.</li>
+  </ul>
+
+  <p>So we only visit three things: <code>33</code>, <code>66</code>, and one <code>Empty</code>. The whole left subtree of the root (<code>44</code> and <code>55</code>) <em>never gets visited</em>. Keep this in mind as we trace, it should match.</p>
+
+  <h2>The full trace</h2>
+
+  <div class="call-stack">
+    <div class="call-stack-header">Trace · charade maple</div>
+    <div class="call-stack-body">
+
+      <div class="call depth-1">
+        <div class="call-header">CALL #1 · charade maple</div>
+        <div class="call-expr">CALL: <code style="background: none; padding: 0; border: none;">charade (BNode 33 (BNode 44 ...) (BNode 66 Empty Empty))</code></div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">(BNode v left right)</span></div>
+        <div class="call-binding">BINDINGS:<br>
+          <span class="bind-var">v</span> = <span class="bind-val">33</span><br>
+          <span class="bind-var">left</span> = <span class="bind-val">BNode 44 (BNode 55 Empty Empty) Empty</span><br>
+          <span class="bind-var">right</span> = <span class="bind-val">BNode 66 Empty Empty</span>
+        </div>
+        <div class="call-guard">even 33 = False → take otherwise branch</div>
+        <div class="call-binding">EXPR: <code style="background: none; padding: 0; border: none;">[2] ++ charade right ++ [33]</code></div>
+        <div class="call-guard">Need charade right first...</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">CALL #2 · charade right</div>
+        <div class="call-expr">CALL: <code style="background: none; padding: 0; border: none;">charade (BNode 66 Empty Empty)</code></div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">(BNode v left right)</span></div>
+        <div class="call-binding">BINDINGS:<br>
+          <span class="bind-var">v</span> = <span class="bind-val">66</span><br>
+          <span class="bind-var">left</span> = <span class="bind-val">Empty</span><br>
+          <span class="bind-var">right</span> = <span class="bind-val">Empty</span>
+        </div>
+        <div class="call-guard">even 66 = True → take even branch</div>
+        <div class="call-binding">EXPR: <code style="background: none; padding: 0; border: none;">[1] ++ charade left ++ [66]</code></div>
+        <div class="call-guard">Need charade left (= charade Empty) first...</div>
+      </div>
+
+      <div class="call depth-3">
+        <div class="call-header">CALL #3 · charade Empty</div>
+        <div class="call-binding">PATTERN: matched <span class="bind-var">Empty</span> (base case)</div>
+        <div class="call-return">returns [0]</div>
+      </div>
+
+      <div class="call depth-2">
+        <div class="call-header">BACK TO CALL #2</div>
+        <div class="call-expr">Substitute: <code style="background: none; padding: 0; border: none;">[1] ++ [0] ++ [66]</code></div>
+        <div class="call-expr">Compute: <code style="background: none; padding: 0; border: none;">[1, 0, 66]</code></div>
+        <div class="call-return">returns [1, 0, 66]</div>
+      </div>
+
+      <div class="call depth-1">
+        <div class="call-header">BACK TO CALL #1</div>
+        <div class="call-expr">Substitute: <code style="background: none; padding: 0; border: none;">[2] ++ [1, 0, 66] ++ [33]</code></div>
+        <div class="call-expr">Compute: <code style="background: none; padding: 0; border: none;">[2, 1, 0, 66, 33]</code></div>
+        <div class="call-return">returns [2, 1, 0, 66, 33]</div>
+      </div>
+
+    </div>
+  </div>
+
+  <h2>Final answer</h2>
+
+  <div class="callout success">
+    <div class="callout-header">Result</div>
+    <pre style="margin: 10px 0 0;"><code class="language-haskell">charade maple = [2, 1, 0, 66, 33]</code></pre>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify in ghci</div>
+    <div class="vscode-block-body">
+      <p>Paste <code>charade</code> and <code>maple</code> into <code>practice.hs</code>, save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">charade maple
+-- [2,1,0,66,33]</code></pre>
+    </div>
+  </div>
+
+  <h2>Observations</h2>
+
+  <ol>
+    <li><strong>Only 3 calls, not 9.</strong> Because each node branched only one way, we visited 2 nodes (33, 66) plus 1 Empty base case. The 44 and 55 nodes were never touched.</li>
+    <li><strong>The prediction matched.</strong> We said we'd visit 33 → 66 → Empty. We did.</li>
+    <li><strong>Final list structure mirrors the call path.</strong> <code>[2, 1, 0, 66, 33]</code>: the <code>2</code> came from the odd branch at 33, the <code>1</code> from the even branch at 66, the <code>0</code> from the Empty base case, then the values appended in return order (66 returned first, 33 last).</li>
+  </ol>
+
+  <div class="callout teach">
+    <div class="callout-header">Why the full-credit answer is long</div>
+    <p>His rubric explicitly asks for <em>every</em> binding, <em>every</em> guard evaluation, and <em>every</em> return. Even this "small" trace fills a full page in handwriting. Tell your student to leave plenty of space and indent generously. Cramming will cost points.</p>
+  </div>
+
+  <h2>A sanity check: what if maple had even at the root?</h2>
+
+  <p>Imagine maple's root was <code>32</code> instead of <code>33</code>. Now:</p>
+  <ul>
+    <li><code>32</code> is <strong>even</strong> → go <strong>left</strong> → <code>44</code>.</li>
+    <li><code>44</code> is <strong>even</strong> → go <strong>left</strong> → <code>55</code>.</li>
+    <li><code>55</code> is <strong>odd</strong> → go <strong>right</strong> → <code>Empty</code>.</li>
+    <li><code>Empty</code> → <code>[0]</code>.</li>
+  </ul>
+
+  <p>Now we'd visit 32, 44, 55, Empty. The <code>66</code> subtree would be skipped instead. Different path, same mechanical process.</p>
+
+  <p><strong>Takeaway:</strong> the guards determine the path. Trace the guards carefully, every node.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">Warmup trace</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">Writing it up for the exam</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Exam answer format</div>
+  <h1>Writing the <em>exam answer</em></h1>
+  <p class="lede">The trace is one thing, writing it down neatly for a grader is another. This part shows your student the exact format his grader expects: what to put on the page, in what order, with examples of what full credit looks like vs partial credit.</p>
+
+  <h2>What a full-credit handwritten answer looks like</h2>
+
+  <p>Your student's exam answer for <code>charade maple</code> should look roughly like this on paper:</p>
+
+  <pre style="font-size: 13px !important;"><code>Tracing charade maple:
+
+Call 1: charade (BNode 33 L R)
+  where L = BNode 44 (BNode 55 Empty Empty) Empty
+        R = BNode 66 Empty Empty
+
+  Match (BNode v left right):
+    v = 33, left = L, right = R
+
+  even 33 = False, so take otherwise branch.
+  Result = [2] ++ charade right ++ [33]
+         = [2] ++ charade (BNode 66 Empty Empty) ++ [33]
+
+  Need charade (BNode 66 Empty Empty):
+
+    Call 2: charade (BNode 66 Empty Empty)
+
+      Match (BNode v left right):
+        v = 66, left = Empty, right = Empty
+
+      even 66 = True, so take even branch.
+      Result = [1] ++ charade Empty ++ [66]
+
+      Need charade Empty:
+
+        Call 3: charade Empty
+          Matches Empty. Returns [0].
+
+      Back to Call 2:
+      Result = [1] ++ [0] ++ [66] = [1, 0, 66]
+      Returns [1, 0, 66].
+
+  Back to Call 1:
+  Result = [2] ++ [1, 0, 66] ++ [33] = [2, 1, 0, 66, 33]
+
+Final answer: charade maple = [2, 1, 0, 66, 33]</code></pre>
+
+  <h2>What each call MUST have</h2>
+
+  <div class="callout try">
+    <div class="callout-header">Per-call rubric</div>
+    <ol style="margin: 12px 0 0;">
+      <li><strong>Label the call</strong> (Call 1, Call 2, or a clear identifier).</li>
+      <li><strong>State the call expression</strong> (what function applied to what arguments).</li>
+      <li><strong>State which pattern matched</strong> (Empty? BNode?).</li>
+      <li><strong>State the bindings</strong> (<code>v = ...</code>, <code>left = ...</code>, <code>right = ...</code>).</li>
+      <li><strong>State which guard fires</strong> (or "base case").</li>
+      <li><strong>Write out the expression</strong> to be evaluated (with the recursive call(s) still unresolved).</li>
+      <li><strong>Resolve the recursive call(s)</strong> in separate indented blocks.</li>
+      <li><strong>Substitute and compute</strong> the final list for this call.</li>
+      <li><strong>State "returns X"</strong> explicitly.</li>
+    </ol>
+  </div>
+
+  <h2>Common mistakes that cost points</h2>
+
+  <div class="callout warning">
+    <div class="callout-header">Skipping bindings</div>
+    <p>Writing "we recurse on the right subtree" without stating what <code>v</code>, <code>left</code>, <code>right</code> are explicitly. The grader can't verify your reasoning without the bindings.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Skipping the guard evaluation</div>
+    <p>Writing "<code>[2] ++ charade right ++ [v]</code>" without first writing "<code>even 33 = False, take otherwise</code>". You must show the decision explicitly.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Losing track of which call you're in</div>
+    <p>Substituting into the wrong paused expression. Indent religiously and use "Back to Call N" markers.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Arithmetic errors in ++</div>
+    <p><code>[2] ++ [1, 0, 66] ++ [33]</code> is <code>[2, 1, 0, 66, 33]</code>, not <code>[2, [1, 0, 66], 33]</code>. Concatenation flattens, it doesn't nest.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-header">Forgetting the base case returns a list, not a number</div>
+    <p><code>charade Empty = [0]</code>. Singleton list containing zero, not the number zero. When you substitute, it's <code>[1] ++ [0] ++ [66]</code>, with the <code>[0]</code> remaining a list.</p>
+  </div>
+
+  <h2>Abbreviations that are okay</h2>
+
+  <p>For a long trace, some shortcuts are acceptable:</p>
+  <ul>
+    <li>Naming big subtrees with letters (L, R, T1, T2) and defining them once at the top.</li>
+    <li>Writing "match (BNode v left right)" once and "same as Call 1 pattern" in subsequent calls.</li>
+    <li>For repeated Empty-returns: "Call N: <code>charade Empty</code> = <code>[0]</code>" on one line.</li>
+  </ul>
+
+  <div class="callout teach">
+    <div class="callout-header">Practice format: 3 full credit signs</div>
+    <p>When grading his own practice traces, your student should look for: (1) every call has bindings listed, (2) every guard evaluation is shown, (3) every return is stated. If any of those is missing on any call, the trace loses points.</p>
+  </div>
+
+  <h2>Time management</h2>
+
+  <p>A trace of <code>charade maple</code> takes about <strong>5-8 minutes</strong> written carefully. If your student is spending 15 minutes on one, he's either overwriting or panicking. Practice until he can do a 3-call trace in under 6 minutes.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Exam: charade</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; Cheat Sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Two fresh trace problems. Work them fully using the template, then check against the answer. At the end, the full cheat sheet for quick reference.</p>
+
+  <h2>Practice setup</h2>
+
+  <p>Paste this into <code>practice.hs</code> for verification:</p>
+
+  <pre><code class="language-haskell">data BTree a = Empty | BNode a (BTree a) (BTree a) deriving (Show)
+
+sumTree :: BTree Integer -&gt; Integer
+sumTree Empty                = 0
+sumTree (BNode v left right) = v + sumTree left + sumTree right
+
+zigzag :: BTree Integer -&gt; [Integer]
+zigzag Empty                = []
+zigzag (BNode v left right)
+  | v &gt; 0     = [v] ++ zigzag right
+  | otherwise = [v] ++ zigzag left
+
+collect :: BTree Integer -&gt; [Integer]
+collect Empty                = [-1]
+collect (BNode v left right)
+  | even v    = collect left ++ [v] ++ collect right
+  | otherwise = [v]</code></pre>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · Full-traversal trace</div>
+    <p>Trace <code>sumTree</code> called on:</p>
+    <pre><code class="language-haskell">small = BNode 10 (BNode 4 Empty Empty) Empty</code></pre>
+    <p>Show every call, all bindings, and the final result.</p>
+  </div>
+  <details class="practice">
+    <summary>Show trace &amp; answer</summary>
+    <div class="practice-body">
+      <p>Tree shape:</p>
+      <div class="tree-diagram"><pre>    <span style="color: var(--accent);">10</span>
+   /
+  <span style="color: var(--accent);">4</span></pre></div>
+
+      <p>Trace:</p>
+      <pre style="font-size: 12.5px !important;"><code>Call 1: sumTree (BNode 10 (BNode 4 Empty Empty) Empty)
+  Match (BNode v left right):
+    v = 10, left = BNode 4 Empty Empty, right = Empty
+  Expr: 10 + sumTree left + sumTree right
+  Need sumTree (BNode 4 Empty Empty):
+
+    Call 2: sumTree (BNode 4 Empty Empty)
+      Match (BNode v left right):
+        v = 4, left = Empty, right = Empty
+      Expr: 4 + sumTree Empty + sumTree Empty
+
+        Call 3: sumTree Empty → 0 (base case)
+        Call 4: sumTree Empty → 0 (base case)
+
+      Back to Call 2: 4 + 0 + 0 = 4
+      Returns 4.
+
+  Need sumTree Empty:
+
+    Call 5: sumTree Empty → 0 (base case)
+
+  Back to Call 1: 10 + 4 + 0 = 14
+  Returns 14.
+
+Final: sumTree small = 14</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · Guard-pruning trace</div>
+    <p>Trace <code>zigzag</code> called on:</p>
+    <pre><code class="language-haskell">wobble = BNode 3 (BNode (-2) Empty (BNode 1 Empty Empty))
+                 (BNode 5 (BNode 7 Empty Empty) Empty)</code></pre>
+    <p>Show every call, all bindings, every guard evaluation, and the final result.</p>
+  </div>
+  <details class="practice">
+    <summary>Show trace &amp; answer</summary>
+    <div class="practice-body">
+      <p>Tree shape:</p>
+      <div class="tree-diagram"><pre>         <span style="color: var(--accent);">3</span>
+        / \
+       <span style="color: var(--accent);">-2</span>  <span style="color: var(--accent);">5</span>
+         \  /
+         <span style="color: var(--accent);">1 7</span></pre></div>
+
+      <p>Trace:</p>
+      <pre style="font-size: 12.5px !important;"><code>Call 1: zigzag (BNode 3 L R)
+  L = BNode (-2) Empty (BNode 1 Empty Empty)
+  R = BNode 5 (BNode 7 Empty Empty) Empty
+  Match (BNode v left right):
+    v = 3, left = L, right = R
+  Guard: 3 &gt; 0 = True → even branch (take right)
+  Expr: [3] ++ zigzag right
+  Need zigzag R:
+
+    Call 2: zigzag (BNode 5 (BNode 7 Empty Empty) Empty)
+      Match (BNode v left right):
+        v = 5, left = BNode 7 Empty Empty, right = Empty
+      Guard: 5 &gt; 0 = True → take right
+      Expr: [5] ++ zigzag right (where right = Empty)
+
+        Call 3: zigzag Empty → [] (base case)
+
+      Back to Call 2: [5] ++ [] = [5]
+      Returns [5].
+
+  Back to Call 1: [3] ++ [5] = [3, 5]
+  Returns [3, 5].
+
+Final: zigzag wobble = [3, 5]</code></pre>
+
+      <p><strong>Notice:</strong> we never visited the <code>-2</code> subtree (left of root was skipped because 3 &gt; 0). We never visited <code>7</code> either (left of 5 was skipped because 5 &gt; 0). The guard <code>v &gt; 0</code> always sent us right.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Guard with both recursive calls</div>
+    <p>Trace <code>collect</code> called on:</p>
+    <pre><code class="language-haskell">blend = BNode 4 (BNode 2 Empty Empty) (BNode 3 Empty Empty)</code></pre>
+    <p>Show every call, all bindings, every guard evaluation, and the final result.</p>
+  </div>
+  <details class="practice">
+    <summary>Show trace &amp; answer</summary>
+    <div class="practice-body">
+      <p>Tree shape:</p>
+      <div class="tree-diagram"><pre>     <span style="color: var(--accent);">4</span>
+    / \
+   <span style="color: var(--accent);">2</span>   <span style="color: var(--accent);">3</span></pre></div>
+
+      <p>Trace:</p>
+      <pre style="font-size: 12.5px !important;"><code>Call 1: collect (BNode 4 (BNode 2 Empty Empty) (BNode 3 Empty Empty))
+  Match (BNode v left right):
+    v = 4, left = BNode 2 Empty Empty, right = BNode 3 Empty Empty
+  Guard: even 4 = True → even branch
+  Expr: collect left ++ [4] ++ collect right
+  Need collect left first:
+
+    Call 2: collect (BNode 2 Empty Empty)
+      Match: v = 2, left = Empty, right = Empty
+      Guard: even 2 = True → even branch
+      Expr: collect Empty ++ [2] ++ collect Empty
+
+        Call 3: collect Empty → [-1] (base case)
+        Call 4: collect Empty → [-1] (base case)
+
+      Back to Call 2: [-1] ++ [2] ++ [-1] = [-1, 2, -1]
+      Returns [-1, 2, -1].
+
+  Need collect right:
+
+    Call 5: collect (BNode 3 Empty Empty)
+      Match: v = 3, left = Empty, right = Empty
+      Guard: even 3 = False → otherwise branch
+      Expr: [3]
+      Returns [3].
+      (Notice: no recursion in this branch!)
+
+  Back to Call 1: [-1, 2, -1] ++ [4] ++ [3] = [-1, 2, -1, 4, 3]
+  Returns [-1, 2, -1, 4, 3].
+
+Final: collect blend = [-1, 2, -1, 4, 3]</code></pre>
+
+      <p><strong>Notice:</strong> the odd branch returns <code>[v]</code> with no recursion at all. That's why <code>collect (BNode 3 ...)</code> stops immediately, the <code>Empty</code> children of <code>3</code> are never visited.</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>The trace template in one page.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>BTree definition</h4>
+      <pre><code class="language-haskell">data BTree a =
+    Empty
+  | BNode a (BTree a) (BTree a)</code></pre>
+      <p>Two constructors. BNode has 3 parts.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Per-call template</h4>
+      <pre><code>CALL: f (...)
+PATTERN: matched ...
+BINDINGS: ...
+GUARD: ... → branch
+EXPR: ...
+RETURN: ...</code></pre>
+      <p>6 lines per call.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Step order</h4>
+      <pre><code>1. Draw tree
+2. Trace top-down
+3. Pause at recursion
+4. Resolve inner
+5. Substitute back
+6. State final</code></pre>
+      <p>Don't skip.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Base case</h4>
+      <pre><code>CALL: f Empty
+PATTERN: matched Empty
+RETURN: [base]</code></pre>
+      <p>Short. No bindings.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Indentation</h4>
+      <pre><code>Call 1 ────┐
+  Call 2 ──┤
+    Call 3 ┘</code></pre>
+      <p>Depth = indentation.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Guard evaluation</h4>
+      <pre><code>even v = True/False
+→ which branch</code></pre>
+      <p>Show the decision.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>List concatenation</h4>
+      <pre><code>[1] ++ [2, 3] ++ [4]
+= [1, 2, 3, 4]</code></pre>
+      <p>Flat, not nested.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Base returns LIST</h4>
+      <pre><code>charade Empty = [0]
+-- list, not number!</code></pre>
+      <p>Substitute as a list.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Guard-pruning</h4>
+      <pre><code>Only ONE branch
+recurses. Other is
+never visited.</code></pre>
+      <p>Not a full traversal.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Use names</h4>
+      <pre><code>L = BNode 44 ...
+R = BNode 66 ...</code></pre>
+      <p>Abbreviate big subtrees.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>"Back to Call N"</h4>
+      <pre><code>Back to Call 2:
+substitute result</code></pre>
+      <p>Critical for unwinding.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Per-call rubric</h4>
+      <pre><code>✓ bindings shown
+✓ guard shown
+✓ return stated</code></pre>
+      <p>Full credit needs all 3.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Read a <code>BNode</code> one-liner and draw the tree on paper.</li>
+      <li>Write the 6-line call block without looking at the template.</li>
+      <li>Predict which subtrees will be visited before tracing.</li>
+      <li>Indent multi-level recursion cleanly.</li>
+      <li>Substitute a recursive list result back into an expression and simplify.</li>
+      <li>Identify what's missing in an incomplete trace (no bindings? no guard?).</li>
+      <li>Complete the three practice traces without peeking at answers.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">Next: <strong style="color: var(--accent);">Lesson 5 · Writing Tree Functions (T.2)</strong>. The hardest part of the exam. Instead of tracing someone else's function, your student writes his own. There's a universal template for recursive tree functions that makes every T.2 problem mechanical once internalized.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Writing it up</span></button>
+    <button class="nav-btn next" disabled><span class="label">Next</span><span class="title">Lesson 5 · coming up</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>

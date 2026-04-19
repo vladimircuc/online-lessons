@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 3 · Converting Styles (P.3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "ss02";
+    min-height: 100vh;
+  }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .part-meta .accent { color: var(--accent); }
+  h1 { font-family: 'Fraunces', serif; font-size: 52px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .lede { font-size: 20px; line-height: 1.6; color: var(--text-muted); max-width: 720px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em; margin: 56px 0 16px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin: 36px 0 14px; }
+  h4 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin-bottom: 18px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  a:hover { color: var(--text); }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 20px; padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .callout { margin: 24px 0; padding: 18px 22px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 16px; line-height: 1.65; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-header { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .callout-header::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+  .callout.try { border-left: 3px solid var(--accent); }
+  .callout.try .callout-header { color: var(--accent); }
+  .callout.try .callout-header::before { background: var(--accent); }
+  .callout.warning { border-left: 3px solid var(--warning); }
+  .callout.warning .callout-header { color: var(--warning); }
+  .callout.warning .callout-header::before { background: var(--warning); }
+  .callout.teach { border-left: 3px solid var(--info); }
+  .callout.teach .callout-header { color: var(--info); }
+  .callout.teach .callout-header::before { background: var(--info); }
+  .callout.success { border-left: 3px solid var(--success); }
+  .callout.success .callout-header { color: var(--success); }
+  .callout.success .callout-header::before { background: var(--success); }
+  .vscode-block { margin: 28px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .vscode-block-header { padding: 12px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .vscode-block-header::before { content: "▶"; color: var(--accent); font-size: 10px; }
+  .vscode-block-body { padding: 4px 20px 14px; font-size: 15.5px; }
+  .vscode-block-body p { margin-bottom: 12px; }
+  .vscode-block-body pre { margin: 12px 0; }
+  details.practice { margin: 22px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  details.practice summary { padding: 14px 20px; cursor: pointer; background: var(--surface-elevated); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+  details.practice summary::-webkit-details-marker { display: none; }
+  details.practice summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); }
+  details.practice[open] summary::before { transform: rotate(90deg); }
+  details.practice summary:hover { background: #2a231c; }
+  .practice-body { padding: 18px 22px; font-size: 16px; }
+  .problem-box { margin: 20px 0; padding: 22px; background: var(--surface); border: 1px dashed var(--border-light); border-radius: 10px; }
+  .problem-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .problem-label .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Inter', sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface); }
+  .cheat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .cheat-card { padding: 16px 18px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; }
+  .cheat-card h4 { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; margin: 0 0 10px; }
+  .cheat-card pre { margin: 0; padding: 0 !important; background: none !important; border: none; font-size: 12.5px !important; }
+  .cheat-card p { font-size: 13px; color: var(--text-muted); margin: 8px 0 0; font-family: 'Inter', sans-serif; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .trace { margin: 22px 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .trace-header { padding: 14px 20px; background: var(--surface-elevated); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--info); font-weight: 500; }
+  .trace-body { padding: 18px 22px; font-size: 15.5px; }
+  .trace-body p { margin-bottom: 12px; }
+  .trace-step { display: flex; gap: 14px; margin: 12px 0; padding: 10px 14px; background: var(--bg); border-radius: 6px; border-left: 2px solid var(--accent-dim); }
+  .trace-step .step-num { flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--accent); font-weight: 600; padding-top: 3px; }
+  .trace-step .step-body { flex: 1; font-size: 15px; }
+  .trace-step .step-body code { font-size: 0.92em; }
+  .trace-answer { margin-top: 16px; padding: 12px 16px; background: rgba(134, 184, 108, 0.08); border-left: 3px solid var(--success); border-radius: 6px; font-family: 'Inter', sans-serif; font-weight: 600; color: var(--success); font-size: 15px; }
+  .trace-answer .answer-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; margin-right: 10px; }
+
+  /* Style comparison - 3 columns showing the same function */
+  .three-way {
+    margin: 28px 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .three-way-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .three-way-header {
+    padding: 12px 18px;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .three-way-header .tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+  }
+  .three-way-card.recursion .three-way-header { color: var(--info); }
+  .three-way-card.comprehension .three-way-header { color: var(--accent); }
+  .three-way-card.hof .three-way-header { color: var(--success); }
+  .three-way-card pre { margin: 0; border: none; border-radius: 0; }
+
+  /* Template formula box */
+  .formula {
+    margin: 24px 0;
+    padding: 20px 24px;
+    background: linear-gradient(180deg, rgba(232, 179, 65, 0.05) 0%, rgba(232, 179, 65, 0.02) 100%);
+    border: 1px solid var(--accent-dim);
+    border-radius: 10px;
+  }
+  .formula-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .formula pre { margin: 8px 0; background: var(--code-bg) !important; }
+  .formula-arrow {
+    text-align: center;
+    color: var(--accent);
+    font-size: 18px;
+    margin: 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 32px 20px 60px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 24px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Lesson 03 · Converting Styles (P.3)</span>
+      <span class="dot">·</span>
+      <span>~75 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="1">01 · Concept</button>
+      <button class="tab" data-part="2">02 · Recursion</button>
+      <button class="tab" data-part="3">03 · Comprehensions</button>
+      <button class="tab" data-part="4">04 · HOF</button>
+      <button class="tab" data-part="5">05 · Translation</button>
+      <button class="tab" data-part="6">06 · Exam: creek + pond</button>
+      <button class="tab" data-part="7">07 · Practice</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- PART 1 -->
+<section class="part active" data-part="1">
+  <div class="part-meta">Part <span class="accent">1</span> of 7 · Concept</div>
+  <h1>Three ways to <em>say the same thing</em></h1>
+  <p class="lede">Haskell gives you three different dialects for processing lists: explicit recursion, list comprehensions, and higher-order functions (<code>map</code>/<code>filter</code>). They're not competing, they're synonyms. Any problem in one can be rewritten in the other two. <strong>Converting fluently between them is the whole skill being tested in P.3.</strong></p>
+
+  <h2>The big idea</h2>
+  <p>The three styles are <em>equivalent</em> for the same problem. Here's the same function written three ways:</p>
+
+  <div class="three-way">
+    <div class="three-way-card recursion">
+      <div class="three-way-header"><span class="tag">Style 1</span>Recursion with patterns</div>
+      <pre><code class="language-haskell">doubleEvens :: [Int] -&gt; [Int]
+doubleEvens [] = []
+doubleEvens (x:xs)
+  | even x    = (x * 2) : doubleEvens xs
+  | otherwise = doubleEvens xs</code></pre>
+    </div>
+    <div class="three-way-card comprehension">
+      <div class="three-way-header"><span class="tag">Style 2</span>List comprehension</div>
+      <pre><code class="language-haskell">doubleEvens :: [Int] -&gt; [Int]
+doubleEvens xs = [x * 2 | x &lt;- xs, even x]</code></pre>
+    </div>
+    <div class="three-way-card hof">
+      <div class="three-way-header"><span class="tag">Style 3</span>Higher-order functions</div>
+      <pre><code class="language-haskell">doubleEvens :: [Int] -&gt; [Int]
+doubleEvens xs = map (*2) (filter even xs)</code></pre>
+    </div>
+  </div>
+
+  <p>All three produce <code>[4, 8]</code> when given <code>[1, 2, 3, 4, 5]</code>. Each style has its own vibe, but every P.3 problem is a translation exercise.</p>
+
+  <h2>What the exam asks</h2>
+  <p>P.3 gives you a function written in <em>one</em> style and asks you to rewrite it in <em>another</em>. Sometimes it's fill-in-the-blanks, sometimes it's write-from-scratch.</p>
+
+  <p>His exam from the study guide:</p>
+  <ol>
+    <li>Given <code>creek</code> as recursion, fill in blanks for <code>creek1</code> using <code>map</code> + <code>filter</code>.</li>
+    <li>Given <code>creek</code>, fill in blanks for <code>creek2</code> as a list comprehension.</li>
+    <li>Given <code>pond</code> as a list comprehension, write <code>pond1</code> using recursion with patterns.</li>
+  </ol>
+
+  <p>Three translations. Same pair of ideas (transform, filter). Different syntax.</p>
+
+  <h2>The two questions to ask about any list-processing function</h2>
+  <p>Every one of these problems boils down to two questions:</p>
+
+  <div class="formula">
+    <div class="formula-title">The two questions</div>
+    <ol style="margin: 0; padding-left: 28px;">
+      <li><strong>What's the filter?</strong> Which elements do we keep? (Sometimes: all of them.)</li>
+      <li><strong>What's the transformation?</strong> What does each kept element become? (Sometimes: unchanged.)</li>
+    </ol>
+  </div>
+
+  <p>Once your student identifies these two pieces, the translation between styles is mechanical. We'll drill this throughout the lesson.</p>
+
+  <h2>The plan for this lesson</h2>
+  <ol>
+    <li><strong>Part 2</strong>, recursion with patterns. You know this from Lesson 1; we formalize the structure.</li>
+    <li><strong>Part 3</strong>, list comprehensions. The concise cousin of Python's <code>[x for x in ...]</code>.</li>
+    <li><strong>Part 4</strong>, higher-order functions. <code>map</code>, <code>filter</code>, and (optionally) combining them.</li>
+    <li><strong>Part 5</strong>, the translation template. How to go between all three mechanically.</li>
+    <li><strong>Part 6</strong>, his exam problems, step-by-step.</li>
+    <li><strong>Part 7</strong>, practice problems with hidden answers.</li>
+  </ol>
+
+  <div class="callout teach">
+    <div class="callout-header">The teaching payoff</div>
+    <p>Once your student sees all three styles as "the same function wearing different clothes," his Haskell fluency doubles. He'll recognize patterns faster, write cleaner code, and ace P.3 without thinking.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next up</span><span class="title">Recursion with patterns</span></button>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Part <span class="accent">2</span> of 7 · Style 1</div>
+  <h1>Recursion with <em>patterns</em></h1>
+  <p class="lede">You've already written list recursion in Lesson 1. Here we formalize the shape so you can recognize it instantly. Every list-processing function written recursively follows the same skeleton.</p>
+
+  <h2>The universal list-recursion skeleton</h2>
+  <p>Every recursive list function, no exceptions, has these two equations:</p>
+
+  <div class="formula">
+    <div class="formula-title">The list recursion skeleton</div>
+    <pre><code class="language-haskell">f :: [A] -&gt; [B]        -- (or some return type)
+f []     = ???         -- the empty list case (base case)
+f (x:xs) = ???         -- the non-empty list case (recursive case)</code></pre>
+    <p style="margin: 12px 0 0; font-size: 14px; color: var(--text-muted);">Two equations. First matches empty. Second pattern matches head and tail. Fill in the blanks for the specific problem.</p>
+  </div>
+
+  <h2>Example 1 · Double every element</h2>
+  <p>No filtering. Just transform each element.</p>
+
+  <pre><code class="language-haskell">doubleAll :: [Int] -&gt; [Int]
+doubleAll []     = []
+doubleAll (x:xs) = (x * 2) : doubleAll xs</code></pre>
+
+  <p>Reading the recursive case:</p>
+  <ul>
+    <li><code>x * 2</code> is the transformation: what each element becomes.</li>
+    <li><code>:</code> prepends the transformed head to the result of processing the tail.</li>
+    <li><code>doubleAll xs</code> recursively processes everything after the head.</li>
+  </ul>
+
+  <p>Visualizing on <code>[1, 2, 3]</code>:</p>
+  <pre><code>doubleAll [1, 2, 3]
+= 2 : doubleAll [2, 3]
+= 2 : 4 : doubleAll [3]
+= 2 : 4 : 6 : doubleAll []
+= 2 : 4 : 6 : []
+= [2, 4, 6]</code></pre>
+
+  <h2>Example 2 · Keep only evens</h2>
+  <p>No transformation. Just filtering.</p>
+
+  <pre><code class="language-haskell">keepEvens :: [Int] -&gt; [Int]
+keepEvens [] = []
+keepEvens (x:xs)
+  | even x    = x : keepEvens xs
+  | otherwise = keepEvens xs</code></pre>
+
+  <p>Reading the recursive case, now with a guard:</p>
+  <ul>
+    <li>If the predicate is True, <strong>keep</strong> x by consing it onto the result.</li>
+    <li>If False, <strong>skip</strong> x and recurse on the tail only.</li>
+  </ul>
+
+  <h2>Example 3 · Double the evens (filter + transform)</h2>
+  <p>Both at once. This is the shape of every meaningful list processing problem.</p>
+
+  <pre><code class="language-haskell">doubleEvens :: [Int] -&gt; [Int]
+doubleEvens [] = []
+doubleEvens (x:xs)
+  | even x    = (x * 2) : doubleEvens xs
+  | otherwise = doubleEvens xs</code></pre>
+
+  <p>Same skeleton. Guard decides "keep or skip." When keeping, apply the transformation <code>x * 2</code>. Otherwise, just recurse.</p>
+
+  <div class="formula">
+    <div class="formula-title">The filter+transform skeleton</div>
+    <pre><code class="language-haskell">f [] = []
+f (x:xs)
+  | predicate x = transform x : f xs
+  | otherwise   = f xs</code></pre>
+    <p style="margin: 12px 0 0; font-size: 14px; color: var(--text-muted);">This is the shape to memorize. Every recursive version of P.3 problems fits here.</p>
+  </div>
+
+  <h2>Patterns within patterns</h2>
+  <p>When the list elements are tuples or ADTs, destructure them directly in the pattern.</p>
+
+  <pre><code class="language-haskell">sumPairs :: [(Int, Int)] -&gt; [Int]
+sumPairs [] = []
+sumPairs ((a, b) : rest) = (a + b) : sumPairs rest</code></pre>
+
+  <p>The pattern <code>((a, b) : rest)</code> does two jobs at once:</p>
+  <ul>
+    <li>Outer: <code>(... : rest)</code>, a non-empty list.</li>
+    <li>Inner: <code>(a, b)</code>, destructure the first tuple.</li>
+  </ul>
+
+  <p>His exam's <code>pond</code> problem uses exactly this nested-pattern structure. We'll see it in Part 6.</p>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try all three in practice.hs</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">doubleAll :: [Int] -&gt; [Int]
+doubleAll []     = []
+doubleAll (x:xs) = (x * 2) : doubleAll xs
+
+keepEvens :: [Int] -&gt; [Int]
+keepEvens [] = []
+keepEvens (x:xs)
+  | even x    = x : keepEvens xs
+  | otherwise = keepEvens xs
+
+doubleEvens :: [Int] -&gt; [Int]
+doubleEvens [] = []
+doubleEvens (x:xs)
+  | even x    = (x * 2) : doubleEvens xs
+  | otherwise = doubleEvens xs</code></pre>
+      <p>Save, <code>:r</code>, then:</p>
+      <pre><code class="language-haskell">doubleAll [1, 2, 3, 4]
+keepEvens [1..10]
+doubleEvens [1..10]
+-- [2,4,6,8]
+-- [2,4,6,8,10]
+-- [4,8,12,16,20]</code></pre>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Concept</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next up</span><span class="title">List comprehensions</span></button>
+  </div>
+</section>
+
+<!-- PART 3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Part <span class="accent">3</span> of 7 · Style 2</div>
+  <h1>List <em>comprehensions</em></h1>
+  <p class="lede">Directly inspired by mathematical set-builder notation. If you know Python's <code>[x for x in ...]</code>, this is the same idea with different punctuation. Cleanest syntax of the three styles for simple filter+transform problems.</p>
+
+  <h2>Anatomy</h2>
+
+  <pre><code class="language-haskell">[ x * 2 | x &lt;- xs, even x ]
+-- ^^^^^   ^^^^^^^^  ^^^^^^
+--   |         |        |
+--   |         |        filter: keep x only if this is True
+--   |         generator: x comes from xs, one at a time
+--   output expression: what each element becomes</code></pre>
+
+  <p>Read as: <strong>"for each x in xs, where x is even, give me x * 2."</strong></p>
+
+  <h3>Comparison to Python</h3>
+  <table>
+    <tr><th>Python</th><th>Haskell</th></tr>
+    <tr><td><code>for</code></td><td><code>|</code> (the pipe starts the conditions)</td></tr>
+    <tr><td><code>in</code></td><td><code>&lt;-</code> (read "drawn from")</td></tr>
+    <tr><td><code>if</code></td><td>comma (just a comma)</td></tr>
+  </table>
+
+  <h3>Side by side</h3>
+  <pre><code class="language-python"># Python
+[x * 2 for x in xs if x % 2 == 0]</code></pre>
+
+  <pre><code class="language-haskell">-- Haskell
+[x * 2 | x &lt;- xs, even x]</code></pre>
+
+  <p>Same structure. <code>for</code> → <code>|</code>, <code>in</code> → <code>&lt;-</code>, <code>if</code> → <code>,</code>.</p>
+
+  <h2>The four shapes</h2>
+
+  <h3>Shape 1 · Just transform (no filter)</h3>
+  <pre><code class="language-haskell">[x * 2 | x &lt;- xs]
+-- equivalent to: map (*2) xs</code></pre>
+
+  <h3>Shape 2 · Just filter (no transform)</h3>
+  <pre><code class="language-haskell">[x | x &lt;- xs, x &gt; 10]
+-- equivalent to: filter (&gt;10) xs
+-- the output expression is just x, unchanged</code></pre>
+
+  <h3>Shape 3 · Transform + filter</h3>
+  <pre><code class="language-haskell">[x * 2 | x &lt;- xs, even x]
+-- equivalent to: map (*2) (filter even xs)</code></pre>
+
+  <h3>Shape 4 · Multiple generators (cartesian product)</h3>
+  <pre><code class="language-haskell">[(x, y) | x &lt;- [1, 2, 3], y &lt;- ['a', 'b']]
+-- [(1,'a'), (1,'b'), (2,'a'), (2,'b'), (3,'a'), (3,'b')]</code></pre>
+
+  <p>Two generators produce every combination. Rightmost generator changes fastest (like nested loops). Shape 4 won't appear on his exam, but good to know it exists.</p>
+
+  <h2>Multiple filters</h2>
+  <p>You can chain filter conditions with commas.</p>
+
+  <pre><code class="language-haskell">[x | x &lt;- [1..100], even x, x &gt; 50]
+-- [52, 54, 56, 58, 60, ..., 100]</code></pre>
+
+  <p>Read: "each x from 1 to 100, where x is even AND x is greater than 50."</p>
+
+  <h2>Tuple destructuring in generators</h2>
+  <p>This is a huge feature and it's on his exam. You can pattern-match the elements coming out of the generator.</p>
+
+  <pre><code class="language-haskell">[x + y | (x, y) &lt;- [(1, 2), (3, 4), (5, 6)]]
+-- [3, 7, 11]</code></pre>
+
+  <p>Instead of binding the whole tuple to a name and using <code>fst</code>/<code>snd</code>, destructure directly in the generator.</p>
+
+  <p>His exam's <code>pond</code>:</p>
+  <pre><code class="language-haskell">pond ms = [ even (floor e) | (x, d, e) &lt;- ms, x + d &lt; e ]</code></pre>
+
+  <p><code>(x, d, e) &lt;- ms</code> destructures each 3-tuple in <code>ms</code> as you pull it out. Then the filter <code>x + d &lt; e</code> uses the destructured names directly.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">Teaching tip</div>
+    <p>This tuple destructuring is the #1 thing students miss when first learning list comprehensions. They try to use <code>fst p</code> and <code>snd p</code> everywhere. Show them <code>(a, b) &lt;-</code> and watch the lightbulb.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Play with comprehensions</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">[x * x | x &lt;- [1..5]]
+[x | x &lt;- [1..20], x `mod` 3 == 0]
+[x * y | x &lt;- [1..5], y &lt;- [1..5], x /= y]
+[a + b | (a, b) &lt;- [(1,10), (2,20), (3,30)]]</code></pre>
+      <p>Expected outputs:</p>
+      <pre><code>[1, 4, 9, 16, 25]
+[3, 6, 9, 12, 15, 18]
+[2, 3, 4, 5, 2, 6, 8, 10, 3, 6, 12, 15, 4, 8, 12, 20, 5, 10, 15, 20]
+[11, 22, 33]</code></pre>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Recursion</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next up</span><span class="title">Higher-order functions</span></button>
+  </div>
+</section>
+
+<!-- PART 4 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Part <span class="accent">4</span> of 7 · Style 3</div>
+  <h1>Higher-order <em>functions</em></h1>
+  <p class="lede">The most Haskell-idiomatic style: pass functions as arguments to <code>map</code> and <code>filter</code>. We saw these in Lessons 0 and 2; now we formalize how they work together and introduce lambdas, which his exam uses.</p>
+
+  <h2>map · transform every element</h2>
+
+  <pre><code class="language-haskell">map :: (a -&gt; b) -&gt; [a] -&gt; [b]</code></pre>
+
+  <p>Type reads: "takes a function from <code>a</code> to <code>b</code>, and a list of <code>a</code>'s, returns a list of <code>b</code>'s." It applies the function to every element.</p>
+
+  <pre><code class="language-haskell">map (*2) [1, 2, 3]         -- [2, 4, 6]
+map show [1, 2, 3]         -- ["1", "2", "3"]
+map reverse ["abc", "de"]  -- ["cba", "ed"]</code></pre>
+
+  <h2>filter · keep what passes a test</h2>
+
+  <pre><code class="language-haskell">filter :: (a -&gt; Bool) -&gt; [a] -&gt; [a]</code></pre>
+
+  <p>Takes a <em>predicate</em> (function returning <code>Bool</code>) and a list. Returns only the elements where the predicate is True.</p>
+
+  <pre><code class="language-haskell">filter even [1..10]       -- [2, 4, 6, 8, 10]
+filter (&gt; 0) [-3, 5, -1]  -- [5]
+filter isUpper "HeLLo"    -- "HLL"</code></pre>
+
+  <h2>Combining map and filter</h2>
+  <p>Here's the crucial pattern. "Filter then transform" is written <em>right to left</em> because of how function composition reads.</p>
+
+  <pre><code class="language-haskell">map (*2) (filter even [1..10])
+-- step 1: filter even [1..10]  →  [2, 4, 6, 8, 10]
+-- step 2: map (*2) [2, 4, 6, 8, 10]  →  [4, 8, 12, 16, 20]</code></pre>
+
+  <p>Haskell reads from the inside out. <strong>Inner function runs first.</strong> So <code>map f (filter p xs)</code> means: first filter, then map.</p>
+
+  <div class="callout warning">
+    <div class="callout-header">Common mistake</div>
+    <p>Writing <code>filter even (map (*2) [1..10])</code> gives the wrong answer. That doubles everything first (making everything even), then "filters" for even, which keeps everything. Order matters. Always filter <em>first</em>, then transform.</p>
+  </div>
+
+  <h2>Operator sections (a quick recap)</h2>
+  <p>You've seen these in Lesson 0. They turn an operator into a function.</p>
+
+  <table>
+    <tr><th>Section</th><th>Is the function</th><th>Applied to x</th></tr>
+    <tr><td><code>(+1)</code></td><td>add 1</td><td><code>x + 1</code></td></tr>
+    <tr><td><code>(*2)</code></td><td>double</td><td><code>x * 2</code></td></tr>
+    <tr><td><code>(&gt;5)</code></td><td>is it &gt; 5?</td><td><code>x &gt; 5</code></td></tr>
+    <tr><td><code>(10-)</code></td><td>10 minus</td><td><code>10 - x</code></td></tr>
+    <tr><td><code>(`div` 2)</code></td><td>divide by 2</td><td><code>x `div` 2</code></td></tr>
+  </table>
+
+  <p>Operator sections are the cleanest way to pass simple functions to <code>map</code> and <code>filter</code>.</p>
+
+  <h2>Lambdas · anonymous functions</h2>
+  <p>When the function you want to pass isn't a simple operator, define it inline with a lambda.</p>
+
+  <pre><code class="language-haskell">\x -&gt; x * x + 1</code></pre>
+
+  <p>The backslash <code>\</code> is trying to look like the Greek letter λ (lambda). Read as: "a function taking x, returning x*x + 1."</p>
+
+  <h3>Used with map / filter</h3>
+  <pre><code class="language-haskell">map (\x -&gt; x * x + 1) [1, 2, 3]
+-- [2, 5, 10]
+
+filter (\x -&gt; x &gt; 3 &amp;&amp; x &lt; 8) [1..10]
+-- [4, 5, 6, 7]</code></pre>
+
+  <h3>Multi-argument lambdas</h3>
+  <pre><code class="language-haskell">\x y -&gt; x + y
+-- function of 2 args returning their sum
+
+\(a, b) -&gt; a * b
+-- destructures a tuple, multiplies</code></pre>
+
+  <p>The last one is key: <strong>lambdas can pattern match on their argument</strong>. Very useful when working with tuples.</p>
+
+  <p>His exam's <code>creek1</code> fill-in uses a lambda:</p>
+  <pre><code class="language-haskell">creek1 ch as = map (\c -&gt; [c, c, ch]) (filter isAlpha as)</code></pre>
+
+  <p>The lambda <code>\c -&gt; [c, c, ch]</code> takes a character <code>c</code>, returns the 3-char list <code>[c, c, ch]</code>.</p>
+
+  <div class="callout teach">
+    <div class="callout-header">When to use a lambda vs a named helper</div>
+    <p>For one-off small functions passed to <code>map</code>/<code>filter</code>, use a lambda. For anything used more than once, define it as a named function. His exam expects lambdas in one-off spots.</p>
+  </div>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Try lambdas and HOF combinations</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">map (\x -&gt; x * 3 + 1) [1, 2, 3, 4]
+filter (\x -&gt; x &gt; 5 &amp;&amp; even x) [1..20]
+map (\(a, b) -&gt; a + b) [(1, 2), (3, 4), (5, 6)]
+map (*3) (filter (&gt; 5) [1..10])</code></pre>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">List comprehensions</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next up</span><span class="title">Translation template</span></button>
+  </div>
+</section>
+
+<!-- PART 5 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Part <span class="accent">5</span> of 7 · The translation template</div>
+  <h1>The <em>translation</em> template</h1>
+  <p class="lede">This is the heart of the lesson. A single mechanical procedure for translating any list-processing function between the three styles. Memorize this and every P.3 question becomes a lookup.</p>
+
+  <h2>The universal template</h2>
+
+  <p>For any filter+transform problem, the same three pieces appear in all three styles. Find them once, they slot into each template.</p>
+
+  <div class="formula">
+    <div class="formula-title">The 1-to-1 template</div>
+    <pre><code class="language-haskell">-- Style 1: RECURSION
+f []     = []
+f (x:xs)
+  | PRED x   = TRANS x : f xs
+  | otherwise = f xs</code></pre>
+    <div class="formula-arrow">↕ ↕ ↕</div>
+    <pre><code class="language-haskell">-- Style 2: LIST COMPREHENSION
+f xs = [ TRANS x | x &lt;- xs, PRED x ]</code></pre>
+    <div class="formula-arrow">↕ ↕ ↕</div>
+    <pre><code class="language-haskell">-- Style 3: HIGHER-ORDER FUNCTIONS
+f xs = map TRANS (filter PRED xs)</code></pre>
+    <p style="margin: 16px 0 0; font-size: 14px; color: var(--text-muted);">The same two pieces, <strong>PRED</strong> (filter condition) and <strong>TRANS</strong> (what each element becomes), appear in all three styles. Find them once and the translation is mechanical.</p>
+  </div>
+
+  <h2>Translation by example: doubleEvens</h2>
+  <p>Let's translate the same function all three ways, showing the template in action.</p>
+
+  <h3>Starting from recursion</h3>
+  <pre><code class="language-haskell">doubleEvens :: [Int] -&gt; [Int]
+doubleEvens [] = []
+doubleEvens (x:xs)
+  | even x    = (x * 2) : doubleEvens xs
+  | otherwise = doubleEvens xs</code></pre>
+
+  <p><strong>Identify the pieces:</strong></p>
+  <ul>
+    <li>PRED = <code>even x</code> → as a function: <code>even</code></li>
+    <li>TRANS = <code>x * 2</code> → as a function: <code>(*2)</code></li>
+  </ul>
+
+  <h3>Slot into the list comprehension template</h3>
+  <pre><code class="language-haskell">doubleEvens xs = [ TRANS x | x &lt;- xs, PRED x ]
+-- substitute:
+doubleEvens xs = [ x * 2 | x &lt;- xs, even x ]</code></pre>
+
+  <h3>Slot into the HOF template</h3>
+  <pre><code class="language-haskell">doubleEvens xs = map TRANS (filter PRED xs)
+-- substitute:
+doubleEvens xs = map (*2) (filter even xs)</code></pre>
+
+  <p>Done. Same function, three styles, same behavior.</p>
+
+  <h2>Special cases</h2>
+
+  <h3>No filter (keep everything)</h3>
+  <p>Drop the predicate.</p>
+
+  <table>
+    <tr><th>Style</th><th>Code</th></tr>
+    <tr><td>Recursion</td><td><code>f [] = [] ; f (x:xs) = TRANS x : f xs</code></td></tr>
+    <tr><td>Comprehension</td><td><code>f xs = [ TRANS x | x &lt;- xs ]</code></td></tr>
+    <tr><td>HOF</td><td><code>f xs = map TRANS xs</code></td></tr>
+  </table>
+
+  <h3>No transform (keep elements as-is)</h3>
+  <p>TRANS is just the identity: output x unchanged.</p>
+
+  <table>
+    <tr><th>Style</th><th>Code</th></tr>
+    <tr><td>Recursion</td><td><code>f [] = [] ; f (x:xs) | PRED x = x : f xs | otherwise = f xs</code></td></tr>
+    <tr><td>Comprehension</td><td><code>f xs = [ x | x &lt;- xs, PRED x ]</code></td></tr>
+    <tr><td>HOF</td><td><code>f xs = filter PRED xs</code></td></tr>
+  </table>
+
+  <h2>Recognizing the pieces: a step-by-step method</h2>
+  <p>When your student faces a P.3 conversion, have him follow this procedure:</p>
+
+  <div class="formula">
+    <div class="formula-title">The conversion procedure</div>
+    <ol style="margin: 0; padding-left: 28px;">
+      <li><strong>Read the given code, whatever style it's in.</strong></li>
+      <li><strong>Find PRED.</strong> What's the condition for keeping an element?
+        <ul style="margin-top: 6px;">
+          <li>In recursion: the guard that leads to cons-ing.</li>
+          <li>In comprehension: whatever comes after the comma.</li>
+          <li>In HOF: the function passed to <code>filter</code>.</li>
+        </ul>
+      </li>
+      <li><strong>Find TRANS.</strong> What does each kept element become?
+        <ul style="margin-top: 6px;">
+          <li>In recursion: whatever gets consed (before the <code>:</code>).</li>
+          <li>In comprehension: the output expression (before the <code>|</code>).</li>
+          <li>In HOF: the function passed to <code>map</code>.</li>
+        </ul>
+      </li>
+      <li><strong>Plug into the target template.</strong></li>
+    </ol>
+  </div>
+
+  <h2>Worked example: convert comprehension to recursion</h2>
+  <p>Given:</p>
+  <pre><code class="language-haskell">f xs = [ x + 1 | x &lt;- xs, x &gt; 10 ]</code></pre>
+
+  <div class="trace">
+    <div class="trace-header">Conversion trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>PRED</strong> = <code>x &gt; 10</code> (the condition after the comma)</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>TRANS</strong> = <code>x + 1</code> (the output expression before <code>|</code>)</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Plug into recursion template:</strong><br>
+          <pre><code class="language-haskell">f [] = []
+f (x:xs)
+  | x &gt; 10    = (x + 1) : f xs
+  | otherwise = f xs</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Worked example: convert HOF to comprehension</h2>
+  <p>Given:</p>
+  <pre><code class="language-haskell">g xs = map reverse (filter (\s -&gt; length s &gt; 3) xs)</code></pre>
+
+  <div class="trace">
+    <div class="trace-header">Conversion trace</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>PRED</strong> = <code>\s -&gt; length s &gt; 3</code>. When applied to x, that's <code>length x &gt; 3</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>TRANS</strong> = <code>reverse</code>. Applied to x: <code>reverse x</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Plug into comprehension template:</strong><br>
+          <pre><code class="language-haskell">g xs = [ reverse x | x &lt;- xs, length x &gt; 3 ]</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-header">The shortcut to teach</div>
+    <p><strong>Every problem = (filter) + (transform) + (plug into target template)</strong>. Once your student does a few, the pattern clicks and translation takes seconds.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">HOF</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next up</span><span class="title">Exam problems</span></button>
+  </div>
+</section>
+
+<!-- PART 6 -->
+<section class="part" data-part="6">
+  <div class="part-meta">Part <span class="accent">6</span> of 7 · Exam walkthrough</div>
+  <h1>Exam: <em>creek</em> &amp; pond</h1>
+  <p class="lede">His study guide's three P.3 sub-problems, solved step-by-step using the translation template. The creek problems are fill-in-the-blanks. The pond problem is write-from-scratch.</p>
+
+  <h2>The setup</h2>
+  <p>From his study guide:</p>
+
+  <pre><code class="language-haskell">pond :: [(Float, Float, Float)] -&gt; [Bool]
+pond ms = [ even (floor e) | (x, d, e) &lt;- ms, x + d &lt; e ]
+
+creek :: Char -&gt; String -&gt; [String]
+creek ch [] = []
+creek ch (c:cs)
+  | isAlpha c = [c, c, ch] : creek ch cs
+  | otherwise = creek ch cs</code></pre>
+
+  <p>He also needs <code>import Data.Char</code> at the top of the file so <code>isAlpha</code> works.</p>
+
+  <h2>Problem 1 · Rewrite <code>creek</code> using map + filter</h2>
+
+  <p>Fill in the blanks:</p>
+  <pre><code class="language-haskell">creek1 :: Char -&gt; String -&gt; [String]
+creek1 ch as = map ___________________ (filter ___________________ as)</code></pre>
+
+  <h3>Identify the pieces from the original <code>creek</code></h3>
+
+  <div class="trace">
+    <div class="trace-header">Finding PRED and TRANS</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Recursive case:</strong><br>
+          <pre><code class="language-haskell">creek ch (c:cs)
+  | isAlpha c = [c, c, ch] : creek ch cs
+  | otherwise = creek ch cs</code></pre>
+        </div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>PRED</strong> = the guard that leads to keeping the element.<br>That's <code>isAlpha c</code>. As a function: just <code>isAlpha</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>TRANS</strong> = what the kept element becomes, before the <code>:</code>.<br>That's <code>[c, c, ch]</code>. As a function: <code>\c -&gt; [c, c, ch]</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Note:</strong> TRANS uses <code>ch</code>, which is fixed from the outer scope. The lambda closes over it.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Slot into the HOF template</h3>
+  <pre><code class="language-haskell">creek1 ch as = map (\c -&gt; [c, c, ch]) (filter isAlpha as)</code></pre>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify</div>
+    <div class="vscode-block-body">
+      <p>Add to <code>practice.hs</code>:</p>
+      <pre><code class="language-haskell">import Data.Char
+
+creek :: Char -&gt; String -&gt; [String]
+creek ch [] = []
+creek ch (c:cs)
+  | isAlpha c = [c, c, ch] : creek ch cs
+  | otherwise = creek ch cs
+
+creek1 :: Char -&gt; String -&gt; [String]
+creek1 ch as = map (\c -&gt; [c, c, ch]) (filter isAlpha as)</code></pre>
+      <p>Save, <code>:r</code>, verify they match:</p>
+      <pre><code class="language-haskell">creek  'X' "Hello, World 2026!"
+creek1 'X' "Hello, World 2026!"
+-- Both return the same result</code></pre>
+    </div>
+  </div>
+
+  <h2>Problem 2 · Rewrite <code>creek</code> as a list comprehension</h2>
+
+  <p>Fill in the blanks:</p>
+  <pre><code class="language-haskell">creek2 :: Char -&gt; String -&gt; [String]
+creek2 ch as = [ __________________ | __________________ ]</code></pre>
+
+  <h3>Reuse PRED and TRANS</h3>
+  <p>Same pieces as Problem 1: PRED = <code>isAlpha c</code>, TRANS = <code>[c, c, ch]</code>.</p>
+
+  <h3>Slot into the comprehension template</h3>
+  <p>Template: <code>[ TRANS x | x &lt;- xs, PRED x ]</code>. Renaming x → c and xs → as:</p>
+
+  <pre><code class="language-haskell">creek2 ch as = [ [c, c, ch] | c &lt;- as, isAlpha c ]</code></pre>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">creek2 :: Char -&gt; String -&gt; [String]
+creek2 ch as = [ [c, c, ch] | c &lt;- as, isAlpha c ]</code></pre>
+      <pre><code class="language-haskell">creek2 'X' "Hello, World 2026!"
+-- should match creek &amp; creek1</code></pre>
+    </div>
+  </div>
+
+  <h2>Problem 3 · Write <code>pond1</code> using recursion with patterns</h2>
+
+  <p>You're given the comprehension version:</p>
+  <pre><code class="language-haskell">pond :: [(Float, Float, Float)] -&gt; [Bool]
+pond ms = [ even (floor e) | (x, d, e) &lt;- ms, x + d &lt; e ]</code></pre>
+
+  <p>Write the recursive equivalent.</p>
+
+  <h3>Identify the pieces from the comprehension</h3>
+
+  <div class="trace">
+    <div class="trace-header">Finding PRED and TRANS</div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>The comprehension:</strong><br>
+          <pre><code class="language-haskell">[ even (floor e) | (x, d, e) &lt;- ms, x + d &lt; e ]</code></pre>
+        </div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Generator:</strong> <code>(x, d, e) &lt;- ms</code>. Each element of <code>ms</code> is a 3-tuple, destructured into <code>x</code>, <code>d</code>, <code>e</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>PRED</strong> = the filter after the comma: <code>x + d &lt; e</code>.</div>
+      </div>
+      <div class="trace-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>TRANS</strong> = the output expression: <code>even (floor e)</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Slot into the recursion template · with tuple destructuring</h3>
+  <p>The key: since elements are 3-tuples, we destructure them right in the pattern: <code>((x, d, e) : rest)</code>.</p>
+
+  <pre><code class="language-haskell">pond1 :: [(Float, Float, Float)] -&gt; [Bool]
+pond1 [] = []
+pond1 ((x, d, e) : rest)
+  | x + d &lt; e = even (floor e) : pond1 rest
+  | otherwise = pond1 rest</code></pre>
+
+  <p>Reading each line:</p>
+  <ul>
+    <li><code>pond1 [] = []</code>, empty list base case.</li>
+    <li><code>((x, d, e) : rest)</code>, match a non-empty list; destructure the first tuple at the same time.</li>
+    <li>Guard: if the predicate holds, cons <code>even (floor e)</code> onto the recursive result.</li>
+    <li>Otherwise: skip this element, recurse on the rest.</li>
+  </ul>
+
+  <div class="vscode-block">
+    <div class="vscode-block-header">Verify</div>
+    <div class="vscode-block-body">
+      <pre><code class="language-haskell">pond :: [(Float, Float, Float)] -&gt; [Bool]
+pond ms = [ even (floor e) | (x, d, e) &lt;- ms, x + d &lt; e ]
+
+pond1 :: [(Float, Float, Float)] -&gt; [Bool]
+pond1 [] = []
+pond1 ((x, d, e) : rest)
+  | x + d &lt; e = even (floor e) : pond1 rest
+  | otherwise = pond1 rest</code></pre>
+      <pre><code class="language-haskell">let testData = [(1.0, 2.0, 5.5), (3.0, 1.0, 3.0), (0.0, 0.0, 10.7)]
+pond  testData
+pond1 testData
+-- both return the same result</code></pre>
+    </div>
+  </div>
+
+  <h2>Summary of the three exam problems</h2>
+
+  <table>
+    <tr><th>Problem</th><th>Given</th><th>Target</th><th>Answer</th></tr>
+    <tr><td>1</td><td><code>creek</code> (recursion)</td><td>HOF</td><td><code>map (\c -&gt; [c,c,ch]) (filter isAlpha as)</code></td></tr>
+    <tr><td>2</td><td><code>creek</code> (recursion)</td><td>Comprehension</td><td><code>[ [c,c,ch] | c &lt;- as, isAlpha c ]</code></td></tr>
+    <tr><td>3</td><td><code>pond</code> (comprehension)</td><td>Recursion</td><td>4-line recursion with <code>((x,d,e):rest)</code> pattern</td></tr>
+  </table>
+
+  <div class="callout success">
+    <div class="callout-header">Teaching shortcut</div>
+    <p>Every single P.3 problem reduces to: <strong>find PRED, find TRANS, plug into target template</strong>. Have your student practice that identification 3-4 times and the exam is handled.</p>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Translation template</span></button>
+    <button class="nav-btn next" data-goto="7"><span class="label">Next up</span><span class="title">Practice &amp; cheat sheet</span></button>
+  </div>
+</section>
+
+<!-- PART 7 -->
+<section class="part" data-part="7">
+  <div class="part-meta">Part <span class="accent">7</span> of 7 · Consolidation</div>
+  <h1>Practice &amp; <em>cheat sheet</em></h1>
+  <p class="lede">Fresh conversion problems in the same style as his exam. Each asks to translate between two of the three styles. Work them with the template, then reveal the answer.</p>
+
+  <h2>Setup</h2>
+  <p>Make sure <code>import Data.Char</code> is at the top of your <code>practice.hs</code>.</p>
+
+  <h2>Practice problems</h2>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 1</span> · Recursion → Comprehension</div>
+    <p>Rewrite as a list comprehension:</p>
+    <pre><code class="language-haskell">trim :: [Int] -&gt; [Int]
+trim [] = []
+trim (x:xs)
+  | x &gt; 0     = (x - 1) : trim xs
+  | otherwise = trim xs</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>x &gt; 0</code>. <strong>TRANS</strong> = <code>x - 1</code>.</p>
+      <pre><code class="language-haskell">trim xs = [ x - 1 | x &lt;- xs, x &gt; 0 ]</code></pre>
+      <p>Test: <code>trim [-2, 3, 0, 5]</code> → <code>[2, 4]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 2</span> · Recursion → HOF</div>
+    <p>Rewrite using <code>map</code> and <code>filter</code>:</p>
+    <pre><code class="language-haskell">shouts :: [String] -&gt; [String]
+shouts [] = []
+shouts (s:ss)
+  | length s &gt; 3 = (s ++ "!") : shouts ss
+  | otherwise    = shouts ss</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>length s &gt; 3</code>, as a function <code>\s -&gt; length s &gt; 3</code>.<br>
+      <strong>TRANS</strong> = <code>s ++ "!"</code>, as a function <code>\s -&gt; s ++ "!"</code>.</p>
+      <pre><code class="language-haskell">shouts xs = map (\s -&gt; s ++ "!") (filter (\s -&gt; length s &gt; 3) xs)</code></pre>
+      <p>Test: <code>shouts ["hi", "hello", "yo", "world"]</code> → <code>["hello!", "world!"]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 3</span> · Comprehension → Recursion</div>
+    <p>Rewrite recursively:</p>
+    <pre><code class="language-haskell">upper :: String -&gt; String
+upper s = [ toUpper c | c &lt;- s, isAlpha c ]</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>isAlpha c</code>. <strong>TRANS</strong> = <code>toUpper c</code>.</p>
+      <pre><code class="language-haskell">upper :: String -&gt; String
+upper [] = []
+upper (c:cs)
+  | isAlpha c = toUpper c : upper cs
+  | otherwise = upper cs</code></pre>
+      <p>Test: <code>upper "Hello, World!"</code> → <code>"HELLOWORLD"</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 4</span> · Comprehension → HOF</div>
+    <p>Rewrite using <code>map</code> and <code>filter</code>:</p>
+    <pre><code class="language-haskell">squared :: [Int] -&gt; [Int]
+squared xs = [ x * x | x &lt;- xs, x &gt;= 5 ]</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>x &gt;= 5</code>, as a section <code>(&gt;=5)</code>.<br>
+      <strong>TRANS</strong> = <code>x * x</code>. No clean operator section for this one, use a lambda: <code>\x -&gt; x * x</code>.</p>
+      <pre><code class="language-haskell">squared xs = map (\x -&gt; x * x) (filter (&gt;=5) xs)</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 5</span> · HOF → Comprehension</div>
+    <p>Rewrite as a list comprehension:</p>
+    <pre><code class="language-haskell">result :: [Int] -&gt; [Int]
+result xs = map (+10) (filter odd xs)</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>odd</code>, applied: <code>odd x</code>.<br>
+      <strong>TRANS</strong> = <code>(+10)</code>, applied: <code>x + 10</code>.</p>
+      <pre><code class="language-haskell">result xs = [ x + 10 | x &lt;- xs, odd x ]</code></pre>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 6</span> · Tuple destructuring (comprehension → recursion)</div>
+    <p>Rewrite recursively:</p>
+    <pre><code class="language-haskell">sums :: [(Int, Int)] -&gt; [Int]
+sums ps = [ a + b | (a, b) &lt;- ps, a /= b ]</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>Key: destructure the tuple in the pattern, like the <code>pond1</code> exam problem.</p>
+      <pre><code class="language-haskell">sums :: [(Int, Int)] -&gt; [Int]
+sums [] = []
+sums ((a, b) : rest)
+  | a /= b    = (a + b) : sums rest
+  | otherwise = sums rest</code></pre>
+      <p>Test: <code>sums [(1, 2), (3, 3), (4, 5)]</code> → <code>[3, 9]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 7</span> · Tuple destructuring (recursion → HOF)</div>
+    <p>Rewrite using <code>map</code> and <code>filter</code>:</p>
+    <pre><code class="language-haskell">trios :: [(Int, Int, Int)] -&gt; [Int]
+trios [] = []
+trios ((a, b, c) : rest)
+  | a + b == c = (a * b * c) : trios rest
+  | otherwise  = trios rest</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p><strong>PRED</strong> = <code>\(a,b,c) -&gt; a + b == c</code>.<br>
+      <strong>TRANS</strong> = <code>\(a,b,c) -&gt; a * b * c</code>.</p>
+      <p>Both functions take a tuple and destructure it in the lambda.</p>
+      <pre><code class="language-haskell">trios xs = map (\(a,b,c) -&gt; a * b * c)
+                (filter (\(a,b,c) -&gt; a + b == c) xs)</code></pre>
+      <p>Test: <code>trios [(1,2,3), (2,2,5), (3,4,7)]</code> → <code>[6, 84]</code>.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 8</span> · Only filter, no transform</div>
+    <p>Rewrite as a comprehension and also using HOF:</p>
+    <pre><code class="language-haskell">positives :: [Int] -&gt; [Int]
+positives [] = []
+positives (x:xs)
+  | x &gt; 0     = x : positives xs
+  | otherwise = positives xs</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>TRANS is identity (just <code>x</code>), so it simplifies.</p>
+      <p><strong>Comprehension:</strong></p>
+      <pre><code class="language-haskell">positives xs = [ x | x &lt;- xs, x &gt; 0 ]</code></pre>
+      <p><strong>HOF:</strong></p>
+      <pre><code class="language-haskell">positives xs = filter (&gt;0) xs</code></pre>
+      <p>When there's no transform, the HOF version drops <code>map</code> entirely.</p>
+    </div>
+  </details>
+
+  <div class="problem-box">
+    <div class="problem-label"><span class="accent">Problem 9</span> · Only transform, no filter</div>
+    <p>Rewrite as a comprehension and also using HOF:</p>
+    <pre><code class="language-haskell">lengths :: [String] -&gt; [Int]
+lengths [] = []
+lengths (s:ss) = length s : lengths ss</code></pre>
+  </div>
+  <details class="practice">
+    <summary>Show answer &amp; explanation</summary>
+    <div class="practice-body">
+      <p>No filter (no guard), so PRED is absent.</p>
+      <p><strong>Comprehension:</strong></p>
+      <pre><code class="language-haskell">lengths xs = [ length s | s &lt;- xs ]</code></pre>
+      <p><strong>HOF:</strong></p>
+      <pre><code class="language-haskell">lengths xs = map length xs</code></pre>
+      <p>When there's no filter, drop <code>filter</code> and the condition. Just <code>map</code>.</p>
+    </div>
+  </details>
+
+  <h2 style="margin-top: 72px;">Cheat sheet</h2>
+  <p>Everything from this lesson in one place.</p>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <h4>Recursion skeleton</h4>
+      <pre><code class="language-haskell">f [] = []
+f (x:xs)
+  | PRED x = TRANS x : f xs
+  | otherwise = f xs</code></pre>
+      <p>Filter+transform pattern.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Comprehension</h4>
+      <pre><code class="language-haskell">[ TRANS x
+| x &lt;- xs
+, PRED x ]</code></pre>
+      <p>Output, generator, filter.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>HOF</h4>
+      <pre><code class="language-haskell">map TRANS
+  (filter PRED xs)</code></pre>
+      <p>Filter runs first (inner).</p>
+    </div>
+    <div class="cheat-card">
+      <h4>No filter</h4>
+      <pre><code class="language-haskell">map TRANS xs
+[ TRANS x | x &lt;- xs ]</code></pre>
+      <p>Drop filter and the condition.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>No transform</h4>
+      <pre><code class="language-haskell">filter PRED xs
+[ x | x &lt;- xs, PRED x ]</code></pre>
+      <p>Drop map / output is just x.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Tuple destructure</h4>
+      <pre><code class="language-haskell">[ f a b | (a,b) &lt;- xs ]
+((a,b):rest) = ...
+\(a,b) -&gt; a + b</code></pre>
+      <p>Works in all 3 styles.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Python → Haskell</h4>
+      <pre><code>for  →  |
+in   →  &lt;-
+if   →  ,</code></pre>
+      <p>Comprehension translation.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Operator sections</h4>
+      <pre><code class="language-haskell">(+1) (*2) (&gt;5)
+(10-) (`div` 2)</code></pre>
+      <p>Simple one-arg functions.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Lambda</h4>
+      <pre><code class="language-haskell">\x -&gt; x * x
+\(a,b) -&gt; a + b</code></pre>
+      <p>For anything more complex.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Two questions</h4>
+      <pre><code>1. What's the filter?
+2. What's the transform?</code></pre>
+      <p>Every P.3 problem.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Finding PRED</h4>
+      <pre><code>Recursion: the guard
+Comp: after the comma
+HOF: passed to filter</code></pre>
+      <p>Where to look.</p>
+    </div>
+    <div class="cheat-card">
+      <h4>Finding TRANS</h4>
+      <pre><code>Recursion: before the :
+Comp: before the |
+HOF: passed to map</code></pre>
+      <p>Where to look.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top: 40px;">
+    <div class="callout-header">You've got this when you can...</div>
+    <ul style="margin-bottom: 0;">
+      <li>Look at any list-processing function and identify PRED and TRANS in under 30 seconds.</li>
+      <li>Convert recursion to comprehension to HOF without looking things up.</li>
+      <li>Handle tuple destructuring in all 3 styles (<code>(a,b)</code> in pattern, generator, or lambda).</li>
+      <li>Recognize "no filter" and "no transform" special cases and simplify.</li>
+      <li>Reproduce <code>creek1</code>, <code>creek2</code>, and <code>pond1</code> from memory.</li>
+      <li>Explain to your student why <code>map f (filter p xs)</code> filters first, not maps first.</li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 32px; font-size: 16px; color: var(--text-muted);">Next: <strong style="color: var(--accent);">Lesson 4 · Tracing Trees (T.1)</strong>. We shift from lists to trees and learn to trace recursive functions by hand, step-by-step. Different data structure, same pattern-matching discipline.</p>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="6"><span class="label">Previous</span><span class="title">Exam walkthrough</span></button>
+    <button class="nav-btn next" disabled><span class="label">Next</span><span class="title">Lesson 4 · coming up</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = (n / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>
