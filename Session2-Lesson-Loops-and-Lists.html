@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 2: Loops & Lists</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--accent2:#fb923c;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code,.code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}
+.val{color:var(--green)}
+.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.ref-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.ref-table th{text-align:left;padding:8px 12px;background:rgba(249,115,22,0.08);color:var(--accent);font-weight:700;border-bottom:1px solid var(--border)}
+.ref-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top}
+.ref-table td:first-child{font-family:'Fira Code',monospace;color:var(--accent2);white-space:nowrap}
+.ref-table td:last-child{color:var(--dim)}
+.tip{padding:14px 16px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(147,197,253,0.85)}
+.tip::before{content:'💡 ';font-size:14px}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ ';font-size:14px}
+.check-section{margin:20px 0;padding:20px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:12px}
+.check-section h3{color:var(--purple);margin-top:0}
+.q{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0}
+.q-prompt{font-size:14px;color:var(--text);margin-bottom:10px;white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn:hover{background:rgba(168,85,247,0.25)}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.answer{display:none;margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:8px;font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.answer.show{display:block}
+.review-section{margin-top:40px;padding:24px;background:rgba(249,115,22,0.04);border:2px solid rgba(249,115,22,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.trace-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;font-family:'Fira Code',monospace}
+.trace-table th{text-align:center;padding:6px 10px;background:rgba(249,115,22,0.08);color:var(--accent);font-weight:700;border:1px solid var(--border)}
+.trace-table td{text-align:center;padding:6px 10px;border:1px solid rgba(255,255,255,0.04);color:var(--dim)}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 2 / Big Idea 3 Part 2</div>
+<h1>Loops & Lists</h1>
+<p>Iteration and data collections. If she can trace a loop over a list, she can handle most of the exam. This is the highest-value skill to master.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this lesson:</strong>
+<a href="#repeat">1. REPEAT n TIMES</a>
+<a href="#until">2. REPEAT UNTIL</a>
+<a href="#lists">3. Lists (1-Based Indexing!)</a>
+<a href="#listops">4. List Operations: APPEND, INSERT, REMOVE</a>
+<a href="#foreach">5. FOR EACH (Loops + Lists)</a>
+<a href="#patterns">6. Common Patterns: Sum, Count, Min/Max, Filter</a>
+<a href="#review">7. End of Lesson Review (18 Questions)</a>
+</div>
+
+<!-- ==================== SECTION 1: REPEAT ==================== -->
+<h2 id="repeat">1. REPEAT n TIMES</h2>
+<p>The simplest loop. It runs the code block a <strong>fixed number of times</strong>. You don't get a counter variable, it just repeats.</p>
+
+<pre><span class="key">REPEAT</span> <span class="val">3</span> <span class="key">TIMES</span>
+{
+    DISPLAY(<span class="val">"hello"</span>)
+}</pre>
+<p>This prints "hello" three times. That's it.</p>
+
+<div class="concept">
+<h3>Using REPEAT with a Counter</h3>
+<p>REPEAT doesn't give you an automatic counter, but you can make your own:</p>
+<pre><span class="key">count</span> ← <span class="val">0</span>
+<span class="key">REPEAT</span> <span class="val">5</span> <span class="key">TIMES</span>
+{
+    count ← count + <span class="val">1</span>
+    DISPLAY(count)
+}
+<span class="cmt">← Displays: 1, 2, 3, 4, 5</span></pre>
+</div>
+
+<div class="concept">
+<h3>Tracing a REPEAT Loop</h3>
+<p>The exam will give you a loop and ask what it outputs. Trace it step by step:</p>
+<pre><span class="key">x</span> ← <span class="val">2</span>
+<span class="key">REPEAT</span> <span class="val">4</span> <span class="key">TIMES</span>
+{
+    x ← x * <span class="val">2</span>
+}
+DISPLAY(x)</pre>
+
+<table class="trace-table">
+<tr><th>Iteration</th><th>x before</th><th>x after (x*2)</th></tr>
+<tr><td>1</td><td>2</td><td>4</td></tr>
+<tr><td>2</td><td>4</td><td>8</td></tr>
+<tr><td>3</td><td>8</td><td>16</td></tr>
+<tr><td>4</td><td>16</td><td>32</td></tr>
+</table>
+<p style="color:var(--green)">DISPLAY → 32</p>
+</div>
+
+<div class="tip"><strong>Trace tables are your best friend.</strong> When the exam gives you a loop, draw a quick table with columns for each variable and a row for each iteration. This prevents mistakes and shows your work.</div>
+
+<div class="check-section">
+<h3>Quick Check: REPEAT</h3>
+<div class="q">
+<div class="q-prompt">What does this display?
+
+sum ← 0
+REPEAT 4 TIMES
+{
+    sum ← sum + 3
+}
+DISPLAY(sum)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Iteration 1: sum = 0+3 = 3
+Iteration 2: sum = 3+3 = 6
+Iteration 3: sum = 6+3 = 9
+Iteration 4: sum = 9+3 = 12
+
+DISPLAY → 12
+(Adding 3 four times = 3*4 = 12)</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+x ← 1
+REPEAT 5 TIMES
+{
+    x ← x + x
+}
+DISPLAY(x)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">x doubles each time:
+1 → 2 → 4 → 8 → 16 → 32
+
+DISPLAY → 32
+
+(x + x is the same as x * 2)</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+result ← ""
+REPEAT 3 TIMES
+{
+    result ← result + "ab"
+}
+DISPLAY(result)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">"" → "ab" → "abab" → "ababab"
+
+DISPLAY → "ababab"</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 2: REPEAT UNTIL ==================== -->
+<h2 id="until">2. REPEAT UNTIL</h2>
+<p>This loop keeps running <strong>until the condition becomes true</strong>. It checks the condition BEFORE each iteration.</p>
+
+<pre><span class="key">x</span> ← <span class="val">1</span>
+<span class="key">REPEAT UNTIL</span> (x > <span class="val">10</span>)
+{
+    x ← x + <span class="val">3</span>
+}
+DISPLAY(x)</pre>
+
+<table class="trace-table">
+<tr><th>Check</th><th>x > 10?</th><th>Action</th><th>x after</th></tr>
+<tr><td>1</td><td>1 > 10? No</td><td>x = 1+3</td><td>4</td></tr>
+<tr><td>2</td><td>4 > 10? No</td><td>x = 4+3</td><td>7</td></tr>
+<tr><td>3</td><td>7 > 10? No</td><td>x = 7+3</td><td>10</td></tr>
+<tr><td>4</td><td>10 > 10? No</td><td>x = 10+3</td><td>13</td></tr>
+<tr><td>5</td><td>13 > 10? Yes</td><td>STOP</td><td>13</td></tr>
+</table>
+<p style="color:var(--green)">DISPLAY → 13</p>
+
+<div class="trap"><strong>REPEAT UNTIL stops BEFORE executing when the condition is true.</strong> It checks first, then decides whether to run the body. So x ends at 13, not 10, because 10 > 10 is false (10 is NOT greater than 10), so it runs one more time.</div>
+
+<div class="trap"><strong>Infinite loops.</strong> If the condition can NEVER become true, the loop runs forever. Example: if you REPEAT UNTIL (x > 10) but never change x inside the loop, it never stops.</div>
+
+<div class="check-section">
+<h3>Quick Check: REPEAT UNTIL</h3>
+<div class="q">
+<div class="q-prompt">What does this display?
+
+n ← 100
+REPEAT UNTIL (n < 10)
+{
+    n ← n / 2
+}
+DISPLAY(n)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">100 < 10? No → n = 50
+50 < 10? No → n = 25
+25 < 10? No → n = 12.5
+12.5 < 10? No → n = 6.25
+6.25 < 10? Yes → STOP
+
+DISPLAY → 6.25</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">How many times does the body run?
+
+x ← 5
+REPEAT UNTIL (x ≤ 0)
+{
+    x ← x - 2
+}</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">x=5: 5≤0? No → x=3
+x=3: 3≤0? No → x=1
+x=1: 1≤0? No → x=-1
+x=-1: -1≤0? Yes → STOP
+
+Body runs 3 times. x ends at -1.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3: LISTS ==================== -->
+<h2 id="lists">3. Lists (1-Based Indexing!)</h2>
+<p>A list is an <strong>ordered collection of values</strong>. Think of it as a numbered row of boxes.</p>
+
+<pre><span class="key">colors</span> ← [<span class="val">"red"</span>, <span class="val">"blue"</span>, <span class="val">"green"</span>]</pre>
+
+<div class="trap"><strong>AP pseudocode uses 1-BASED indexing.</strong> The first element is at index 1, not 0. This is different from Python, Java, and most real programming languages. If she knows Python, this WILL trip her up.
+
+colors[1] = "red"
+colors[2] = "blue"
+colors[3] = "green"
+
+There is NO colors[0].</div>
+
+<div class="concept">
+<h3>Accessing Elements</h3>
+<pre><span class="key">nums</span> ← [<span class="val">10</span>, <span class="val">20</span>, <span class="val">30</span>, <span class="val">40</span>]
+
+DISPLAY(nums[<span class="val">1</span>])    <span class="cmt">← 10 (first element)</span>
+DISPLAY(nums[<span class="val">3</span>])    <span class="cmt">← 30 (third element)</span>
+DISPLAY(LENGTH(nums)) <span class="cmt">← 4 (four elements in the list)</span></pre>
+</div>
+
+<div class="concept">
+<h3>Changing Elements</h3>
+<pre><span class="key">nums</span> ← [<span class="val">10</span>, <span class="val">20</span>, <span class="val">30</span>]
+nums[<span class="val">2</span>] ← <span class="val">99</span>
+<span class="cmt">← nums is now [10, 99, 30]</span></pre>
+<p>You can overwrite any element by assigning to its index.</p>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Lists Basics</h3>
+<div class="q">
+<div class="q-prompt">list ← ["a", "b", "c", "d", "e"]
+
+What is list[2]?
+What is list[5]?
+What is LENGTH(list)?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">list[2] = "b"  (1-based: 1=a, 2=b)
+list[5] = "e"  (last element)
+LENGTH(list) = 5
+
+Remember: index 1 is the first element!</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">nums ← [5, 10, 15, 20]
+nums[3] ← nums[1] + nums[2]
+DISPLAY(nums)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">nums[1] = 5, nums[2] = 10
+nums[3] ← 5 + 10 = 15... wait, it was already 15!
+Actually: nums[3] ← 5 + 10 = 15
+
+nums = [5, 10, 15, 20] (unchanged in this case)
+
+But if the values were different, the overwrite
+would change the list. The key concept is that
+the RIGHT side evaluates first, THEN assigns.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4: LIST OPERATIONS ==================== -->
+<h2 id="listops">4. List Operations: APPEND, INSERT, REMOVE</h2>
+
+<div class="concept">
+<h3>Reference Table</h3>
+<table class="ref-table">
+<tr><th>Operation</th><th>What it does</th></tr>
+<tr><td>APPEND(list, value)</td><td>Adds value to the END of the list. List grows by 1.</td></tr>
+<tr><td>INSERT(list, i, value)</td><td>Inserts value at index i. Everything at i and after shifts RIGHT by 1. List grows by 1.</td></tr>
+<tr><td>REMOVE(list, i)</td><td>Removes the element at index i. Everything after shifts LEFT by 1. List shrinks by 1.</td></tr>
+<tr><td>LENGTH(list)</td><td>Returns how many elements are in the list.</td></tr>
+<tr><td>list[i]</td><td>Access element at index i (1-based).</td></tr>
+</table>
+</div>
+
+<div class="concept">
+<h3>APPEND: Add to End</h3>
+<pre><span class="key">list</span> ← [<span class="val">1</span>, <span class="val">2</span>, <span class="val">3</span>]
+APPEND(list, <span class="val">4</span>)
+<span class="cmt">← list is now [1, 2, 3, 4]</span>
+APPEND(list, <span class="val">5</span>)
+<span class="cmt">← list is now [1, 2, 3, 4, 5]</span></pre>
+</div>
+
+<div class="concept">
+<h3>INSERT: Add at Position (Things Shift Right)</h3>
+<pre><span class="key">list</span> ← [<span class="val">"a"</span>, <span class="val">"b"</span>, <span class="val">"c"</span>]
+INSERT(list, <span class="val">2</span>, <span class="val">"X"</span>)
+<span class="cmt">← list is now ["a", "X", "b", "c"]</span>
+<span class="cmt">← "X" went INTO index 2</span>
+<span class="cmt">← "b" shifted from index 2 to index 3</span>
+<span class="cmt">← "c" shifted from index 3 to index 4</span></pre>
+</div>
+
+<div class="concept">
+<h3>REMOVE: Delete at Position (Things Shift Left)</h3>
+<pre><span class="key">list</span> ← [<span class="val">"a"</span>, <span class="val">"b"</span>, <span class="val">"c"</span>, <span class="val">"d"</span>]
+REMOVE(list, <span class="val">2</span>)
+<span class="cmt">← Removes "b" (index 2)</span>
+<span class="cmt">← list is now ["a", "c", "d"]</span>
+<span class="cmt">← "c" shifted from index 3 to index 2</span>
+<span class="cmt">← "d" shifted from index 4 to index 3</span></pre>
+</div>
+
+<div class="trap"><strong>The index shift after REMOVE is the #1 list trap on the exam.</strong> After you remove an element, every element after it moves down by 1 index. If you're removing inside a loop, the indices change mid-loop and you can accidentally skip elements or go out of bounds.</div>
+
+<div class="check-section">
+<h3>Quick Check: List Operations</h3>
+<div class="q">
+<div class="q-prompt">list ← [10, 20, 30, 40, 50]
+REMOVE(list, 3)
+DISPLAY(list)
+DISPLAY(list[3])</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Remove index 3 (which is 30).
+list = [10, 20, 40, 50]
+
+list[3] is now 40 (it shifted left from index 4).
+
+DISPLAY list → [10, 20, 40, 50]
+DISPLAY list[3] → 40</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">list ← ["x", "y", "z"]
+INSERT(list, 1, "w")
+DISPLAY(list)
+DISPLAY(LENGTH(list))</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">INSERT at index 1 pushes everything right.
+list = ["w", "x", "y", "z"]
+LENGTH = 4
+
+"w" is now at index 1, "x" moved to 2, etc.</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">list ← [1, 2, 3]
+APPEND(list, 4)
+REMOVE(list, 1)
+INSERT(list, 2, 99)
+DISPLAY(list)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Start: [1, 2, 3]
+APPEND 4: [1, 2, 3, 4]
+REMOVE index 1: [2, 3, 4]
+INSERT 99 at index 2: [2, 99, 3, 4]
+
+DISPLAY → [2, 99, 3, 4]</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5: FOR EACH ==================== -->
+<h2 id="foreach">5. FOR EACH (Loops + Lists)</h2>
+<p>This is how you process every element in a list. The loop variable takes on each value in the list, one at a time.</p>
+
+<pre><span class="key">animals</span> ← [<span class="val">"cat"</span>, <span class="val">"dog"</span>, <span class="val">"fish"</span>]
+
+<span class="key">FOR EACH</span> animal <span class="key">IN</span> animals
+{
+    DISPLAY(animal)
+}
+<span class="cmt">← Displays: "cat", "dog", "fish" (one per iteration)</span></pre>
+
+<div class="concept">
+<h3>How FOR EACH Works</h3>
+<p>The variable <code>animal</code> is NOT an index. It's the <strong>actual value</strong> from the list. On each iteration, it becomes the next element:</p>
+<table class="trace-table">
+<tr><th>Iteration</th><th>animal =</th><th>Action</th></tr>
+<tr><td>1</td><td>"cat"</td><td>DISPLAY "cat"</td></tr>
+<tr><td>2</td><td>"dog"</td><td>DISPLAY "dog"</td></tr>
+<tr><td>3</td><td>"fish"</td><td>DISPLAY "fish"</td></tr>
+</table>
+</div>
+
+<div class="tip"><strong>FOR EACH gives you the value, not the index.</strong> You can't use it to change the list (like setting list[i] ← something) because you don't have the index. Use it when you need to READ every element. Use index-based loops when you need to MODIFY elements.</div>
+
+<div class="concept">
+<h3>Index-Based Loop (Alternative)</h3>
+<p>If you need the index (to modify elements or track position), use a counter loop:</p>
+<pre><span class="key">i</span> ← <span class="val">1</span>
+<span class="key">REPEAT UNTIL</span> (i > LENGTH(list))
+{
+    DISPLAY(list[i])
+    i ← i + <span class="val">1</span>
+}</pre>
+<p>This does the same as FOR EACH but gives you control over the index.</p>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: FOR EACH</h3>
+<div class="q">
+<div class="q-prompt">What does this display?
+
+nums ← [2, 4, 6]
+total ← 0
+FOR EACH n IN nums
+{
+    total ← total + n
+}
+DISPLAY(total)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">n=2: total = 0+2 = 2
+n=4: total = 2+4 = 6
+n=6: total = 6+6 = 12
+
+DISPLAY → 12 (sum of all elements)</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+words ← ["AP", "CS", "P"]
+result ← ""
+FOR EACH w IN words
+{
+    result ← result + w + "-"
+}
+DISPLAY(result)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">"" + "AP" + "-" = "AP-"
+"AP-" + "CS" + "-" = "AP-CS-"
+"AP-CS-" + "P" + "-" = "AP-CS-P-"
+
+DISPLAY → "AP-CS-P-"
+
+(Note the trailing dash at the end)</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 6: PATTERNS ==================== -->
+<h2 id="patterns">6. Common Patterns</h2>
+<p>These patterns show up on literally every AP CSP exam. Learn them cold.</p>
+
+<div class="concept">
+<h3>Pattern 1: Sum All Elements</h3>
+<pre><span class="key">sum</span> ← <span class="val">0</span>
+FOR EACH num IN list
+{
+    sum ← sum + num
+}
+<span class="cmt">← sum now holds the total of all elements</span></pre>
+<p>Initialize to 0 before the loop. Add each element inside the loop.</p>
+</div>
+
+<div class="concept">
+<h3>Pattern 2: Count Elements That Match</h3>
+<pre><span class="key">count</span> ← <span class="val">0</span>
+FOR EACH num IN list
+{
+    IF (num > <span class="val">50</span>)
+    {
+        count ← count + <span class="val">1</span>
+    }
+}
+<span class="cmt">← count = how many elements are greater than 50</span></pre>
+</div>
+
+<div class="concept">
+<h3>Pattern 3: Find the Maximum</h3>
+<pre><span class="key">max</span> ← list[<span class="val">1</span>]
+FOR EACH num IN list
+{
+    IF (num > max)
+    {
+        max ← num
+    }
+}
+<span class="cmt">← max now holds the largest value in the list</span></pre>
+<p>Start max at the first element (not 0, because the list could have negative numbers). Update max whenever you find something bigger.</p>
+</div>
+
+<div class="concept">
+<h3>Pattern 4: Find Minimum</h3>
+<pre><span class="key">min</span> ← list[<span class="val">1</span>]
+FOR EACH num IN list
+{
+    IF (num < min)
+    {
+        min ← num
+    }
+}</pre>
+<p>Same as max but flip the comparison.</p>
+</div>
+
+<div class="concept">
+<h3>Pattern 5: Filter into a New List</h3>
+<pre><span class="key">result</span> ← []
+FOR EACH num IN list
+{
+    IF (num MOD 2 = 0)
+    {
+        APPEND(result, num)
+    }
+}
+<span class="cmt">← result contains only the even numbers from list</span></pre>
+<p>Start with an empty list. APPEND only the elements that pass the condition.</p>
+</div>
+
+<div class="trap"><strong>Don't initialize max/min to 0.</strong> If all numbers in the list are negative, max would incorrectly stay at 0. Always initialize to <code>list[1]</code> (the first actual element).</div>
+
+<div class="check-section">
+<h3>Quick Check: Patterns</h3>
+<div class="q">
+<div class="q-prompt">list ← [3, 7, 2, 9, 1]
+What is the result of the find-max pattern?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">max = list[1] = 3
+3: 3>3? No
+7: 7>3? Yes, max=7
+2: 2>7? No
+9: 9>7? Yes, max=9
+1: 1>9? No
+
+max = 9</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">list ← [4, 11, 8, 3, 15, 6]
+count ← 0
+FOR EACH n IN list
+{
+    IF (n > 5)
+    { count ← count + 1 }
+}
+DISPLAY(count)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">4>5? No. 11>5? Yes(1). 8>5? Yes(2).
+3>5? No. 15>5? Yes(3). 6>5? Yes(4).
+
+DISPLAY → 4 (four elements greater than 5)</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">list ← [1, 2, 3, 4, 5, 6]
+evens ← []
+FOR EACH n IN list
+{
+    IF (n MOD 2 = 0)
+    { APPEND(evens, n) }
+}
+DISPLAY(evens)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">1: odd, skip. 2: even, append. 3: skip.
+4: even, append. 5: skip. 6: even, append.
+
+evens = [2, 4, 6]</div>
+</div>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div class="review-section" id="review">
+<h2>End of Lesson Review</h2>
+<p style="margin-bottom:20px">Mixed questions from everything today. No labels.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+function reveal(btn){
+    const a=btn.nextElementSibling;
+    const s=a.classList.contains('show');
+    a.classList.toggle('show');
+    btn.textContent=s?'Show Answer':'Hide';
+    btn.classList.toggle('on',!s);
+}
+window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';
+});
+
+const RQS=[
+{q:"What does this display?\n\nx ← 3\nREPEAT 4 TIMES\n{\n    x ← x + 2\n}\nDISPLAY(x)",a:2,o:["A. 8","B. 3","C. 11","D. 14"],e:"x: 3→5→7→9→11. Add 2 four times."},
+{q:"list ← [5, 10, 15, 20, 25]\nDISPLAY(list[4])",a:1,o:["A. 15","B. 20","C. 25","D. 10"],e:"1-based: index 4 = 20. (1=5, 2=10, 3=15, 4=20)"},
+{q:"list ← [\"a\",\"b\",\"c\"]\nREMOVE(list, 1)\nDISPLAY(list[1])",a:1,o:["A. \"a\"","B. \"b\"","C. \"c\"","D. error"],e:"Remove index 1 (\"a\"). List becomes [\"b\",\"c\"]. New index 1 = \"b\"."},
+{q:"What does this display?\n\nn ← 64\ncount ← 0\nREPEAT UNTIL (n ≤ 1)\n{\n    n ← n / 2\n    count ← count + 1\n}\nDISPLAY(count)",a:2,o:["A. 5","B. 7","C. 6","D. 64"],e:"64→32→16→8→4→2→1. When n=1, 1≤1 is true, stop. 6 divisions."},
+{q:"nums ← [3, 1, 4, 1, 5]\nsum ← 0\nFOR EACH n IN nums\n{ sum ← sum + n }\nDISPLAY(sum)",a:0,o:["A. 14","B. 13","C. 15","D. 5"],e:"3+1+4+1+5 = 14."},
+{q:"list ← [10, 20, 30]\nINSERT(list, 2, 99)\nDISPLAY(list[3])",a:1,o:["A. 99","B. 20","C. 30","D. 10"],e:"After INSERT at 2: [10, 99, 20, 30]. Index 3 = 20 (shifted right from index 2)."},
+{q:"What does this build?\n\nresult ← []\nFOR EACH n IN [1,2,3,4,5]\n{\n    IF (n MOD 2 = 1)\n    { APPEND(result, n) }\n}\nDISPLAY(result)",a:2,o:["A. [2, 4]","B. [1, 2, 3, 4, 5]","C. [1, 3, 5]","D. []"],e:"MOD 2 = 1 means odd. 1,3,5 are odd."},
+{q:"x ← 100\nREPEAT UNTIL (x MOD 7 = 0)\n{\n    x ← x - 1\n}\nDISPLAY(x)",a:3,o:["A. 100","B. 93","C. 96","D. 98"],e:"100 MOD 7=2 (no). 99 MOD 7=1 (no). 98 MOD 7=0 (yes, stop). x=98."},
+{q:"list ← [1, 2, 3, 4, 5]\nREMOVE(list, 2)\nREMOVE(list, 2)\nDISPLAY(list)",a:1,o:["A. [1, 3, 4, 5]","B. [1, 4, 5]","C. [1, 3, 5]","D. [1, 2, 5]"],e:"Start: [1,2,3,4,5]. Remove index 2 (=2): [1,3,4,5]. Remove index 2 again (now =3): [1,4,5]."},
+{q:"What does max equal?\n\nlist ← [-5, -2, -8, -1]\nmax ← list[1]\nFOR EACH n IN list\n{\n    IF (n > max) { max ← n }\n}",a:2,o:["A. -5","B. -8","C. -1","D. 0"],e:"max starts at -5. -5>-5? No. -2>-5? Yes, max=-2. -8>-2? No. -1>-2? Yes, max=-1. If max started at 0, it would stay 0 (wrong!)."},
+{q:"How many times does the body run?\n\nx ← 1\nREPEAT UNTIL (x > 100)\n{ x ← x * 3 }",a:3,o:["A. 33","B. 4","C. 100","D. 5"],e:"x: 1→3→9→27→81→243. At 243, 243>100 is true, stop. 5 iterations."},
+{q:"list ← [\"A\",\"B\",\"C\"]\nAPPEND(list, \"D\")\nINSERT(list, 1, \"Z\")\nDISPLAY(LENGTH(list))\nDISPLAY(list[1])",a:0,o:["A. 5, \"Z\"","B. 4, \"Z\"","C. 5, \"A\"","D. 4, \"A\""],e:"Start: [A,B,C]. Append D: [A,B,C,D]. Insert Z at 1: [Z,A,B,C,D]. Length=5, index 1=\"Z\"."},
+{q:"What does this display?\n\nresult ← \"\"\nlist ← [1, 2, 3]\nFOR EACH n IN list\n{\n    result ← result + \"*\"\n}\nDISPLAY(result)",a:1,o:["A. \"*\"","B. \"***\"","C. \"123\"","D. \"*1*2*3\""],e:"Loop runs 3 times (once per element). Each time adds one \"*\". Result: \"***\". The value n is never used, only the number of iterations matters."},
+{q:"list ← [10, 20, 30, 40]\ni ← 1\nREPEAT UNTIL (i > LENGTH(list))\n{\n    list[i] ← list[i] * 2\n    i ← i + 1\n}\nDISPLAY(list)",a:2,o:["A. [10,20,30,40]","B. [20,20,30,40]","C. [20,40,60,80]","D. [10,40,60,80]"],e:"Every element doubled: 10→20, 20→40, 30→60, 40→80."},
+{q:"list ← [5, 3, 8, 1, 9]\nWhat value does the find-min pattern return?",a:0,o:["A. 1","B. 3","C. 5","D. 9"],e:"min=5. 3<5→min=3. 8<3? No. 1<3→min=1. 9<1? No. min=1."},
+{q:"What does count equal?\n\nlist ← [10, 15, 20, 25, 30]\ncount ← 0\nFOR EACH n IN list\n{\n    IF (n MOD 10 = 0)\n    { count ← count + 1 }\n}",a:1,o:["A. 2","B. 3","C. 5","D. 0"],e:"10 MOD 10=0(+1). 15 MOD 10=5. 20 MOD 10=0(+1). 25 MOD 10=5. 30 MOD 10=0(+1). count=3."},
+{q:"list ← [1, 2, 3]\nREPEAT 3 TIMES\n{\n    APPEND(list, LENGTH(list))\n}\nDISPLAY(list)",a:3,o:["A. [1,2,3,3,3,3]","B. [1,2,3,4,5,6]","C. [1,2,3,3,4,5]","D. [1,2,3,3,4,5]"],e:"Start length=3, append 3→[1,2,3,3]. Length=4, append 4→[1,2,3,3,4]. Length=5, append 5→[1,2,3,3,4,5]."},
+{q:"What does this display?\n\na ← [1, 2, 3]\nb ← a\nAPPEND(b, 4)\nDISPLAY(LENGTH(a))",a:1,o:["A. 3","B. 4","C. error","D. depends"],e:"In AP pseudocode, b ← a creates a COPY. Modifying b does not affect a. LENGTH(a) is still 3. (This can vary by language but AP pseudocode treats it as a copy.)"}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel="">
+    <div class="rq-num">Question ${i+1} of ${RQS.length}</div>
+    <div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{
+        h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;
+    });
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button>
+    <div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+
+function selOpt(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function chkQ(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');btn.textContent='Try Again';btn.onclick=function(){rsQ(qid,ans);};}
+function rsQ(qid,ans){const c=document.getElementById(qid);c.dataset.rev='0';c.dataset.sel='';c.querySelectorAll('.opt').forEach(o=>{o.classList.remove('locked','sel','right','wrong');});c.querySelector('.expl').classList.remove('show');const b=c.querySelector('.chk');b.textContent='Check Answer';b.classList.remove('rdy');b.onclick=function(){chkQ(b,qid,ans);};}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
