@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1 Homework: Pseudocode Foundations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+.mono{font-family:'Fira Code',monospace}
+h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0;transition:border-color 0.3s}
+.qcard.was-right{border-color:rgba(34,197,94,0.3)}
+.qcard.was-wrong{border-color:rgba(239,68,68,0.3)}
+.qnum{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:5px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:10px 14px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.opt.faded{opacity:0.4}
+.expl{margin-top:12px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.6;display:none}
+.expl.show{display:block}
+.wrong-label{margin-top:8px;padding:6px 12px;background:rgba(239,68,68,0.08);border-radius:6px;font-size:12px;font-weight:600;color:var(--red);display:none}
+.wrong-label.show{display:inline-block}
+.submit-area{text-align:center;margin:30px 0;padding:30px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.submit-btn{background:rgba(249,115,22,0.2);border:2px solid rgba(249,115,22,0.4);color:var(--accent);padding:14px 40px;border-radius:10px;cursor:pointer;font-size:18px;font-weight:800;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.submit-btn:hover{background:rgba(249,115,22,0.3)}
+.submit-btn:disabled{opacity:0.3;cursor:default}
+.unanswered-msg{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.results{display:none;text-align:center;margin:30px 0;padding:30px;border-radius:14px}
+.results.show{display:block}
+.results h2{font-size:48px;font-weight:800;margin-bottom:4px}
+.results .pct{font-size:20px;font-weight:700;margin-bottom:16px}
+.results .msg{font-size:14px;color:var(--dim);margin-bottom:16px;line-height:1.6}
+.results .ss-msg{font-size:13px;color:rgba(251,146,60,0.8);padding:14px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.12);border-radius:10px;line-height:1.6}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.info{padding:14px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.12);border-radius:10px;margin-bottom:20px;font-size:13px;color:rgba(192,132,252,0.8);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+
+<div class="tag">Session 1 / Homework</div>
+<h1>20 Questions: Pseudocode Foundations</h1>
+<p class="sub">Complete all 20 questions, then hit Submit. Take your time, these are meant to challenge you. Screenshot your results and send them to your tutor.</p>
+
+<div class="info">Answer ALL 20 questions before submitting. You can change your answers before you submit. Once submitted, you'll see your score and which ones you got wrong with explanations.</div>
+
+<div id="qs"></div>
+
+<div class="submit-area" id="submit-area">
+<button class="submit-btn" id="submit-btn" onclick="submitAll()">Submit Answers</button>
+<div class="unanswered-msg" id="ua-msg"></div>
+</div>
+
+<div class="results" id="results">
+<h2 id="res-score"></h2>
+<div class="pct" id="res-pct"></div>
+<div class="msg" id="res-msg"></div>
+<div class="ss-msg">📱 Screenshot this page and send it to your tutor so they can see your score and which questions you missed. Scroll down to review any wrong answers.</div>
+</div>
+
+<script>
+const QS=[
+{q:"What does this display?\n\na ← 7\nb ← a * 2\na ← b - a\nb ← a + b\nDISPLAY(a)\nDISPLAY(b)",o:["A. 7, 21","B. 7, 14","C. 14, 7","D. 7, 21"],a:0,e:"b = 7*2 = 14. a = 14-7 = 7. b = 7+14 = 21. DISPLAY 7 then 21."},
+{q:"What is 247 MOD 100?",o:["A. 2.47","B. 47","C. 247","D. 100"],a:1,e:"100 goes into 247 twice (200), remainder 47. MOD 100 extracts the last two digits."},
+{q:"What does this display?\n\nx ← 5\ny ← 3\nz ← x MOD y + y MOD x\nDISPLAY(z)",o:["A. 5","B. 2","C. 8","D. 5"],a:0,e:"5 MOD 3 = 2. 3 MOD 5 = 3. z = 2 + 3 = 5."},
+{q:"Evaluate:\n\nNOT ((6 > 4) OR (3 > 8)) AND true",o:["A. true","B. false","C. error","D. NOT"],a:1,e:"6>4=true. 3>8=false. true OR false=true. NOT true=false. false AND true=false."},
+{q:"What does \"20\" + \"26\" display?",o:["A. 46","B. \"2026\"","C. \"46\"","D. error"],a:1,e:"Both are strings in quotes. + concatenates: \"20\"+\"26\" = \"2026\". Not math."},
+{q:"x = 14. How many of these are true?\n\n(x MOD 7 = 0)\n(x MOD 2 = 0)\n(x > 15)\nNOT (x < 10)",o:["A. 1","B. 2","C. 3","D. 4"],a:2,e:"14 MOD 7=0: true. 14 MOD 2=0: true. 14>15: false. NOT(14<10)=NOT false=true. Three true."},
+{q:"What does this display?\n\na ← 10\nb ← 20\ntemp ← a\na ← b MOD 7\nb ← temp * 3\nDISPLAY(a)\nDISPLAY(b)",o:["A. 6, 30","B. 20, 10","C. 10, 20","D. 3, 30"],a:0,e:"temp=10. a = 20 MOD 7 = 6. b = 10*3 = 30. DISPLAY 6, 30."},
+{q:"Which expression is true ONLY when\nx is a positive odd number?",o:["A. (x > 0) AND (x MOD 2 = 1)","B. (x > 0) OR (x MOD 2 = 1)","C. (x MOD 2 ≠ 0)","D. (x > 0) AND (x MOD 2 = 0)"],a:0,e:"Must be positive (x>0) AND odd (MOD 2=1). B would include negatives. C includes -1, -3 etc. D checks even."},
+{q:"What does this display? score = 78\n\nIF (score ≥ 90)\n{ DISPLAY(\"A\") }\nELSE {\n  IF (score ≥ 80)\n  { DISPLAY(\"B\") }\n  ELSE {\n    IF (score ≥ 70)\n    { DISPLAY(\"C\") }\n    ELSE\n    { DISPLAY(\"F\") }\n  }\n}\nDISPLAY(\" earned\")",o:["A. C","B. C earned","C. F","D. B earned"],a:1,e:"78≥90? No. 78≥80? No. 78≥70? Yes, DISPLAY \"C\". Then the last DISPLAY always runs (it's outside the chain): DISPLAY \" earned\". Output: C earned."},
+{q:"What does this display?\n\nx ← 0\nIF (x = 0)\n{ x ← x + 3 }\nIF (x = 3)\n{ x ← x + 3 }\nIF (x = 6)\n{ x ← x + 3 }\nDISPLAY(x)",o:["A. 3","B. 6","C. 9","D. 0"],a:2,e:"x=0. 0=0? Yes, x=3. 3=3? Yes, x=6. 6=6? Yes, x=9. Cascading separate IFs. Each triggers the next."},
+{q:"Simplify: NOT (a AND NOT b)",o:["A. (NOT a) OR b","B. (NOT a) AND b","C. a OR (NOT b)","D. (NOT a) OR (NOT b)"],a:0,e:"De Morgan's: NOT(a AND NOT b) = (NOT a) OR (NOT(NOT b)) = (NOT a) OR b."},
+{q:"What does result equal?\n\nresult ← \"\"\nIF (true)\n{ result ← result + \"1\" }\nIF (false)\n{ result ← result + \"2\" }\nIF (NOT false)\n{ result ← result + \"3\" }\nIF (true AND false)\n{ result ← result + \"4\" }",o:["A. \"1234\"","B. \"13\"","C. \"1\"","D. \"134\""],a:1,e:"IF true: add 1. IF false: skip. IF NOT false (=true): add 3. IF true AND false (=false): skip. Result: \"13\"."},
+{q:"What does this display?\n\nn ← 37\ntens ← n / 10\nones ← n MOD 10\nDISPLAY(ones)\nDISPLAY(tens)",o:["A. 3, 7","B. 7, 3.7","C. 7, 3","D. 37, 0"],a:1,e:"37/10 = 3.7 (AP pseudocode gives decimals). 37 MOD 10 = 7. DISPLAY: 7, then 3.7."},
+{q:"For which input does this display \"yes\"?\n\nIF (x > 0 AND x MOD 5 = 0 AND x < 50)",o:["A. 0","B. 55","C. 25","D. -5"],a:2,e:"Must be >0, divisible by 5, AND <50. 0 fails >0. 55 fails <50. -5 fails >0. 25: 25>0 true, 25 MOD 5=0 true, 25<50 true."},
+{q:"What does this display?\n\na ← true\nb ← false\nc ← NOT a OR b\nd ← a AND NOT b\nDISPLAY(c)\nDISPLAY(d)",o:["A. false, true","B. true, false","C. true, true","D. false, false"],a:0,e:"c: NOT true = false. false OR false = false. d: NOT false = true. true AND true = true. DISPLAY: false, true."},
+{q:"After this code, what is max?\n\na ← 3\nb ← 9\nc ← 6\nd ← 1\nmax ← a\nIF (b > max) { max ← b }\nIF (c > max) { max ← c }\nIF (d > max) { max ← d }",o:["A. 3","B. 6","C. 9","D. 1"],a:2,e:"max=3. 9>3? Yes, max=9. 6>9? No. 1>9? No. max = 9."},
+{q:"What does this display?\n\nx ← 100\nIF (x MOD 2 = 0)\n{ x ← x / 2 }\nIF (x MOD 5 = 0)\n{ x ← x / 5 }\nDISPLAY(x)",o:["A. 100","B. 50","C. 10","D. 20"],a:2,e:"100 MOD 2=0? Yes, x=50. 50 MOD 5=0? Yes, x=10. Two separate IFs, both apply."},
+{q:"Which pair of expressions are\nNOT equivalent?",o:["A. NOT(p OR q) and (NOT p) AND (NOT q)","B. NOT(p AND q) and (NOT p) OR (NOT q)","C. (p OR q) and (q OR p)","D. NOT(p OR q) and (NOT p) OR (NOT q)"],a:3,e:"D is wrong. NOT(p OR q) = (NOT p) AND (NOT q), not OR. Options A and B are correct De Morgan's. C is commutative law."},
+{q:"What does this display?\n\nn ← 0\nIF (n ≠ 0 AND 10/n > 2)\n{ DISPLAY(\"yes\") }\nELSE\n{ DISPLAY(\"no\") }",o:["A. yes","B. no","C. error (divide by zero)","D. depends on language"],a:1,e:"n=0, so n≠0 is false. With AND, if the first part is false, the whole thing is false (short-circuit). Most implementations won't evaluate 10/n. Result: \"no\"."},
+{q:"What does count equal?\n\ncount ← 0\nIF (15 MOD 3 = 0) { count ← count + 1 }\nIF (15 MOD 5 = 0) { count ← count + 1 }\nIF (15 MOD 7 = 0) { count ← count + 1 }\nIF (15 MOD 15 = 0) { count ← count + 1 }",o:["A. 1","B. 2","C. 3","D. 4"],a:2,e:"15 MOD 3=0: yes (+1). 15 MOD 5=0: yes (+1). 15 MOD 7=1: no. 15 MOD 15=0: yes (+1). count = 3."}
+];
+
+let submitted=false;
+const selections=new Array(QS.length).fill(-1);
+
+function buildQs(){
+    const el=document.getElementById('qs');
+    let html='';
+    QS.forEach((q,i)=>{
+        const qid='hw'+i;
+        html+=`<div class="qcard" id="${qid}">
+        <div class="qnum">Question ${i+1} of ${QS.length}</div>
+        <div class="qtext mono">${esc(q.q)}</div>
+        <div class="opts">`;
+        q.o.forEach((opt,oi)=>{
+            html+=`<button class="opt" data-qi="${i}" data-oi="${oi}" onclick="selHW(${i},${oi},this)">${esc(opt)}</button>`;
+        });
+        html+=`</div><div class="wrong-label" id="wl${i}">✗ Incorrect</div>
+        <div class="expl" id="ex${i}">${esc(q.e)}</div></div>`;
+    });
+    el.innerHTML=html;
+}
+
+function selHW(qi,oi,btn){
+    if(submitted)return;
+    const card=document.getElementById('hw'+qi);
+    card.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    btn.classList.add('sel');
+    selections[qi]=oi;
+}
+
+function submitAll(){
+    if(submitted)return;
+    const unanswered=selections.filter(s=>s===-1).length;
+    if(unanswered>0){
+        const msg=document.getElementById('ua-msg');
+        msg.textContent=`You still have ${unanswered} unanswered question${unanswered>1?'s':''}. Please answer all questions before submitting.`;
+        msg.style.display='block';
+        // scroll to first unanswered
+        const idx=selections.indexOf(-1);
+        document.getElementById('hw'+idx).scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+    }
+    submitted=true;
+    let correct=0;
+    const wrongOnes=[];
+
+    QS.forEach((q,i)=>{
+        const card=document.getElementById('hw'+i);
+        const sel=selections[i];
+        card.querySelectorAll('.opt').forEach((o,oi)=>{
+            o.classList.add('locked');
+            o.classList.remove('sel');
+            if(oi===q.a)o.classList.add('right');
+            else if(oi===sel&&oi!==q.a)o.classList.add('wrong');
+            else o.classList.add('faded');
+        });
+        if(sel===q.a){
+            correct++;
+            card.classList.add('was-right');
+        } else {
+            card.classList.add('was-wrong');
+            document.getElementById('wl'+i).classList.add('show');
+            document.getElementById('ex'+i).classList.add('show');
+            wrongOnes.push(i+1);
+        }
+    });
+
+    const pct=Math.round(correct/QS.length*100);
+    document.getElementById('submit-area').style.display='none';
+
+    const res=document.getElementById('results');
+    res.classList.add('show');
+    const scoreEl=document.getElementById('res-score');
+    scoreEl.textContent=correct+' / '+QS.length;
+    scoreEl.style.color=pct>=80?'var(--green)':pct>=60?'var(--accent)':'var(--red)';
+
+    document.getElementById('res-pct').textContent=pct+'%';
+    document.getElementById('res-pct').style.color=scoreEl.style.color;
+
+    let msg='';
+    if(pct===100)msg='Perfect score! You nailed pseudocode foundations.';
+    else if(pct>=85)msg='Excellent work. You have a strong grasp on these concepts. Review the ones you missed below.';
+    else if(pct>=70)msg='Good foundation. Focus on the questions you got wrong, those are your gaps to close before next session.';
+    else if(pct>=50)msg='Decent start but you need more practice. Review the explanations below carefully and try to understand the pattern in your mistakes.';
+    else msg='This material needs more work. That is totally fine, that is what the sessions are for. Read through every explanation below and bring your questions to the next session.';
+
+    if(wrongOnes.length>0)msg+='\n\nQuestions missed: '+wrongOnes.join(', ');
+    document.getElementById('res-msg').textContent=msg;
+    document.getElementById('res-msg').style.whiteSpace='pre-wrap';
+
+    res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';
+});
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+buildQs();
+</script>
+</body>
+</html>

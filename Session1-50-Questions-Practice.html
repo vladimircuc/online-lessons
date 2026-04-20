@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1: 50 Practice Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+.mono{font-family:'Fira Code',monospace}
+h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.cluster{margin:28px 0 12px;padding:10px 16px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:10px}
+.cluster-title{font-size:16px;font-weight:800;color:var(--purple)}
+.cluster-desc{font-size:12px;color:var(--dim);margin-top:2px}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0}
+.qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.qnum{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:2px 10px;font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+.qtype{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--purple);flex-shrink:0}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+/* Open ended */
+.open-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Fira Code',monospace;font-size:13px;resize:vertical;min-height:40px;margin-bottom:8px}
+.open-input:focus{outline:none;border-color:rgba(249,115,22,0.4)}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.ans-box{display:none;margin-top:10px;padding:14px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12);border-radius:8px}
+.ans-box.show{display:block}
+.ans-text{font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+/* MCQ */
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.score-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,14,0.95);border-top:1px solid var(--border);padding:10px 20px;display:flex;justify-content:center;gap:20px;font-size:13px;font-weight:600;backdrop-filter:blur(10px);z-index:99}
+.sc-correct{color:var(--green)}.sc-wrong{color:var(--red)}.sc-total{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+
+<div class="tag">Session 1 / In-Class Practice</div>
+<h1>50 Questions: Pseudocode Foundations</h1>
+<p class="sub">Mix of open-ended tracing and MCQ. Open questions first in each cluster so you can see her think, then MCQ to confirm speed. Do these together.</p>
+
+<div id="content"></div>
+
+<div class="score-bar">
+<span class="sc-correct" id="sc-c">Correct: 0</span>
+<span class="sc-wrong" id="sc-w">Wrong: 0</span>
+<span class="sc-total" id="sc-t">Answered: 0 / 50</span>
+</div>
+
+<div style="height:60px"></div>
+
+<script>
+let correct=0,wrong=0,answered=0;
+
+const DATA=[
+// CLUSTER 1: Variables & Assignment (Q1-8)
+{cluster:"Variables & Assignment",desc:"Can she trace variable changes step by step?"},
+{type:"open",q:"What does this display?\n\na ← 6\nb ← a + 4\nDISPLAY(b)",a:"b = 6 + 4 = 10\nDISPLAY → 10"},
+{type:"open",q:"What are the values of x and y after this runs?\n\nx ← 5\ny ← x\nx ← 12",a:"x = 12\ny = 5\n\ny got a COPY of x's value (5) at the time.\nChanging x later doesn't affect y."},
+{type:"open",q:"What does this display?\n\na ← 2\na ← a * a\na ← a * a\nDISPLAY(a)",a:"a = 2\na = 2*2 = 4\na = 4*4 = 16\nDISPLAY → 16"},
+{type:"mcq",q:"What does this display?\n\nx ← 3\ny ← 5\nx ← y\ny ← x\nDISPLAY(x)\nDISPLAY(y)",o:["A. 3, 5","B. 5, 3","C. 5, 5","D. 3, 3"],a:2,e:"x becomes 5. Then y becomes x which is now 5. Both are 5. The original 3 is lost because there's no temp variable."},
+{type:"mcq",q:"Which correctly swaps a and b?",o:["A. a ← b, b ← a","B. temp ← a, a ← b, b ← temp","C. a ← a + b, a ← a - b, b ← a + b","D. b ← a, a ← b"],a:1,e:"B is the classic swap pattern. A and D both lose one value because the overwrite happens before saving."},
+{type:"mcq",q:"After this code, what is z?\n\nx ← 10\ny ← 20\nz ← x + y\nx ← 0\ny ← 0",o:["A. 0","B. 30","C. 10","D. undefined"],a:1,e:"z was assigned x+y when x=10 and y=20, so z=30. Changing x and y later doesn't affect z. z keeps its value."},
+{type:"mcq",q:"What does this display?\n\na ← 1\nb ← 2\nc ← 3\na ← b\nb ← c\nc ← a\nDISPLAY(a)\nDISPLAY(b)\nDISPLAY(c)",o:["A. 1, 2, 3","B. 2, 3, 1","C. 2, 3, 2","D. 3, 2, 1"],a:2,e:"a←b: a=2. b←c: b=3. c←a: c=2 (a is already 2!). Result: 2, 3, 2. NOT a full rotation because the original a (1) was lost."},
+{type:"mcq",q:"What does this display?\n\nname ← \"hello\"\nname ← name + \"!\"\nname ← name + \"!\"\nDISPLAY(name)",o:["A. hello","B. hello!","C. hello!!","D. !!hello"],a:2,e:"\"hello\" + \"!\" = \"hello!\", then \"hello!\" + \"!\" = \"hello!!\"."},
+
+// CLUSTER 2: Math & MOD (Q9-18)
+{cluster:"Math & MOD",desc:"MOD shows up constantly. Make sure she can compute remainders quickly."},
+{type:"open",q:"Compute each:\n\n1. 23 MOD 5\n2. 16 MOD 4\n3. 3 MOD 7\n4. 100 MOD 9",a:"1. 23 MOD 5 = 3  (5*4=20, remainder 3)\n2. 16 MOD 4 = 0  (divides evenly)\n3. 3 MOD 7 = 3   (7 doesn't fit into 3 at all)\n4. 100 MOD 9 = 1 (9*11=99, remainder 1)"},
+{type:"open",q:"What does this display?\n\nx ← 29\nDISPLAY(x MOD 10)\nDISPLAY(x / 10)",a:"29 MOD 10 = 9 (the ones digit)\n29 / 10 = 2.9\n\nMOD 10 extracts the last digit of any number.\nThis is a common pattern on the exam."},
+{type:"open",q:"Write a boolean expression using MOD\nthat checks if a number n is divisible by 3.",a:"n MOD 3 = 0\n\nIf the remainder when dividing by 3 is 0,\nthen n is evenly divisible by 3."},
+{type:"mcq",q:"What does this display?\n\nx ← 17\ny ← x MOD 3\nz ← x / 3\nDISPLAY(y)",o:["A. 5","B. 2","C. 3","D. 5.67"],a:1,e:"17 MOD 3: 3*5=15, remainder 2. y = 2."},
+{type:"mcq",q:"For which value of x does x MOD 4 = 0?",o:["A. 15","B. 22","C. 28","D. 30"],a:2,e:"28/4 = 7 exactly. No remainder. 15 MOD 4=3, 22 MOD 4=2, 30 MOD 4=2."},
+{type:"mcq",q:"What is (3 + 7) * 2 MOD 4?",o:["A. 0","B. 2","C. 4","D. 16"],a:0,e:"(3+7)=10, 10*2=20. But wait, MOD has same precedence as * and /. So: 7*2=14 MOD 4... Actually in AP pseudocode, it's (3+7)*2 MOD 4. Multiplication and MOD left to right: 10*2=20, 20 MOD 4=0."},
+{type:"mcq",q:"What does this display?\n\nhours ← 50\ndays ← hours / 24\nleftover ← hours MOD 24\nDISPLAY(leftover)",o:["A. 26","B. 2","C. 2.08","D. 24"],a:1,e:"50 MOD 24: 24*2=48, remainder 2. Leftover = 2 hours."},
+{type:"mcq",q:"A number is even if:",o:["A. n MOD 2 = 1","B. n MOD 2 = 0","C. n / 2 = 0","D. 2 MOD n = 0"],a:1,e:"Even numbers have no remainder when divided by 2. n MOD 2 = 0."},
+{type:"mcq",q:"What does this display?\n\nresult ← 0\nresult ← result + 10 / 4\nDISPLAY(result)",o:["A. 2","B. 2.5","C. 0","D. 10"],a:1,e:"10 / 4 = 2.5 in AP pseudocode (not integer division). result = 0 + 2.5 = 2.5."},
+{type:"mcq",q:"What does 0 MOD 5 equal?",o:["A. 5","B. 0","C. undefined","D. 1"],a:1,e:"0 divided by 5 = 0 remainder 0. Any time the left side is 0, MOD gives 0."},
+
+// CLUSTER 3: Strings (Q19-24)
+{cluster:"Strings & Concatenation",desc:"Watch for the number-in-quotes trap."},
+{type:"open",q:"What does this display?\n\nfirst ← \"100\"\nsecond ← \"200\"\nDISPLAY(first + second)",a:"\"100200\"\n\nBoth are strings (in quotes), so + concatenates.\nIt does NOT do math. This is one of the most\ncommon traps on the exam."},
+{type:"open",q:"What does this display?\n\nx ← \"score: \"\ny ← \"95\"\nz ← x + y\nDISPLAY(z)",a:"\"score: 95\"\n\nString concatenation joins them exactly as they are.\nThe space after the colon in x is preserved."},
+{type:"mcq",q:"What does this display?\n\na ← \"go\"\nb ← \"od\"\nc ← a + b\nDISPLAY(c + c)",o:["A. \"good\"","B. \"goodgood\"","C. \"go\" + \"od\"","D. error"],a:1,e:"c = \"go\"+\"od\" = \"good\". c+c = \"good\"+\"good\" = \"goodgood\"."},
+{type:"mcq",q:"What does this display?\n\nresult ← \"\" \nresult ← result + \"X\"\nresult ← result + \"Y\"\nresult ← result + \"Z\"\nDISPLAY(result)",o:["A. \"XYZ\"","B. \"ZYX\"","C. \"Z\"","D. \"\""],a:0,e:"Start with empty string. Add X: \"X\". Add Y: \"XY\". Add Z: \"XYZ\". Building a string character by character."},
+{type:"mcq",q:"Which of these produces the number 15 (not a string)?",o:["A. \"10\" + \"5\"","B. 10 + 5","C. \"10\" + 5","D. \"15\""],a:1,e:"Only B is math between two numbers. A produces \"105\" (string). D is already a string. C would depend on language but in AP pseudocode, mixing types is ambiguous."},
+{type:"mcq",q:"What does this display?\n\nword ← \"AB\"\nword ← word + word\nword ← word + \"C\"\nDISPLAY(word)",o:["A. \"ABC\"","B. \"ABABC\"","C. \"ABAB\"","D. \"AABBCC\""],a:1,e:"word = \"AB\". word+word = \"ABAB\". \"ABAB\"+\"C\" = \"ABABC\"."},
+
+// CLUSTER 4: Booleans (Q25-34)
+{cluster:"Boolean Expressions",desc:"AND, OR, NOT. De Morgan's Law. This is the foundation for every IF statement."},
+{type:"open",q:"Evaluate each. x = 8, y = 3.\n\n1. (x > 5) AND (y > 5)\n2. (x > 5) OR (y > 5)\n3. NOT (x = 8)\n4. (x + y > 10) AND (x - y > 0)",a:"1. true AND false = false\n2. true OR false = true\n3. NOT true = false\n4. (11>10) AND (5>0) = true AND true = true"},
+{type:"open",q:"Simplify using De Morgan's Law:\n\nNOT (a > 10 OR b = 5)",a:"NOT (a > 10 OR b = 5)\n= (NOT (a > 10)) AND (NOT (b = 5))\n= (a ≤ 10) AND (b ≠ 5)\n\nDe Morgan's: NOT (A OR B) = (NOT A) AND (NOT B)\nAlso flip the comparison operators."},
+{type:"mcq",q:"What does this evaluate to?\n\nNOT (true AND true) OR false",o:["A. true","B. false","C. error","D. NOT"],a:1,e:"true AND true = true. NOT true = false. false OR false = false."},
+{type:"mcq",q:"x = 5. Which is true?",o:["A. (x > 5) AND (x < 10)","B. (x ≥ 5) AND (x ≤ 5)","C. (x > 5) OR (x > 10)","D. NOT (x = 5)"],a:1,e:"B: 5≥5 is true AND 5≤5 is true. A: 5>5 is false. C: both false. D: NOT true = false."},
+{type:"mcq",q:"Which expression is equivalent to\nNOT (p AND q)?",o:["A. (NOT p) AND (NOT q)","B. (NOT p) OR (NOT q)","C. p OR q","D. NOT p AND q"],a:1,e:"De Morgan's Law: NOT (p AND q) = (NOT p) OR (NOT q). Flip AND to OR, negate both."},
+{type:"mcq",q:"For which values of x is this true?\n\n(x > 0) AND (x < 5) AND (x MOD 2 = 0)",o:["A. 1, 2, 3, 4","B. 2, 4","C. 0, 2, 4","D. 2"],a:1,e:"Must be >0, <5, AND even. That's 2 and 4. (0 fails >0, 6 fails <5, 1 and 3 fail MOD 2.)"},
+{type:"mcq",q:"x = 10, y = 20.\n\nNOT ((x = 10) AND (y = 20))",o:["A. true","B. false","C. error","D. 10"],a:1,e:"x=10 is true. y=20 is true. true AND true = true. NOT true = false."},
+{type:"mcq",q:"Which expression is true for ALL values of x?",o:["A. (x > 0) OR (x < 0)","B. (x ≥ 0) OR (x ≤ 0)","C. (x > 0) AND (x < 0)","D. NOT (x = x)"],a:1,e:"B: every number is either ≥0 or ≤0 (or both, when x=0). A fails for x=0. C is impossible. D is always false."},
+{type:"mcq",q:"Evaluate: (false OR true) AND (true OR false)",o:["A. true","B. false","C. OR","D. error"],a:0,e:"false OR true = true. true OR false = true. true AND true = true."},
+{type:"mcq",q:"How many of these are true? x = 7\n\n(x ≠ 7), (x ≥ 7), (x > 6 AND x < 8), NOT(x < 7)",o:["A. 1","B. 2","C. 3","D. 4"],a:2,e:"x≠7: false. x≥7: true. x>6 AND x<8: true AND true = true. NOT(x<7): NOT false = true. Three are true."},
+
+// CLUSTER 5: Conditionals (Q35-50)
+{cluster:"Conditionals (IF / ELSE)",desc:"The big section. Trace carefully, watch for separate IFs vs IF/ELSE chains."},
+{type:"open",q:"What does this display? x = 15\n\nIF (x > 20)\n{ DISPLAY(\"A\") }\nELSE\n{\n  IF (x > 10)\n  { DISPLAY(\"B\") }\n  ELSE\n  { DISPLAY(\"C\") }\n}",a:"x = 15\n15 > 20? NO → go to ELSE\n  15 > 10? YES → DISPLAY \"B\"\n\nAnswer: B"},
+{type:"open",q:"What does this display?\n\nx ← 10\nIF (x > 5)\n{ x ← x + 10 }\nIF (x > 15)\n{ x ← x * 2 }\nDISPLAY(x)",a:"x = 10\nFirst IF: 10 > 5? YES → x = 20\nSecond IF: 20 > 15? YES → x = 40\nDISPLAY → 40\n\nKEY: These are TWO SEPARATE IFs.\nThe first one changes x, and the second one\nsees the NEW value of x."},
+{type:"open",q:"What does this display?\n\nage ← 25\nIF (age ≥ 65)\n{ price ← 5 }\nELSE\n{\n  IF (age ≥ 18)\n  { price ← 10 }\n  ELSE\n  { price ← 7 }\n}\nDISPLAY(price)",a:"25 ≥ 65? NO\n  25 ≥ 18? YES → price = 10\n\nDISPLAY → 10"},
+{type:"mcq",q:"What does this display? n = 4\n\nIF (n MOD 2 = 0)\n{\n  IF (n > 5)\n  { DISPLAY(\"A\") }\n  ELSE\n  { DISPLAY(\"B\") }\n}\nELSE\n{ DISPLAY(\"C\") }",o:["A. A","B. B","C. C","D. nothing"],a:1,e:"4 MOD 2 = 0? YES (even). Inner: 4>5? NO → DISPLAY B."},
+{type:"mcq",q:"What does this display?\n\nx ← 5\nIF (x > 3)\n{ x ← x + 1 }\nIF (x > 5)\n{ x ← x + 1 }\nIF (x > 6)\n{ x ← x + 1 }\nDISPLAY(x)",o:["A. 5","B. 6","C. 7","D. 8"],a:2,e:"x=5. 5>3? Yes, x=6. 6>5? Yes, x=7. 7>6? Yes, x=8. Wait, 7>6 yes, x=8. Answer is D. Let me recheck. 5>3→x=6. 6>5→x=7. 7>6→x=8. DISPLAY 8."},
+{type:"mcq",q:"What does this display?\n\nx ← 5\nIF (x > 3)\n{ x ← x + 1 }\nELSE IF equivalent:\nIF (x > 5)\n{ x ← x + 1 }\nELSE\n{ x ← x - 1 }\nDISPLAY(x)",o:["A. 5","B. 6","C. 7","D. 4"],a:2,e:"First IF: 5>3? Yes, x=6. Second IF (separate!): 6>5? Yes, x=7. DISPLAY 7."},
+{type:"mcq",q:"What does msg contain after this?\n\ntemp ← 75\nmsg ← \"\"\nIF (temp > 80)\n{ msg ← \"hot\" }\nIF (temp > 60)\n{ msg ← msg + \"warm\" }\nIF (temp > 40)\n{ msg ← msg + \"ok\" }",o:["A. \"hot\"","B. \"warm\"","C. \"warmok\"","D. \"hotwarmok\""],a:2,e:"75>80? No. 75>60? Yes, msg=\"warm\". 75>40? Yes, msg=\"warm\"+\"ok\"=\"warmok\". Three SEPARATE IFs."},
+{type:"mcq",q:"How many times does DISPLAY run?\n\nIF (true)\n{ DISPLAY(\"A\") }\nIF (true)\n{ DISPLAY(\"B\") }\nIF (false)\n{ DISPLAY(\"C\") }",o:["A. 1","B. 2","C. 3","D. 0"],a:1,e:"First IF: true, displays A. Second IF: true, displays B. Third IF: false, skips. Two displays."},
+{type:"mcq",q:"What does this display? x=10\n\nIF (x > 5 AND x < 15)\n{ DISPLAY(\"in range\") }\nELSE\n{ DISPLAY(\"out of range\") }",o:["A. in range","B. out of range","C. error","D. both"],a:0,e:"10>5 is true AND 10<15 is true. true AND true = true. DISPLAY \"in range\"."},
+{type:"mcq",q:"What does result equal?\n\nresult ← 0\nx ← 7\nIF (x > 5)\n{ result ← result + 1 }\nIF (x > 3)\n{ result ← result + 1 }\nIF (x > 10)\n{ result ← result + 1 }",o:["A. 0","B. 1","C. 2","D. 3"],a:2,e:"7>5? Yes, result=1. 7>3? Yes, result=2. 7>10? No. Result = 2."},
+{type:"mcq",q:"What does this display?\n\nn ← 12\nIF (n MOD 3 = 0 AND n MOD 4 = 0)\n{ DISPLAY(\"both\") }\nELSE\n{\n  IF (n MOD 3 = 0)\n  { DISPLAY(\"three\") }\n  ELSE\n  { DISPLAY(\"other\") }\n}",o:["A. both","B. three","C. other","D. both and three"],a:0,e:"12 MOD 3=0 AND 12 MOD 4=0. true AND true = true. DISPLAY \"both\". Chain stops."},
+{type:"mcq",q:"After this code, what is grade?\n\nscore ← 85\nIF (score ≥ 90)\n{ grade ← \"A\" }\nELSE\n{ IF (score ≥ 80)\n  { grade ← \"B\" }\n  ELSE\n  { grade ← \"C\" }\n}\nIF (score ≥ 80)\n{ grade ← grade + \"+\" }",o:["A. \"B\"","B. \"A\"","C. \"B+\"","D. \"A+\""],a:2,e:"85≥90? No. 85≥80? Yes, grade=\"B\". THEN separate IF: 85≥80? Yes, grade=\"B\"+\"+\"=\"B+\"."},
+{type:"mcq",q:"What does this display?\n\na ← true\nb ← false\nIF (a AND b)\n{ DISPLAY(1) }\nELSE\n{\n  IF (a OR b)\n  { DISPLAY(2) }\n  ELSE\n  { DISPLAY(3) }\n}",o:["A. 1","B. 2","C. 3","D. 1 and 2"],a:1,e:"true AND false = false → ELSE. true OR false = true → DISPLAY 2."},
+{type:"mcq",q:"What is the value of max after this?\n\na ← 8\nb ← 15\nc ← 11\nmax ← a\nIF (b > max)\n{ max ← b }\nIF (c > max)\n{ max ← c }",o:["A. 8","B. 11","C. 15","D. 34"],a:2,e:"max=8. 15>8? Yes, max=15. 11>15? No. max stays 15. This is the find-max algorithm."},
+{type:"mcq",q:"How many of these values print \"even\"?\nTest with n = 0, 1, 7, 12, -4\n\nIF (n MOD 2 = 0)\n{ DISPLAY(\"even\") }",o:["A. 1","B. 2","C. 3","D. 4"],a:2,e:"0 MOD 2=0 (even). 1 MOD 2=1 (no). 7 MOD 2=1 (no). 12 MOD 2=0 (even). -4 MOD 2=0 (even). Three print \"even\"."},
+{type:"mcq",q:"What does this display?\n\nx ← 0\nIF (x = 0)\n{ x ← 5 }\nIF (x = 5)\n{ x ← 10 }\nIF (x = 10)\n{ x ← 15 }\nDISPLAY(x)",o:["A. 0","B. 5","C. 10","D. 15"],a:3,e:"x=0. 0=0? Yes, x=5. 5=5? Yes, x=10. 10=10? Yes, x=15. Cascading separate IFs! Each one triggers the next."}
+];
+
+function buildContent(){
+    const el=document.getElementById('content');
+    let qNum=0;
+    let html='';
+    DATA.forEach((item,i)=>{
+        if(item.cluster){
+            html+=`<div class="cluster"><div class="cluster-title">${item.cluster}</div><div class="cluster-desc">${item.desc}</div></div>`;
+            return;
+        }
+        qNum++;
+        const qid='q'+qNum;
+        if(item.type==='open'){
+            html+=`<div class="qcard"><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">OPEN</span></div>
+            <div class="qtext">${esc(item.q)}</div>
+            <textarea class="open-input mono" placeholder="Her answer..."></textarea>
+            <button class="reveal-btn" onclick="revealOpen(this)">Show Answer</button>
+            <div class="ans-box"><div class="ans-text">${esc(item.a)}</div></div></div>`;
+        } else {
+            html+=`<div class="qcard" id="${qid}" data-rev="0" data-sel="">
+            <div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">MCQ</span></div>
+            <div class="qtext">${esc(item.q)}</div><div class="opts">`;
+            item.o.forEach((opt,oi)=>{
+                html+=`<button class="opt" data-i="${oi}" onclick="selO(this,'${qid}')">${esc(opt)}</button>`;
+            });
+            html+=`</div><button class="chk" onclick="chkMCQ(this,'${qid}',${item.a})">Check Answer</button>
+            <div class="expl">${esc(item.e)}</div></div>`;
+        }
+    });
+    el.innerHTML=html;
+}
+
+function revealOpen(btn){
+    const a=btn.nextElementSibling;
+    const s=a.classList.contains('show');
+    a.classList.toggle('show');
+    btn.textContent=s?'Show Answer':'Hide';
+    btn.classList.toggle('on',!s);
+}
+
+function selO(btn,qid){
+    const c=document.getElementById(qid);
+    if(c.dataset.rev==='1')return;
+    c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    btn.classList.add('sel');
+    c.dataset.sel=btn.dataset.i;
+    c.querySelector('.chk').classList.add('rdy');
+}
+
+function chkMCQ(btn,qid,ans){
+    const c=document.getElementById(qid);
+    if(!c.dataset.sel||c.dataset.sel==='')return;
+    if(c.dataset.rev==='1')return;
+    c.dataset.rev='1';
+    const s=parseInt(c.dataset.sel);
+    c.querySelectorAll('.opt').forEach((o,i)=>{
+        o.classList.add('locked');o.classList.remove('sel');
+        if(i===ans)o.classList.add('right');
+        else if(i===s&&i!==ans)o.classList.add('wrong');
+    });
+    c.querySelector('.expl').classList.add('show');
+    if(s===ans)correct++;else wrong++;
+    answered++;
+    updateScore();
+    btn.style.display='none';
+}
+
+function updateScore(){
+    document.getElementById('sc-c').textContent='Correct: '+correct;
+    document.getElementById('sc-w').textContent='Wrong: '+wrong;
+    document.getElementById('sc-t').textContent='Answered: '+answered+' / 50';
+}
+
+window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';
+});
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+buildContent();
+</script>
+</body>
+</html>
