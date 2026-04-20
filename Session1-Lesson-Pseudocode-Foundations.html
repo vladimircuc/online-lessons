@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1: Pseudocode Foundations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--accent2:#fb923c;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code,.code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}
+.val{color:var(--green)}
+.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.ref-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.ref-table th{text-align:left;padding:8px 12px;background:rgba(249,115,22,0.08);color:var(--accent);font-weight:700;border-bottom:1px solid var(--border)}
+.ref-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top}
+.ref-table td:first-child{font-family:'Fira Code',monospace;color:var(--accent2);white-space:nowrap}
+.ref-table td:last-child{color:var(--dim)}
+.tip{padding:14px 16px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(147,197,253,0.85)}
+.tip::before{content:'💡 ';font-size:14px}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ ';font-size:14px}
+.check-section{margin:20px 0;padding:20px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:12px}
+.check-section h3{color:var(--purple);margin-top:0}
+.q{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0}
+.q-prompt{font-size:14px;color:var(--text);margin-bottom:10px;white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn:hover{background:rgba(168,85,247,0.25)}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.answer{display:none;margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:8px;font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.answer.show{display:block}
+.review-section{margin-top:40px;padding:24px;background:rgba(249,115,22,0.04);border:2px solid rgba(249,115,22,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:var(--accent2)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+
+<div class="tag">Session 1 / Big Idea 3 Part 1</div>
+<h1>Pseudocode Foundations</h1>
+<p>Variables, math, booleans, conditionals, and how to read AP pseudocode. This is 30-35% of your exam.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this lesson:</strong>
+<a href="#ref">1. The AP Pseudocode Reference</a>
+<a href="#vars">2. Variables & Assignment</a>
+<a href="#math">3. Math Expressions & MOD</a>
+<a href="#strings">4. Strings</a>
+<a href="#bool">5. Boolean Expressions</a>
+<a href="#cond">6. Conditionals (IF / ELSE)</a>
+<a href="#review">7. End of Lesson Review (18 Questions)</a>
+</div>
+
+<!-- ==================== SECTION 1: REFERENCE ==================== -->
+<h2 id="ref">1. The AP Pseudocode Reference</h2>
+<p>On exam day you get a <strong>reference sheet</strong> with all the pseudocode commands. You don't need to memorize the exact syntax, but you DO need to know what each command does instantly. Here's what matters for today:</p>
+
+<div class="concept">
+<h3>Assignment & Display</h3>
+<table class="ref-table">
+<tr><th>Pseudocode</th><th>What it does</th></tr>
+<tr><td>a ← expression</td><td>Stores the value of <code>expression</code> into variable <code>a</code>. The arrow points LEFT, value flows from right to left.</td></tr>
+<tr><td>DISPLAY(expression)</td><td>Prints the value to the screen. This is what "what does it display?" questions are asking about.</td></tr>
+</table>
+</div>
+
+<div class="concept">
+<h3>Math</h3>
+<table class="ref-table">
+<tr><th>Pseudocode</th><th>What it does</th></tr>
+<tr><td>a + b</td><td>Addition</td></tr>
+<tr><td>a - b</td><td>Subtraction</td></tr>
+<tr><td>a * b</td><td>Multiplication</td></tr>
+<tr><td>a / b</td><td>Division (gives a decimal result, NOT integer division)</td></tr>
+<tr><td>a MOD b</td><td>Remainder after division. 10 MOD 3 = 1 because 3*3=9, remainder 1.</td></tr>
+</table>
+</div>
+
+<div class="concept">
+<h3>Comparison & Logic</h3>
+<table class="ref-table">
+<tr><th>Pseudocode</th><th>What it does</th></tr>
+<tr><td>a = b</td><td>Equal to (this is comparison, NOT assignment!)</td></tr>
+<tr><td>a ≠ b</td><td>Not equal to</td></tr>
+<tr><td>a &gt; b, a &lt; b</td><td>Greater than, less than</td></tr>
+<tr><td>a ≥ b, a ≤ b</td><td>Greater than or equal, less than or equal</td></tr>
+<tr><td>NOT condition</td><td>Flips true to false, false to true</td></tr>
+<tr><td>a AND b</td><td>True only if BOTH are true</td></tr>
+<tr><td>a OR b</td><td>True if at LEAST one is true</td></tr>
+</table>
+</div>
+
+<div class="trap"><strong>= means two different things.</strong> In <code>a ← 5</code>, the arrow is assignment. In <code>IF (a = 5)</code>, the = is comparison. AP pseudocode uses ← for assignment and = for comparison. Don't confuse them.</div>
+
+<!-- ==================== SECTION 2: VARIABLES ==================== -->
+<h2 id="vars">2. Variables & Assignment</h2>
+<p>A variable is a <strong>named container</strong> that holds a value. In AP pseudocode, you assign values with the ← arrow.</p>
+
+<pre><span class="key">x</span> ← <span class="val">5</span>          <span class="cmt">← x now holds 5</span>
+<span class="key">y</span> ← <span class="val">10</span>         <span class="cmt">← y now holds 10</span>
+<span class="key">x</span> ← <span class="key">x</span> + <span class="val">3</span>      <span class="cmt">← x is now 8 (old value 5 + 3)</span></pre>
+
+<p>The key thing: when you reassign a variable, the <strong>old value is gone</strong>. It gets overwritten.</p>
+
+<pre><span class="key">name</span> ← <span class="val">"Alice"</span>
+<span class="key">name</span> ← <span class="val">"Bob"</span>     <span class="cmt">← "Alice" is gone forever. name is now "Bob"</span></pre>
+
+<h3>The Classic Swap Problem</h3>
+<p>If you want to swap two variables, you NEED a temporary variable. This shows up on the exam constantly.</p>
+
+<pre><span class="key">a</span> ← <span class="val">5</span>
+<span class="key">b</span> ← <span class="val">10</span>
+<span class="cmt">← WRONG way (a becomes 10, but then b also becomes 10):</span>
+a ← b       <span class="cmt">← a is now 10, but 5 is lost!</span>
+b ← a       <span class="cmt">← b is now 10... both are 10. FAIL.</span>
+
+<span class="cmt">← RIGHT way:</span>
+<span class="key">temp</span> ← <span class="key">a</span>     <span class="cmt">← save a's value (5) in temp</span>
+<span class="key">a</span> ← <span class="key">b</span>        <span class="cmt">← a becomes 10</span>
+<span class="key">b</span> ← <span class="key">temp</span>     <span class="cmt">← b becomes 5 (from temp)</span></pre>
+
+<div class="tip">If you see a question asking "which code correctly swaps two variables," look for the one that uses a third temporary variable.</div>
+
+<div class="check-section">
+<h3>Quick Check: Variables</h3>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+a ← 3
+b ← 7
+a ← a + b
+b ← a - b
+DISPLAY(a)
+DISPLAY(b)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">a = 3+7 = 10
+b = 10-7 = 3
+DISPLAY(a) → 10
+DISPLAY(b) → 3
+
+(This actually swaps a and b without a temp variable, using math. Sneaky.)</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+x ← 4
+x ← x * x
+x ← x + 1
+DISPLAY(x)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">x = 4
+x = 4 * 4 = 16
+x = 16 + 1 = 17
+DISPLAY → 17</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">After this code runs, what are the values of a and b?
+
+a ← 10
+b ← a
+a ← 20</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">a = 20
+b = 10
+
+b got a COPY of a's value (10) at the time of assignment.
+When a changed to 20 later, b was not affected.
+Variables hold independent copies, not links.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3: MATH ==================== -->
+<h2 id="math">3. Math Expressions & MOD</h2>
+<p>Standard math works how you'd expect. The one tricky operator is <strong>MOD</strong> (modulo), which gives the <strong>remainder</strong> after division.</p>
+
+<pre><span class="val">10</span> MOD <span class="val">3</span> = <span class="val">1</span>     <span class="cmt">← 3 goes into 10 three times (9), remainder 1</span>
+<span class="val">15</span> MOD <span class="val">5</span> = <span class="val">0</span>     <span class="cmt">← 5 goes into 15 exactly 3 times, no remainder</span>
+<span class="val">7</span> MOD <span class="val">2</span> = <span class="val">1</span>      <span class="cmt">← odd numbers MOD 2 always give 1</span>
+<span class="val">8</span> MOD <span class="val">2</span> = <span class="val">0</span>      <span class="cmt">← even numbers MOD 2 always give 0</span>
+<span class="val">3</span> MOD <span class="val">5</span> = <span class="val">3</span>      <span class="cmt">← 5 doesn't fit into 3 at all, so remainder is 3</span></pre>
+
+<div class="tip"><strong>MOD is how you check if a number is even or odd.</strong> If <code>n MOD 2 = 0</code>, the number is even. If <code>n MOD 2 = 1</code>, it's odd. This pattern shows up on the exam ALL the time.</div>
+
+<div class="concept">
+<h3>Order of Operations</h3>
+<p>Same as regular math: multiplication and division and MOD happen before addition and subtraction. Use parentheses to force a different order.</p>
+<pre><span class="val">3</span> + <span class="val">4</span> * <span class="val">2</span> = <span class="val">11</span>       <span class="cmt">← 4*2 first, then +3</span>
+(<span class="val">3</span> + <span class="val">4</span>) * <span class="val">2</span> = <span class="val">14</span>     <span class="cmt">← parentheses first: 7*2</span></pre>
+</div>
+
+<div class="concept">
+<h3>Division in AP Pseudocode</h3>
+<p>Unlike Java, <strong>AP pseudocode division gives decimals</strong>. So <code>7 / 2 = 3.5</code>, not 3. This is important if you've been studying Java or Python integer division.</p>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Math & MOD</h3>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+x ← 17 MOD 5
+DISPLAY(x)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">17 MOD 5 = 2
+(5 goes into 17 three times = 15, remainder = 2)
+DISPLAY → 2</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+a ← 10
+b ← 3
+DISPLAY(a / b)
+DISPLAY(a MOD b)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">10 / 3 = 3.333...
+10 MOD 3 = 1
+
+DISPLAY → 3.333... then 1</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">Is the number 42 even or odd?
+How would you check using MOD?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">42 MOD 2 = 0
+Since the remainder is 0, 42 is EVEN.
+
+The check: IF (n MOD 2 = 0) → even, ELSE → odd</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4: STRINGS ==================== -->
+<h2 id="strings">4. Strings</h2>
+<p>Strings are text wrapped in quotes. You can glue them together with <strong>concatenation</strong> (using +).</p>
+
+<pre><span class="key">first</span> ← <span class="val">"Hello"</span>
+<span class="key">second</span> ← <span class="val">"World"</span>
+<span class="key">result</span> ← first + <span class="val">" "</span> + second
+DISPLAY(result)    <span class="cmt">← "Hello World"</span></pre>
+
+<div class="trap"><strong>Numbers inside quotes are strings, not numbers.</strong> <code>"3" + "5"</code> gives <code>"35"</code> (concatenation), NOT <code>8</code> (addition). If it's in quotes, it's text.</div>
+
+<pre><span class="key">a</span> ← <span class="val">"3"</span> + <span class="val">"5"</span>     <span class="cmt">← a = "35" (string concatenation)</span>
+<span class="key">b</span> ← <span class="val">3</span> + <span class="val">5</span>         <span class="cmt">← b = 8 (math addition)</span></pre>
+
+<div class="check-section">
+<h3>Quick Check: Strings</h3>
+<div class="q">
+<div class="q-prompt">What does this display?
+
+word ← "AP"
+word ← word + " " + "CSP"
+DISPLAY(word)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">"AP" + " " + "CSP" = "AP CSP"
+DISPLAY → AP CSP</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+x ← "10" + "20"
+DISPLAY(x)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">"10" + "20" = "1020" (string concatenation, NOT math)
+DISPLAY → 1020
+
+Both values are in quotes, so they're strings. + concatenates.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5: BOOLEANS ==================== -->
+<h2 id="bool">5. Boolean Expressions</h2>
+<p>A boolean is either <strong>true</strong> or <strong>false</strong>. That's it. Boolean expressions are the foundation of every IF statement and every loop condition.</p>
+
+<div class="concept">
+<h3>Comparison Operators</h3>
+<pre><span class="val">5</span> = <span class="val">5</span>     → <span class="val">true</span>
+<span class="val">5</span> = <span class="val">3</span>     → <span class="val">false</span>
+<span class="val">5</span> ≠ <span class="val">3</span>     → <span class="val">true</span>      <span class="cmt">← "not equal"</span>
+<span class="val">5</span> > <span class="val">3</span>     → <span class="val">true</span>
+<span class="val">5</span> < <span class="val">3</span>     → <span class="val">false</span>
+<span class="val">5</span> ≥ <span class="val">5</span>     → <span class="val">true</span>      <span class="cmt">← "greater than OR equal"</span>
+<span class="val">5</span> ≤ <span class="val">4</span>     → <span class="val">false</span></pre>
+</div>
+
+<div class="concept">
+<h3>AND, OR, NOT</h3>
+<p>These combine or flip boolean values.</p>
+<pre><span class="key">AND</span>: Both sides must be true
+  true AND true   → true
+  true AND false  → <span class="val">false</span>
+  false AND false → false
+
+<span class="key">OR</span>: At least one side must be true
+  true OR false   → <span class="val">true</span>
+  false OR false  → false
+  true OR true    → true
+
+<span class="key">NOT</span>: Flips the value
+  NOT true   → <span class="val">false</span>
+  NOT false  → <span class="val">true</span></pre>
+</div>
+
+<div class="concept">
+<h3>Combining Them</h3>
+<p>You can chain these together. NOT applies first, then AND, then OR (unless parentheses override).</p>
+<pre><span class="cmt">← Example: x = 7</span>
+(x > 5) AND (x < 10)       → true AND true  → <span class="val">true</span>
+(x > 5) AND (x < 6)        → true AND false → <span class="val">false</span>
+(x = 7) OR (x = 8)         → true OR false  → <span class="val">true</span>
+NOT (x > 10)                → NOT false      → <span class="val">true</span>
+NOT (x > 5 AND x < 10)     → NOT true       → <span class="val">false</span></pre>
+</div>
+
+<div class="trap"><strong>Exam trap: NOT with AND/OR.</strong> <code>NOT (A AND B)</code> is the same as <code>(NOT A) OR (NOT B)</code>. And <code>NOT (A OR B)</code> is the same as <code>(NOT A) AND (NOT B)</code>. This is De Morgan's Law and it shows up in tricky MC questions.</div>
+
+<div class="check-section">
+<h3>Quick Check: Booleans</h3>
+<div class="q">
+<div class="q-prompt">x = 12. Evaluate each:
+
+1. (x > 10) AND (x < 20)
+2. (x = 10) OR (x = 12)
+3. NOT (x > 15)
+4. (x MOD 2 = 0) AND (x > 10)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">1. true AND true → true
+2. false OR true → true
+3. NOT false → true
+4. (0 = 0) AND (12 > 10) → true AND true → true
+
+All four are true!</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">Evaluate: NOT (true AND false) OR true</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Step by step:
+1. true AND false → false
+2. NOT false → true
+3. true OR true → true
+
+Answer: true</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">Are these two expressions equivalent?
+
+A: NOT (x > 5 AND y < 3)
+B: (x ≤ 5) OR (y ≥ 3)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">YES, they are equivalent. (De Morgan's Law)
+
+NOT (A AND B) = (NOT A) OR (NOT B)
+NOT (x > 5) = x ≤ 5
+NOT (y < 3) = y ≥ 3
+
+So NOT (x > 5 AND y < 3) = (x ≤ 5) OR (y ≥ 3) ✓</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 6: CONDITIONALS ==================== -->
+<h2 id="cond">6. Conditionals (IF / ELSE)</h2>
+<p>Conditionals let a program make <strong>decisions</strong>. The code inside the IF block only runs if the condition is true.</p>
+
+<div class="concept">
+<h3>Basic IF</h3>
+<pre>IF (<span class="key">condition</span>)
+{
+    <span class="cmt">← this code runs ONLY if condition is true</span>
+}</pre>
+</div>
+
+<div class="concept">
+<h3>IF / ELSE</h3>
+<pre>IF (<span class="key">condition</span>)
+{
+    <span class="cmt">← runs if condition is true</span>
+}
+ELSE
+{
+    <span class="cmt">← runs if condition is false</span>
+}</pre>
+<p>One or the other always runs. Never both. Never neither.</p>
+</div>
+
+<div class="concept">
+<h3>Nested IFs (IF inside IF)</h3>
+<pre>IF (x > 0)
+{
+    IF (x > 100)
+    {
+        DISPLAY(<span class="val">"big positive"</span>)
+    }
+    ELSE
+    {
+        DISPLAY(<span class="val">"small positive"</span>)
+    }
+}
+ELSE
+{
+    DISPLAY(<span class="val">"not positive"</span>)
+}</pre>
+<p>When IFs are nested, trace from the <strong>outside in</strong>. Check the outer condition first. If it's true, THEN check the inner one.</p>
+</div>
+
+<div class="concept">
+<h3>Chained Conditions (IF / ELSE IF / ELSE pattern)</h3>
+<p>AP pseudocode doesn't have a formal "else if" keyword, but you can nest them to create the same effect:</p>
+<pre>IF (score ≥ 90)
+{
+    grade ← <span class="val">"A"</span>
+}
+ELSE
+{
+    IF (score ≥ 80)
+    {
+        grade ← <span class="val">"B"</span>
+    }
+    ELSE
+    {
+        IF (score ≥ 70)
+        {
+            grade ← <span class="val">"C"</span>
+        }
+        ELSE
+        {
+            grade ← <span class="val">"F"</span>
+        }
+    }
+}</pre>
+<div class="tip">These chains stop at the <strong>first true condition</strong>. If score is 95, it matches ≥ 90 and gets "A". It never checks the rest, even though 95 is also ≥ 80 and ≥ 70.</div>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Conditionals</h3>
+<div class="q">
+<div class="q-prompt">What does this display? (x = 7)
+
+IF (x > 10)
+{
+    DISPLAY("A")
+}
+ELSE
+{
+    IF (x > 5)
+    {
+        DISPLAY("B")
+    }
+    ELSE
+    {
+        DISPLAY("C")
+    }
+}</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">x = 7
+Is 7 > 10? NO → go to ELSE
+  Is 7 > 5? YES → DISPLAY "B"
+
+Answer: B</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+age ← 16
+IF (age ≥ 18)
+{
+    msg ← "adult"
+}
+ELSE
+{
+    msg ← "minor"
+}
+IF (age ≥ 16)
+{
+    msg ← msg + " who can drive"
+}
+DISPLAY(msg)</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">age = 16
+First IF: 16 ≥ 18? NO → msg = "minor"
+Second IF: 16 ≥ 16? YES → msg = "minor" + " who can drive"
+    = "minor who can drive"
+
+DISPLAY → "minor who can drive"
+
+KEY INSIGHT: The second IF is NOT an ELSE IF.
+It's a completely separate IF that runs independently.
+Both IF blocks get checked.</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">What does this display?
+
+n ← 15
+IF (n MOD 3 = 0 AND n MOD 5 = 0)
+{
+    DISPLAY("fizzbuzz")
+}
+ELSE
+{
+    IF (n MOD 3 = 0)
+    {
+        DISPLAY("fizz")
+    }
+    ELSE
+    {
+        IF (n MOD 5 = 0)
+        {
+            DISPLAY("buzz")
+        }
+        ELSE
+        {
+            DISPLAY(n)
+        }
+    }
+}</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">n = 15
+15 MOD 3 = 0? YES. 15 MOD 5 = 0? YES.
+true AND true = true
+→ DISPLAY "fizzbuzz"
+
+(The chain stops at the first match. Never reaches the inner checks.)</div>
+</div>
+</div>
+
+<!-- ==================== REVIEW SECTION ==================== -->
+<div class="review-section" id="review">
+<h2>End of Lesson Review</h2>
+<p style="margin-bottom:20px">These mix everything from today. No topic labels, just like the real exam. Try to answer before checking.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+function reveal(btn){
+    const a=btn.nextElementSibling;
+    const showing=a.classList.contains('show');
+    a.classList.toggle('show');
+    btn.textContent=showing?'Show Answer':'Hide';
+    btn.classList.toggle('on',!showing);
+}
+
+// Progress bar
+window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    const p=(window.scrollY/h)*100;
+    document.getElementById('prog').style.width=p+'%';
+});
+
+// Review questions
+const RQS=[
+{q:"What does this display?\n\nx ← 8\ny ← x + 2\nx ← y * 2\nDISPLAY(x)",a:1,o:["A. 8","B. 20","C. 10","D. 16"],e:"y = 8+2 = 10. x = 10*2 = 20."},
+{q:"What is the value of result?\n\nresult ← 25 MOD 7",a:2,o:["A. 3","B. 7","C. 4","D. 3.57"],e:"7*3=21, 25-21=4. Remainder is 4."},
+{q:"What does this display?\n\na ← \"5\"\nb ← \"10\"\nDISPLAY(a + b)",a:3,o:["A. 15","B. 510","C. \"15\"","D. \"510\""],e:"Both are strings (in quotes). + concatenates: \"5\"+\"10\" = \"510\"."},
+{q:"Evaluate: (4 > 3) AND (10 < 5)",a:1,o:["A. true","B. false","C. 4","D. error"],e:"true AND false = false. Both must be true for AND."},
+{q:"What does this display? (x = 20)\n\nIF (x > 25)\n{ DISPLAY(\"high\") }\nELSE\n{ DISPLAY(\"low\") }",a:1,o:["A. \"high\"","B. \"low\"","C. 20","D. nothing"],e:"20 > 25? No. Goes to ELSE, displays \"low\"."},
+{q:"What does NOT (false OR true) evaluate to?",a:1,o:["A. true","B. false","C. error","D. NOT"],e:"false OR true = true. NOT true = false."},
+{q:"After this code, what is x?\n\nx ← 10\nIF (x > 5)\n{\n    x ← x + 10\n}\nIF (x > 15)\n{\n    x ← x - 3\n}",a:2,o:["A. 10","B. 20","C. 17","D. 7"],e:"x=10. 10>5? Yes, x=20. Then 20>15? Yes, x=20-3=17. TWO separate IFs, both checked."},
+{q:"What does 100 MOD 10 equal?",a:0,o:["A. 0","B. 10","C. 1","D. 100"],e:"10 goes into 100 exactly 10 times. No remainder. Answer: 0."},
+{q:"Which correctly swaps variables a and b?",a:2,o:["A. a ← b, then b ← a","B. b ← a, then a ← b","C. temp ← a, a ← b, b ← temp","D. a ← a + b, then b ← b - a"],e:"You need a temp variable. Option C saves a first, then overwrites a, then restores the old a into b."},
+{q:"Evaluate:\n\nNOT (5 ≠ 5)",a:0,o:["A. true","B. false","C. 5","D. error"],e:"5 ≠ 5 is false (5 equals 5). NOT false = true."},
+{q:"What does this display?\n\nn ← 7\nIF (n MOD 2 = 0)\n{ DISPLAY(\"even\") }\nELSE\n{ DISPLAY(\"odd\") }",a:1,o:["A. \"even\"","B. \"odd\"","C. 1","D. 7"],e:"7 MOD 2 = 1, not 0. So it's odd."},
+{q:"What does this display?\n\na ← 3\nb ← 4\nc ← a\na ← b\nb ← c\nDISPLAY(a)\nDISPLAY(b)",a:3,o:["A. 3, 4","B. 3, 3","C. 4, 4","D. 4, 3"],e:"This is a swap using c as temp. a becomes 4, b becomes 3."},
+{q:"Evaluate: (true OR false) AND (NOT false)",a:0,o:["A. true","B. false","C. error","D. OR"],e:"true OR false = true. NOT false = true. true AND true = true."},
+{q:"What does this display?\n\nx ← 50\nIF (x ≥ 90)\n{ DISPLAY(\"A\") }\nELSE {\n  IF (x ≥ 80)\n  { DISPLAY(\"B\") }\n  ELSE {\n    IF (x ≥ 70)\n    { DISPLAY(\"C\") }\n    ELSE\n    { DISPLAY(\"F\") }\n  }\n}",a:3,o:["A. \"A\"","B. \"B\"","C. \"C\"","D. \"F\""],e:"50 ≥ 90? No. 50 ≥ 80? No. 50 ≥ 70? No. ELSE → \"F\"."},
+{q:"What is (3 + 5) * 2 - 4 MOD 3?",a:2,o:["A. 17","B. 14","C. 15","D. 12"],e:"(3+5)=8, 8*2=16, 4 MOD 3=1, 16-1=15."},
+{q:"What does this display?\n\nresult ← \"\"\nIF (true)\n{\n    result ← result + \"A\"\n}\nIF (false)\n{\n    result ← result + \"B\"\n}\nIF (true)\n{\n    result ← result + \"C\"\n}\nDISPLAY(result)",a:1,o:["A. \"ABC\"","B. \"AC\"","C. \"A\"","D. \"\""],e:"Three separate IFs. First: true, add A. Second: false, skip. Third: true, add C. Result: \"AC\"."},
+{q:"Which expression is true ONLY when x is\nbetween 1 and 100 (inclusive)?",a:1,o:["A. (x > 1) AND (x < 100)","B. (x ≥ 1) AND (x ≤ 100)","C. (x ≥ 1) OR (x ≤ 100)","D. (x > 0) AND (x < 101)"],e:"B uses ≥ and ≤ to include 1 and 100. A excludes them. C is true for ALL numbers (every number is either ≥1 or ≤100). D works but is less clean."},
+{q:"After running this code, what is the value of count?\n\ncount ← 0\nIF (10 MOD 2 = 0)\n{ count ← count + 1 }\nIF (15 MOD 2 = 0)\n{ count ← count + 1 }\nIF (20 MOD 2 = 0)\n{ count ← count + 1 }",a:2,o:["A. 1","B. 3","C. 2","D. 0"],e:"10 MOD 2=0? Yes, count=1. 15 MOD 2=0? No (it's 1). 20 MOD 2=0? Yes, count=2."}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel="">
+    <div class="rq-num">Question ${i+1} of ${RQS.length}</div>
+    <div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{
+        h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;
+    });
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button>
+    <div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+
+function selOpt(btn,qid){
+    const c=document.getElementById(qid);
+    if(c.dataset.rev==='1')return;
+    c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    btn.classList.add('sel');
+    c.dataset.sel=btn.dataset.i;
+    c.querySelector('.chk').classList.add('rdy');
+}
+function chkQ(btn,qid,ans){
+    const c=document.getElementById(qid);
+    if(!c.dataset.sel||c.dataset.sel==='')return;
+    c.dataset.rev='1';
+    const s=parseInt(c.dataset.sel);
+    c.querySelectorAll('.opt').forEach((o,i)=>{
+        o.classList.add('locked');o.classList.remove('sel');
+        if(i===ans)o.classList.add('right');
+        else if(i===s&&i!==ans)o.classList.add('wrong');
+    });
+    c.querySelector('.expl').classList.add('show');
+    btn.textContent='Try Again';
+    btn.onclick=function(){rsQ(qid,ans);};
+}
+function rsQ(qid,ans){
+    const c=document.getElementById(qid);
+    c.dataset.rev='0';c.dataset.sel='';
+    c.querySelectorAll('.opt').forEach(o=>{o.classList.remove('locked','sel','right','wrong');});
+    c.querySelector('.expl').classList.remove('show');
+    const b=c.querySelector('.chk');
+    b.textContent='Check Answer';b.classList.remove('rdy');
+    b.onclick=function(){chkQ(b,qid,ans);};
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
