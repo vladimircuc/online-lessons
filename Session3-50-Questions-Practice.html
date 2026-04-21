@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 3: 50 Practice Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+.mono{font-family:'Fira Code',monospace}
+h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.cluster{margin:28px 0 12px;padding:10px 16px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:10px}
+.cluster-title{font-size:16px;font-weight:800;color:var(--purple)}.cluster-desc{font-size:12px;color:var(--dim);margin-top:2px}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0}
+.qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.qnum{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:2px 10px;font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+.qtype{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--purple);flex-shrink:0}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.open-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Fira Code',monospace;font-size:13px;resize:vertical;min-height:40px;margin-bottom:8px}
+.open-input:focus{outline:none;border-color:rgba(249,115,22,0.4)}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.ans-box{display:none;margin-top:10px;padding:14px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12);border-radius:8px}
+.ans-box.show{display:block}
+.ans-text{font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.score-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,14,0.95);border-top:1px solid var(--border);padding:10px 20px;display:flex;justify-content:center;gap:20px;font-size:13px;font-weight:600;backdrop-filter:blur(10px);z-index:99}
+.sc-c{color:var(--green)}.sc-w{color:var(--red)}.sc-t{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 3 / In-Class Practice</div>
+<h1>50 Questions: Procedures, Search & Algorithms</h1>
+<p class="sub">Open-ended first, then MCQ. Do these together.</p>
+<div id="content"></div>
+<div class="score-bar"><span class="sc-c" id="sc-c">Correct: 0</span><span class="sc-w" id="sc-w">Wrong: 0</span><span class="sc-t" id="sc-t">Answered: 0 / 50</span></div>
+<div style="height:60px"></div>
+<script>
+let correct=0,wrong=0,answered=0;
+const DATA=[
+{cluster:"Procedures & Parameters",desc:"Can she define, call, and trace through procedures?"},
+{type:"open",q:"PROCEDURE double(n)\n{\n    RETURN(n * 2)\n}\n\nDISPLAY(double(double(3)))",a:"Inner: double(3) = 6\nOuter: double(6) = 12\nDISPLAY → 12\n\nNested calls evaluate inside-out."},
+{type:"open",q:"PROCEDURE greeting(name, time)\n{\n    IF (time < 12)\n    { RETURN(\"Good morning, \" + name) }\n    ELSE\n    { RETURN(\"Good evening, \" + name) }\n}\n\nDISPLAY(greeting(\"Ana\", 9))\nDISPLAY(greeting(\"Bob\", 18))",a:"greeting(\"Ana\", 9): 9<12 yes\n→ \"Good morning, Ana\"\n\ngreeting(\"Bob\", 18): 18<12 no\n→ \"Good evening, Bob\""},
+{type:"open",q:"PROCEDURE addTax(price, rate)\n{\n    tax ← price * rate\n    RETURN(price + tax)\n}\n\nx ← addTax(100, 0.08)\nDISPLAY(x)",a:"tax = 100 * 0.08 = 8\nRETURN 100 + 8 = 108\nx = 108\nDISPLAY → 108"},
+{type:"mcq",q:"PROCEDURE mystery(a, b)\n{\n    IF (a > b)\n    { RETURN(a - b) }\n    ELSE\n    { RETURN(b - a) }\n}\n\nDISPLAY(mystery(3, 10))",o:["A. -7","B. 7","C. 3","D. 10"],a:1,e:"3>10? No → RETURN 10-3 = 7. This procedure computes absolute difference."},
+{type:"mcq",q:"PROCEDURE f(x)\n{\n    x ← x + 5\n    RETURN(x)\n}\n\na ← 10\nb ← f(a)\nDISPLAY(a)\nDISPLAY(b)",o:["A. 15, 15","B. 10, 15","C. 10, 10","D. 15, 10"],a:1,e:"a=10. Inside f: x gets a copy (10), x becomes 15, returns 15. But a outside is unchanged. a=10, b=15."},
+{type:"mcq",q:"PROCEDURE isPositive(n)\n{\n    RETURN(n > 0)\n}\n\nIF (isPositive(-5))\n{ DISPLAY(\"yes\") }\nELSE\n{ DISPLAY(\"no\") }",o:["A. yes","B. no","C. true","D. -5"],a:1,e:"isPositive(-5): -5>0 is false. Returns false. IF(false) → ELSE → DISPLAY \"no\"."},
+{type:"mcq",q:"PROCEDURE apply(list, func)\nWhat is this an example of?",o:["A. A loop","B. Passing a procedure as a parameter","C. Binary search","D. A simulation"],a:1,e:"Passing a procedure as an argument to another procedure. This is a higher-level abstraction concept."},
+{type:"mcq",q:"PROCEDURE factorial(n)\n{\n    result ← 1\n    REPEAT n TIMES\n    { result ← result * n\n      n ← n - 1 }\n    RETURN(result)\n}\nDISPLAY(factorial(4))",o:["A. 4","B. 16","C. 24","D. 256"],a:2,e:"result: 1*4=4, n=3. 4*3=12, n=2. 12*2=24, n=1. 24*1=24, n=0. RETURN 24. (4! = 24)"},
+
+{cluster:"RETURN vs DISPLAY",desc:"The exam LOVES testing this distinction."},
+{type:"open",q:"PROCEDURE addFive(n)\n{\n    DISPLAY(n + 5)\n}\n\nx ← addFive(10)\nDISPLAY(x)",a:"addFive(10): DISPLAYS 15 to screen.\nBut there's no RETURN, so it returns nothing.\nx gets nothing (undefined/null).\nDISPLAY(x) would display nothing meaningful.\n\nKEY: DISPLAY shows on screen.\nRETURN sends a value back to the caller.\nThis procedure DISPLAYS but doesn't RETURN."},
+{type:"mcq",q:"PROCEDURE compute(a, b)\n{\n    result ← a * b\n    DISPLAY(result)\n}\n\nx ← compute(3, 4)\nDISPLAY(x + 1)",o:["A. Displays 12 then 13","B. Displays 12 then error/nothing","C. Displays 13 only","D. Displays nothing"],a:1,e:"compute DISPLAYS 12 but has no RETURN. x gets nothing. DISPLAY(x+1) fails because x has no value."},
+{type:"mcq",q:"Which procedure correctly RETURNS\nthe larger of two values?",o:["A. PROCEDURE max(a,b){DISPLAY(a)}\n","B. PROCEDURE max(a,b){IF(a>b){RETURN(a)} ELSE{RETURN(b)}}","C. PROCEDURE max(a,b){IF(a>b){DISPLAY(a)}}\n","D. PROCEDURE max(a,b){RETURN(a+b)}"],a:1,e:"B checks which is larger and RETURNS it. A and C only DISPLAY (don't return). D returns the sum, not the larger."},
+
+{cluster:"Abstraction & Libraries",desc:"Using code without knowing how it works internally."},
+{type:"open",q:"A student uses the procedure\ncalculateGrade(scores) from a library.\nThey know it takes a list of scores\nand returns a letter grade.\n\nWhat do they NOT need to know\nto use this procedure?",a:"They do NOT need to know:\n- How the grade boundaries are calculated\n- What algorithm is used inside\n- What variables are used internally\n- How many lines of code it has\n\nThey only need to know:\n- Name: calculateGrade\n- Input: a list of scores\n- Output: a letter grade string\n\nThis is procedural abstraction."},
+{type:"mcq",q:"Using a library procedure without\nreading its source code is possible\nbecause of:",o:["A. Iteration","B. Procedural abstraction","C. Binary search","D. Simulation"],a:1,e:"Abstraction hides internal details. You use the interface (name, parameters, return) without the implementation."},
+{type:"mcq",q:"An API provides:",o:["A. The complete source code of a library","B. The names, parameters, and return values of available procedures","C. A way to delete other programs","D. Hardware specifications"],a:1,e:"An API is the interface specification: what procedures exist, what they take in, what they give back. Not the source code itself."},
+{type:"mcq",q:"Which is NOT a benefit of using\nprocedures?",o:["A. Code reusability","B. Easier debugging","C. Faster execution speed guaranteed","D. Managing complexity"],a:2,e:"Procedures don't guarantee faster speed. They help with organization, reuse, readability, and managing complexity."},
+
+{cluster:"Linear Search",desc:"Check every element, one by one."},
+{type:"open",q:"Trace linear search on this list\nfor target = 8:\n\nlist = [3, 7, 8, 2, 9]\n\nHow many comparisons to find it?",a:"Compare list[1]=3 with 8? No (1)\nCompare list[2]=7 with 8? No (2)\nCompare list[3]=8 with 8? YES (3)\n\n3 comparisons. Found at index 3.\n\nLinear search checks from left to right\nuntil it finds the target."},
+{type:"open",q:"Trace linear search for target = 5:\n\nlist = [3, 7, 8, 2, 9]\n\nHow many comparisons?",a:"Compare 3? No. 7? No. 8? No. 2? No. 9? No.\n\n5 comparisons (checked every element).\nTarget not found → returns false.\n\nWorst case for linear search: check ALL elements."},
+{type:"mcq",q:"A list has 500 unsorted elements.\nWhat is the MAXIMUM number of\ncomparisons for linear search?",o:["A. 250","B. 500","C. 9","D. 1000"],a:1,e:"Worst case: element is last or not there. Must check all 500."},
+{type:"mcq",q:"Linear search works on:",o:["A. Only sorted lists","B. Only unsorted lists","C. Both sorted and unsorted lists","D. Only lists of numbers"],a:2,e:"Linear search works on ANY list. It just checks each element one by one regardless of order."},
+{type:"mcq",q:"What does this return?\n\nPROCEDURE search(list, target)\n{\n    FOR EACH item IN list\n    {\n        IF (item = target)\n        { RETURN(true) }\n    }\n    RETURN(false)\n}\n\nsearch([10,20,30,40], 25)",o:["A. true","B. false","C. 25","D. -1"],a:1,e:"Checks 10,20,30,40. None equal 25. Loop finishes. Returns false."},
+
+{cluster:"Binary Search",desc:"Halve the list each time. MUST be sorted."},
+{type:"open",q:"Trace binary search for target = 13:\n\nsorted list = [2, 5, 8, 10, 13, 17, 20]\n\nShow each step.",a:"List: [2,5,8,10,13,17,20]. Middle = 10.\n13 > 10 → search right half: [13,17,20]\n\nMiddle = 17. 13 < 17 → search left: [13]\n\nMiddle = 13. Found!\n\n3 comparisons total."},
+{type:"open",q:"A sorted list has 1,000,000 elements.\nHow many comparisons does binary\nsearch need at most?",a:"log₂(1,000,000) ≈ 20\n\nBinary search needs at most ~20 comparisons\nto search through ONE MILLION elements.\n\nLinear search would need up to 1,000,000.\n\nThat's the power of halving each step."},
+{type:"mcq",q:"Binary search CANNOT be used when:",o:["A. The list has duplicates","B. The list is very large","C. The list is unsorted","D. The list contains strings"],a:2,e:"Binary search REQUIRES a sorted list. Duplicates, large lists, and strings are all fine as long as the data is sorted."},
+{type:"mcq",q:"A sorted list has 128 elements.\nMax binary search comparisons?",o:["A. 7","B. 64","C. 128","D. 8"],a:0,e:"log₂(128) = 7. 128→64→32→16→8→4→2→1. Seven halvings."},
+{type:"mcq",q:"After the first comparison in binary\nsearch on a list of 1024 elements,\nhow many elements remain to search?",o:["A. 1023","B. 512","C. 256","D. 1"],a:1,e:"Binary search cuts in half each step. 1024/2 = 512 remaining."},
+{type:"mcq",q:"To use binary search on a list,\nyou must first:",o:["A. Remove duplicates","B. Sort the list","C. Convert to numbers","D. Create a copy"],a:1,e:"Binary search only works on sorted data. If unsorted, sort first (or use linear search)."},
+
+{cluster:"Algorithmic Efficiency",desc:"Reasonable vs unreasonable. How runtime scales."},
+{type:"open",q:"Algorithm A takes n steps.\nAlgorithm B takes n² steps.\nAlgorithm C takes 2ⁿ steps.\n\nFor n = 20, how many steps each?",a:"A: 20 steps\nB: 400 steps (20²)\nC: 1,048,576 steps (2²⁰ = over 1 million)\n\nA and B are reasonable (polynomial).\nC is unreasonable (exponential).\n\nEven at n=20, exponential explodes."},
+{type:"open",q:"If doubling the input size QUADRUPLES\nthe runtime, what is the growth rate?\n\nGive an example algorithm.",a:"Quadratic growth: n²\n\nWhen n doubles:\nn → 2n\nn² → (2n)² = 4n² (quadrupled)\n\nExample: checking every PAIR in a list.\nNested loops where both loop over n items."},
+{type:"mcq",q:"Which is unreasonable time?",o:["A. n","B. n²","C. n³","D. 2ⁿ"],a:3,e:"n, n², n³ are all polynomial = reasonable. 2ⁿ is exponential = unreasonable."},
+{type:"mcq",q:"n = 30. Which is largest?",o:["A. n² = 900","B. n³ = 27,000","C. 2ⁿ ≈ 1 billion","D. 10n = 300"],a:2,e:"2³⁰ = 1,073,741,824. Exponential dwarfs everything else even at n=30."},
+{type:"mcq",q:"A problem requires checking every\nsubset of n items. For n = 20,\nthat's 2²⁰ = 1,048,576 subsets.\nFor n = 21, how many subsets?",o:["A. 1,048,577","B. 2,097,152","C. 1,048,596","D. 4,194,304"],a:1,e:"2²¹ = 2 * 2²⁰ = 2 * 1,048,576 = 2,097,152. Adding ONE element DOUBLES the subsets."},
+{type:"mcq",q:"A heuristic approach to a problem:",o:["A. Guarantees the optimal solution","B. Runs in unreasonable time","C. May not find the best solution but runs in reasonable time","D. Only works on sorted data"],a:2,e:"Heuristics trade guaranteed optimality for speed. They find a good-enough answer quickly."},
+{type:"mcq",q:"Which task has reasonable runtime?",o:["A. Try every ordering of n items (n!)","B. Try every subset of n items (2ⁿ)","C. Sort n items (n log n)","D. Try every combination of n binary choices (2ⁿ)"],a:2,e:"Sorting is n log n = reasonable. All others are exponential or factorial = unreasonable."},
+
+{cluster:"RANDOM & Simulations",desc:"Randomness, modeling, and limitations."},
+{type:"open",q:"What are ALL possible outputs?\n\nx ← RANDOM(1, 3)\ny ← RANDOM(1, 3)\nDISPLAY(x + y)",a:"x can be 1,2,3. y can be 1,2,3.\n\nMinimum: 1+1 = 2\nMaximum: 3+3 = 6\n\nPossible values: 2, 3, 4, 5, 6\n\n(Not all equally likely. 4 is most common\nbecause 1+3, 2+2, 3+1 all give 4.)"},
+{type:"open",q:"A simulation models 1000 coin flips\nand counts how many land on heads.\n\nWill it get EXACTLY 500 every time\nit runs? Why or why not?",a:"No. Each run uses different random values.\n\nThe result will be CLOSE to 500 on average,\nbut each individual run will vary.\nYou might get 487, 512, 503, etc.\n\nMore trials → closer to 50%, but never\nguaranteed to be exactly 500.\n\nThis is a key property of simulations:\nrandomness causes variation between runs."},
+{type:"mcq",q:"RANDOM(0, 9) can produce how\nmany different values?",o:["A. 9","B. 10","C. 8","D. 11"],a:1,e:"0,1,2,3,4,5,6,7,8,9. Both endpoints inclusive. That's 10 values. Formula: high-low+1 = 9-0+1 = 10."},
+{type:"mcq",q:"Which simulates rolling two dice\nand getting their sum?",o:["A. RANDOM(2, 12)","B. RANDOM(1,6) + RANDOM(1,6)","C. 2 * RANDOM(1, 6)","D. RANDOM(1, 12)"],a:1,e:"B rolls two independent dice. A gives uniform 2-12 (wrong distribution). C always gives even numbers. D includes 1 which is impossible with two dice."},
+{type:"mcq",q:"A simulation is run 100 times with\ndifferent random seeds. The results\nshow an average of 42. This means:",o:["A. The real answer is exactly 42","B. 42 is a reasonable estimate but not exact","C. The simulation is broken","D. It should be run exactly once for accuracy"],a:1,e:"Simulations give estimates. More trials = better estimate, but never guaranteed exact. 42 is a useful approximation."},
+{type:"mcq",q:"Which is a limitation of simulations?",o:["A. They can use random numbers","B. They can be run multiple times","C. They simplify reality and may not account for all factors","D. They are faster than real experiments"],a:2,e:"Simplification is the key limitation. Models can't include every real-world variable."},
+{type:"mcq",q:"How do you pick a random element\nfrom a list in AP pseudocode?",o:["A. list[RANDOM(0, LENGTH(list))]","B. list[RANDOM(1, LENGTH(list))]","C. RANDOM(list)","D. list[RANDOM(1, LENGTH(list)-1)]"],a:1,e:"1-based indexing! Valid indices are 1 to LENGTH. RANDOM(1, LENGTH(list)) picks a valid random index."},
+
+{cluster:"Undecidable Problems",desc:"What CAN'T algorithms solve?"},
+{type:"open",q:"Explain in your own words why the\nHalting Problem is undecidable.",a:"The Halting Problem asks:\n\"Given ANY program and ANY input,\nwill it halt or run forever?\"\n\nIt's proven that NO single algorithm can\nanswer this correctly for ALL programs.\n\nSome specific programs can be analyzed,\nbut there's no GENERAL solution that\nworks for every possible program.\n\nThis is a fundamental limit of computing."},
+{type:"mcq",q:"Which is decidable?",o:["A. Does program P halt on input X for all P and X?","B. Is this number even?","C. Do programs A and B produce identical output for all inputs?","D. Will this program ever produce any output?"],a:1,e:"B is trivially decidable: n MOD 2 = 0. A is the Halting Problem. C and D are variants of it. All undecidable for arbitrary programs."},
+{type:"mcq",q:"A problem is undecidable if:",o:["A. It takes a long time to solve","B. No algorithm exists that solves it for ALL inputs","C. It requires a supercomputer","D. It has more than one correct answer"],a:1,e:"Undecidable means proven impossible to solve in general, not just hard or slow. No algorithm, no matter how powerful, can solve it for every input."},
+{type:"mcq",q:"The Halting Problem proves that:",o:["A. All programs eventually halt","B. Some programs run forever","C. There are limits to what algorithms can compute","D. Computers need more memory"],a:2,e:"The Halting Problem demonstrates fundamental limits of computation. Not all questions about programs can be answered by algorithms."},
+
+{cluster:"Mixed Challenges",desc:"Everything combined. Exam-level."},
+{type:"mcq",q:"PROCEDURE transform(list)\n{\n    result ← []\n    FOR EACH n IN list\n    {\n        APPEND(result, n * n)\n    }\n    RETURN(result)\n}\n\nDISPLAY(transform([1,2,3,4]))",o:["A. [1,2,3,4]","B. [2,4,6,8]","C. [1,4,9,16]","D. 30"],a:2,e:"Squares each element: 1,4,9,16. Returns new list."},
+{type:"mcq",q:"PROCEDURE countMatch(list, target)\n{\n    count ← 0\n    FOR EACH item IN list\n    {\n        IF (item = target)\n        { count ← count + 1 }\n    }\n    RETURN(count)\n}\n\nDISPLAY(countMatch([3,5,3,7,3],3))",o:["A. 1","B. 2","C. 3","D. 5"],a:2,e:"3 appears at positions 1, 3, 5. Count = 3."},
+{type:"mcq",q:"A student writes a procedure that\ncalls itself. This is called:",o:["A. Iteration","B. Abstraction","C. Recursion","D. Simulation"],a:2,e:"A procedure calling itself is recursion. The AP CSP exam doesn't require writing recursive code but may reference the concept."},
+{type:"mcq",q:"PROCEDURE filter(list, minimum)\n{\n    result ← []\n    FOR EACH n IN list\n    {\n        IF (n ≥ minimum)\n        { APPEND(result, n) }\n    }\n    RETURN(result)\n}\n\nx ← filter([5,12,3,18,7,1], 6)\nDISPLAY(LENGTH(x))",o:["A. 2","B. 3","C. 6","D. 4"],a:1,e:"Elements ≥ 6: 12, 18, 7. That's 3 elements. LENGTH = 3."},
+{type:"mcq",q:"A problem has n items. The only known\nalgorithm checks every permutation (n!).\nFor n=15, that's over 1 trillion checks.\nA heuristic gives a \"good\" answer in n² steps.\nWhich statement is true?",o:["A. The heuristic always gives the best answer","B. The heuristic gives a reasonable-time approximate answer","C. The n! algorithm should always be used","D. n=15 is too small for any algorithm"],a:1,e:"n! is unreasonable. The heuristic trades guaranteed optimality for reasonable runtime. It gives a good-enough answer."},
+{type:"mcq",q:"PROCEDURE process(x)\n{\n    IF (x MOD 2 = 0)\n    { RETURN(x / 2) }\n    RETURN(x * 3 + 1)\n}\n\nstart ← 6\nREPEAT 4 TIMES\n{ start ← process(start) }\nDISPLAY(start)",o:["A. 8","B. 1","C. 16","D. 4"],a:2,e:"start=6 (even)→3. start=3 (odd)→10. start=10 (even)→5. start=5 (odd)→16. DISPLAY 16."},
+{type:"mcq",q:"A sorted list of 1 billion elements.\nBinary search max comparisons?",o:["A. 500 million","B. 1000","C. 30","D. 1 billion"],a:2,e:"log₂(1,000,000,000) ≈ 30. Only ~30 comparisons to search 1 billion elements."}
+];
+
+function build(){
+    const el=document.getElementById('content');let qNum=0,html='';
+    DATA.forEach(item=>{
+        if(item.cluster){html+=`<div class="cluster"><div class="cluster-title">${item.cluster}</div><div class="cluster-desc">${item.desc}</div></div>`;return;}
+        qNum++;const qid='q'+qNum;
+        if(item.type==='open'){
+            html+=`<div class="qcard"><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">OPEN</span></div><div class="qtext">${esc(item.q)}</div><textarea class="open-input mono" placeholder="Her answer..."></textarea><button class="reveal-btn" onclick="rv(this)">Show Answer</button><div class="ans-box"><div class="ans-text">${esc(item.a)}</div></div></div>`;
+        } else {
+            html+=`<div class="qcard" id="${qid}" data-rev="0" data-sel=""><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">MCQ</span></div><div class="qtext">${esc(item.q)}</div><div class="opts">`;
+            item.o.forEach((opt,oi)=>{html+=`<button class="opt" data-i="${oi}" onclick="so(this,'${qid}')">${esc(opt)}</button>`;});
+            html+=`</div><button class="chk" onclick="ck(this,'${qid}',${item.a})">Check Answer</button><div class="expl">${esc(item.e)}</div></div>`;
+        }
+    });el.innerHTML=html;
+}
+function rv(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+function so(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function ck(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;if(c.dataset.rev==='1')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');if(s===ans)correct++;else wrong++;answered++;upd();btn.style.display='none';}
+function upd(){document.getElementById('sc-c').textContent='Correct: '+correct;document.getElementById('sc-w').textContent='Wrong: '+wrong;document.getElementById('sc-t').textContent='Answered: '+answered+' / 50';}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+build();
+</script>
+</body>
+</html>

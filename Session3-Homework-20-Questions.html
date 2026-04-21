@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 3 Homework: Procedures, Search & Algorithms</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.info{padding:14px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.12);border-radius:10px;margin-bottom:20px;font-size:13px;color:rgba(192,132,252,0.8);line-height:1.6}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0;transition:border-color 0.3s}
+.qcard.was-right{border-color:rgba(34,197,94,0.3)}.qcard.was-wrong{border-color:rgba(239,68,68,0.3)}
+.qnum{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:5px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:10px 14px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}.opt.faded{opacity:0.4}
+.expl{margin-top:12px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.6;display:none}.expl.show{display:block}
+.wrong-label{margin-top:8px;padding:6px 12px;background:rgba(239,68,68,0.08);border-radius:6px;font-size:12px;font-weight:600;color:var(--red);display:none}.wrong-label.show{display:inline-block}
+.submit-area{text-align:center;margin:30px 0;padding:30px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.submit-btn{background:rgba(249,115,22,0.2);border:2px solid rgba(249,115,22,0.4);color:var(--accent);padding:14px 40px;border-radius:10px;cursor:pointer;font-size:18px;font-weight:800;font-family:'DM Sans',sans-serif}
+.submit-btn:hover{background:rgba(249,115,22,0.3)}
+.unanswered-msg{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.results{display:none;text-align:center;margin:30px 0;padding:30px;border-radius:14px}.results.show{display:block}
+.results h2{font-size:48px;font-weight:800;margin-bottom:4px}
+.results .pct{font-size:20px;font-weight:700;margin-bottom:16px}
+.results .msg{font-size:14px;color:var(--dim);margin-bottom:16px;line-height:1.6;white-space:pre-wrap}
+.results .ss-msg{font-size:13px;color:rgba(251,146,60,0.8);padding:14px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.12);border-radius:10px;line-height:1.6}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 3 / Homework</div>
+<h1>20 Questions: Procedures, Search & Algorithms</h1>
+<p class="sub">Answer all 20, then hit Submit. Screenshot results and send to your tutor.</p>
+<div class="info">These cover procedures with RETURN, linear vs binary search, algorithmic efficiency, RANDOM, simulations, and undecidable problems. Take your time on the tracing questions.</div>
+<div id="qs"></div>
+<div class="submit-area" id="submit-area"><button class="submit-btn" onclick="submitAll()">Submit Answers</button><div class="unanswered-msg" id="ua-msg"></div></div>
+<div class="results" id="results"><h2 id="res-score"></h2><div class="pct" id="res-pct"></div><div class="msg" id="res-msg"></div><div class="ss-msg">📱 Screenshot this page and send it to your tutor so they can see your score and which questions you missed.</div></div>
+<script>
+const QS=[
+{q:"PROCEDURE compute(a, b)\n{\n    RETURN(a * b - a)\n}\n\nDISPLAY(compute(5, 4))",o:["A. 20","B. 15","C. 9","D. 25"],a:1,e:"5*4-5 = 20-5 = 15."},
+{q:"PROCEDURE check(n)\n{\n    IF (n MOD 3 = 0)\n    { RETURN(\"fizz\") }\n    IF (n MOD 5 = 0)\n    { RETURN(\"buzz\") }\n    RETURN(n)\n}\n\nDISPLAY(check(15))",o:["A. \"fizzbuzz\"","B. \"fizz\"","C. \"buzz\"","D. 15"],a:1,e:"15 MOD 3=0 → RETURN \"fizz\" immediately. RETURN exits, so the MOD 5 check never runs. To get \"fizzbuzz\" you'd need a combined check FIRST."},
+{q:"PROCEDURE mystery(x)\n{\n    DISPLAY(x)\n    RETURN(x + 1)\n}\n\na ← mystery(5)\nDISPLAY(a)",o:["A. Displays 5 only","B. Displays 5 then 6","C. Displays 6 only","D. Displays 6 then 5"],a:1,e:"mystery(5) first DISPLAYS 5, then RETURNS 6. a=6. Then DISPLAY(a) shows 6. Output: 5, then 6."},
+{q:"PROCEDURE sumRange(start, end)\n{\n    total ← 0\n    i ← start\n    REPEAT UNTIL (i > end)\n    {\n        total ← total + i\n        i ← i + 1\n    }\n    RETURN(total)\n}\n\nDISPLAY(sumRange(3, 6))",o:["A. 18","B. 15","C. 21","D. 9"],a:0,e:"3+4+5+6 = 18."},
+{q:"A sorted list has 512 elements.\nBinary search max comparisons?",o:["A. 256","B. 8","C. 9","D. 512"],a:2,e:"log₂(512) = 9. (512=2⁹)"},
+{q:"PROCEDURE operate(list)\n{\n    result ← list[1]\n    FOR EACH n IN list\n    {\n        IF (n < result)\n        { result ← n }\n    }\n    RETURN(result)\n}\n\nWhat does this procedure do?",o:["A. Returns the sum","B. Returns the maximum","C. Returns the minimum","D. Returns the average"],a:2,e:"Starts at first element, updates result whenever it finds something SMALLER. This is find-minimum."},
+{q:"An algorithm checks every pair of items\nin a list of n items.\nIf n doubles from 100 to 200,\nthe number of pairs goes from\n4,950 to approximately:",o:["A. 9,900","B. 19,900","C. 4,951","D. 2,475"],a:1,e:"Pairs ≈ n²/2. When n doubles, pairs quadruple. 4,950 * 4 ≈ 19,800. Exact: 200*199/2 = 19,900."},
+{q:"Which is TRUE about binary search?",o:["A. Works on any list","B. Slower than linear search","C. Requires a sorted list","D. Uses exponential time"],a:2,e:"Binary search REQUIRES sorted data. It's faster than linear (log n vs n). Uses logarithmic time."},
+{q:"PROCEDURE transform(s)\n{\n    result ← \"\"\n    i ← LENGTH(s)\n    REPEAT UNTIL (i < 1)\n    {\n        result ← result + s[i]\n        i ← i - 1\n    }\n    RETURN(result)\n}\n\nWhat does transform(\"abcd\") return?",o:["A. \"abcd\"","B. \"dcba\"","C. \"abcdabcd\"","D. \"d\""],a:1,e:"Starts at last character and works backward: d,c,b,a → \"dcba\". This reverses a string."},
+{q:"All possible values of:\nRANDOM(2, 5) * RANDOM(1, 3)",o:["A. 2 through 15","B. 3 through 15","C. 2 through 12","D. 1 through 15"],a:0,e:"First: 2,3,4,5. Second: 1,2,3. Min: 2*1=2. Max: 5*3=15. Range: 2 through 15 (not every integer appears)."},
+{q:"A simulation of disease spread runs\n500 trials and predicts that 30% of\na population gets infected.\nWhich is the best interpretation?",o:["A. Exactly 30% will be infected in real life","B. 30% is an estimate, actual results may vary","C. The simulation is wrong","D. 500 trials is too few to draw conclusions"],a:1,e:"Simulations give estimates based on models. Real-world results may differ due to factors not in the model."},
+{q:"PROCEDURE apply(list, threshold)\n{\n    count ← 0\n    FOR EACH item IN list\n    {\n        IF (item ≥ threshold)\n        { count ← count + 1 }\n    }\n    RETURN(count)\n}\n\nDISPLAY(apply([85,92,78,95,88,71], 90))",o:["A. 2","B. 3","C. 4","D. 6"],a:0,e:"≥90: 92(1), 95(2). count = 2."},
+{q:"Linear search on 10,000 unsorted elements.\nWorst case comparisons?",o:["A. 100","B. 1,000","C. 10,000","D. 14"],a:2,e:"Linear search worst case: check every element. 10,000 comparisons."},
+{q:"Which problem is undecidable?",o:["A. Sorting a list of numbers","B. Finding the shortest path in a graph","C. Determining whether any arbitrary program will eventually halt","D. Checking if a number is prime"],a:2,e:"C is the Halting Problem, proven undecidable. A, B, D all have known algorithms."},
+{q:"PROCEDURE compose(f, g, x)\n{\n    RETURN(f(g(x)))\n}\n\nPROCEDURE double(n) { RETURN(n*2) }\nPROCEDURE addOne(n) { RETURN(n+1) }\n\nDISPLAY(compose(double, addOne, 5))",o:["A. 11","B. 12","C. 10","D. 7"],a:1,e:"Inner: g(x) = addOne(5) = 6. Outer: f(6) = double(6) = 12."},
+{q:"Algorithm A runs in n time.\nAlgorithm B runs in n log₂(n) time.\nAlgorithm C runs in n² time.\n\nFor n = 1000, rank fastest to slowest.",o:["A. A, B, C","B. C, B, A","C. B, A, C","D. A, C, B"],a:0,e:"A: 1000. B: 1000*10=10,000. C: 1,000,000. Fastest to slowest: A, B, C."},
+{q:"PROCEDURE mystery(list)\n{\n    IF (LENGTH(list) = 0)\n    { RETURN(0) }\n    sum ← 0\n    FOR EACH n IN list\n    { sum ← sum + n }\n    RETURN(sum / LENGTH(list))\n}\n\nWhat does mystery compute?",o:["A. Sum","B. Maximum","C. Average","D. Count"],a:2,e:"Sums all elements, divides by count. That's the average. Also handles empty list by returning 0."},
+{q:"A student needs to check if a name\nexists in an alphabetically sorted\nlist of 50,000 names.\nBest search method?",o:["A. Linear search","B. Binary search","C. Random search","D. Check only the first element"],a:1,e:"List is sorted, so binary search works and is much faster. ~16 comparisons vs up to 50,000 for linear."},
+{q:"PROCEDURE power(base, exp)\n{\n    IF (exp = 0)\n    { RETURN(1) }\n    result ← 1\n    REPEAT exp TIMES\n    { result ← result * base }\n    RETURN(result)\n}\n\nDISPLAY(power(3, 0) + power(2, 3))",o:["A. 9","B. 8","C. 1","D. 9"],a:0,e:"power(3,0): exp=0 → RETURN 1. power(2,3): 1*2*2*2=8. 1+8=9."},
+{q:"A brute-force algorithm tries all\npossible 8-character passwords\nusing 26 letters.\nHow does adding a 9th character\naffect the number of attempts?",o:["A. Adds 26 more attempts","B. Doubles the attempts","C. Multiplies attempts by 26","D. No change"],a:2,e:"26⁸ passwords vs 26⁹. 26⁹ = 26 * 26⁸. Each additional character multiplies the space by 26. Exponential growth."}
+];
+
+let submitted=false;const sel=new Array(QS.length).fill(-1);
+function build(){
+    const el=document.getElementById('qs');let h='';
+    QS.forEach((q,i)=>{
+        h+=`<div class="qcard" id="hw${i}"><div class="qnum">Question ${i+1} of ${QS.length}</div><div class="qtext">${esc(q.q)}</div><div class="opts">`;
+        q.o.forEach((opt,oi)=>{h+=`<button class="opt" data-qi="${i}" data-oi="${oi}" onclick="pick(${i},${oi},this)">${esc(opt)}</button>`;});
+        h+=`</div><div class="wrong-label" id="wl${i}">✗ Incorrect</div><div class="expl" id="ex${i}">${esc(q.e)}</div></div>`;
+    });el.innerHTML=h;
+}
+function pick(qi,oi,btn){if(submitted)return;const c=document.getElementById('hw'+qi);c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');sel[qi]=oi;}
+function submitAll(){
+    if(submitted)return;const ua=sel.filter(s=>s===-1).length;
+    if(ua>0){const m=document.getElementById('ua-msg');m.textContent=`You still have ${ua} unanswered question${ua>1?'s':''}. Answer all before submitting.`;m.style.display='block';document.getElementById('hw'+sel.indexOf(-1)).scrollIntoView({behavior:'smooth',block:'center'});return;}
+    submitted=true;let correct=0;const wr=[];
+    QS.forEach((q,i)=>{
+        const c=document.getElementById('hw'+i);const s=sel[i];
+        c.querySelectorAll('.opt').forEach((o,oi)=>{o.classList.add('locked');o.classList.remove('sel');if(oi===q.a)o.classList.add('right');else if(oi===s&&oi!==q.a)o.classList.add('wrong');else o.classList.add('faded');});
+        if(s===q.a){correct++;c.classList.add('was-right');}else{c.classList.add('was-wrong');document.getElementById('wl'+i).classList.add('show');document.getElementById('ex'+i).classList.add('show');wr.push(i+1);}
+    });
+    const pct=Math.round(correct/QS.length*100);document.getElementById('submit-area').style.display='none';
+    const r=document.getElementById('results');r.classList.add('show');
+    const sc=document.getElementById('res-score');sc.textContent=correct+' / '+QS.length;sc.style.color=pct>=80?'var(--green)':pct>=60?'var(--accent)':'var(--red)';
+    document.getElementById('res-pct').textContent=pct+'%';document.getElementById('res-pct').style.color=sc.style.color;
+    let msg=pct===100?'Perfect! Procedures, search, and algorithms are locked in.':pct>=85?'Excellent. Strong grasp on abstraction and algorithmic thinking.':pct>=70?'Good work. Review the missed ones, especially any search or efficiency concepts.':pct>=50?'Decent but review needed. Focus on RETURN vs DISPLAY and the binary search requirements.':'Needs more work. Re-read the lesson, especially the search comparison table and efficiency section.';
+    if(wr.length>0)msg+='\n\nQuestions missed: '+wr.join(', ');
+    document.getElementById('res-msg').textContent=msg;r.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+build();
+</script>
+</body>
+</html>
