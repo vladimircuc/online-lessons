@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Exam 3 · Haskell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --bg: #0f0d0b;
+    --surface: #1a1613;
+    --surface-elevated: #221d18;
+    --border: #2d251f;
+    --border-light: #3a3028;
+    --text: #ede4d3;
+    --text-muted: #9a8e7a;
+    --text-dim: #6b6258;
+    --accent: #e8b341;
+    --accent-dim: #a8813a;
+    --accent-bg: rgba(232, 179, 65, 0.08);
+    --success: #86b86c;
+    --warning: #e47a5a;
+    --info: #6ab0cc;
+    --code-bg: #100e0c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Fraunces', Georgia, serif; font-size: 17px; line-height: 1.7; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; font-feature-settings: "ss01", "ss02"; min-height: 100vh; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .topbar-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .topbar-left .brand { color: var(--accent); font-weight: 500; }
+  .topbar-left .dot { color: var(--text-dim); margin: 0 8px; }
+  .tabnav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 8px 14px; background: transparent; color: var(--text-muted); border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface-elevated); }
+  .tab.active { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-dim); }
+  .main { max-width: 900px; margin: 0 auto; padding: 48px 32px 80px; }
+  .part { display: none; }
+  .part.active { display: block; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .cover { padding: 40px 0 60px; border-bottom: 2px solid var(--accent-dim); margin-bottom: 48px; }
+  .cover-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+  .cover h1 { font-family: 'Fraunces', serif; font-size: 60px; line-height: 1.05; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .cover h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .cover-subtitle { font-size: 18px; color: var(--text-muted); margin-bottom: 32px; }
+  .cover-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 24px; }
+  .cover-card { padding: 16px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+  .cover-card .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+  .cover-card .value { font-family: 'Fraunces', serif; font-size: 20px; color: var(--text); font-weight: 500; }
+  .cover-instructions { margin-top: 32px; padding: 18px 22px; background: var(--surface); border-left: 3px solid var(--info); border-radius: 6px; font-size: 15px; line-height: 1.7; }
+  .cover-instructions .inst-header { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--info); margin-bottom: 10px; font-weight: 500; }
+  .part-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+  .part-meta .accent { color: var(--accent); }
+  .target-header { padding: 20px 24px; background: linear-gradient(180deg, var(--accent-bg) 0%, transparent 100%); border-left: 3px solid var(--accent); border-radius: 6px; margin-bottom: 32px; }
+  .target-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; margin-bottom: 6px; color: var(--accent); }
+  .target-desc { font-style: italic; color: var(--text-muted); font-size: 15px; }
+  h1 { font-family: 'Fraunces', serif; font-size: 44px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 20px; }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  h2 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; margin: 40px 0 14px; line-height: 1.25; }
+  h2:first-of-type { margin-top: 0; }
+  h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin: 28px 0 12px; }
+  p { margin-bottom: 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--surface-elevated); padding: 2px 7px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); white-space: nowrap; }
+  pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px !important; margin: 18px 0; overflow-x: auto; font-size: 13.5px !important; line-height: 1.65; }
+  pre code { background: none; padding: 0; border: none; color: var(--text); font-size: 13.5px; white-space: pre; }
+  ul, ol { margin: 14px 0 18px; padding-left: 26px; }
+  li { margin-bottom: 7px; }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .question { margin: 28px 0; padding: 22px 26px; background: var(--surface); border: 1px solid var(--border-light); border-radius: 10px; }
+  .question-label { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .question-label .q-num { color: var(--accent); font-weight: 700; }
+  .question p:last-child { margin-bottom: 0; }
+  .pattern-data { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 16px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .pd-key { color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; padding-top: 3px; }
+  .pd-val { color: var(--text); }
+  details.solution { margin: 16px 0 0; background: transparent; border-radius: 8px; overflow: hidden; }
+  details.solution summary { padding: 10px 16px; cursor: pointer; background: var(--surface-elevated); border: 1px solid var(--border); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); list-style: none; display: inline-flex; align-items: center; gap: 10px; transition: all 0.15s; user-select: none; }
+  details.solution summary::-webkit-details-marker { display: none; }
+  details.solution summary::before { content: "▸"; transition: transform 0.2s; color: var(--accent); font-size: 10px; }
+  details.solution[open] summary::before { transform: rotate(90deg); }
+  details.solution summary:hover { background: #2a231c; border-color: var(--accent-dim); }
+  .solution-body { margin-top: 16px; padding: 18px 22px; background: rgba(134, 184, 108, 0.05); border: 1px solid rgba(134, 184, 108, 0.2); border-left: 3px solid var(--success); border-radius: 8px; font-size: 15.5px; }
+  .solution-body p:first-child { margin-top: 0; }
+  .solution-body .solution-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--success); margin-bottom: 10px; font-weight: 600; }
+  .solution-body .answer { padding: 10px 14px; background: var(--code-bg); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--success); margin: 10px 0; }
+  .solution-body .answer.wrong { color: var(--warning); }
+  .tree-diagram { margin: 18px 0; padding: 20px 24px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; overflow-x: auto; }
+  .tree-diagram pre { background: none !important; border: none; padding: 0 !important; margin: 0; font-size: 14px !important; line-height: 1.8; }
+  .tree-diagram .tree-node { color: var(--accent); font-weight: 600; }
+  .tree-diagram .tree-empty { color: var(--text-dim); font-style: italic; }
+  .tree-diagram .tree-line { color: var(--border-light); }
+  .blank { display: inline-block; min-width: 160px; padding: 2px 10px; margin: 0 4px; background: var(--accent-bg); border-bottom: 2px solid var(--accent-dim); color: var(--text-dim); font-style: italic; font-size: 13px; text-align: center; }
+  .footer-nav { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .nav-btn { padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex: 1; max-width: 260px; text-align: left; }
+  .nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent-dim); background: var(--surface-elevated); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav-btn.next { text-align: right; }
+  .nav-btn .label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+  .nav-btn .title { display: block; color: var(--text); font-weight: 600; }
+  .nav-btn.next .title::after { content: " →"; color: var(--accent); }
+  .nav-btn.prev .title::before { content: "← "; color: var(--accent); }
+  .progress { position: sticky; top: 54px; height: 2px; background: var(--border); z-index: 49; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .appendix { margin: 40px 0; padding: 24px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .appendix-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; margin-bottom: 14px; color: var(--accent); }
+  .appendix pre { margin: 0; font-size: 13px !important; }
+  @media (max-width: 768px) {
+    .topbar-inner { flex-direction: column; align-items: flex-start; }
+    .tabnav { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { flex-shrink: 0; }
+    .main { padding: 28px 18px 60px; }
+    .cover h1 { font-size: 40px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 22px; }
+    .footer-nav { flex-direction: column; }
+    .nav-btn { max-width: 100%; }
+  }
+  .token.comment { color: #6b6258; font-style: italic; }
+  .token.keyword { color: #e8b341; }
+  .token.string { color: #86b86c; }
+  .token.number { color: #e47a5a; }
+  .token.function { color: #6ab0cc; }
+  .token.operator { color: #ede4d3; background: none; }
+  .token.builtin { color: #c58fd5; }
+  .token.class-name { color: #f4c06c; }
+  .token.punctuation { color: #9a8e7a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="brand">λ Haskell</span>
+      <span class="dot">·</span>
+      <span>Practice Exam 3</span>
+      <span class="dot">·</span>
+      <span>75 min</span>
+    </div>
+    <nav class="tabnav" id="tabnav">
+      <button class="tab active" data-part="0">Cover</button>
+      <button class="tab" data-part="1">P.1</button>
+      <button class="tab" data-part="2">P.2</button>
+      <button class="tab" data-part="3">P.3</button>
+      <button class="tab" data-part="4">T.1</button>
+      <button class="tab" data-part="5">T.2</button>
+      <button class="tab" data-part="6">Appendix</button>
+    </nav>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="progressBar" style="width:14.28%"></div></div>
+
+<main class="main">
+
+<!-- COVER -->
+<section class="part active" data-part="0">
+  <div class="cover">
+    <div class="cover-meta">Practice Exam · No. 3</div>
+    <h1>Haskell <em>Exam</em></h1>
+    <p class="cover-subtitle">Third practice exam. Exam-level difficulty, different scenarios across all five learning targets.</p>
+
+    <div class="cover-info">
+      <div class="cover-card">
+        <div class="label">Time</div>
+        <div class="value">75 min</div>
+      </div>
+      <div class="cover-card">
+        <div class="label">Sections</div>
+        <div class="value">5</div>
+      </div>
+      <div class="cover-card">
+        <div class="label">Questions</div>
+        <div class="value">12</div>
+      </div>
+      <div class="cover-card">
+        <div class="label">Difficulty</div>
+        <div class="value">Exam-level</div>
+      </div>
+    </div>
+
+    <div class="cover-instructions">
+      <div class="inst-header">Instructions</div>
+      <ul style="margin-bottom: 0;">
+        <li>Work through each section in order: P.1 → P.2 → P.3 → T.1 → T.2.</li>
+        <li>Attempt every problem before revealing solutions.</li>
+        <li>Each question has a <strong>Show Solution</strong> button at the bottom.</li>
+        <li>The Appendix at the end lists standard Haskell functions you may use.</li>
+        <li>Verify your T.2 answers in ghci after solving.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" disabled><span class="label">Previous</span><span class="title">Start</span></button>
+    <button class="nav-btn next" data-goto="1"><span class="label">Begin with</span><span class="title">Learning Target P.1</span></button>
+  </div>
+</section>
+
+<!-- PART 1 · P.1 -->
+<section class="part" data-part="1">
+  <div class="part-meta">Section <span class="accent">1</span> of 5</div>
+
+  <div class="target-header">
+    <div class="target-title">Learning Target P.1</div>
+    <div class="target-desc">P.1: I can calculate and explain the results/effects of an attempt to match data involving algebraic data types (possibly incorporating tuples and lists) against Haskell patterns.</div>
+  </div>
+
+  <h2>Given</h2>
+
+  <pre><code class="language-haskell">data Gem = Ruby Integer
+         | Pearl [Char]
+
+data Chest = Locked Gem
+           | Open [Gem] Integer
+
+prize, loot :: Chest
+prize = Locked (Ruby 42)
+loot  = Open [Pearl "ab", Ruby 7, Pearl "xyz"] 99
+
+haul :: [Chest]
+haul = [Locked (Pearl "k"), Open [] 0, Locked (Ruby 5)]
+
+pair :: (Gem, [Gem])
+pair = (Ruby 3, [Pearl "n", Ruby 8])</code></pre>
+
+  <p>For each case below, determine what happens in an attempt to match the pattern with the indicated data.</p>
+
+  <ul>
+    <li><em>If the data fails to match the pattern</em>, write <strong>No match</strong> and briefly explain why.</li>
+    <li><em>If the data matches</em>, give the resulting value for the indicated variable.</li>
+  </ul>
+
+  <!-- Q1.1 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.1</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Locked (Ruby n))</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>prize</code></span>
+    </div>
+    <p>Give the resulting value for <code>n</code>.</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p><code>prize = Locked (Ruby 42)</code>. Outer matches <code>Locked (...)</code>, inner matches <code>Ruby n</code>.</p>
+        <div class="answer">n = 42</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1.2 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.2</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Open (g:_) k)</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>loot</code></span>
+    </div>
+    <p>Give the resulting values for <code>g</code> and <code>k</code>.</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p><code>loot = Open [Pearl "ab", Ruby 7, Pearl "xyz"] 99</code>. Matches <code>Open (...) k</code> with <code>k = 99</code>. Inner list matches <code>(g:_)</code> with <code>g</code> = first element.</p>
+        <div class="answer">g = Pearl "ab", k = 99</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1.3 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.3</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Pearl (a:b:_))</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>(head (tail (tail (case loot of Open gs _ -&gt; gs))))</code></span>
+    </div>
+    <p>(This is just <code>Pearl "xyz"</code> written out, match that.) Give the resulting values for <code>a</code> and <code>b</code>.</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p>Data is <code>Pearl "xyz"</code> which is <code>Pearl ['x', 'y', 'z']</code>. Matches <code>Pearl (a:b:_)</code> where inner list has at least 2 elements.</p>
+        <ul>
+          <li><code>a = 'x'</code></li>
+          <li><code>b = 'y'</code></li>
+          <li><code>_ = ['z']</code></li>
+        </ul>
+        <div class="answer">a = 'x', b = 'y'</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1.4 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.4</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Locked (Pearl s))</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>(haul !! 2)</code></span>
+    </div>
+    <p>Give the resulting value for <code>s</code>. (Note: <code>haul !! 2</code> is the third element.)</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p><code>haul !! 2</code> = <code>Locked (Ruby 5)</code>. Outer <code>Locked (...)</code> matches. Inner must match <code>Pearl s</code>, but inner is <code>Ruby 5</code>. <strong>Pattern fails.</strong></p>
+        <div class="answer wrong">No match. The inner pattern expects a Pearl, but the value is a Ruby.</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1.5 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.5</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Ruby n, (g:_))</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>pair</code></span>
+    </div>
+    <p>Give the resulting values for <code>n</code> and <code>g</code>.</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p><code>pair = (Ruby 3, [Pearl "n", Ruby 8])</code>. Tuple pattern matches. First element <code>Ruby n</code> binds <code>n = 3</code>. Second element <code>(g:_)</code> matches non-empty list.</p>
+        <ul>
+          <li><code>n = 3</code></li>
+          <li><code>g = Pearl "n"</code></li>
+        </ul>
+        <div class="answer">n = 3, g = Pearl "n"</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q1.6 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q1.6</span></div>
+    <div class="pattern-data">
+      <span class="pd-key">Pattern:</span><span class="pd-val"><code>(Open (g1:g2:_) _)</code></span>
+      <span class="pd-key">Data:</span><span class="pd-val"><code>(haul !! 1)</code></span>
+    </div>
+    <p>Give the resulting values for <code>g1</code> and <code>g2</code>.</p>
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p><code>haul !! 1</code> = <code>Open [] 0</code>. Outer <code>Open (...) _</code> matches. Inner list is <code>[]</code>, but pattern <code>(g1:g2:_)</code> requires at least 2 elements. <strong>Pattern fails.</strong></p>
+        <div class="answer wrong">No match. The pattern (g1:g2:_) needs at least 2 elements, but the list inside Open is empty.</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="0"><span class="label">Previous</span><span class="title">Cover</span></button>
+    <button class="nav-btn next" data-goto="2"><span class="label">Next</span><span class="title">Learning Target P.2</span></button>
+  </div>
+</section>
+
+<!-- PART 2 · P.2 -->
+<section class="part" data-part="2">
+  <div class="part-meta">Section <span class="accent">2</span> of 5</div>
+
+  <div class="target-header">
+    <div class="target-title">Learning Target P.2</div>
+    <div class="target-desc">P.2: I can use pattern matching and algebraic datatypes to write data-directed functions/programs.</div>
+  </div>
+
+  <h2>Scenario</h2>
+
+  <p>A music streaming service tracks user activity. Each event is one of:</p>
+  <ul>
+    <li>A <strong>play</strong>, with a song title and play duration in seconds.</li>
+    <li>A <strong>skip</strong>, with a song title.</li>
+    <li>A <strong>like</strong>, with a song title.</li>
+  </ul>
+
+  <p>The service calculates an "engagement score" per event:</p>
+  <ul>
+    <li>A <strong>play</strong> of 30 seconds or more scores <strong>5</strong> points; shorter plays score <strong>1</strong> point.</li>
+    <li>A <strong>skip</strong> scores <strong>0</strong> points.</li>
+    <li>A <strong>like</strong> scores <strong>10</strong> points.</li>
+  </ul>
+
+  <pre><code class="language-haskell">data Event = Play String Integer
+           | Skip String
+           | Like String
+           deriving (Show)
+
+e1, e2, e3, e4 :: Event
+e1 = Play "Viva la Vida" 180
+e2 = Play "Intro" 8
+e3 = Skip "Ad"
+e4 = Like "Clair de Lune"
+
+log1 :: [Event]
+log1 = [e1, e3, e2, e4, Play "Outro" 45]</code></pre>
+
+  <p><strong>Note:</strong> These types do not derive <code>Eq</code>, so you cannot use <code>==</code> or <code>/=</code>, nor the <code>show</code> function, in place of pattern matching.</p>
+
+  <!-- Q2.1 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q2.1</span> Write a Haskell function</div>
+    <p>Write a function <code>score :: Event -&gt; Integer</code> that computes the engagement score for a given event.</p>
+
+    <p><strong>Examples:</strong></p>
+    <ul>
+      <li><code>score e1</code> evaluates to <code>5</code> (Play of 180s ≥ 30s)</li>
+      <li><code>score e2</code> evaluates to <code>1</code> (Play of 8s &lt; 30s)</li>
+      <li><code>score e3</code> evaluates to <code>0</code> (Skip)</li>
+      <li><code>score e4</code> evaluates to <code>10</code> (Like)</li>
+    </ul>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <pre><code class="language-haskell">score :: Event -&gt; Integer
+score (Play _ dur)
+  | dur &gt;= 30 = 5
+  | otherwise = 1
+score (Skip _) = 0
+score (Like _) = 10</code></pre>
+        <p>Explanation using the 4-step template:</p>
+        <ol>
+          <li><strong>Read the type</strong>: 3 constructors (Play, Skip, Like).</li>
+          <li><strong>One equation per constructor</strong>.</li>
+          <li><strong>Destructure</strong>: Play needs <code>dur</code> (ignore title); Skip and Like don't need the title.</li>
+          <li><strong>Guards</strong>: Play uses a guard on duration.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q2.2 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q2.2</span> Write a Haskell function</div>
+    <p>Write a function <code>totalScore :: [Event] -&gt; Integer</code> that sums the engagement scores across a list of events. You may reuse <code>score</code>.</p>
+
+    <p><strong>Examples:</strong></p>
+    <ul>
+      <li><code>totalScore log1</code> evaluates to <code>21</code> (5 + 0 + 1 + 10 + 5)</li>
+      <li><code>totalScore []</code> evaluates to <code>0</code></li>
+    </ul>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p>Option A, recursion:</p>
+        <pre><code class="language-haskell">totalScore :: [Event] -&gt; Integer
+totalScore [] = 0
+totalScore (e:es) = score e + totalScore es</code></pre>
+        <p>Option B, using higher-order functions:</p>
+        <pre><code class="language-haskell">totalScore :: [Event] -&gt; Integer
+totalScore es = sum (map score es)</code></pre>
+        <p>Both are correct.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="1"><span class="label">Previous</span><span class="title">Learning Target P.1</span></button>
+    <button class="nav-btn next" data-goto="3"><span class="label">Next</span><span class="title">Learning Target P.3</span></button>
+  </div>
+</section>
+
+<!-- PART 3 · P.3 -->
+<section class="part" data-part="3">
+  <div class="part-meta">Section <span class="accent">3</span> of 5</div>
+
+  <div class="target-header">
+    <div class="target-title">Learning Target P.3</div>
+    <div class="target-desc">P.3: I can convert between the following list-processing approaches: recursion with patterns, list comprehensions, and higher-order functions (map and filter).</div>
+  </div>
+
+  <h2>Consider the following two Haskell functions:</h2>
+
+  <pre><code class="language-haskell">meadow :: [(Integer, Integer)] -&gt; [Integer]
+meadow ps = [ a - b | (a, b) &lt;- ps, a &gt; b ]
+
+hill :: Integer -&gt; [Integer] -&gt; [Integer]
+hill t [] = []
+hill t (n:ns)
+  | n * n &gt; t = (n + 1) : hill t ns
+  | otherwise = hill t ns</code></pre>
+
+  <!-- Q3.1 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q3.1</span> Fill in the blanks to write an equivalent function to <code>hill</code>:</div>
+    <pre style="margin-top: 10px;"><code class="language-haskell">hill1 :: Integer -&gt; [Integer] -&gt; [Integer]
+hill1 t ns = map <span class="blank">________</span> (filter <span class="blank">________</span> ns)</code></pre>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p>Identify T and P from the recursion:</p>
+        <ul>
+          <li>Keep branch: <code>(n + 1) : hill t ns</code>. So <strong>T(n) = n + 1</strong>.</li>
+          <li>Guard: <code>n * n &gt; t</code>. So <strong>P(n) = n * n &gt; t</strong>.</li>
+        </ul>
+        <p>T is simple, can use a section <code>(+1)</code>. P needs <code>t</code>, use a lambda.</p>
+        <pre><code class="language-haskell">hill1 :: Integer -&gt; [Integer] -&gt; [Integer]
+hill1 t ns = map (+1) (filter (\n -&gt; n * n &gt; t) ns)</code></pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3.2 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q3.2</span> Fill in the blanks to write an equivalent function to <code>hill</code>:</div>
+    <pre style="margin-top: 10px;"><code class="language-haskell">hill2 :: Integer -&gt; [Integer] -&gt; [Integer]
+hill2 t ns = [ <span class="blank">________</span> | <span class="blank">________________</span> ]</code></pre>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p>Same T and P. List comp template: <code>[T n | n &lt;- ns, P n]</code>:</p>
+        <pre><code class="language-haskell">hill2 :: Integer -&gt; [Integer] -&gt; [Integer]
+hill2 t ns = [ n + 1 | n &lt;- ns, n * n &gt; t ]</code></pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q3.3 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q3.3</span> Write a recursive function</div>
+    <p>Write a recursive function <code>meadow1 :: [(Integer, Integer)] -&gt; [Integer]</code> that uses patterns and is equivalent to <code>meadow</code>.</p>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <p>From the list comp:</p>
+        <ul>
+          <li><strong>T((a, b)) = a - b</strong></li>
+          <li><strong>P((a, b)) = a &gt; b</strong></li>
+        </ul>
+        <p>Each element is a tuple, destructure in the pattern.</p>
+        <pre><code class="language-haskell">meadow1 :: [(Integer, Integer)] -&gt; [Integer]
+meadow1 [] = []
+meadow1 ((a, b) : rest)
+  | a &gt; b     = (a - b) : meadow1 rest
+  | otherwise = meadow1 rest</code></pre>
+        <p>The nested pattern <code>((a, b) : rest)</code> matches a non-empty list, destructures the head tuple, and names the rest.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="2"><span class="label">Previous</span><span class="title">Learning Target P.2</span></button>
+    <button class="nav-btn next" data-goto="4"><span class="label">Next</span><span class="title">Learning Target T.1</span></button>
+  </div>
+</section>
+
+<!-- PART 4 · T.1 -->
+<section class="part" data-part="4">
+  <div class="part-meta">Section <span class="accent">4</span> of 5</div>
+
+  <div class="target-header">
+    <div class="target-title">Learning Target T.1</div>
+    <div class="target-desc">T.1: I can trace and explain the execution behavior of a recursive function defined over a tree-like data structure.</div>
+  </div>
+
+  <h2>Consider the following Haskell code:</h2>
+
+  <pre><code class="language-haskell">data BTree a = Empty
+             | BNode a (BTree a) (BTree a)
+             deriving (Show)
+
+willow :: BTree Integer
+willow = BNode 10 (BNode 4 Empty (BNode 7 Empty Empty))
+                  (BNode 15 (BNode 12 Empty Empty) Empty)
+
+echo :: BTree Integer -&gt; [Integer]
+echo Empty = [-1]
+echo (BNode v left right)
+  | v &gt; 9     = echo right ++ [v]
+  | otherwise = [v] ++ echo left</code></pre>
+
+  <div class="tree-diagram">
+<pre>          <span class="tree-node">10</span>
+        /    \
+       <span class="tree-node">4</span>     <span class="tree-node">15</span>
+        \     /
+        <span class="tree-node">7</span>   <span class="tree-node">12</span></pre>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q4.1</span> Trace and explain</div>
+    <p>Trace and explain what happens when <code>echo willow</code> is evaluated.</p>
+
+    <p>Your answer should provide enough information to clearly demonstrate how the evaluation progresses: <strong>for each recursive call, explicitly indicate the result of the pattern matching (i.e., the bindings to variables), how the result is evaluated, and the final result of that function call.</strong></p>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Full trace</div>
+        <pre style="font-size: 12.5px !important;"><code>Call 1: echo (BNode 10 L R)
+  where L = BNode 4 Empty (BNode 7 Empty Empty)
+        R = BNode 15 (BNode 12 Empty Empty) Empty
+  Match (BNode v left right):
+    v = 10, left = L, right = R
+  Guard: 10 &gt; 9 = True → first branch
+  Expr: echo R ++ [10]
+  Need echo R first:
+
+    Call 2: echo (BNode 15 (BNode 12 Empty Empty) Empty)
+      Match: v = 15, left = BNode 12 Empty Empty, right = Empty
+      Guard: 15 &gt; 9 = True → first branch
+      Expr: echo Empty ++ [15]
+
+        Call 3: echo Empty → [-1] (base case)
+
+      Back to Call 2: [-1] ++ [15] = [-1, 15]
+      Returns [-1, 15].
+
+  Back to Call 1: [-1, 15] ++ [10] = [-1, 15, 10]
+  Returns [-1, 15, 10].</code></pre>
+
+        <div class="answer">Final: echo willow = [-1, 15, 10]</div>
+
+        <p><strong>Key observation:</strong> the left subtree (nodes 4 and 7) was never visited because at node 10 the guard <code>v &gt; 9</code> was True, so we only recursed on the right. Similarly at node 15, we only recursed on its right child (Empty). Node 12 is also never visited.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="3"><span class="label">Previous</span><span class="title">Learning Target P.3</span></button>
+    <button class="nav-btn next" data-goto="5"><span class="label">Next</span><span class="title">Learning Target T.2</span></button>
+  </div>
+</section>
+
+<!-- PART 5 · T.2 -->
+<section class="part" data-part="5">
+  <div class="part-meta">Section <span class="accent">5</span> of 5</div>
+
+  <div class="target-header">
+    <div class="target-title">Learning Target T.2</div>
+    <div class="target-desc">T.2: I can write correct and concise code that operates over tree-like data structures.</div>
+  </div>
+
+  <h2>Setup</h2>
+
+  <p>Recall the Haskell representation of trees:</p>
+
+  <pre><code class="language-haskell">data BTree a = Empty
+             | BNode a (BTree a) (BTree a)
+             deriving (Show)
+
+cedar :: BTree Char
+cedar = BNode 'A' (BNode 'x' Empty Empty)
+                  (BNode 'B' (BNode 'm' Empty Empty) (BNode 'C' Empty Empty))
+
+forest :: BTree Integer
+forest = BNode 7 (BNode 3 (BNode 1 Empty Empty) (BNode 5 Empty Empty))
+                 (BNode 9 (BNode 8 Empty Empty) (BNode 12 Empty Empty))</code></pre>
+
+  <!-- Q5.1 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q5.1</span> Write a recursive Haskell function</div>
+    <p>Write a recursive Haskell function</p>
+    <pre style="margin: 10px 0;"><code class="language-haskell">vowelLeaf :: BTree Char -&gt; Bool</code></pre>
+    <p>such that <code>vowelLeaf tr</code> determines whether there is at least one leaf node in <code>tr</code> whose label is a vowel (one of <code>'a','e','i','o','u','A','E','I','O','U'</code>).</p>
+    <p>A leaf is a node with both children <code>Empty</code>.</p>
+
+    <p><strong>Examples:</strong></p>
+    <ul>
+      <li><code>vowelLeaf cedar</code> evaluates to <code>False</code> (leaves are 'x', 'm', 'C', none are vowels)</li>
+      <li><code>vowelLeaf (BNode 'b' (BNode 'a' Empty Empty) (BNode 'z' Empty Empty))</code> evaluates to <code>True</code> (leaf 'a')</li>
+      <li><code>vowelLeaf Empty</code> evaluates to <code>False</code></li>
+      <li><code>vowelLeaf (BNode 'E' Empty Empty)</code> evaluates to <code>True</code> (E is a vowel leaf)</li>
+    </ul>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <pre><code class="language-haskell">vowelLeaf :: BTree Char -&gt; Bool
+vowelLeaf Empty = False
+vowelLeaf (BNode v Empty Empty) = v `elem` "aeiouAEIOU"
+vowelLeaf (BNode _ left right)  = vowelLeaf left || vowelLeaf right</code></pre>
+        <p>Three equations:</p>
+        <ol>
+          <li>Empty → False (no leaves).</li>
+          <li>Leaf case: check if value is a vowel using <code>elem</code>.</li>
+          <li>Internal case: OR the subtrees.</li>
+        </ol>
+        <p>Same leaf-aware pattern as <code>smallLeaf</code> from the real exam. The leaf equation must come before the general BNode equation.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Q5.2 -->
+  <div class="question">
+    <div class="question-label"><span class="q-num">Q5.2</span> Write a recursive Haskell function</div>
+    <p>Write a recursive Haskell function</p>
+    <pre style="margin: 10px 0;"><code class="language-haskell">trim :: Integer -&gt; BTree Integer -&gt; BTree Integer</code></pre>
+    <p>such that <code>trim num tr</code> returns the tree obtained from <code>tr</code> by removing any node (plus its descendants) whose label is <strong>even AND</strong> less than <code>num</code>.</p>
+
+    <p><em>Recall that removing a node is equivalent to replacing it with an empty tree.</em></p>
+
+    <p><strong>Examples:</strong></p>
+    <ul>
+      <li><code>trim 10 forest</code> evaluates to:
+        <pre style="margin: 6px 0 0;"><code>BNode 7 (BNode 3 (BNode 1 Empty Empty) (BNode 5 Empty Empty))
+        (BNode 9 Empty (BNode 12 Empty Empty))</code></pre>
+        (8 is even AND &lt; 10, so removed; 12 is even but NOT &lt; 10, so kept)
+      </li>
+      <li><code>trim 0 forest</code> returns <code>forest</code> unchanged (nothing is &lt; 0).</li>
+      <li><code>trim 100 forest</code> removes every even node whose value is &lt; 100. Result:
+        <pre style="margin: 6px 0 0;"><code>BNode 7 (BNode 3 (BNode 1 Empty Empty) (BNode 5 Empty Empty))
+        (BNode 9 Empty Empty)</code></pre>
+      </li>
+    </ul>
+
+    <details class="solution">
+      <summary>Show Solution</summary>
+      <div class="solution-body">
+        <div class="solution-label">Solution</div>
+        <pre><code class="language-haskell">trim :: Integer -&gt; BTree Integer -&gt; BTree Integer
+trim _   Empty = Empty
+trim num (BNode v left right)
+  | even v &amp;&amp; v &lt; num = Empty
+  | otherwise          = BNode v (trim num left) (trim num right)</code></pre>
+        <p>Explanation using the 3 questions:</p>
+        <ol>
+          <li><strong>Empty answer</strong>: Empty.</li>
+          <li><strong>Data needed</strong>: <code>v</code>, <code>left</code>, <code>right</code>, plus the threshold <code>num</code>.</li>
+          <li><strong>Combine</strong>: if <code>even v AND v &lt; num</code>, return Empty. Otherwise rebuild with pruned subtrees.</li>
+        </ol>
+        <p>Same pattern as <code>prune</code> from the real exam, but with a compound condition using <code>&amp;&amp;</code>.</p>
+        <p><strong>Verification for <code>trim 10 forest</code>:</strong></p>
+        <ul>
+          <li>7: odd, skip condition. Rebuild.</li>
+          <li>3: odd, skip. Rebuild. Children 1 (odd), 5 (odd), both stay.</li>
+          <li>9: odd, skip. Rebuild.
+            <ul>
+              <li>8: even AND &lt; 10. Empty.</li>
+              <li>12: even but NOT &lt; 10. Stays as BNode 12 Empty Empty.</li>
+            </ul>
+            Returns <code>BNode 9 Empty (BNode 12 Empty Empty)</code>.
+          </li>
+          <li>Result: <code>BNode 7 (BNode 3 (BNode 1 Empty Empty) (BNode 5 Empty Empty)) (BNode 9 Empty (BNode 12 Empty Empty))</code>. ✓</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="4"><span class="label">Previous</span><span class="title">Learning Target T.1</span></button>
+    <button class="nav-btn next" data-goto="6"><span class="label">Next</span><span class="title">Appendix</span></button>
+  </div>
+</section>
+
+<!-- PART 6 · APPENDIX -->
+<section class="part" data-part="6">
+  <div class="part-meta">Reference</div>
+  <h1>Appendix</h1>
+  <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 32px;">Standard Haskell functions and operators you may use on this exam.</p>
+
+  <div class="appendix">
+    <div class="appendix-title">Types of Some Standard Haskell Functions and Operators</div>
+<pre><code class="language-haskell">                     (:) :: a -&gt; [a] -&gt; [a]
+                    (++) :: [a] -&gt; [a] -&gt; [a]
+                  concat :: [[a]] -&gt; [a]
+             (&amp;&amp;), (||) :: Bool -&gt; Bool -&gt; Bool
+                  length :: [a] -&gt; Int
+              even, odd :: Integral a =&gt; a -&gt; Bool
+isAlpha, isUpper, isLower :: Char -&gt; Bool
+         toUpper, toLower :: Char -&gt; Char
+                     zip :: [a] -&gt; [b] -&gt; [(a,b)]
+                   unzip :: [(a,b)] -&gt; ([a], [b])
+                     map :: (a -&gt; b) -&gt; [a] -&gt; [b]
+                  filter :: (a -&gt; Bool) -&gt; [a] -&gt; [a]
+                    elem :: Eq a =&gt; a -&gt; [a] -&gt; Bool
+                     sum :: Num a =&gt; [a] -&gt; a</code></pre>
+  </div>
+
+  <div class="footer-nav">
+    <button class="nav-btn prev" data-goto="5"><span class="label">Previous</span><span class="title">Learning Target T.2</span></button>
+    <button class="nav-btn next" disabled><span class="label">End</span><span class="title">Exam complete</span></button>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-haskell.min.js"></script>
+<script>
+  const parts = document.querySelectorAll('.part');
+  const tabs = document.querySelectorAll('.tab');
+  const progressBar = document.getElementById('progressBar');
+  const totalParts = parts.length;
+  function goTo(n) {
+    parts.forEach(p => p.classList.toggle('active', p.dataset.part == n));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.part == n));
+    progressBar.style.width = ((parseInt(n) + 1) / totalParts * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.part)));
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.dataset.goto) btn.addEventListener('click', () => goTo(btn.dataset.goto));
+  });
+  document.addEventListener('keydown', (e) => {
+    const active = document.querySelector('.part.active');
+    const current = parseInt(active.dataset.part);
+    if (e.key === 'ArrowRight' && current < totalParts - 1) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 0) goTo(current - 1);
+  });
+</script>
+
+</body>
+</html>
