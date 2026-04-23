@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4: 50 Questions BI3 Mega Drill</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+.mono{font-family:'Fira Code',monospace}h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0}
+.qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.qnum{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:2px 10px;font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+.qtype{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--purple);flex-shrink:0}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.open-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Fira Code',monospace;font-size:13px;resize:vertical;min-height:40px;margin-bottom:8px}
+.open-input:focus{outline:none;border-color:rgba(249,115,22,0.4)}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.ans-box{display:none;margin-top:10px;padding:14px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12);border-radius:8px}
+.ans-box.show{display:block}
+.ans-text{font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.score-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,14,0.95);border-top:1px solid var(--border);padding:10px 20px;display:flex;justify-content:center;gap:20px;font-size:13px;font-weight:600;backdrop-filter:blur(10px);z-index:99}
+.sc-c{color:var(--green)}.sc-w{color:var(--red)}.sc-t{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 4 / BI3 Mega Drill</div>
+<h1>50 Questions: All of Big Idea 3</h1>
+<p class="sub">No clusters, no labels. Everything mixed. This simulates real exam conditions where you don't know what topic is coming next.</p>
+<div id="content"></div>
+<div class="score-bar"><span class="sc-c" id="sc-c">Correct: 0</span><span class="sc-w" id="sc-w">Wrong: 0</span><span class="sc-t" id="sc-t">Answered: 0 / 50</span></div>
+<div style="height:60px"></div>
+<script>
+let correct=0,wrong=0,answered=0;
+const DATA=[
+{type:"open",q:"a ← 12\nb ← a MOD 5\nc ← a / 5\nDISPLAY(b)\nDISPLAY(c)",a:"b = 12 MOD 5 = 2\nc = 12 / 5 = 2.4\nDISPLAY → 2 then 2.4"},
+{type:"mcq",q:"list ← [5,10,15,20,25]\nDISPLAY(list[LENGTH(list) - 1])",o:["A. 25","B. 20","C. 15","D. error"],a:1,e:"LENGTH=5. 5-1=4. list[4]=20."},
+{type:"open",q:"PROCEDURE doubleAll(list)\n{\n    result ← []\n    FOR EACH n IN list\n    { APPEND(result, n * 2) }\n    RETURN(result)\n}\n\nDISPLAY(doubleAll([3,7,1]))",a:"3*2=6, 7*2=14, 1*2=2\nresult = [6, 14, 2]\nDISPLAY → [6, 14, 2]"},
+{type:"mcq",q:"NOT (false AND true) OR false",o:["A. true","B. false","C. error","D. NOT"],a:0,e:"false AND true=false. NOT false=true. true OR false=true."},
+{type:"mcq",q:"x ← 8\nIF (x > 5)\n{ x ← x - 3 }\nIF (x > 4)\n{ x ← x * 2 }\nDISPLAY(x)",o:["A. 8","B. 5","C. 10","D. 16"],a:2,e:"8>5? Yes, x=5. 5>4? Yes, x=10. Two separate IFs."},
+{type:"open",q:"PROCEDURE search(list, val)\n{\n    i ← 1\n    REPEAT UNTIL (i > LENGTH(list))\n    {\n        IF (list[i] = val)\n        { RETURN(i) }\n        i ← i + 1\n    }\n    RETURN(-1)\n}\n\nsearch([8,4,6,2,9], 6) returns?",a:"i=1: 8=6? No. i=2: 4=6? No. i=3: 6=6? YES → RETURN 3\n\nReturns 3 (the index where 6 is found).\nThis is linear search that returns the index."},
+{type:"mcq",q:"A sorted list has 16,384 elements.\nBinary search max comparisons?",o:["A. 14","B. 8192","C. 16","D. 128"],a:0,e:"log₂(16384) = 14. (16384 = 2¹⁴)"},
+{type:"mcq",q:"PROCEDURE f(x)\n{\n    DISPLAY(x)\n    RETURN(x * 2)\n}\n\na ← f(3) + f(4)",o:["A. Displays 3 then 4. a = 14.","B. Displays 6 then 8. a = 14.","C. Displays nothing. a = 14.","D. Displays 3 then 4. a = 7."],a:0,e:"f(3): DISPLAYS 3, RETURNS 6. f(4): DISPLAYS 4, RETURNS 8. a = 6+8 = 14. Displays 3 and 4."},
+{type:"mcq",q:"\"AP\" + \" \" + \"CSP\" + \" \" + \"2026\"",o:["A. Error","B. \"AP CSP 2026\"","C. \"APCSP2026\"","D. 2026"],a:1,e:"String concatenation with spaces: \"AP\" + \" \" + \"CSP\" + \" \" + \"2026\" = \"AP CSP 2026\"."},
+{type:"open",q:"list ← [10, 20, 30, 40]\ntemp ← list[1]\nlist[1] ← list[4]\nlist[4] ← temp\nDISPLAY(list)",a:"This is a SWAP of first and last elements.\ntemp = 10\nlist[1] = 40\nlist[4] = 10\nlist = [40, 20, 30, 10]"},
+{type:"mcq",q:"PROCEDURE mystery(n)\n{\n    count ← 0\n    REPEAT UNTIL (n = 1)\n    {\n        IF (n MOD 2 = 0)\n        { n ← n / 2 }\n        ELSE\n        { n ← n * 3 + 1 }\n        count ← count + 1\n    }\n    RETURN(count)\n}\n\nmystery(8) returns?",o:["A. 1","B. 2","C. 3","D. 8"],a:2,e:"8→4(1)→2(2)→1(3). All even, divide by 2 each time. 3 steps."},
+{type:"mcq",q:"Which expression is true ONLY\nwhen x is between 10 and 20 EXCLUSIVE?",o:["A. (x > 10) AND (x < 20)","B. (x ≥ 10) AND (x ≤ 20)","C. (x > 10) OR (x < 20)","D. (x ≥ 10) OR (x ≤ 20)"],a:0,e:"A excludes 10 and 20 (exclusive). B includes them. C is true for almost everything. D is true for ALL numbers."},
+{type:"mcq",q:"list ← [3,6,9,12]\nAPPEND(list, 15)\nREMOVE(list, 2)\nINSERT(list, 1, 0)\nDISPLAY(LENGTH(list))",o:["A. 4","B. 5","C. 6","D. 3"],a:1,e:"Start 4. Append: 5. Remove: 4. Insert: 5. LENGTH=5."},
+{type:"open",q:"PROCEDURE isVowel(letter)\n{\n    vowels ← [\"a\",\"e\",\"i\",\"o\",\"u\"]\n    FOR EACH v IN vowels\n    {\n        IF (letter = v)\n        { RETURN(true) }\n    }\n    RETURN(false)\n}\n\nDISPLAY(isVowel(\"e\"))\nDISPLAY(isVowel(\"x\"))",a:"isVowel(\"e\"): checks a(no), e(yes) → RETURN true\nisVowel(\"x\"): checks a,e,i,o,u (all no) → RETURN false\n\nDISPLAY → true then false"},
+{type:"mcq",q:"An algorithm takes 0.001 seconds\nfor n=1000. It runs in n² time.\nFor n=10,000, approximately how long?",o:["A. 0.01 seconds","B. 0.1 seconds","C. 1 second","D. 10 seconds"],a:1,e:"n went from 1000 to 10000 (10x). n² means time goes up 100x. 0.001 * 100 = 0.1 seconds."},
+{type:"mcq",q:"x ← RANDOM(1, 10)\ny ← RANDOM(1, 10)\nIF (x = y)\n{ DISPLAY(\"match\") }",o:["A. Always displays \"match\"","B. Never displays \"match\"","C. Sometimes displays \"match\"","D. Error"],a:2,e:"x and y are independent random values 1-10. There's a 1/10 chance they're equal. Sometimes matches, sometimes not."},
+{type:"mcq",q:"PROCEDURE addToAll(list, val)\n{\n    i ← 1\n    REPEAT UNTIL (i > LENGTH(list))\n    {\n        list[i] ← list[i] + val\n        i ← i + 1\n    }\n    RETURN(list)\n}\n\nDISPLAY(addToAll([1,2,3], 10))",o:["A. [1,2,3]","B. [11,12,13]","C. [10,20,30]","D. [11,2,3]"],a:1,e:"Adds 10 to each: 1+10=11, 2+10=12, 3+10=13."},
+{type:"open",q:"list ← [1, 2, 3, 4, 5]\nREPEAT 2 TIMES\n{\n    val ← list[1]\n    REMOVE(list, 1)\n    APPEND(list, val)\n}\nDISPLAY(list)",a:"Round 1: val=1, remove index 1→[2,3,4,5], append 1→[2,3,4,5,1]\nRound 2: val=2, remove index 1→[3,4,5,1], append 2→[3,4,5,1,2]\n\nDISPLAY → [3, 4, 5, 1, 2]\n\nThis rotates the list left by 2 positions."},
+{type:"mcq",q:"A simulation of a card game runs\n5000 trials. Player A wins 62% of\nthe time. This means:",o:["A. Player A will win exactly 62% in real games","B. Player A has an advantage, roughly winning 62%","C. The simulation is biased","D. Player A always wins"],a:1,e:"Simulations give estimates. 62% suggests an advantage but real results will vary around this value."},
+{type:"mcq",q:"Which is NOT a benefit of procedures?",o:["A. Reducing code duplication","B. Making code more readable","C. Guaranteeing no bugs","D. Managing complexity"],a:2,e:"Procedures help organize code but don't guarantee bug-free programs. You can still have logic errors inside procedures."},
+{type:"open",q:"PROCEDURE removeDuplicates(list)\n{\n    result ← []\n    FOR EACH item IN list\n    {\n        found ← false\n        FOR EACH existing IN result\n        {\n            IF (item = existing)\n            { found ← true }\n        }\n        IF (NOT found)\n        { APPEND(result, item) }\n    }\n    RETURN(result)\n}\n\nDISPLAY(removeDuplicates([3,1,4,1,5,3]))",a:"3: result=[], not found → append. result=[3]\n1: not found → append. result=[3,1]\n4: not found → append. result=[3,1,4]\n1: found in result → skip\n5: not found → append. result=[3,1,4,5]\n3: found in result → skip\n\nDISPLAY → [3, 1, 4, 5]"},
+{type:"mcq",q:"39 MOD 10 + 39 / 10",o:["A. 12.9","B. 3.9","C. 42.9","D. 9"],a:0,e:"39 MOD 10 = 9. 39 / 10 = 3.9. 9 + 3.9 = 12.9."},
+{type:"mcq",q:"PROCEDURE apply(list, proc)\n{\n    result ← []\n    FOR EACH item IN list\n    { APPEND(result, proc(item)) }\n    RETURN(result)\n}\nPROCEDURE negate(n) { RETURN(-1 * n) }\n\nDISPLAY(apply([5,-3,8], negate))",o:["A. [5,-3,8]","B. [-5,3,-8]","C. [5,3,8]","D. error"],a:1,e:"Applies negate to each: 5→-5, -3→3, 8→-8. Result=[-5,3,-8]."},
+{type:"mcq",q:"list ← [2,4,6,8,10]\ni ← LENGTH(list)\nREPEAT UNTIL (i < 1)\n{\n    DISPLAY(list[i])\n    i ← i - 1\n}",o:["A. 2 4 6 8 10","B. 10 8 6 4 2","C. 10 8 6 4","D. 2 4 6 8"],a:1,e:"Starts at index 5 (=10), goes to 1 (=2). Prints in reverse: 10 8 6 4 2."},
+{type:"mcq",q:"PROCEDURE power(b, e)\n{\n    IF (e = 0) { RETURN(1) }\n    result ← 1\n    REPEAT e TIMES\n    { result ← result * b }\n    RETURN(result)\n}\n\npower(2,0) + power(3,2) + power(5,1)",o:["A. 10","B. 15","C. 16","D. 36"],a:1,e:"power(2,0)=1. power(3,2)=9. power(5,1)=5. 1+9+5=15."},
+{type:"mcq",q:"Which problem is undecidable?",o:["A. Finding all prime numbers up to n","B. Sorting a list","C. Determining if two arbitrary programs always produce the same output","D. Checking if a list contains a value"],a:2,e:"C involves comparing arbitrary programs for ALL inputs. This is undecidable. A,B,D all have known algorithms."},
+{type:"open",q:"list ← [1,2,3,4,5,6,7,8]\nresult ← []\nFOR EACH n IN list\n{\n    IF (n MOD 2 = 0 AND n MOD 3 = 0)\n    { APPEND(result, n) }\n}\nDISPLAY(result)",a:"Must be divisible by BOTH 2 and 3 (= divisible by 6).\n1: no. 2: even but not /3. 3: /3 but not even.\n4: even but not /3. 5: no. 6: YES (6/2=3, 6/3=2).\n7: no. 8: even but not /3.\n\nresult = [6]\nDISPLAY → [6]"},
+{type:"mcq",q:"n ← 256\ncount ← 0\nREPEAT UNTIL (n < 1)\n{\n    n ← n / 4\n    count ← count + 1\n}\nDISPLAY(count)",o:["A. 3","B. 4","C. 5","D. 64"],a:2,e:"256→64(1)→16(2)→4(3)→1(4). 1<1? No. →0.25(5). 0.25<1? Yes, stop. Wait: 256→64(1)→16(2)→4(3)→1(4)→0.25(5). 0.25<1? Yes, stop. count=5."},
+{type:"mcq",q:"PROCEDURE countOccurrences(list, target)\n{\n    count ← 0\n    FOR EACH item IN list\n    {\n        IF (item = target)\n        { count ← count + 1 }\n    }\n    RETURN(count)\n}\n\nlist ← [\"a\",\"b\",\"a\",\"c\",\"a\",\"b\"]\nDISPLAY(countOccurrences(list,\"a\"))",o:["A. 1","B. 2","C. 3","D. 6"],a:2,e:"\"a\" appears at positions 1, 3, 5. count = 3."},
+{type:"mcq",q:"temp ← a\na ← b\nb ← temp\n\nThis code does what?",o:["A. Sets both to a's value","B. Sets both to b's value","C. Swaps a and b","D. Deletes both values"],a:2,e:"Classic swap pattern. temp saves a, a gets b, b gets the old a from temp."},
+{type:"mcq",q:"PROCEDURE compose(list)\n{\n    result ← \"\"\n    FOR EACH word IN list\n    {\n        result ← result + word + \" \"\n    }\n    RETURN(result)\n}\n\nDISPLAY(compose([\"hello\",\"world\"]))",o:["A. \"helloworld\"","B. \"hello world \"","C. \"hello world\"","D. \" hello world\""],a:1,e:"\"hello\" + \" \" = \"hello \". Then \"hello \" + \"world\" + \" \" = \"hello world \". Note trailing space."},
+{type:"mcq",q:"(5 > 3) AND (NOT (4 = 4)) OR (10 > 8)",o:["A. true","B. false","C. error","D. 5"],a:0,e:"5>3=true. NOT(4=4)=NOT true=false. true AND false=false. false OR (10>8)=false OR true=true."},
+{type:"open",q:"PROCEDURE flatten(listOfLists)\n{\n    result ← []\n    FOR EACH sublist IN listOfLists\n    {\n        FOR EACH item IN sublist\n        { APPEND(result, item) }\n    }\n    RETURN(result)\n}\n\nDISPLAY(flatten([[1,2],[3],[4,5,6]]))",a:"sublist=[1,2]: append 1, append 2\nsublist=[3]: append 3\nsublist=[4,5,6]: append 4, append 5, append 6\n\nresult = [1, 2, 3, 4, 5, 6]\n\nThis flattens nested lists into one list."},
+{type:"mcq",q:"RANDOM(3, 3) always returns:",o:["A. 0","B. 3","C. 6","D. random value 1-3"],a:1,e:"Only integer between 3 and 3 inclusive is 3. Always returns 3."},
+{type:"mcq",q:"An algorithm checks every PAIR of\nn students for compatibility.\nIf n doubles from 50 to 100,\ntime goes from 1225 to approximately:",o:["A. 2450","B. 4950","C. 1226","D. 9800"],a:1,e:"Pairs = n(n-1)/2. 50*49/2=1225. 100*99/2=4950. Roughly quadrupled (n² growth)."},
+{type:"mcq",q:"list ← [10,20,30]\nb ← list\nAPPEND(b, 40)\nDISPLAY(LENGTH(list))",o:["A. 3","B. 4","C. error","D. 0"],a:0,e:"In AP pseudocode, b←list creates a COPY. Modifying b doesn't affect list. LENGTH(list)=3."},
+{type:"mcq",q:"PROCEDURE firstPositive(list)\n{\n    FOR EACH n IN list\n    {\n        IF (n > 0)\n        { RETURN(n) }\n    }\n    RETURN(-1)\n}\n\nDISPLAY(firstPositive([-3,-1,0,4,7]))",o:["A. -3","B. 0","C. 4","D. 7"],a:2,e:"-3>0? No. -1>0? No. 0>0? No. 4>0? Yes → RETURN 4 immediately. Never reaches 7."},
+{type:"mcq",q:"A student wants to check if\na list is sorted in ascending order.\nWhich approach works?",o:["A. Check if first element < last element","B. Check every pair: list[i] ≤ list[i+1]","C. Check if LENGTH > 1","D. Sum all elements and check if positive"],a:1,e:"Must verify every adjacent pair is in order. Checking just first/last misses unsorted middle elements."},
+{type:"open",q:"PROCEDURE interleave(list1, list2)\n{\n    result ← []\n    i ← 1\n    REPEAT UNTIL (i > LENGTH(list1))\n    {\n        APPEND(result, list1[i])\n        APPEND(result, list2[i])\n        i ← i + 1\n    }\n    RETURN(result)\n}\n\nDISPLAY(interleave([\"a\",\"b\",\"c\"],[\"1\",\"2\",\"3\"]))",a:"i=1: append \"a\", append \"1\"\ni=2: append \"b\", append \"2\"\ni=3: append \"c\", append \"3\"\n\nresult = [\"a\",\"1\",\"b\",\"2\",\"c\",\"3\"]\n\nAlternates elements from both lists."},
+{type:"mcq",q:"Which correctly picks a random\nelement from a list?",o:["A. list[RANDOM(0, LENGTH(list)-1)]","B. list[RANDOM(1, LENGTH(list))]","C. RANDOM(list)","D. list[LENGTH(list)]"],a:1,e:"1-based indexing. Valid indices: 1 to LENGTH. RANDOM(1, LENGTH(list)) picks a valid index."},
+{type:"mcq",q:"An algorithm has these step counts:\nn=10 → 100 steps\nn=20 → 400 steps\nn=40 → 1600 steps\n\nWhat is the growth rate?",o:["A. Linear (n)","B. Quadratic (n²)","C. Exponential (2ⁿ)","D. Logarithmic"],a:1,e:"n doubles (10→20), steps quadruple (100→400). Doubles again (20→40), quadruples again (400→1600). That's n²."},
+{type:"mcq",q:"PROCEDURE mystery(a, b)\n{\n    REPEAT UNTIL (b = 0)\n    {\n        temp ← b\n        b ← a MOD b\n        a ← temp\n    }\n    RETURN(a)\n}\n\nmystery(12, 8) returns?",o:["A. 12","B. 8","C. 4","D. 0"],a:2,e:"a=12,b=8: b≠0. temp=8, b=12MOD8=4, a=8. a=8,b=4: b≠0. temp=4, b=8MOD4=0, a=4. b=0→stop. RETURN 4. This is the GCD algorithm (Euclidean)."},
+{type:"mcq",q:"PROCEDURE map(list, operation)\n{\n    result ← []\n    FOR EACH item IN list\n    { APPEND(result, operation(item)) }\n    RETURN(result)\n}\nPROCEDURE isEven(n) { RETURN(n MOD 2 = 0) }\n\nDISPLAY(map([1,2,3,4,5], isEven))",o:["A. [1,2,3,4,5]","B. [2,4]","C. [false,true,false,true,false]","D. [0,1,0,1,0]"],a:2,e:"Applies isEven to each: 1→false, 2→true, 3→false, 4→true, 5→false. Returns list of booleans."},
+{type:"mcq",q:"De Morgan's: NOT(x>5 OR y=3)\nis equivalent to:",o:["A. (x>5) AND (y=3)","B. (x≤5) AND (y≠3)","C. (x≤5) OR (y≠3)","D. NOT(x>5) AND NOT(y≠3)"],a:1,e:"NOT(A OR B) = (NOT A) AND (NOT B). NOT(x>5) = x≤5. NOT(y=3) = y≠3. Answer: (x≤5) AND (y≠3)."},
+{type:"mcq",q:"list ← [5,10,15,20,25,30]\nREPEAT 3 TIMES\n{\n    REMOVE(list, LENGTH(list))\n}\nDISPLAY(list[LENGTH(list)])",o:["A. 30","B. 15","C. 20","D. 10"],a:1,e:"Remove last 3 times: [5,10,15,20,25]→[5,10,15,20]→[5,10,15]. Last element: list[3]=15."},
+{type:"mcq",q:"A heuristic for the traveling\nsalesman problem:",o:["A. Guarantees the shortest route","B. Finds a good route in reasonable time","C. Requires exponential time","D. Only works for 10 cities or fewer"],a:1,e:"TSP is unreasonable to solve optimally for large inputs. A heuristic (like nearest-neighbor) finds a good-enough route quickly."},
+{type:"mcq",q:"PROCEDURE makeGrid(rows, cols, val)\n{\n    grid ← []\n    REPEAT rows TIMES\n    {\n        row ← []\n        REPEAT cols TIMES\n        { APPEND(row, val) }\n        APPEND(grid, row)\n    }\n    RETURN(grid)\n}\n\nDISPLAY(LENGTH(makeGrid(3,4,0)))",o:["A. 12","B. 3","C. 4","D. 7"],a:1,e:"Outer loop runs 3 times, each time appending a row to grid. grid has 3 elements (rows). LENGTH=3."}
+];
+
+function build(){
+    const el=document.getElementById('content');let qNum=0,html='';
+    DATA.forEach(item=>{
+        qNum++;const qid='q'+qNum;
+        if(item.type==='open'){
+            html+=`<div class="qcard"><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">OPEN</span></div><div class="qtext">${esc(item.q)}</div><textarea class="open-input mono" placeholder="Her answer..."></textarea><button class="reveal-btn" onclick="rv(this)">Show Answer</button><div class="ans-box"><div class="ans-text">${esc(item.a)}</div></div></div>`;
+        } else {
+            html+=`<div class="qcard" id="${qid}" data-rev="0" data-sel=""><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">MCQ</span></div><div class="qtext">${esc(item.q)}</div><div class="opts">`;
+            item.o.forEach((opt,oi)=>{html+=`<button class="opt" data-i="${oi}" onclick="so(this,'${qid}')">${esc(opt)}</button>`;});
+            html+=`</div><button class="chk" onclick="ck(this,'${qid}',${item.a})">Check Answer</button><div class="expl">${esc(item.e)}</div></div>`;
+        }
+    });el.innerHTML=html;
+}
+function rv(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+function so(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function ck(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;if(c.dataset.rev==='1')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');if(s===ans)correct++;else wrong++;answered++;upd();btn.style.display='none';}
+function upd(){document.getElementById('sc-c').textContent='Correct: '+correct;document.getElementById('sc-w').textContent='Wrong: '+wrong;document.getElementById('sc-t').textContent='Answered: '+answered+' / 50';}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+build();
+</script>
+</body>
+</html>

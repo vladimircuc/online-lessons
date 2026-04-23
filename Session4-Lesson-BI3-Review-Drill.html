@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4: Big Idea 3 Complete Review</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#f97316;--accent2:#fb923c;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}.val{color:var(--green)}.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.tip{padding:14px 16px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(147,197,253,0.85)}
+.tip::before{content:'💡 '}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ '}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.cheat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.cheat h3{margin-top:0;color:var(--accent)}
+.cheat-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
+.cheat-row:last-child{border:none}
+.cheat-label{min-width:160px;color:var(--accent2);font-weight:600;font-family:'Fira Code',monospace;font-size:13px}
+.cheat-val{color:var(--dim)}
+.trap-card{background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.12);border-radius:10px;padding:16px;margin:10px 0}
+.trap-card h4{color:var(--red);font-size:14px;margin-bottom:6px}
+.trap-card p{font-size:13px;color:rgba(252,165,165,0.7);margin:0}
+.review-section{margin-top:40px;padding:24px;background:rgba(249,115,22,0.04);border:2px solid rgba(249,115,22,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.4);color:rgba(251,146,60,1)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(249,115,22,0.18);border-color:rgba(249,115,22,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.vs-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.vs-table th{padding:8px 10px;background:rgba(249,115,22,0.08);color:var(--accent);font-weight:700;border:1px solid var(--border);text-align:center}
+.vs-table td{padding:8px 10px;border:1px solid rgba(255,255,255,0.04);color:var(--dim);text-align:center;font-size:12px}
+.vs-table td:first-child{text-align:left;color:var(--text);font-weight:600}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 4 / Big Idea 3 Full Review</div>
+<h1>BI3 Cheat Sheets, Traps & Drill</h1>
+<p>No new content today. This is pure review and drilling. Big Idea 3 is 30-35% of the exam, so every concept needs to be rock solid. Cheat sheets first, then the top 10 exam traps, then 25 mixed review questions at the end.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this session:</strong>
+<a href="#cs1">1. Cheat Sheet: Variables, Math, Strings, Booleans</a>
+<a href="#cs2">2. Cheat Sheet: Loops</a>
+<a href="#cs3">3. Cheat Sheet: Lists</a>
+<a href="#cs4">4. Cheat Sheet: Procedures & RETURN</a>
+<a href="#cs5">5. Cheat Sheet: Search & Efficiency</a>
+<a href="#cs6">6. Cheat Sheet: Random, Simulations, Undecidable</a>
+<a href="#traps">7. Top 12 Exam Traps</a>
+<a href="#review">8. Comprehensive Drill (25 Questions)</a>
+</div>
+
+<!-- ==================== CHEAT SHEET 1 ==================== -->
+<h2 id="cs1">1. Variables, Math, Strings, Booleans</h2>
+
+<div class="cheat">
+<h3>Variables & Assignment</h3>
+<div class="cheat-row"><span class="cheat-label">a ← 5</span><span class="cheat-val">Assign 5 to a. Arrow = assignment.</span></div>
+<div class="cheat-row"><span class="cheat-label">a ← a + 1</span><span class="cheat-val">Increment. Old value is gone.</span></div>
+<div class="cheat-row"><span class="cheat-label">DISPLAY(a)</span><span class="cheat-val">Print a to screen.</span></div>
+<div class="cheat-row"><span class="cheat-label">Swap a, b</span><span class="cheat-val">temp←a, a←b, b←temp. NEED temp variable.</span></div>
+</div>
+
+<div class="cheat">
+<h3>Math</h3>
+<div class="cheat-row"><span class="cheat-label">+ - * /</span><span class="cheat-val">Standard math. Division gives decimals (7/2 = 3.5)</span></div>
+<div class="cheat-row"><span class="cheat-label">a MOD b</span><span class="cheat-val">Remainder. 17 MOD 5 = 2. Even check: n MOD 2 = 0</span></div>
+<div class="cheat-row"><span class="cheat-label">Order</span><span class="cheat-val">*, /, MOD before +, -. Parentheses override.</span></div>
+</div>
+
+<div class="cheat">
+<h3>Strings</h3>
+<div class="cheat-row"><span class="cheat-label">"hi" + "there"</span><span class="cheat-val">Concatenation → "hithere"</span></div>
+<div class="cheat-row"><span class="cheat-label">"3" + "5"</span><span class="cheat-val">String concat → "35" (NOT 8)</span></div>
+</div>
+
+<div class="cheat">
+<h3>Booleans & Logic</h3>
+<div class="cheat-row"><span class="cheat-label">= ≠ > < ≥ ≤</span><span class="cheat-val">Comparison operators. = is equality, NOT assignment.</span></div>
+<div class="cheat-row"><span class="cheat-label">AND</span><span class="cheat-val">Both true → true. Anything else → false.</span></div>
+<div class="cheat-row"><span class="cheat-label">OR</span><span class="cheat-val">At least one true → true. Both false → false.</span></div>
+<div class="cheat-row"><span class="cheat-label">NOT</span><span class="cheat-val">Flips. NOT true = false.</span></div>
+<div class="cheat-row"><span class="cheat-label">De Morgan's</span><span class="cheat-val">NOT(A AND B) = (NOT A) OR (NOT B)<br>NOT(A OR B) = (NOT A) AND (NOT B)</span></div>
+</div>
+
+<!-- ==================== CHEAT SHEET 2 ==================== -->
+<h2 id="cs2">2. Loops</h2>
+
+<div class="cheat">
+<h3>Three Loop Types</h3>
+<div class="cheat-row"><span class="cheat-label">REPEAT n TIMES</span><span class="cheat-val">Fixed count. No counter variable. Runs exactly n times.</span></div>
+<div class="cheat-row"><span class="cheat-label">REPEAT UNTIL (cond)</span><span class="cheat-val">Checks condition BEFORE each run. Stops when true.</span></div>
+<div class="cheat-row"><span class="cheat-label">FOR EACH item IN list</span><span class="cheat-val">Iterates over every element. item = value, NOT index.</span></div>
+</div>
+
+<div class="tip"><strong>Trace every loop with a table.</strong> Columns for each variable, one row per iteration. This is the fastest way to avoid mistakes under time pressure.</div>
+
+<!-- ==================== CHEAT SHEET 3 ==================== -->
+<h2 id="cs3">3. Lists</h2>
+
+<div class="cheat">
+<h3>List Operations</h3>
+<div class="cheat-row"><span class="cheat-label">list[i]</span><span class="cheat-val">Access element at index i. 1-BASED indexing!</span></div>
+<div class="cheat-row"><span class="cheat-label">LENGTH(list)</span><span class="cheat-val">Number of elements.</span></div>
+<div class="cheat-row"><span class="cheat-label">APPEND(list, val)</span><span class="cheat-val">Add to END. List grows by 1.</span></div>
+<div class="cheat-row"><span class="cheat-label">INSERT(list, i, val)</span><span class="cheat-val">Insert at index i. Everything shifts RIGHT.</span></div>
+<div class="cheat-row"><span class="cheat-label">REMOVE(list, i)</span><span class="cheat-val">Delete index i. Everything shifts LEFT.</span></div>
+<div class="cheat-row"><span class="cheat-label">aList ← bList</span><span class="cheat-val">Creates a COPY. Changes to one don't affect the other.</span></div>
+</div>
+
+<div class="cheat">
+<h3>5 Core Patterns</h3>
+<div class="cheat-row"><span class="cheat-label">Sum</span><span class="cheat-val">sum←0, FOR EACH n: sum←sum+n</span></div>
+<div class="cheat-row"><span class="cheat-label">Count</span><span class="cheat-val">count←0, FOR EACH n: IF(cond) count←count+1</span></div>
+<div class="cheat-row"><span class="cheat-label">Find Max</span><span class="cheat-val">max←list[1], FOR EACH n: IF(n>max) max←n</span></div>
+<div class="cheat-row"><span class="cheat-label">Find Min</span><span class="cheat-val">min←list[1], FOR EACH n: IF(n<min) min←n</span></div>
+<div class="cheat-row"><span class="cheat-label">Filter</span><span class="cheat-val">result←[], FOR EACH n: IF(cond) APPEND(result,n)</span></div>
+</div>
+
+<!-- ==================== CHEAT SHEET 4 ==================== -->
+<h2 id="cs4">4. Procedures & RETURN</h2>
+
+<div class="cheat">
+<h3>Procedures</h3>
+<div class="cheat-row"><span class="cheat-label">PROCEDURE f(x)</span><span class="cheat-val">Define. x = parameter (local to procedure).</span></div>
+<div class="cheat-row"><span class="cheat-label">f(5)</span><span class="cheat-val">Call. 5 = argument (actual value passed in).</span></div>
+<div class="cheat-row"><span class="cheat-label">RETURN(val)</span><span class="cheat-val">Sends val back to caller. IMMEDIATELY exits.</span></div>
+<div class="cheat-row"><span class="cheat-label">DISPLAY vs RETURN</span><span class="cheat-val">DISPLAY prints to screen. RETURN sends value back. NOT the same.</span></div>
+<div class="cheat-row"><span class="cheat-label">Abstraction</span><span class="cheat-val">Hide details. Use procedure by name/params/return only.</span></div>
+<div class="cheat-row"><span class="cheat-label">Library / API</span><span class="cheat-val">Pre-built procedures. Use without knowing internals.</span></div>
+</div>
+
+<!-- ==================== CHEAT SHEET 5 ==================== -->
+<h2 id="cs5">5. Search & Efficiency</h2>
+
+<div class="cheat">
+<h3>Search Comparison</h3>
+<table class="vs-table">
+<tr><th></th><th>Linear</th><th>Binary</th></tr>
+<tr><td>Works on unsorted?</td><td style="color:var(--green)">Yes</td><td style="color:var(--red)">No</td></tr>
+<tr><td>Worst case</td><td>n checks</td><td>log₂(n) checks</td></tr>
+<tr><td>n = 1,000,000</td><td>1,000,000</td><td>~20</td></tr>
+</table>
+</div>
+
+<div class="cheat">
+<h3>Efficiency</h3>
+<div class="cheat-row"><span class="cheat-label">Reasonable</span><span class="cheat-val">n, n², n³, n log n → polynomial. Finishable.</span></div>
+<div class="cheat-row"><span class="cheat-label">Unreasonable</span><span class="cheat-val">2ⁿ, n! → exponential/factorial. Explodes.</span></div>
+<div class="cheat-row"><span class="cheat-label">Input doubles →</span><span class="cheat-val">Runtime doubles = n. Quadruples = n². Explodes = 2ⁿ.</span></div>
+<div class="cheat-row"><span class="cheat-label">Heuristic</span><span class="cheat-val">Good-enough answer in reasonable time. Not guaranteed optimal.</span></div>
+</div>
+
+<!-- ==================== CHEAT SHEET 6 ==================== -->
+<h2 id="cs6">6. Random, Simulations, Undecidable</h2>
+
+<div class="cheat">
+<h3>Random & Simulations</h3>
+<div class="cheat-row"><span class="cheat-label">RANDOM(a, b)</span><span class="cheat-val">Random integer a to b, INCLUSIVE. Both endpoints possible.</span></div>
+<div class="cheat-row"><span class="cheat-label">Possible values</span><span class="cheat-val">Count = b - a + 1</span></div>
+<div class="cheat-row"><span class="cheat-label">Simulations</span><span class="cheat-val">Model real-world with code. Cheaper, safer, faster, repeatable.</span></div>
+<div class="cheat-row"><span class="cheat-label">Limitation</span><span class="cheat-val">Simplifies reality. Different runs → different results. Not exact.</span></div>
+</div>
+
+<div class="cheat">
+<h3>Undecidable</h3>
+<div class="cheat-row"><span class="cheat-label">Undecidable</span><span class="cheat-val">No algorithm solves it for ALL inputs. Proven impossible.</span></div>
+<div class="cheat-row"><span class="cheat-label">Halting Problem</span><span class="cheat-val">"Will this program halt?" Cannot be answered in general.</span></div>
+<div class="cheat-row"><span class="cheat-label">Decidable</span><span class="cheat-val">"Is n even?" "Is list sorted?" → algorithms exist for these.</span></div>
+</div>
+
+<!-- ==================== TRAPS ==================== -->
+<h2 id="traps">7. Top 12 Exam Traps</h2>
+<p>These are the specific things that trip students up on exam day. Know every one of these cold.</p>
+
+<div class="trap-card">
+<h4>Trap 1: Lists are 1-indexed</h4>
+<p>First element is list[1], NOT list[0]. If list has 5 elements, valid indices are 1 through 5. If she codes in Python, her instinct will be wrong.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 2: "3" + "5" = "35" not 8</h4>
+<p>Numbers in quotes are strings. + concatenates strings. If both sides are in quotes, it's string concatenation, not math.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 3: Separate IFs vs IF/ELSE chain</h4>
+<p>Two separate IF statements BOTH get checked independently. An IF/ELSE chain stops at the first true. The exam puts separate IFs where the first one changes a value, and the second one sees the NEW value.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 4: Index shift after REMOVE</h4>
+<p>After REMOVE(list, i), everything after shifts left. If you remove inside a loop and keep incrementing i, you skip elements.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 5: RETURN vs DISPLAY</h4>
+<p>DISPLAY shows on screen but sends nothing back. RETURN sends a value back but shows nothing. A procedure that DISPLAYs but doesn't RETURN gives you nothing to assign to a variable.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 6: RETURN exits immediately</h4>
+<p>Code after RETURN never runs. If there's a DISPLAY after a RETURN, it's dead code.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 7: Binary search needs sorted data</h4>
+<p>If the question says the list is unsorted, binary search cannot be used. Period.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 8: Max/Min initialized to 0</h4>
+<p>If all values are negative, max initialized to 0 stays at 0 (wrong). Always initialize to list[1].</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 9: = is comparison, ← is assignment</h4>
+<p>In IF(x = 5), the = checks equality. x ← 5 assigns. Don't confuse them.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 10: REPEAT UNTIL checks before running</h4>
+<p>If the condition is already true when the loop starts, the body never runs. Also, if you forget to change the variable inside the loop, you get an infinite loop.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 11: FOR EACH gives values, not indices</h4>
+<p>The loop variable in FOR EACH is the actual element, not its position. You can't use it to modify the list because you don't have the index.</p>
+</div>
+
+<div class="trap-card">
+<h4>Trap 12: RANDOM is inclusive on both ends</h4>
+<p>RANDOM(1, 6) can be 1, 2, 3, 4, 5, or 6. Both endpoints are possible. Number of values = high - low + 1.</p>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div class="review-section" id="review">
+<h2>Comprehensive BI3 Drill (25 Questions)</h2>
+<p style="margin-bottom:20px">Covers ALL BI3 topics from Sessions 1-3. No labels. Exam-level difficulty.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+
+const RQS=[
+{q:"x ← 7\ny ← 3\nz ← x MOD y + y\nDISPLAY(z)",a:0,o:["A. 4","B. 3","C. 7","D. 1"],e:"7 MOD 3 = 1. 1 + 3 = 4."},
+{q:"list ← [10, 20, 30, 40]\nREMOVE(list, 2)\nDISPLAY(list[2])",a:2,o:["A. 20","B. 10","C. 30","D. 40"],e:"Remove index 2 (=20). List=[10,30,40]. New index 2=30."},
+{q:"PROCEDURE f(a, b)\n{\n    IF (a > b)\n    { RETURN(a) }\n    RETURN(b)\n}\n\nDISPLAY(f(f(3,7), f(9,2)))",a:1,o:["A. 3","B. 9","C. 7","D. 2"],e:"f(3,7)=7. f(9,2)=9. f(7,9)=9."},
+{q:"What does NOT (true OR false) AND true evaluate to?",a:1,o:["A. true","B. false","C. error","D. NOT"],e:"true OR false=true. NOT true=false. false AND true=false."},
+{q:"list ← [\"a\",\"b\",\"c\"]\nINSERT(list, 2, \"x\")\nDISPLAY(list[3])",a:1,o:["A. \"c\"","B. \"b\"","C. \"x\"","D. \"a\""],e:"After INSERT at 2: [a,x,b,c]. Index 3 = b."},
+{q:"n ← 1\nREPEAT UNTIL (n > 100)\n{ n ← n * 2 }\nDISPLAY(n)",a:2,o:["A. 64","B. 100","C. 128","D. 256"],e:"1→2→4→8→16→32→64→128. 128>100? Yes, stop."},
+{q:"A sorted list has 2048 elements.\nBinary search max comparisons?",a:0,o:["A. 11","B. 1024","C. 2048","D. 20"],e:"log₂(2048)=11."},
+{q:"PROCEDURE calc(list)\n{\n    s ← 0\n    FOR EACH n IN list\n    { s ← s + n }\n    RETURN(s / LENGTH(list))\n}\n\nDISPLAY(calc([10,20,30]))",a:1,o:["A. 60","B. 20","C. 30","D. 3"],e:"Sum=60, LENGTH=3, 60/3=20. This computes the average."},
+{q:"x ← 5\nIF (x > 3)\n{ x ← x * 2 }\nIF (x > 8)\n{ x ← x + 1 }\nDISPLAY(x)",a:2,o:["A. 5","B. 10","C. 11","D. 6"],e:"5>3? Yes, x=10. 10>8? Yes, x=11. Two SEPARATE IFs."},
+{q:"RANDOM(1, 4) can produce\nhow many different values?",a:3,o:["A. 3","B. 5","C. 1","D. 4"],e:"1,2,3,4. Both inclusive. Count: 4-1+1=4."},
+{q:"PROCEDURE mystery(s)\n{\n    result ← \"\"\n    i ← LENGTH(s)\n    REPEAT UNTIL (i < 1)\n    {\n        result ← result + s[i]\n        i ← i - 1\n    }\n    RETURN(result)\n}\n\nmystery(\"code\") returns?",a:0,o:["A. \"edoc\"","B. \"code\"","C. \"c\"","D. \"e\""],e:"Reads backward: e,d,o,c → \"edoc\". This reverses a string."},
+{q:"An algorithm runs in 2ⁿ time.\nFor n=10, it takes 1 second.\nFor n=20, it takes approximately:",a:2,o:["A. 2 seconds","B. 10 seconds","C. 1024 seconds","D. 100 seconds"],e:"2¹⁰=1024. Going from n=10 to n=20: 2²⁰/2¹⁰ = 2¹⁰ = 1024 times longer. 1024 seconds ≈ 17 minutes."},
+{q:"nums ← [5, -3, 8, -1, 4]\nresult ← []\nFOR EACH n IN nums\n{\n    IF (n > 0)\n    { APPEND(result, n * 2) }\n}\nDISPLAY(result)",a:1,o:["A. [10, 16, 8]","B. [10, 16, 8]","C. [5, 8, 4]","D. [10, -6, 16, -2, 8]"],e:"Positive numbers doubled: 5*2=10, 8*2=16, 4*2=8. result=[10,16,8]."},
+{q:"\"10\" + \"20\" + \"30\" displays:",a:3,o:["A. 60","B. \"60\"","C. 102030","D. \"102030\""],e:"All strings. Concatenation: \"10\"+\"20\"+\"30\"=\"102030\"."},
+{q:"PROCEDURE safe_divide(a, b)\n{\n    IF (b = 0)\n    { RETURN(\"error\") }\n    RETURN(a / b)\n}\n\nDISPLAY(safe_divide(10, 0))",a:0,o:["A. \"error\"","B. 0","C. infinity","D. crash"],e:"b=0, so IF is true, RETURN \"error\" immediately. Division never happens."},
+{q:"Which problem is decidable?",a:1,o:["A. Will program P halt on input X for all P,X?","B. Is a given number prime?","C. Do programs A and B produce same output for all inputs?","D. Will any program ever print \"hello\"?"],e:"B has a known algorithm (check divisibility). A,C,D involve analyzing arbitrary programs for ALL inputs = undecidable."},
+{q:"list ← [1,2,3,4,5]\nREPEAT 3 TIMES\n{ REMOVE(list, 1) }\nDISPLAY(list)",a:2,o:["A. [1,2]","B. [3,4,5]","C. [4,5]","D. [2,3]"],e:"Remove index 1 three times: [2,3,4,5]→[3,4,5]→[4,5]."},
+{q:"A simulation is run 10,000 times.\nThe average result is 42.7.\nWhich is true?",a:1,o:["A. Real result will be exactly 42.7","B. 42.7 is a good estimate but actual may vary","C. More runs would give exactly 42.7","D. Simulations can't produce decimals"],e:"Simulations give estimates. More runs improve confidence but never guarantee exact results."},
+{q:"PROCEDURE process(list)\n{\n    max ← list[1]\n    maxIdx ← 1\n    i ← 2\n    REPEAT UNTIL (i > LENGTH(list))\n    {\n        IF (list[i] > max)\n        {\n            max ← list[i]\n            maxIdx ← i\n        }\n        i ← i + 1\n    }\n    RETURN(maxIdx)\n}\n\nDISPLAY(process([5,12,3,18,7]))",a:3,o:["A. 18","B. 2","C. 5","D. 4"],e:"Finds index of max. max=5,idx=1. 12>5→max=12,idx=2. 3>12? No. 18>12→max=18,idx=4. 7>18? No. Returns 4."},
+{q:"(x ≥ 1) OR (x ≤ 100) is true for:",a:0,o:["A. All values of x","B. Only 1 through 100","C. Only positive numbers","D. No values"],e:"TRAP: OR means at least one must be true. Every number is either ≥1 or ≤100 (or both). This is true for ALL x. If they wanted 1-100 only, it should be AND."},
+{q:"PROCEDURE twice(f, x)\n{\n    RETURN(f(f(x)))\n}\nPROCEDURE addThree(n)\n{ RETURN(n + 3) }\n\nDISPLAY(twice(addThree, 10))",a:1,o:["A. 13","B. 16","C. 19","D. 10"],e:"f(x) = addThree(10) = 13. f(f(x)) = addThree(13) = 16."},
+{q:"list ← [-5, -10, -3, -8]\nmax ← 0\nFOR EACH n IN list\n{ IF (n > max) { max ← n } }\nDISPLAY(max)",a:2,o:["A. -3","B. -5","C. 0","D. -10"],e:"TRAP: max starts at 0. No negative number is > 0. max never updates. Stays 0 (WRONG result). Should have used list[1] = -5 as initial value."},
+{q:"A brute-force algorithm tries all\n2ⁿ subsets of n items.\nFor n=25, that's about 33 million.\nFor n=50, approximately how many?",a:2,o:["A. 66 million","B. 1 billion","C. Over 1 quadrillion","D. 100 million"],e:"2⁵⁰ ≈ 1.13 × 10¹⁵ (over 1 quadrillion). Adding 25 more elements doesn't double, it multiplies by 2²⁵ ≈ 33 million. Exponential growth is extreme."},
+{q:"x ← 10\ny ← 20\nIF (x + y > 25 AND x * y > 250)\n{ DISPLAY(\"both\") }\nELSE\n{ DISPLAY(\"nope\") }",a:1,o:["A. \"both\"","B. \"nope\"","C. error","D. 30"],e:"x+y=30>25? Yes. x*y=200>250? No. true AND false = false. → \"nope\"."},
+{q:"PROCEDURE countVowels(word)\n{\n    vowels ← [\"a\",\"e\",\"i\",\"o\",\"u\"]\n    count ← 0\n    FOR EACH letter IN word\n    {\n        FOR EACH v IN vowels\n        {\n            IF (letter = v)\n            { count ← count + 1 }\n        }\n    }\n    RETURN(count)\n}\n\nDISPLAY(countVowels(\"apple\"))",a:1,o:["A. 1","B. 2","C. 3","D. 5"],e:"a: matches a(+1). p: no match. p: no match. l: no match. e: matches e(+1). count=2."}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel=""><div class="rq-num">Question ${i+1} of ${RQS.length}</div><div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;});
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button><div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+
+function selOpt(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function chkQ(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');btn.textContent='Try Again';btn.onclick=function(){rsQ(qid,ans);};}
+function rsQ(qid,ans){const c=document.getElementById(qid);c.dataset.rev='0';c.dataset.sel='';c.querySelectorAll('.opt').forEach(o=>o.classList.remove('locked','sel','right','wrong'));c.querySelector('.expl').classList.remove('show');const b=c.querySelector('.chk');b.textContent='Check Answer';b.classList.remove('rdy');b.onclick=function(){chkQ(b,qid,ans);};}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>

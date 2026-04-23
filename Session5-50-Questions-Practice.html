@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 5: 50 Practice Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--purple:#a855f7}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+.mono{font-family:'Fira Code',monospace}h1{font-size:26px;font-weight:800;margin-bottom:4px}
+.tag{display:inline-block;padding:3px 10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.sub{font-size:13px;color:var(--dim);margin-bottom:24px}
+.cluster{margin:28px 0 12px;padding:10px 16px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:10px}
+.cluster-title{font-size:16px;font-weight:800;color:var(--purple)}.cluster-desc{font-size:12px;color:var(--dim);margin-top:2px}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin:12px 0}
+.qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.qnum{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:2px 10px;font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+.qtype{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--purple);flex-shrink:0}
+.qtext{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.open-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Fira Code',monospace;font-size:13px;resize:vertical;min-height:40px;margin-bottom:8px}
+.open-input:focus{outline:none;border-color:rgba(59,130,246,0.4)}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.ans-box{display:none;margin-top:10px;padding:14px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12);border-radius:8px}
+.ans-box.show{display:block}
+.ans-text{font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.4);color:var(--accent)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(59,130,246,0.18);border-color:rgba(59,130,246,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.score-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,14,0.95);border-top:1px solid var(--border);padding:10px 20px;display:flex;justify-content:center;gap:20px;font-size:13px;font-weight:600;backdrop-filter:blur(10px);z-index:99}
+.sc-c{color:var(--green)}.sc-w{color:var(--red)}.sc-t{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 5 / In-Class Practice</div>
+<h1>50 Questions: Data, Binary & Compression</h1>
+<p class="sub">Open-ended first, then MCQ per cluster.</p>
+<div id="content"></div>
+<div class="score-bar"><span class="sc-c" id="sc-c">Correct: 0</span><span class="sc-w" id="sc-w">Wrong: 0</span><span class="sc-t" id="sc-t">Answered: 0 / 50</span></div>
+<div style="height:60px"></div>
+<script>
+let correct=0,wrong=0,answered=0;
+const DATA=[
+{cluster:"Binary Conversions",desc:"Convert between binary and decimal fluently."},
+{type:"open",q:"Convert these to decimal:\n\n1. 1010\n2. 11100\n3. 10000001",a:"1. 1010 = 8+0+2+0 = 10\n2. 11100 = 16+8+4+0+0 = 28\n3. 10000001 = 128+0+0+0+0+0+0+1 = 129"},
+{type:"open",q:"Convert these to binary:\n\n1. 25\n2. 63\n3. 100",a:"1. 25 = 16+8+1 = 11001\n2. 63 = 32+16+8+4+2+1 = 111111\n3. 100 = 64+32+4 = 1100100"},
+{type:"open",q:"What is the LARGEST decimal number\nyou can represent with exactly 6 bits?",a:"111111 in binary\n= 32+16+8+4+2+1 = 63\n\nFormula: 2⁶ - 1 = 64 - 1 = 63\n\nThe max value for n bits is always 2ⁿ - 1."},
+{type:"mcq",q:"Binary 1111 in decimal is:",o:["A. 14","B. 15","C. 16","D. 31"],a:1,e:"8+4+2+1 = 15. All bits on for 4-bit = 2⁴-1 = 15."},
+{type:"mcq",q:"Decimal 64 in binary is:",o:["A. 100000","B. 1000000","C. 110000","D. 10000000"],a:1,e:"64 = 2⁶. Only the 64-position is a 1. That's position 6 (7th digit from right): 1000000."},
+{type:"mcq",q:"What is 10110 + 1 in binary?",o:["A. 10111","B. 11000","C. 10100","D. 11111"],a:0,e:"10110 = 22. 22+1=23. 23 in binary: 16+4+2+1 = 10111."},
+{type:"mcq",q:"Binary 11111111 equals:",o:["A. 128","B. 256","C. 255","D. 127"],a:2,e:"128+64+32+16+8+4+2+1 = 255. Max value for 8 bits = 2⁸-1 = 255."},
+{type:"mcq",q:"Which binary number represents 50?",o:["A. 101010","B. 110010","C. 110100","D. 100110"],a:1,e:"32+16+2 = 50. Binary: 110010."},
+
+{cluster:"Bits & Representing Values",desc:"2ⁿ formula and working backwards."},
+{type:"open",q:"A game has 120 different characters.\nHow many bits needed for a unique\nID for each character?",a:"2⁶ = 64 (not enough for 120)\n2⁷ = 128 (covers 120)\n\nNeed 7 bits.\n\nAlways round UP to the next power of 2."},
+{type:"open",q:"A pixel's color is stored using\n3 channels (red, green, blue),\neach with 8 bits.\n\nHow many total bits per pixel?\nHow many unique colors possible?",a:"Total bits per pixel: 8 * 3 = 24 bits\n\nUnique colors: 2²⁴ = 16,777,216\n(about 16.7 million colors)\n\nThis is why it's called \"24-bit color\"\nor \"true color\"."},
+{type:"mcq",q:"How many unique values can 12 bits represent?",o:["A. 12","B. 144","C. 4096","D. 2048"],a:2,e:"2¹² = 4096."},
+{type:"mcq",q:"A city has 5 million residents.\nMinimum bits for a unique binary ID?",o:["A. 20","B. 22","C. 23","D. 25"],a:2,e:"2²² = 4,194,304 (not enough). 2²³ = 8,388,608 (covers 5 million). 23 bits."},
+{type:"mcq",q:"Adding 1 more bit to a number system:",o:["A. Adds 1 more value","B. Adds 2 more values","C. Doubles the number of values","D. Squares the number of values"],a:2,e:"n bits → 2ⁿ values. n+1 bits → 2ⁿ⁺¹ = 2 * 2ⁿ. Exactly doubles."},
+{type:"mcq",q:"IPv4 addresses use 32 bits.\nHow many unique addresses?",o:["A. 32 million","B. About 4.3 billion","C. 64 billion","D. 32 billion"],a:1,e:"2³² = 4,294,967,296 ≈ 4.3 billion. This is why we're running out of IPv4 addresses."},
+{type:"mcq",q:"A byte is 8 bits. A kilobyte (KB) is\napproximately how many bytes?",o:["A. 100","B. 1,000","C. 1,024","D. 8,000"],a:2,e:"1 KB = 2¹⁰ = 1,024 bytes. (Often approximated as 1,000 but technically 1,024.)"},
+
+{cluster:"Overflow & Roundoff Errors",desc:"Know which is which. The exam tests this distinction."},
+{type:"open",q:"A system uses 8-bit unsigned integers.\nWhat is the largest value it can store?\nWhat happens if you try to add 1 to it?",a:"Max value: 2⁸ - 1 = 255\n\n255 + 1 = 256, but 256 requires 9 bits.\nOnly 8 bits available → OVERFLOW ERROR.\n\nThe value might wrap around to 0\nor produce garbage, depending on the system."},
+{type:"open",q:"Explain why 0.1 + 0.2 ≠ 0.3 in\nmost computers.",a:"0.1 in binary is a repeating fraction:\n0.0001100110011... (goes on forever)\n\nSince computers have finite bits,\nthey round to the nearest representable value.\nThis tiny rounding error on 0.1 and 0.2\naccumulates when you add them.\n\nResult: 0.30000000000000004 instead of 0.3.\nThis is a roundoff error, not overflow."},
+{type:"mcq",q:"A 16-bit counter reaches 65,535.\nAdding 1 more causes:",o:["A. Roundoff error","B. Overflow error","C. The counter goes to 65,536","D. No error"],a:1,e:"65,535 is the max for 16 bits (2¹⁶-1). 65,536 requires 17 bits. Overflow."},
+{type:"mcq",q:"A bank calculates interest using\nfloating-point math. After millions\nof transactions, the balance is off\nby $0.03. This is:",o:["A. Overflow","B. Roundoff accumulation","C. A coding bug","D. Normal exact math"],a:1,e:"Each floating-point operation has tiny rounding. Over millions of operations, these tiny errors accumulate."},
+{type:"mcq",q:"Which causes overflow?",o:["A. 0.1 + 0.2 = 0.300000004","B. Storing 300 in an 8-bit variable","C. Dividing by zero","D. Comparing two strings"],a:1,e:"8 bits max = 255. 300 > 255 = overflow. A is roundoff. C is division error. D is not an arithmetic error."},
+{type:"mcq",q:"Roundoff errors are caused by:",o:["A. Numbers being too large","B. Numbers being negative","C. Some decimals being infinite in binary","D. Using too many variables"],a:2,e:"Some decimal fractions (like 0.1) repeat infinitely in binary. Finite storage means they get truncated/rounded."},
+
+{cluster:"Analog vs Digital",desc:"Continuous vs discrete. Sampling trade-offs."},
+{type:"open",q:"A vinyl record stores music as\ncontinuous grooves. A CD stores\nmusic as numbers sampled 44,100\ntimes per second.\n\nWhich is analog? Which is digital?\nWhat is lost in the digital version?",a:"Vinyl = ANALOG (continuous signal)\nCD = DIGITAL (discrete samples)\n\nLost in digital: the signal BETWEEN samples.\nAnalog captures the continuous wave perfectly.\nDigital only captures snapshots at 44,100 Hz.\n\nThe gaps between samples mean some\ndetail is lost, but at 44,100 Hz it's\nimperceptible to most human ears."},
+{type:"mcq",q:"A digital thermometer reads temperature\nevery 5 minutes. Between readings,\nthe temperature changes smoothly.\nThe digital record misses:",o:["A. Nothing, it's perfect","B. The temperature values between readings","C. All negative temperatures","D. Only extreme values"],a:1,e:"Digital sampling captures snapshots. Between samples, the continuous (analog) changes are not recorded."},
+{type:"mcq",q:"Increasing the sampling rate of a\ndigital audio recording from 22 kHz\nto 44 kHz will:",o:["A. Halve the file size","B. Double the file size and improve quality","C. Improve quality without changing size","D. Have no effect"],a:1,e:"Double the samples = double the data = double the file size. More samples = better representation of original = better quality."},
+{type:"mcq",q:"Bit depth determines:",o:["A. How often a signal is sampled","B. How precisely each sample is stored","C. The length of the recording","D. The file format"],a:1,e:"Bit depth = number of bits per sample. More bits = finer gradations = more precise value for each sample."},
+{type:"mcq",q:"A photo is 4000x3000 pixels.\nEach pixel uses 24 bits.\nUncompressed size is approximately:",o:["A. 12 MB","B. 36 MB","C. 72 MB","D. 288 MB"],a:1,e:"4000*3000 = 12,000,000 pixels. 12M * 24 bits = 288,000,000 bits. 288M/8 = 36,000,000 bytes = 36 MB."},
+
+{cluster:"Compression",desc:"Lossy vs lossless. When to use each."},
+{type:"open",q:"A company needs to email a 100-page\nlegal contract. They want to reduce\nthe file size. Should they use lossy\nor lossless compression? Explain.",a:"LOSSLESS.\n\nLegal documents must be preserved\nword-for-word. Even one changed character\ncould alter the legal meaning.\n\nLossy compression would permanently\nremove data, which is unacceptable\nfor legal/official documents.\n\nUse ZIP or similar lossless format."},
+{type:"open",q:"Instagram compresses uploaded photos.\nA user notices their photo looks\nslightly less sharp after uploading.\n\nWhat type of compression? Can they\nget the original quality back?",a:"LOSSY compression (JPEG).\n\nInstagram reduces file size for faster\nloading by removing subtle image details.\n\nThe original quality CANNOT be recovered\nfrom the Instagram version. The removed\ndata is permanently gone.\n\nTo keep the original, save it separately\nBEFORE uploading."},
+{type:"mcq",q:"Which pair is both lossy?",o:["A. JPEG and PNG","B. MP3 and ZIP","C. JPEG and MP3","D. PNG and FLAC"],a:2,e:"JPEG (lossy image) and MP3 (lossy audio). PNG and FLAC are lossless. ZIP is lossless."},
+{type:"mcq",q:"Lossless compression works by:",o:["A. Removing data humans can't perceive","B. Finding patterns and encoding them efficiently","C. Reducing image resolution","D. Converting to black and white"],a:1,e:"Lossless finds redundancy/patterns and represents them more compactly. No data is removed."},
+{type:"mcq",q:"A JPEG image is compressed, then\nthat JPEG is compressed again as JPEG.\nWhat happens?",o:["A. Quality improves","B. File gets smaller but quality degrades more","C. No change","D. File gets larger"],a:1,e:"Each lossy compression pass removes more data. Quality drops further. This is called generation loss."},
+{type:"mcq",q:"Which file type would produce the\nSMALLEST file for the same photo?",o:["A. BMP (uncompressed)","B. PNG (lossless)","C. JPEG at low quality (lossy)","D. TIFF (uncompressed)"],a:2,e:"JPEG at low quality removes the most data = smallest file. BMP and TIFF are uncompressed (largest). PNG is lossless (medium)."},
+{type:"mcq",q:"A music producer stores their master\nrecordings in FLAC format instead\nof MP3. Why?",o:["A. FLAC files are smaller","B. FLAC preserves every bit of audio perfectly","C. MP3 has better quality","D. FLAC is easier to stream"],a:1,e:"FLAC is lossless. The master recording is preserved exactly. MP3 removes audio data permanently. For archival/production, lossless is essential."},
+{type:"mcq",q:"Run-length encoding compresses\n\"AAABBBCCCC\" to \"3A3B4C\".\nThis is an example of:",o:["A. Lossy compression","B. Lossless compression","C. Encryption","D. Sampling"],a:1,e:"The original can be perfectly reconstructed from the compressed version. No data lost. Lossless."},
+
+{cluster:"Metadata",desc:"Data about data. Privacy implications."},
+{type:"open",q:"List 5 examples of metadata that\nmight be embedded in a smartphone photo.",a:"1. Date and time taken\n2. GPS coordinates (location)\n3. Camera/phone model\n4. Resolution (e.g., 4032x3024)\n5. File size\n\nOther possibilities:\n- Aperture/shutter speed\n- Whether flash was used\n- Orientation (portrait/landscape)\n- Software version"},
+{type:"open",q:"A journalist posts a photo online\nwithout removing metadata.\nWhat privacy risk does this create?",a:"The GPS metadata could reveal:\n- Their exact location\n- Where they live or work\n- Patterns of where they go\n\nThe device metadata could reveal:\n- What phone/camera they use\n- Potentially their identity\n\nThis could endanger a journalist\nworking on sensitive stories.\nMetadata should be stripped before\nsharing sensitive photos."},
+{type:"mcq",q:"Which is metadata for an email?",o:["A. The message body","B. The attachment contents","C. The sender's address and timestamp","D. The signature at the bottom"],a:2,e:"Sender address and timestamp describe the email (metadata). The body, attachment, and signature are the content itself."},
+{type:"mcq",q:"A data analyst has a dataset of\n10,000 songs. Which is metadata?",o:["A. The audio waveforms","B. Genre, artist, release year for each song","C. The lyrics","D. The actual sound when played"],a:1,e:"Genre, artist, year describe the songs (metadata). Waveforms, lyrics, and sound are the actual content."},
+{type:"mcq",q:"Metadata can be a privacy concern because:",o:["A. It makes files larger","B. It can reveal location, device, and patterns without the owner realizing","C. It changes the content of files","D. It only exists in photos"],a:1,e:"People often don't know metadata is embedded. It can reveal sensitive info like location, device, time patterns. Exists in many file types, not just photos."},
+{type:"mcq",q:"Which action would REMOVE metadata\nfrom a photo?",o:["A. Renaming the file","B. Using a metadata stripping tool","C. Changing the file extension","D. Emailing it to yourself"],a:1,e:"Dedicated metadata stripping tools remove embedded data. Renaming or changing extensions doesn't affect embedded metadata."},
+
+{cluster:"Mixed Challenges",desc:"Everything combined."},
+{type:"mcq",q:"A video file is 2 GB. After lossy\ncompression it's 200 MB. The original\nfile is deleted. What can be recovered?",o:["A. The full 2 GB original","B. Only the 200 MB compressed version","C. 1.8 GB of the data","D. Nothing"],a:1,e:"Lossy = data permanently lost. Without the original, only the compressed version exists. The removed 1.8 GB is gone."},
+{type:"mcq",q:"A 3-bit color system and a 6-bit\ncolor system. How many MORE colors\ndoes the 6-bit system have?",o:["A. 3 more","B. Double","C. 8 times more","D. 56 more"],a:2,e:"3 bits: 2³=8 colors. 6 bits: 2⁶=64 colors. 64/8 = 8 times more. Each additional bit doubles, so 3 extra bits = 2³ = 8x."},
+{type:"mcq",q:"Binary 1010 + binary 0110 = ?",o:["A. 10000","B. 1110","C. 10010","D. 1100"],a:0,e:"1010=10, 0110=6. 10+6=16. 16 in binary = 10000."},
+{type:"mcq",q:"Which is TRUE about analog data?",o:["A. It uses only 0s and 1s","B. It has infinite possible values (continuous)","C. It's always more accurate than digital","D. It can be stored perfectly on a computer"],a:1,e:"Analog is continuous (infinite values between any two points). Computers can only approximate analog data through digital sampling."},
+{type:"mcq",q:"A hospital system stores patient records.\nWhich error type is most dangerous\nfor storing medication dosages?",o:["A. Overflow (dose exceeds max storage value)","B. Roundoff (dose slightly imprecise)","C. Both are equally dangerous","D. Neither matters"],a:2,e:"Both are dangerous. Overflow could turn a large dose into zero (wrapping). Roundoff could give a slightly wrong dose. For medication, both must be prevented."},
+{type:"mcq",q:"The number of websites worldwide\nexceeds 1 billion. To give each\na unique binary ID, minimum bits?",o:["A. 20","B. 25","C. 30","D. 32"],a:2,e:"2²⁹ ≈ 537 million (not enough). 2³⁰ ≈ 1.07 billion (covers 1 billion). 30 bits."},
+{type:"mcq",q:"A student says: \"Compressing a text\nfile with ZIP then unzipping it gives\nback the exact original.\" Is this true?",o:["A. No, some data is always lost","B. Yes, ZIP is lossless","C. Only if the file is small","D. Only for text files, not other types"],a:1,e:"ZIP is lossless compression. The original is perfectly recoverable regardless of file type or size."},
+{type:"mcq",q:"Which is the best description of\nthe relationship between sampling rate,\nbit depth, and file size?",o:["A. Higher sampling rate and bit depth = smaller files","B. Higher sampling rate and bit depth = larger files, higher quality","C. They are unrelated","D. Only sampling rate affects file size"],a:1,e:"Both sampling rate (samples per second) and bit depth (bits per sample) increase data per second. More data = larger file = higher quality. Always a trade-off."}
+];
+
+function build(){
+    const el=document.getElementById('content');let qNum=0,html='';
+    DATA.forEach(item=>{
+        if(item.cluster){html+=`<div class="cluster"><div class="cluster-title">${item.cluster}</div><div class="cluster-desc">${item.desc}</div></div>`;return;}
+        qNum++;const qid='q'+qNum;
+        if(item.type==='open'){
+            html+=`<div class="qcard"><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">OPEN</span></div><div class="qtext">${esc(item.q)}</div><textarea class="open-input mono" placeholder="Her answer..."></textarea><button class="reveal-btn" onclick="rv(this)">Show Answer</button><div class="ans-box"><div class="ans-text">${esc(item.a)}</div></div></div>`;
+        } else {
+            html+=`<div class="qcard" id="${qid}" data-rev="0" data-sel=""><div class="qhead"><span class="qnum">${qNum}</span><span class="qtype">MCQ</span></div><div class="qtext">${esc(item.q)}</div><div class="opts">`;
+            item.o.forEach((opt,oi)=>{html+=`<button class="opt" data-i="${oi}" onclick="so(this,'${qid}')">${esc(opt)}</button>`;});
+            html+=`</div><button class="chk" onclick="ck(this,'${qid}',${item.a})">Check Answer</button><div class="expl">${esc(item.e)}</div></div>`;
+        }
+    });el.innerHTML=html;
+}
+function rv(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+function so(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function ck(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;if(c.dataset.rev==='1')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');if(s===ans)correct++;else wrong++;answered++;upd();btn.style.display='none';}
+function upd(){document.getElementById('sc-c').textContent='Correct: '+correct;document.getElementById('sc-w').textContent='Wrong: '+wrong;document.getElementById('sc-t').textContent='Answered: '+answered+' / 50';}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+build();
+</script>
+</body>
+</html>

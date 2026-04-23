@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 5: Data (Binary, Compression, Errors)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--red:#ef4444;--orange:#f97316;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}.val{color:var(--green)}.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.tip{padding:14px 16px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(147,197,253,0.85)}
+.tip::before{content:'💡 '}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ '}
+.check-section{margin:20px 0;padding:20px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:12px}
+.check-section h3{color:var(--purple);margin-top:0}
+.q{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0}
+.q-prompt{font-size:14px;color:var(--text);margin-bottom:10px;white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.answer{display:none;margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:8px;font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.answer.show{display:block}
+.review-section{margin-top:40px;padding:24px;background:rgba(59,130,246,0.04);border:2px solid rgba(59,130,246,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0;color:var(--accent2)}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.4);color:var(--accent2)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(59,130,246,0.18);border-color:rgba(59,130,246,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.conv-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;font-family:'Fira Code',monospace}
+.conv-table th{padding:8px 10px;background:rgba(59,130,246,0.08);color:var(--accent);font-weight:700;border:1px solid var(--border);text-align:center}
+.conv-table td{padding:8px 10px;border:1px solid rgba(255,255,255,0.04);color:var(--dim);text-align:center}
+.vs-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.vs-table th{padding:8px 10px;background:rgba(59,130,246,0.08);color:var(--accent);font-weight:700;border:1px solid var(--border);text-align:center}
+.vs-table td{padding:8px 10px;border:1px solid rgba(255,255,255,0.04);color:var(--dim);text-align:center;font-size:12px}
+.vs-table td:first-child{text-align:left;color:var(--text);font-weight:600}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 5 / Big Idea 2 Part 1</div>
+<h1>Data: Binary, Compression & Errors</h1>
+<p>How computers store, represent, and compress data. This is 17-22% of the exam. Heavy on vocabulary and conversions.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this lesson:</strong>
+<a href="#binary">1. Binary Number System</a>
+<a href="#bits">2. Bits, Bytes & Representing Values</a>
+<a href="#overflow">3. Overflow & Roundoff Errors</a>
+<a href="#analog">4. Analog vs Digital</a>
+<a href="#compress">5. Lossy vs Lossless Compression</a>
+<a href="#metadata">6. Metadata</a>
+<a href="#review">7. End of Lesson Review (18 Questions)</a>
+</div>
+
+<!-- ==================== SECTION 1: BINARY ==================== -->
+<h2 id="binary">1. Binary Number System</h2>
+<p>Computers store everything as <strong>binary</strong>, sequences of 0s and 1s. Each digit is called a <strong>bit</strong>. Binary is base-2, meaning each position is a power of 2.</p>
+
+<div class="concept">
+<h3>Place Values (Right to Left)</h3>
+<table class="conv-table">
+<tr><th>Position</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0</th></tr>
+<tr><td style="color:var(--accent);font-weight:700">Value</td><td>128</td><td>64</td><td>32</td><td>16</td><td>8</td><td>4</td><td>2</td><td>1</td></tr>
+</table>
+<p>Each position is double the previous. Memorize at least: <strong>1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024</strong>.</p>
+</div>
+
+<div class="concept">
+<h3>Converting Binary → Decimal</h3>
+<p>Add up the place values where there's a 1:</p>
+<pre><span class="val">1</span><span class="cmt">0</span><span class="val">1</span><span class="val">1</span> in binary:
+
+Position:  3  2  1  0
+Value:     8  4  2  1
+Bits:      1  0  1  1
+
+Add the 1s: 8 + 0 + 2 + 1 = <span class="val">11</span> in decimal</pre>
+</div>
+
+<div class="concept">
+<h3>Converting Decimal → Binary</h3>
+<p>Find the largest power of 2 that fits, subtract, repeat:</p>
+<pre>Convert <span class="val">45</span> to binary:
+
+45 - 32 = 13  → 32 is in  (position 5: <span class="val">1</span>)
+13 - 8  = 5   → 8 is in   (position 3: <span class="val">1</span>)
+5 - 4   = 1   → 4 is in   (position 2: <span class="val">1</span>)
+1 - 1   = 0   → 1 is in   (position 0: <span class="val">1</span>)
+
+Fill in 0s for positions not used (4, 1):
+<span class="val">101101</span> = 32 + 8 + 4 + 1 = 45 ✓</pre>
+</div>
+
+<div class="tip"><strong>Quick way to check:</strong> Add up all the 1-positions. If they equal the original number, you're right.</div>
+
+<div class="check-section">
+<h3>Quick Check: Binary Conversions</h3>
+<div class="q">
+<div class="q-prompt">Convert binary 11010 to decimal.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">1 1 0 1 0
+16+8+0+2+0 = 26</div>
+</div>
+<div class="q">
+<div class="q-prompt">Convert decimal 100 to binary.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">100 - 64 = 36  (64 in)
+36 - 32 = 4    (32 in)
+4 - 4 = 0      (4 in)
+
+Positions: 64, 32, 4 → 1100100
+
+Check: 64+32+4 = 100 ✓</div>
+</div>
+<div class="q">
+<div class="q-prompt">Convert binary 11111111 to decimal.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">128+64+32+16+8+4+2+1 = 255
+
+8 bits all set to 1 = 255.
+This is the maximum value for 8 bits (1 byte).</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 2: BITS ==================== -->
+<h2 id="bits">2. Bits, Bytes & Representing Values</h2>
+
+<div class="concept">
+<h3>How Many Values Can n Bits Represent?</h3>
+<p>The formula: <strong>2ⁿ values</strong>, ranging from 0 to 2ⁿ - 1.</p>
+<table class="conv-table">
+<tr><th>Bits</th><th>Values (2ⁿ)</th><th>Range</th><th>Real-world use</th></tr>
+<tr><td>1</td><td>2</td><td>0-1</td><td>On/off, true/false</td></tr>
+<tr><td>2</td><td>4</td><td>0-3</td><td></td></tr>
+<tr><td>3</td><td>8</td><td>0-7</td><td></td></tr>
+<tr><td>4</td><td>16</td><td>0-15</td><td>Single hex digit</td></tr>
+<tr><td>8</td><td>256</td><td>0-255</td><td>1 byte, ASCII, pixel color channel</td></tr>
+<tr><td>16</td><td>65,536</td><td>0-65,535</td><td>Unicode (basic)</td></tr>
+<tr><td>32</td><td>~4.3 billion</td><td></td><td>IPv4 addresses</td></tr>
+</table>
+</div>
+
+<div class="concept">
+<h3>Working Backwards: How Many Bits Do I Need?</h3>
+<p>If you need to represent N different values, find the smallest power of 2 that's ≥ N.</p>
+<pre>Need to represent 50 different values:
+  2⁵ = 32  (not enough)
+  2⁶ = 64  (covers 50) → Need <span class="val">6 bits</span>
+
+Need to represent 200 different values:
+  2⁷ = 128 (not enough)
+  2⁸ = 256 (covers 200) → Need <span class="val">8 bits</span></pre>
+</div>
+
+<div class="concept">
+<h3>Common Sizes</h3>
+<pre>1 byte   = 8 bits
+1 KB     = 1,024 bytes   (about 1 thousand)
+1 MB     = 1,024 KB      (about 1 million bytes)
+1 GB     = 1,024 MB      (about 1 billion bytes)
+1 TB     = 1,024 GB      (about 1 trillion bytes)</pre>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Bits & Values</h3>
+<div class="q">
+<div class="q-prompt">A system uses 5-bit color codes.
+How many unique colors can it represent?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">2⁵ = 32 unique colors.
+
+Range: 0 to 31 (or binary 00000 to 11111)</div>
+</div>
+<div class="q">
+<div class="q-prompt">A school has 1,200 students.
+Each student needs a unique binary ID.
+How many bits minimum?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">2¹⁰ = 1,024 (not enough)
+2¹¹ = 2,048 (covers 1,200)
+
+Need 11 bits minimum.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3: OVERFLOW ==================== -->
+<h2 id="overflow">3. Overflow & Roundoff Errors</h2>
+
+<div class="concept">
+<h3>Overflow Error</h3>
+<p>Happens when a number is <strong>too large</strong> to fit in the available bits.</p>
+<pre>With 8 bits, max value = 255.
+If you try to store 256:
+  256 in binary = 100000000 (9 bits)
+  But you only have 8 bits!
+  → <span class="key">Overflow error</span>: the value wraps around or crashes</pre>
+<p>Think of a car odometer at 999,999. One more mile and it rolls over to 000,000. Same idea.</p>
+</div>
+
+<div class="concept">
+<h3>Roundoff Error</h3>
+<p>Happens because <strong>some decimals can't be represented exactly</strong> in binary.</p>
+<pre>In decimal, 1/3 = 0.33333... (infinite)
+In binary, 1/10 = 0.000110011... (infinite)
+
+So when a computer stores 0.1:
+  0.1 + 0.1 + 0.1 might NOT equal exactly 0.3
+  It might be 0.30000000000000004
+
+→ <span class="key">Roundoff error</span>: tiny inaccuracies in decimal math</pre>
+</div>
+
+<div class="trap"><strong>Overflow ≠ Roundoff.</strong> Overflow: the number is too BIG for the bits. Roundoff: the number can't be represented EXACTLY in binary. The exam will give you scenarios and ask which type of error occurs.</div>
+
+<div class="check-section">
+<h3>Quick Check: Errors</h3>
+<div class="q">
+<div class="q-prompt">A program uses 16-bit unsigned integers
+(max value 65,535). What happens when
+it tries to compute 65,535 + 1?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Overflow error.
+
+65,536 requires 17 bits (10000000000000000)
+but only 16 bits are available.
+The result wraps around or produces
+an incorrect value.</div>
+</div>
+<div class="q">
+<div class="q-prompt">A program computes the total price of
+three items at $0.10 each.
+The result is $0.30000000000000004.
+What type of error is this?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Roundoff error.
+
+0.1 cannot be represented exactly in binary.
+Each 0.1 has a tiny rounding error,
+and those errors accumulate when added.
+
+This is NOT overflow (the number isn't too big).
+It's a precision issue.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4: ANALOG VS DIGITAL ==================== -->
+<h2 id="analog">4. Analog vs Digital</h2>
+
+<div class="concept">
+<h3>The Difference</h3>
+<pre><span class="val">Analog</span>:  Continuous. Infinite possible values.
+         Example: sound waves, temperature, light
+
+<span class="val">Digital</span>: Discrete. Finite set of values (0s and 1s).
+         Example: MP3 file, digital photo, text file</pre>
+</div>
+
+<div class="concept">
+<h3>Analog-to-Digital Conversion (Sampling)</h3>
+<p>To convert analog data (like sound) to digital, you <strong>sample</strong> it at regular intervals:</p>
+<pre>Sound wave (analog):  ~~~~~∿∿∿~~~~~
+
+Sample it at regular intervals:
+  Point 1: value = 42
+  Point 2: value = 67
+  Point 3: value = 51
+  ...
+
+Store as discrete numbers: [42, 67, 51, ...]</pre>
+</div>
+
+<div class="concept">
+<h3>Sampling Rate & Bit Depth</h3>
+<pre><span class="key">Sampling rate</span>: How OFTEN you sample.
+  Higher rate → more detail → larger file
+  CD audio: 44,100 samples per second
+
+<span class="key">Bit depth</span>: How many bits per sample.
+  More bits → more precise values → larger file
+  CD audio: 16 bits per sample (65,536 levels)
+
+<span class="key">Trade-off</span>: Higher quality = larger file size.
+           Lower quality = smaller file size.</pre>
+</div>
+
+<div class="tip"><strong>Exam question pattern:</strong> "Which change would INCREASE the quality of a digital audio recording?" Answer: increase sampling rate OR increase bit depth. "Which change would DECREASE file size?" Answer: decrease either one.</div>
+
+<div class="check-section">
+<h3>Quick Check: Analog vs Digital</h3>
+<div class="q">
+<div class="q-prompt">A digital audio file is recorded at
+22,050 samples/second with 8-bit depth.
+A second recording uses 44,100 samples/second
+with 16-bit depth.
+
+Which has better quality? Which is larger?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">The second recording has better quality
+(double the sampling rate AND double the bit depth).
+
+It is also MUCH larger:
+First:  22,050 * 8  = 176,400 bits/sec
+Second: 44,100 * 16 = 705,600 bits/sec
+
+4x larger per second of audio.
+
+Higher quality always means bigger files.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5: COMPRESSION ==================== -->
+<h2 id="compress">5. Lossy vs Lossless Compression</h2>
+
+<div class="concept">
+<h3>Why Compress?</h3>
+<p>Files are big. Compression makes them smaller so they take up less storage and transfer faster over networks.</p>
+</div>
+
+<div class="concept">
+<h3>Two Types</h3>
+<table class="vs-table">
+<tr><th></th><th>Lossless</th><th>Lossy</th></tr>
+<tr><td>Data preserved?</td><td style="color:var(--green)">100%, perfectly reconstructable</td><td style="color:var(--red)">Some data permanently lost</td></tr>
+<tr><td>File size reduction</td><td>Moderate (maybe 50-70% of original)</td><td>Dramatic (can be 10% of original)</td></tr>
+<tr><td>Reversible?</td><td style="color:var(--green)">Yes, original fully recoverable</td><td style="color:var(--red)">No, lost data is gone forever</td></tr>
+<tr><td>Best for</td><td>Text, code, medical images, legal docs</td><td>Photos, music, video, streaming</td></tr>
+<tr><td>Examples</td><td>PNG, ZIP, FLAC, GIF</td><td>JPEG, MP3, MP4, AAC</td></tr>
+</table>
+</div>
+
+<div class="concept">
+<h3>How Lossless Works (simplified)</h3>
+<p>Finds patterns and represents them more efficiently:</p>
+<pre>Original: AAAAAABBBCCCC
+Compressed: 6A3B4C
+
+Same information, fewer characters.
+Can perfectly reconstruct the original.</pre>
+</div>
+
+<div class="concept">
+<h3>How Lossy Works (simplified)</h3>
+<p>Removes data humans won't notice much:</p>
+<pre>JPEG: Removes subtle color differences
+      your eyes can't distinguish.
+
+MP3:  Removes frequencies outside
+      normal human hearing range.
+
+Result: Smaller file, looks/sounds "close enough"
+but the removed data is GONE FOREVER.</pre>
+</div>
+
+<div class="trap"><strong>You CANNOT recover lost data from lossy compression.</strong> If you compress a photo as JPEG and delete the original, the removed detail is gone permanently. If you keep compressing a lossy file, quality degrades further each time.</div>
+
+<div class="check-section">
+<h3>Quick Check: Compression</h3>
+<div class="q">
+<div class="q-prompt">A hospital stores patient X-rays.
+Should they use lossy or lossless
+compression? Why?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">LOSSLESS.
+
+Medical images cannot afford to lose detail.
+A tiny detail removed by lossy compression
+could be a critical medical finding.
+
+The larger file size is worth it for
+perfect accuracy in this context.</div>
+</div>
+<div class="q">
+<div class="q-prompt">A streaming music service compresses
+songs for mobile users. Which type
+and why?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">LOSSY (like MP3 or AAC).
+
+Mobile users need small files for streaming.
+The removed audio frequencies are mostly
+inaudible to humans, so the trade-off
+(smaller size for slightly less quality)
+is acceptable for casual listening.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 6: METADATA ==================== -->
+<h2 id="metadata">6. Metadata</h2>
+
+<div class="concept">
+<h3>Data About Data</h3>
+<p>Metadata describes the properties of a file without being the content itself.</p>
+<pre><span class="key">Photo metadata:</span>
+  Date taken: March 15, 2026
+  Location: 30.2672° N, 97.7431° W
+  Camera: iPhone 16
+  File size: 3.2 MB
+  Resolution: 4032 x 3024 pixels
+
+<span class="key">Song metadata:</span>
+  Title: "Bohemian Rhapsody"
+  Artist: Queen
+  Album: A Night at the Opera
+  Duration: 5:55
+  Bitrate: 320 kbps
+
+<span class="key">Email metadata:</span>
+  From, To, Date, Subject, IP address
+  (the content of the email is NOT metadata)</pre>
+</div>
+
+<div class="tip"><strong>Exam distinction:</strong> Metadata is information ABOUT the data, not the data itself. The photo's metadata includes when and where it was taken, but NOT what's in the picture. The email's metadata includes who sent it, but NOT what the email says.</div>
+
+<div class="concept">
+<h3>Why Metadata Matters</h3>
+<pre><span class="val">1.</span> Searching: find files by date, type, author
+<span class="val">2.</span> Organizing: sort photos by location
+<span class="val">3.</span> Privacy concern: metadata can reveal location,
+   device info, and patterns even if content is hidden
+<span class="val">4.</span> Legal: email metadata used as evidence in court</pre>
+</div>
+
+<div class="trap"><strong>Privacy risk of metadata.</strong> A photo might look innocent, but its metadata could reveal your exact GPS location, the time you were there, and what device you used. The exam asks about this.</div>
+
+<div class="check-section">
+<h3>Quick Check: Metadata</h3>
+<div class="q">
+<div class="q-prompt">Which of these is metadata for a video file?
+
+A. The actual video frames
+B. The audio track
+C. The file size and duration
+D. The storyline</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">C. File size and duration are metadata.
+
+A and B are the actual content.
+D is a human description, not file metadata.
+
+Metadata = properties of the file
+(size, duration, format, creation date, etc.),
+not the content itself.</div>
+</div>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div class="review-section" id="review">
+<h2>End of Lesson Review</h2>
+<p style="margin-bottom:20px">Mixed from all sections.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+function reveal(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+
+const RQS=[
+{q:"Convert binary 110101 to decimal.",a:2,o:["A. 51","B. 45","C. 53","D. 35"],e:"32+16+0+4+0+1 = 53."},
+{q:"How many unique values can 10 bits represent?",a:1,o:["A. 100","B. 1024","C. 512","D. 10"],e:"2¹⁰ = 1024. Range: 0 to 1023."},
+{q:"A computer stores prices as integers\n(cents). Max value is 65,535 cents.\nA price of $700.00 (70,000 cents)\ncauses what?",a:0,o:["A. Overflow error","B. Roundoff error","C. Syntax error","D. No error"],e:"70,000 > 65,535. The value exceeds the maximum. Overflow error."},
+{q:"0.1 + 0.2 = 0.30000000000000004\nin many computers. This is:",a:1,o:["A. Overflow","B. Roundoff error","C. A bug in the code","D. Normal exact math"],e:"0.1 and 0.2 can't be represented exactly in binary floating point. The tiny errors accumulate."},
+{q:"Which is lossless compression?",a:2,o:["A. JPEG","B. MP3","C. PNG","D. MP4"],e:"PNG is lossless. JPEG, MP3, and MP4 are all lossy."},
+{q:"A song is compressed from 50 MB to 5 MB\nusing MP3. Can the original 50 MB\nbe recovered?",a:1,o:["A. Yes, fully","B. No, data permanently lost","C. Only with special software","D. Yes, if you have the key"],e:"MP3 is lossy. The removed audio data is gone forever. The original cannot be recovered from the compressed version."},
+{q:"Which is metadata for a photo?",a:3,o:["A. The image pixels","B. The colors in the image","C. The people in the photo","D. The GPS coordinates where it was taken"],e:"GPS coordinates describe ABOUT the photo (where), not what's IN the photo. That's metadata."},
+{q:"To increase digital audio quality,\nyou should:",a:0,o:["A. Increase sampling rate and bit depth","B. Decrease sampling rate","C. Use lossy compression","D. Reduce the file size"],e:"Higher sampling rate = more samples per second. Higher bit depth = more precision per sample. Both increase quality (and file size)."},
+{q:"Convert decimal 200 to binary.\nHow many bits needed?",a:2,o:["A. 7 bits","B. 9 bits","C. 8 bits","D. 6 bits"],e:"200 in binary: 11001000. 128+64+8=200. That's 8 digits, so 8 bits. (2⁷=128 < 200, 2⁸=256 ≥ 200)"},
+{q:"An analog thermometer shows 72.3°F.\nA digital one shows 72°F.\nWhat caused the difference?",a:1,o:["A. The digital one is broken","B. Digital has limited precision (discrete values)","C. Analog is always wrong","D. Temperature changed"],e:"Digital devices have finite precision. The analog signal (72.3) was rounded to fit the digital representation (72). This is the fundamental analog-to-digital trade-off."},
+{q:"Which should use lossless compression?",a:2,o:["A. Streaming video","B. Social media photos","C. Legal contracts","D. Background music in a store"],e:"Legal documents must be perfectly preserved. Losing even one character could change the meaning. Lossless ensures 100% accuracy."},
+{q:"A 4-bit number system. What is the\nlargest value it can represent?",a:1,o:["A. 16","B. 15","C. 4","D. 8"],e:"2⁴ = 16 values, ranging from 0 to 15. Maximum = 15 (binary 1111 = 8+4+2+1)."},
+{q:"Repeatedly compressing a JPEG image\nwill:",a:0,o:["A. Gradually degrade quality each time","B. Improve quality","C. Have no effect","D. Make the file larger"],e:"Each lossy compression pass removes more data. Quality degrades further with each compression. Never improves."},
+{q:"Binary 10000000 in decimal is:",a:2,o:["A. 64","B. 256","C. 128","D. 80"],e:"Only the 128 position has a 1. Answer: 128."},
+{q:"A website stores user ages using 7 bits.\nCan it store age 130?",a:1,o:["A. Yes","B. No, max is 127","C. No, max is 64","D. Yes, 130 < 256"],e:"7 bits: 2⁷=128 values, range 0-127. 130 > 127. Cannot store it. Would need 8 bits."},
+{q:"Which is NOT metadata?",a:1,o:["A. File creation date","B. The text content of a document","C. File size in bytes","D. Author name"],e:"The text content IS the data itself, not metadata. Creation date, file size, and author are all metadata (data about the data)."},
+{q:"Increasing the sampling rate of a\ndigital recording will:",a:2,o:["A. Decrease quality and size","B. Decrease quality, increase size","C. Increase quality and size","D. Increase quality, decrease size"],e:"More samples = better representation of the original analog signal = higher quality. More data = larger file. Always a trade-off."},
+{q:"How many bits to represent 1000\ndifferent student IDs?",a:1,o:["A. 9 (2⁹=512)","B. 10 (2¹⁰=1024)","C. 11 (2¹¹=2048)","D. 8 (2⁸=256)"],e:"2⁹=512 (not enough). 2¹⁰=1024 (covers 1000). Need 10 bits."}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel=""><div class="rq-num">Question ${i+1} of ${RQS.length}</div><div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;});
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button><div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+function selOpt(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function chkQ(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');btn.textContent='Try Again';btn.onclick=function(){rsQ(qid,ans);};}
+function rsQ(qid,ans){const c=document.getElementById(qid);c.dataset.rev='0';c.dataset.sel='';c.querySelectorAll('.opt').forEach(o=>o.classList.remove('locked','sel','right','wrong'));c.querySelector('.expl').classList.remove('show');const b=c.querySelector('.chk');b.textContent='Check Answer';b.classList.remove('rdy');b.onclick=function(){chkQ(b,qid,ans);};}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
