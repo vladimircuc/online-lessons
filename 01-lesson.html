@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS3100 Final Exam Prep · Lesson</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-panel: #111828;
+    --bg-elevated: #1a2234;
+    --border: #2a3548;
+    --border-bright: #3d4a63;
+    --text: #e4e9f2;
+    --text-dim: #8a94a8;
+    --text-muted: #5a6478;
+    --accent: #7fd4ff;
+    --accent-dim: #4a9fd4;
+    --success: #6ee7a7;
+    --warning: #fbbf24;
+    --danger: #ff7e8a;
+    --purple: #c4a3ff;
+    --code-bg: #0d1220;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  nav.sidebar {
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    padding: 32px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav.sidebar h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  nav.sidebar .brand {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+  nav.sidebar ol { list-style: none; counter-reset: sec; }
+  nav.sidebar li { counter-increment: sec; margin-bottom: 6px; }
+  nav.sidebar a {
+    display: block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  nav.sidebar a::before {
+    content: counter(sec, decimal-leading-zero);
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin-right: 10px;
+  }
+  nav.sidebar a:hover {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-left-color: var(--accent-dim);
+  }
+  nav.sidebar a.active {
+    background: var(--bg-elevated);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  main {
+    padding: 48px 64px;
+    max-width: 960px;
+  }
+  header.page-header {
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.page-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  header.page-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  header.page-header p {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 700px;
+  }
+  section {
+    margin-bottom: 80px;
+    scroll-margin-top: 24px;
+  }
+  section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  section .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  section .section-sub {
+    color: var(--text-dim);
+    font-size: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--border);
+  }
+  h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 40px;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+  p { margin-bottom: 16px; color: var(--text); }
+  ul, ol { margin-bottom: 20px; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    color: var(--text);
+    font-size: inherit;
+  }
+  .kw { color: #ff9fd4; }
+  .str { color: var(--success); }
+  .cmt { color: var(--text-muted); font-style: italic; }
+  .typ { color: var(--purple); }
+  .num { color: var(--warning); }
+  .fn { color: var(--accent); }
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(127, 212, 255, 0.06);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout.warn {
+    border-left-color: var(--warning);
+    background: rgba(251, 191, 36, 0.06);
+  }
+  .callout.danger {
+    border-left-color: var(--danger);
+    background: rgba(255, 126, 138, 0.06);
+  }
+  .callout.success {
+    border-left-color: var(--success);
+    background: rgba(110, 231, 167, 0.06);
+  }
+  .callout strong { color: var(--accent); }
+  .callout.warn strong { color: var(--warning); }
+  .callout.danger strong { color: var(--danger); }
+  .callout.success strong { color: var(--success); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 28px;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg-panel);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  td { color: var(--text); }
+  td code { font-size: 12px; }
+
+  /* MCQ */
+  .mcq {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 32px 0;
+  }
+  .mcq-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--warning);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .mcq-q {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .mcq-opts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .mcq-opt {
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.15s;
+    font-family: inherit;
+    color: var(--text);
+    text-align: left;
+    width: 100%;
+  }
+  .mcq-opt:hover {
+    border-color: var(--border-bright);
+    background: #1f2940;
+  }
+  .mcq-opt .letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 12px;
+    min-width: 18px;
+    padding-top: 2px;
+  }
+  .mcq-opt.correct {
+    border-color: var(--success);
+    background: rgba(110, 231, 167, 0.1);
+  }
+  .mcq-opt.correct .letter { color: var(--success); }
+  .mcq-opt.incorrect {
+    border-color: var(--danger);
+    background: rgba(255, 126, 138, 0.1);
+  }
+  .mcq-opt.incorrect .letter { color: var(--danger); }
+  .mcq-explain {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+    color: var(--text-dim);
+    display: none;
+  }
+  .mcq-explain.show { display: block; }
+  .mcq-explain strong { color: var(--accent); }
+
+  /* Widgets */
+  .widget {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 28px 0;
+  }
+  .widget-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .widget-h {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  /* FX Thread Visualizer */
+  .fx-viz {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .fx-col {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 240px;
+    position: relative;
+  }
+  .fx-col h5 {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .fx-col.bg h5 { color: var(--purple); }
+  .fx-task {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s;
+  }
+  .fx-task.active {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: var(--accent);
+    background: rgba(127, 212, 255, 0.08);
+  }
+  .fx-task.done {
+    opacity: 0.55;
+    border-color: var(--border);
+    background: var(--bg-panel);
+  }
+  .fx-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 10px;
+    transition: all 0.15s;
+  }
+  .fx-btn:hover { background: #9fe0ff; transform: translateY(-1px); }
+  .fx-btn.ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .fx-btn.ghost:hover { color: var(--text); border-color: var(--border-bright); background: var(--bg-elevated); }
+  .fx-log {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    max-height: 140px;
+    overflow-y: auto;
+    color: var(--text-dim);
+  }
+  .fx-log .log-fx { color: var(--accent); }
+  .fx-log .log-bg { color: var(--purple); }
+  .fx-log-line { margin-bottom: 4px; }
+
+  /* Race condition simulator */
+  .race-sim { margin-top: 8px; }
+  .race-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .race-stat {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .race-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .race-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .race-stat-value.warn { color: var(--warning); }
+  .race-stat-value.danger { color: var(--danger); }
+  .race-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .race-controls label { font-size: 13px; color: var(--text-dim); }
+  .race-controls input[type="range"] {
+    accent-color: var(--accent);
+    flex: 1;
+    min-width: 120px;
+  }
+  .race-controls select {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .race-explain {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border-left: 3px solid var(--warning);
+    font-size: 13px;
+    color: var(--text-dim);
+    border-radius: 0 6px 6px 0;
+  }
+  .race-explain strong { color: var(--warning); }
+
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .concept-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .concept-card h5 {
+    font-size: 13px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .concept-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 0;
+  }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.sidebar { position: static; height: auto; }
+    main { padding: 32px 24px; }
+    header.page-header h1 { font-size: 34px; }
+    .fx-viz { grid-template-columns: 1fr; }
+    .race-bar { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="brand">CS3100 · FINAL PREP</div>
+    <h2>Lesson Sections</h2>
+    <ol>
+      <li><a href="#s1">OOP Fundamentals</a></li>
+      <li><a href="#s2">Collections &amp; Comparators</a></li>
+      <li><a href="#s3">Specs &amp; Nullability</a></li>
+      <li><a href="#s4">Testing &amp; Testability</a></li>
+      <li><a href="#s5">SOLID &amp; Patterns</a></li>
+      <li><a href="#s6">MVC &amp; MVVM</a></li>
+      <li><a href="#s7">Concurrency</a></li>
+      <li><a href="#s8">JavaFX Threading</a></li>
+      <li><a href="#s9">UX &amp; Accessibility</a></li>
+      <li><a href="#s10">Architecture &amp; Ops</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <div class="eyebrow">CS3100 · FINAL EXAM PREP · LESSON</div>
+      <h1>Program Design &amp; Implementation II</h1>
+      <p>A focused walkthrough of every concept cluster on the final exam, with interactive demos and quick-check MCQs. Work through top to bottom, don't skip the checks, they're the exam traps in miniature.</p>
+    </header>
+
+    <!-- ============ SECTION 1: OOP ============ -->
+    <section id="s1">
+      <span class="section-num">// SECTION 01</span>
+      <h2>OOP Fundamentals</h2>
+      <p class="section-sub">Dynamic dispatch, static context, casting. The rules are unambiguous once you internalize how Java separates declared type from runtime type.</p>
+
+      <h3>Dynamic dispatch: declared type vs runtime type</h3>
+      <p>Every variable in Java has <strong>two types</strong>: the declared type (what the compiler sees) and the runtime type (the actual object in memory). Method calls use <strong>dynamic dispatch</strong>, meaning Java picks the method implementation based on the runtime type, not the declared type.</p>
+
+      <pre><code><span class="typ">Animal</span> a = <span class="kw">new</span> <span class="typ">Dog</span>();  <span class="cmt">// declared: Animal, runtime: Dog</span>
+a.<span class="fn">speak</span>();                 <span class="cmt">// calls Dog.speak() — runtime type wins</span></code></pre>
+
+      <div class="callout">
+        <strong>The rule:</strong> fields are resolved by declared type (static), methods are resolved by runtime type (dynamic). This is why polymorphism works.
+      </div>
+
+      <h3>Casting does NOT change the object</h3>
+      <p>A cast is a <em>compile-time promise</em> to the compiler: "trust me, this reference points to a subtype." It changes how the compiler treats the reference. It does <strong>not</strong> mutate the actual object.</p>
+
+      <pre><code><span class="typ">Light</span> light = <span class="kw">new</span> <span class="typ">TunableWhiteLight</span>(<span class="str">"living-room"</span>, <span class="num">2700</span>, <span class="num">100</span>);
+((<span class="typ">DimmableLight</span>) light).<span class="fn">turnOn</span>();
+<span class="cmt">// Runtime type is STILL TunableWhiteLight.</span>
+<span class="cmt">// If TunableWhiteLight overrides turnOn(), that's what runs.</span></code></pre>
+
+      <div class="callout warn">
+        <strong>Exam trap:</strong> students see the cast to <code>DimmableLight</code> and think "oh, so DimmableLight's version runs." Wrong. The cast just tells the compiler "I promise this IS a DimmableLight." The actual object is still whatever you instantiated, so its overridden methods win.
+      </div>
+
+      <h3>Static methods can't touch instance state</h3>
+      <p>A <code>static</code> method belongs to the class, not to any instance. There is no <code>this</code> in a static method. So it cannot reach instance fields directly, there's no instance to reach into.</p>
+
+      <pre><code><span class="kw">public class</span> <span class="typ">Example</span> {
+    <span class="kw">int</span> x = <span class="num">10</span>;                       <span class="cmt">// instance field</span>
+
+    <span class="kw">public static void</span> <span class="fn">printX</span>() {
+        <span class="typ">System</span>.out.<span class="fn">println</span>(x);         <span class="cmt">// COMPILE ERROR</span>
+    }
+}</code></pre>
+      <p>Fix: either make <code>x</code> static (belongs to the class), or accept an <code>Example</code> instance and read <code>instance.x</code>.</p>
+
+      <!-- MCQs for Section 1 -->
+      <div class="mcq" data-correct="D">
+        <div class="mcq-label">QUICK CHECK · 1.1</div>
+        <div class="mcq-q"><code>Light light = new TunableWhiteLight("room", 2700, 100);<br>((DimmableLight) light).turnOn();</code><br>If <code>TunableWhiteLight</code> overrides <code>turnOn()</code>, which version runs?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>DimmableLight's, because the cast changes the runtime type</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Light's, because Light is the declared type</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Compilation error, invalid cast</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>TunableWhiteLight's, because runtime type drives dispatch</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: D.</strong> Casts only adjust what the compiler allows. The actual object is a <code>TunableWhiteLight</code>, so its overridden <code>turnOn()</code> always runs.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 1.2</div>
+        <div class="mcq-q">Why doesn't this compile?<br><code>public class Example { int x = 10; public static void printX() { System.out.println(x); } }</code></div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>x should be public for a static method to access it</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Static methods cannot reference instance variables directly</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>println cannot print an int</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>x must be final before a static method can use it</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> There's no <code>this</code> inside a static method, so there's no instance to read <code>x</code> from. Access modifiers don't matter here, it's about instance vs class context.</div>
+      </div>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 1.3</div>
+        <div class="mcq-q">Given <code>Shape s = new Circle();</code> where both declare a <code>String type</code> field with different values, what does <code>s.type</code> return?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Shape's value, fields use static (declared-type) resolution</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Circle's value, fields follow dynamic dispatch</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Compile error because of field shadowing</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>null, because the field is hidden</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> Only methods dispatch dynamically. Fields are resolved by declared type, so <code>s.type</code> gives you Shape's field. This is called <em>field shadowing</em> and it's a classic trap.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2: COLLECTIONS ============ -->
+    <section id="s2">
+      <span class="section-num">// SECTION 02</span>
+      <h2>Collections &amp; Comparators</h2>
+      <p class="section-sub">The Big-O of lookups, and how Comparator chaining builds multi-key sorts without writing your own compare method.</p>
+
+      <h3>Big-O you actually need to know</h3>
+      <table>
+        <thead>
+          <tr><th>Operation</th><th>ArrayList</th><th>HashSet</th><th>HashMap</th><th>TreeMap</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>contains / get</td><td><code>O(n)</code></td><td><code>O(1)</code></td><td><code>O(1)</code></td><td><code>O(log n)</code></td></tr>
+          <tr><td>add</td><td><code>O(1)*</code></td><td><code>O(1)</code></td><td><code>O(1)</code></td><td><code>O(log n)</code></td></tr>
+          <tr><td>remove by value</td><td><code>O(n)</code></td><td><code>O(1)</code></td><td><code>O(1)</code></td><td><code>O(log n)</code></td></tr>
+          <tr><td>iteration</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code> sorted</td></tr>
+        </tbody>
+      </table>
+      <p><code>*</code> ArrayList <code>add</code> is amortized O(1); occasional resizes are O(n).</p>
+
+      <div class="callout warn">
+        <strong>Membership test matters:</strong> testing "is this in the collection?" over an ArrayList with a for-each loop is O(n). Using a HashSet with <code>.contains()</code> is O(1). If you do many membership tests, that's the difference between fast and painfully slow.
+      </div>
+
+      <h3>Comparator chaining</h3>
+      <p>Build multi-key sorts by composing. Each <code>.thenComparing()</code> is a tiebreaker that kicks in only when the previous keys are equal.</p>
+
+      <pre><code>lights.<span class="fn">sort</span>(
+    <span class="typ">Comparator</span>.<span class="fn">comparing</span>(<span class="typ">DimmableLight</span>::<span class="fn">getId</span>)      <span class="cmt">// primary</span>
+        .<span class="fn">thenComparingInt</span>(<span class="typ">DimmableLight</span>::<span class="fn">getBrightness</span>) <span class="cmt">// tiebreaker</span>
+);</code></pre>
+
+      <p>If two lights have the same id (say both "bedroom"), brightness breaks the tie, ascending. So <code>bedroom/50</code> comes before <code>bedroom/80</code>. Input order is irrelevant once you sort.</p>
+
+      <h3>Reversing + natural order</h3>
+      <ul>
+        <li><code>Comparator.naturalOrder()</code> uses <code>Comparable</code>'s compareTo</li>
+        <li><code>Comparator.reverseOrder()</code> flips it</li>
+        <li><code>.reversed()</code> flips a custom comparator</li>
+        <li><code>nullsFirst(cmp)</code> / <code>nullsLast(cmp)</code> handle nulls</li>
+      </ul>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 2.1</div>
+        <div class="mcq-q">Version A uses <code>ArrayList&lt;Device&gt;</code> with a for-each membership check. Version B uses <code>HashSet&lt;Device&gt;</code> with <code>contains()</code>. Big-O for membership?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>A is O(n), B is O(1)</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Both are O(n)</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>A is O(n), B is O(log n)</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Both are O(1) because JIT optimizes them</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> Linear scan vs hash lookup. The JIT claim in D is a made-up trap, JIT does not convert data structures.</div>
+      </div>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 2.2</div>
+        <div class="mcq-q">Given three lights: <code>bedroom/80, kitchen/30, bedroom/50</code>, sorted by id then brightness ascending. What's the order?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>bedroom/50, bedroom/80, kitchen/30</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>bedroom/80, bedroom/50, kitchen/30</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>kitchen/30, bedroom/50, bedroom/80</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Original order unchanged</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> "bedroom" &lt; "kitchen" alphabetically, so bedrooms come first. Within the bedrooms, 50 &lt; 80.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 2.3</div>
+        <div class="mcq-q">Which statement about <code>TreeMap</code> is correct?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>TreeMap has O(1) lookups like HashMap</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>TreeMap has O(log n) lookups but iterates keys in sorted order</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>TreeMap allows null keys but HashMap doesn't</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>TreeMap is a hash-based structure with ordering</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> TreeMap is a red-black tree, logarithmic operations but naturally sorted iteration. HashMap allows null keys, TreeMap doesn't (needs to compare).</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3: SPECS + NULLABILITY ============ -->
+    <section id="s3">
+      <span class="section-num">// SECTION 03</span>
+      <h2>Specifications &amp; Nullability</h2>
+      <p class="section-sub">Why you can use complex classes without reading their code, and how modern Java codebases prevent NullPointerExceptions at compile time.</p>
+
+      <h3>Specifications enable chunking</h3>
+      <p>You can use <code>HashMap</code> without reading its 2000-line implementation. Why? Because its Javadoc tells you exactly what every method does: preconditions, postconditions, complexity guarantees. You treat the whole class as a single mental unit.</p>
+
+      <div class="callout success">
+        <strong>Abstraction is leverage.</strong> A good spec lets anyone use your code as a black box. A bad spec forces every caller to read your implementation, which doesn't scale.
+      </div>
+
+      <h3>@NullMarked and @Nullable</h3>
+      <p>In a <code>@NullMarked</code> package, the default flips: every type is assumed <strong>non-null</strong> unless explicitly annotated <code>@Nullable</code>. This is the opposite of vanilla Java.</p>
+
+      <pre><code><span class="cmt">// package is @NullMarked</span>
+<span class="kw">public</span> <span class="typ">String</span> <span class="fn">formatIngredient</span>(<span class="typ">@Nullable String</span> prefix, <span class="typ">String</span> name) {
+    <span class="kw">if</span> (prefix == <span class="kw">null</span>) {
+        <span class="kw">return</span> name;
+    }
+    <span class="kw">return</span> prefix + <span class="str">" "</span> + name;
+}</code></pre>
+
+      <ul>
+        <li><code>prefix</code> is explicitly <code>@Nullable</code>, callers may pass null</li>
+        <li><code>name</code> has no annotation, under <code>@NullMarked</code> it is assumed non-null</li>
+        <li>Passing null for <code>name</code> triggers a checker warning/error</li>
+        <li>The return type has no annotation, so it's non-null too</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Exam trap:</strong> don't assume annotations "automatically throw NPE." They drive a static checker, they don't add runtime checks by themselves.
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 3.1</div>
+        <div class="mcq-q">Why can you use <code>HashMap</code> without reading its implementation?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Java inlines HashMap at compile time</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Its specification tells you what each method does, so you can treat it as one chunk</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Its private fields prevent the compiler from letting you see internals</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>All Map implementations behave identically</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> Specs enable abstraction. D is wrong because <code>TreeMap</code> and <code>HashMap</code> have very different performance and ordering guarantees.</div>
+      </div>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 3.2</div>
+        <div class="mcq-q">In a <code>@NullMarked</code> package, a method has <code>@Nullable String prefix</code> and <code>String name</code>. Which is true?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>name is assumed non-null; passing null would produce a warning</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>@Nullable on prefix is redundant, Java parameters are nullable by default</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>@Nullable auto-throws NPE at runtime</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Any @Nullable in the signature makes all params nullable</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> <code>@NullMarked</code> flips the default to non-null. Only the explicitly-annotated parameter is nullable.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 3.3</div>
+        <div class="mcq-q">A complex lambda with 4 conditions inside a <code>.filter()</code>. Best refactor for testability?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Replace Collectors.toList() with toUnmodifiableList()</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Split into multiple chained .filter() calls</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Extract the lambda body into a named method</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Convert the lambda into an anonymous class</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> A named method can be unit tested directly with varied inputs. Lambdas embedded in streams cannot be called in isolation.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4: TESTING ============ -->
+    <section id="s4">
+      <span class="section-num">// SECTION 04</span>
+      <h2>Testing &amp; Testability</h2>
+      <p class="section-sub">Mockito mechanics, and the code patterns that make testing impossible.</p>
+
+      <h3>Mockito: when vs verify</h3>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <h5>when(...).thenReturn(...)</h5>
+          <p><strong>Stubs</strong> an input. Tells the mock: "if this method is called with these args, return this value."</p>
+        </div>
+        <div class="concept-card">
+          <h5>verify(mock).method(...)</h5>
+          <p><strong>Asserts</strong> an output. Checks: "this method was called on the mock, exactly once, with these args."</p>
+        </div>
+      </div>
+
+      <pre><code><span class="typ">TemperatureSensor</span> mockSensor = <span class="fn">mock</span>(<span class="typ">TemperatureSensor</span>.<span class="kw">class</span>);
+<span class="typ">HVACService</span> mockHVAC = <span class="fn">mock</span>(<span class="typ">HVACService</span>.<span class="kw">class</span>);
+
+<span class="fn">when</span>(mockSensor.<span class="fn">readTemperature</span>(<span class="str">"livingRoom"</span>)).<span class="fn">thenReturn</span>(<span class="num">65.0</span>);  <span class="cmt">// stub</span>
+
+<span class="typ">ThermostatController</span> controller = <span class="kw">new</span> <span class="typ">ThermostatController</span>(mockSensor, mockHVAC);
+controller.<span class="fn">adjustToTargetTemperature</span>(<span class="num">72.0</span>, <span class="str">"livingRoom"</span>);
+
+<span class="fn">verify</span>(mockHVAC).<span class="fn">activate</span>(<span class="str">"livingRoom"</span>);  <span class="cmt">// assertion</span></code></pre>
+
+      <h3>Things that break testability</h3>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <h5>Static Calls</h5>
+          <p>Cannot be swapped with a test double. <code>TimeUtils.isBusinessHours()</code> inside your class? Your test is stuck with real wall-clock time.</p>
+        </div>
+        <div class="concept-card">
+          <h5>Private Methods</h5>
+          <p>Can't be called directly from a test. You must invoke them through their public caller, which may be hard to set up.</p>
+        </div>
+        <div class="concept-card">
+          <h5>new Inside Methods</h5>
+          <p><code>new Database()</code> inside a method means the test can't substitute a fake. Pass dependencies into the constructor instead.</p>
+        </div>
+        <div class="concept-card">
+          <h5>Singletons</h5>
+          <p>Global state across tests means test order matters. Flaky, brittle, avoid.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Controllability vs Observability.</strong> Controllability = can the test drive the class into the state we want? Observability = can the test see the result? Both must be good for a test to be useful. Widgets (buttons, labels) are a classic example: low controllability (needs TestFX) and low observability (must read widget state after).
+      </div>
+
+      <h3>Dependency Injection makes things testable</h3>
+      <pre><code><span class="cmt">// BAD: controller creates its own HVAC, can't swap in a test</span>
+<span class="kw">class</span> <span class="typ">Controller</span> {
+    <span class="typ">HVACService</span> hvac = <span class="kw">new</span> <span class="typ">RealHVAC</span>();
+}
+
+<span class="cmt">// GOOD: dependency injected, test passes a mock</span>
+<span class="kw">class</span> <span class="typ">Controller</span> {
+    <span class="kw">private final</span> <span class="typ">HVACService</span> hvac;
+    <span class="kw">public</span> <span class="fn">Controller</span>(<span class="typ">HVACService</span> hvac) { <span class="kw">this</span>.hvac = hvac; }
+}</code></pre>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 4.1</div>
+        <div class="mcq-q">What does <code>verify(mockHVAC).activate("livingRoom")</code> assert?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>activate was called exactly once with "livingRoom"</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Configures the mock to return a value</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Checks that mockHVAC was constructed with "livingRoom"</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Registers a callback to the real HVAC</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> Verify is an assertion about past calls. Stubbing is <code>when().thenReturn()</code>.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 4.2</div>
+        <div class="mcq-q">A class calls <code>TimeUtils.isBusinessHours()</code> (a static method). Why is testing a branch that depends on this hard?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Private methods can't be invoked from JUnit</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Static calls can't be replaced with a test double</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Mockito can't mock classes without an explicit constructor</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>void-returning methods provide no return value to assert</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> You can't swap out a static call without special tools (Mockito inline, PowerMock). Standard Mockito can't intercept statics.</div>
+      </div>
+
+      <div class="mcq" data-correct="D">
+        <div class="mcq-label">QUICK CHECK · 4.3</div>
+        <div class="mcq-q">Best way to make a class with an HVAC dependency testable?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Make HVAC a public static field</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Instantiate HVAC inside the class's constructor</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Use a singleton for HVAC</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Pass HVAC as a constructor argument (dependency injection)</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: D.</strong> DI lets tests inject a mock. Everything else locks the class to a specific implementation.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5: SOLID + PATTERNS ============ -->
+    <section id="s5">
+      <span class="section-num">// SECTION 05</span>
+      <h2>SOLID &amp; Design Patterns</h2>
+      <p class="section-sub">Five principles, two patterns you must know (Strategy, Builder), plus the fragile base class problem.</p>
+
+      <h3>SOLID in one line each</h3>
+      <table>
+        <thead><tr><th>Principle</th><th>In one line</th><th>Smell when violated</th></tr></thead>
+        <tbody>
+          <tr><td><strong>S</strong>RP</td><td>One class, one reason to change</td><td>Giant classes doing 5 things</td></tr>
+          <tr><td><strong>O</strong>CP</td><td>Open for extension, closed for modification</td><td>Switch statement you re-edit for every new case</td></tr>
+          <tr><td><strong>L</strong>SP</td><td>Subclasses must honor the parent's contract</td><td>Subclass throws unexpected exceptions or weakens postconditions</td></tr>
+          <tr><td><strong>I</strong>SP</td><td>Clients shouldn't depend on methods they don't use</td><td>"Fat" interfaces forcing empty implementations</td></tr>
+          <tr><td><strong>D</strong>IP</td><td>Depend on abstractions, not concretions</td><td><code>new RealHVAC()</code> hard-coded in consumers</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Fragile Base Class</h3>
+      <p>Subclassing a class you don't own (like <code>ArrayList</code>) is risky because the parent's internal implementation can change between Java versions. Your overrides may stop satisfying their specification.</p>
+
+      <pre><code><span class="kw">class</span> <span class="typ">LoggingList</span>&lt;E&gt; <span class="kw">extends</span> <span class="typ">ArrayList</span>&lt;E&gt; {
+    <span class="kw">private int</span> addCount = <span class="num">0</span>;
+    <span class="kw">@Override</span> <span class="kw">public boolean</span> <span class="fn">add</span>(E e) {
+        addCount++;
+        <span class="kw">return super</span>.<span class="fn">add</span>(e);
+    }
+    <span class="kw">@Override</span> <span class="kw">public boolean</span> <span class="fn">addAll</span>(<span class="typ">Collection</span>&lt;? <span class="kw">extends</span> E&gt; c) {
+        addCount += c.<span class="fn">size</span>();
+        <span class="kw">return super</span>.<span class="fn">addAll</span>(c);
+    }
+}</code></pre>
+
+      <div class="callout danger">
+        <strong>The danger:</strong> if a future <code>ArrayList.addAll</code> is reimplemented to call <code>add</code> internally, you'd double-count every element. Your spec ("count of items added") would silently break. You're coupled to invisible internals.
+      </div>
+
+      <h3>Strategy Pattern</h3>
+      <p>Replace a <code>switch</code> over "what kind of thing am I?" with a set of classes that all implement a common interface. Consumers hold the interface, not a switch.</p>
+
+      <pre><code><span class="cmt">// Before (violates OCP, SRP):</span>
+<span class="kw">switch</span> (format) {
+    <span class="kw">case</span> <span class="str">"json"</span>: <span class="kw">return</span> <span class="fn">parseJson</span>(source);
+    <span class="kw">case</span> <span class="str">"xml"</span>:  <span class="kw">return</span> <span class="fn">parseXml</span>(source);
+    <span class="cmt">// add new format = edit this class</span>
+}
+
+<span class="cmt">// After (Strategy):</span>
+<span class="kw">interface</span> <span class="typ">RecipeParser</span> {
+    <span class="typ">Recipe</span> <span class="fn">parse</span>(<span class="typ">String</span> source);
+    <span class="kw">boolean</span> <span class="fn">supports</span>(<span class="typ">String</span> format);
+}
+
+<span class="kw">return</span> parsers.<span class="fn">stream</span>()
+    .<span class="fn">filter</span>(p -> p.<span class="fn">supports</span>(format))
+    .<span class="fn">findFirst</span>().<span class="fn">orElseThrow</span>()
+    .<span class="fn">parse</span>(source);</code></pre>
+
+      <h3>Builder Pattern</h3>
+      <p>For objects with many optional or sequentially-added parameters. Chain <code>.setX()</code> / <code>.addY()</code> calls, finalize with <code>.build()</code>.</p>
+
+      <pre><code><span class="typ">Recipe</span> recipe = <span class="kw">new</span> <span class="typ">RecipeBuilder</span>()
+    .<span class="fn">title</span>(<span class="str">"Chocolate Cake"</span>)
+    .<span class="fn">addIngredient</span>(<span class="kw">new</span> <span class="typ">MeasuredIngredient</span>(<span class="str">"flour"</span>, <span class="num">2</span>, <span class="str">"cups"</span>))
+    .<span class="fn">addIngredient</span>(<span class="kw">new</span> <span class="typ">MeasuredIngredient</span>(<span class="str">"sugar"</span>, <span class="num">1</span>, <span class="str">"cup"</span>))
+    .<span class="fn">instructions</span>(<span class="typ">List</span>.<span class="fn">of</span>(<span class="str">"Mix"</span>, <span class="str">"Bake at 350F"</span>))
+    .<span class="fn">build</span>();</code></pre>
+
+      <div class="callout warn">
+        <strong>No-args builder problem:</strong> a <code>new RecipeBuilder()</code> with no arguments lets you call <code>.build()</code> before setting a required field like title. Safer: <code>new RecipeBuilder(title)</code> forces required fields at construction.
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 5.1</div>
+        <div class="mcq-q"><code>LoggingList extends ArrayList</code>, counts calls to <code>add</code> and <code>addAll</code>. What is the core problem?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>addCount should be static to share across instances</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>The class may not satisfy its spec if ArrayList's implementation changes</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Overriding both methods violates ISP</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>It violates LSP because LoggingList can't stand in for ArrayList</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> Fragile base class: if <code>addAll</code> in the parent ever calls <code>add</code> internally, your count doubles. You're coupled to implementation details you don't own.</div>
+      </div>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 5.2</div>
+        <div class="mcq-q">Switch-over-format in <code>RecipeImporter</code>. Which SOLID principles does it violate?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>OCP and SRP, can't add a format without editing, plus one class handles too many parser concerns</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>LSP and DIP</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>ISP only</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>None, it's fine</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> OCP because every new format requires modifying the class. SRP because parsing JSON, XML, binary, OCR are four distinct responsibilities.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 5.3</div>
+        <div class="mcq-q">A spec promises <code>Recipe</code> has non-empty title and ingredients. <code>OcrRecipeParser</code> sometimes returns empty ingredients. Which principle is violated?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>OCP</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>SRP</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>LSP, subclass violates the parent's postcondition</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>DIP</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> Liskov: anywhere you use a <code>RecipeParser</code> you expect the promised postconditions to hold. Breaking them in a subclass means callers can't rely on the interface.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6: MVC/MVVM ============ -->
+    <section id="s6">
+      <span class="section-num">// SECTION 06</span>
+      <h2>MVC &amp; MVVM</h2>
+      <p class="section-sub">Where logic lives, and why MVVM is easier to test than MVC.</p>
+
+      <h3>MVC: Model, View, Controller</h3>
+      <ul>
+        <li><strong>Model</strong>, data + business logic. Recipes, scaling rules, what a device is.</li>
+        <li><strong>View</strong>, widgets the user sees. Buttons, labels, sliders.</li>
+        <li><strong>Controller</strong>, glue. Listens to the View, delegates to the Model, updates the View.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Rule of thumb:</strong> if you can describe it as "when a bell goes off, do a calculation," the <em>bell</em> belongs in the View, the <em>calculation</em> belongs in the Model, and the <em>wiring</em> belongs in the Controller.
+      </div>
+
+      <pre><code><span class="cmt">// BAD: Controller doing Model's work</span>
+submitButton.<span class="fn">setOnAction</span>(e -> {
+    <span class="kw">for</span> (<span class="typ">Ingredient</span> ing : recipe.<span class="fn">getIngredients</span>()) {
+        ing.<span class="fn">scale</span>(factor);   <span class="cmt">// scaling logic inline in Controller</span>
+    }
+});
+
+<span class="cmt">// GOOD: Controller delegates to Model</span>
+submitButton.<span class="fn">setOnAction</span>(e -> {
+    model.<span class="fn">scale</span>(servings);    <span class="cmt">// Model owns the operation</span>
+    view.<span class="fn">refresh</span>();
+});</code></pre>
+
+      <h3>MVVM: ViewModel replaces Controller</h3>
+      <p>The <strong>ViewModel</strong> holds observable properties bound to the View. Crucially, the ViewModel does not reference the View. That makes it fully unit-testable: a test can set properties and read results without simulating button clicks or starting the UI.</p>
+
+      <table>
+        <thead><tr><th>Aspect</th><th>MVC</th><th>MVVM</th></tr></thead>
+        <tbody>
+          <tr><td>Glue layer</td><td>Controller (often references View)</td><td>ViewModel (no View reference)</td></tr>
+          <tr><td>View ↔ glue</td><td>Manual event handlers</td><td>Data binding on observable properties</td></tr>
+          <tr><td>Testability</td><td>Need TestFX or UI stand-in</td><td>Pure unit tests on ViewModel</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 6.1</div>
+        <div class="mcq-q">Version A's handler iterates ingredients and calls <code>ing.scale(factor)</code>. Version B's handler calls <code>model.scale(servings)</code>. Which follows MVC better?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>A, Controller should drive iteration directly</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>B, scaling logic belongs in the Model; Controller delegates</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>A, Model stays simple that way</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>B, because of bidirectional binding</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> Business logic lives in the Model. The Controller's job is wiring, not computation.</div>
+      </div>
+
+      <div class="mcq" data-correct="D">
+        <div class="mcq-label">QUICK CHECK · 6.2</div>
+        <div class="mcq-q">In MVVM, why can a test set a ViewModel property and verify the result without starting the UI?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>TestFX intercepts ViewModel changes automatically</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>The test bypasses the ViewModel and calls the Model directly</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>JavaFX property bindings are lazy</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>ViewModel exposes observable properties; it holds no reference to the View</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: D.</strong> The defining MVVM property: the ViewModel is ignorant of the View. So you can exercise it in plain JUnit.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 6.3</div>
+        <div class="mcq-q">A Controller directly manipulates pixels on a Canvas and also writes to a database. What's the most likely SOLID/MVC smell?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>ISP violation</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>DIP violation</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>SRP violation, Controller is doing View rendering AND Model persistence</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>OCP violation</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> Rendering and persistence are two distinct responsibilities. That's a Single Responsibility red flag.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7: CONCURRENCY ============ -->
+    <section id="s7">
+      <span class="section-num">// SECTION 07</span>
+      <h2>Concurrency</h2>
+      <p class="section-sub">Race conditions, deadlocks, and why <code>i++</code> is not atomic. Includes an interactive simulator.</p>
+
+      <h3>Why i++ is not atomic</h3>
+      <p><code>deviceCount++</code> looks like one step but actually runs as three JVM instructions:</p>
+      <ol>
+        <li><strong>Read</strong> deviceCount into a register</li>
+        <li><strong>Increment</strong> the register</li>
+        <li><strong>Write</strong> back to memory</li>
+      </ol>
+      <p>Two threads can read the same value before either writes, then each writes back "their" incremented value. One increment is lost. Run it in the widget below to see it happen.</p>
+
+      <div class="widget">
+        <div class="widget-title">INTERACTIVE · RACE CONDITION</div>
+        <div class="widget-h">Race Condition Simulator</div>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 16px;">Each thread increments a shared counter. Pick the protection mode, choose thread count, and run. With no synchronization you'll see the counter end below the expected value; <code>AtomicInteger</code> or <code>synchronized</code> fix it.</p>
+        <div class="race-sim">
+          <div class="race-controls">
+            <label>Threads: <span id="raceThreads">10</span></label>
+            <input type="range" id="raceThreadsIn" min="2" max="50" value="10">
+            <label>Iterations each: <span id="raceIters">1000</span></label>
+            <input type="range" id="raceItersIn" min="100" max="5000" step="100" value="1000">
+            <select id="raceMode">
+              <option value="unsafe">int ++ (unsafe)</option>
+              <option value="atomic">AtomicInteger</option>
+              <option value="sync">synchronized</option>
+            </select>
+            <button class="fx-btn" id="raceRun">Run</button>
+          </div>
+          <div class="race-bar">
+            <div class="race-stat">
+              <div class="race-stat-label">Expected</div>
+              <div class="race-stat-value" id="raceExpected">0</div>
+            </div>
+            <div class="race-stat">
+              <div class="race-stat-label">Actual</div>
+              <div class="race-stat-value" id="raceActual">0</div>
+            </div>
+            <div class="race-stat">
+              <div class="race-stat-label">Lost Updates</div>
+              <div class="race-stat-value" id="raceLost">0</div>
+            </div>
+          </div>
+          <div class="race-explain" id="raceExplain">Pick a mode and hit Run. "Unsafe" will usually lose updates because increments interleave non-atomically.</div>
+        </div>
+      </div>
+
+      <h3>Deadlock: inconsistent lock ordering</h3>
+      <p>Deadlock requires two threads, two locks, and one acquiring them in opposite order.</p>
+
+      <pre><code><span class="cmt">// Thread A</span>
+<span class="kw">synchronized</span> (room) {
+    <span class="kw">synchronized</span> (device) { ... }
+}
+
+<span class="cmt">// Thread B</span>
+<span class="kw">synchronized</span> (device) {
+    <span class="kw">synchronized</span> (room) { ... }
+}</code></pre>
+
+      <p>If A grabs <code>room</code> while B grabs <code>device</code>, neither can proceed. A waits for <code>device</code>, B waits for <code>room</code>. Forever.</p>
+
+      <div class="callout success">
+        <strong>Prevention:</strong> always acquire locks in a consistent global order. If everyone grabs <code>room</code> first, the deadlock can't form.
+      </div>
+
+      <div class="mcq" data-correct="D">
+        <div class="mcq-label">QUICK CHECK · 7.1</div>
+        <div class="mcq-q">Ten threads each call <code>registerDevice()</code> which does <code>deviceCount++</code>. Why might the final count be &lt; 10?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>int isn't valid for shared mutable fields</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>int reads are atomic, so it must be a cache visibility issue</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>The JVM rounds down concurrent increments for performance</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>deviceCount++ is read-modify-write; two threads may read the same stale value</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: D.</strong> The increment is three operations, and any two threads can interleave those three steps, overwriting each other's writes.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 7.2</div>
+        <div class="mcq-q">Thread A locks room then device. Thread B locks device then room. What can happen?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Thread B completes first because it takes fewer locks</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Both proceed normally, synchronized blocks on different objects don't interact</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Deadlock: A holds room waiting for device, B holds device waiting for room</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Race condition corrupts device state</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> Two locks, opposite order, classic four-conditions-of-deadlock setup.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 7.3</div>
+        <div class="mcq-q">Safest fix for the <code>deviceCount++</code> race?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Declare it volatile</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Use AtomicInteger and incrementAndGet()</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Add Thread.sleep(1) between operations</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Nothing, Java ints are thread-safe</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> <code>volatile</code> gives visibility but not atomicity for read-modify-write. <code>AtomicInteger</code> gives both. <code>synchronized</code> is also acceptable.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8: JAVAFX THREADING ============ -->
+    <section id="s8">
+      <span class="section-num">// SECTION 08</span>
+      <h2>JavaFX Threading</h2>
+      <p class="section-sub">The single biggest conceptual cluster on this exam. Only the FX Application Thread can touch UI; don't block it with slow work. <code>BackgroundTaskRunner</code> is the pattern.</p>
+
+      <h3>The three rules</h3>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <h5>Rule 1</h5>
+          <p>Only the <strong>FX Application Thread</strong> may read or write UI widgets.</p>
+        </div>
+        <div class="concept-card">
+          <h5>Rule 2</h5>
+          <p>Never <strong>block</strong> the FX thread with slow work (DB, network, big computations). The UI will freeze.</p>
+        </div>
+        <div class="concept-card">
+          <h5>Rule 3</h5>
+          <p>Do slow work on a <strong>background thread</strong>, then hop back to the FX thread to update the UI.</p>
+        </div>
+      </div>
+
+      <h3>BackgroundTaskRunner pattern</h3>
+      <pre><code><span class="typ">BackgroundTaskRunner</span>.&lt;<span class="typ">String</span>&gt;<span class="fn">run</span>(
+    () -> zigbeeController.<span class="fn">getStatus</span>(area),  <span class="cmt">// Callable — runs on bg thread</span>
+    status -> showInfo(status),                <span class="cmt">// onSuccess — FX thread</span>
+    err    -> showError(<span class="str">"Unable to retrieve status"</span>)  <span class="cmt">// onError — FX thread</span>
+);</code></pre>
+
+      <p>The run() method returns <strong>immediately</strong>. The callable starts on a background thread. When it completes, onSuccess (or onError) fires on the FX thread so it can safely update the UI.</p>
+
+      <div class="widget">
+        <div class="widget-title">INTERACTIVE · FX THREAD</div>
+        <div class="widget-h">FX Thread Execution Visualizer</div>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 16px;">Click "Run Scenario" to see how <code>BackgroundTaskRunner.run(...)</code> schedules work between the FX thread and a background thread. Watch the order: <code>"Ready"</code> logs immediately, then the slow task runs off-thread, then <code>onSuccess</code> fires back on FX.</p>
+        <div class="fx-viz">
+          <div class="fx-col">
+            <h5>FX Application Thread</h5>
+            <div id="fxCol"></div>
+          </div>
+          <div class="fx-col bg">
+            <h5>Background Thread</h5>
+            <div id="bgCol"></div>
+          </div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <button class="fx-btn" id="fxRun">Run Scenario</button>
+          <button class="fx-btn ghost" id="fxReset">Reset</button>
+        </div>
+        <div class="fx-log" id="fxLog"><div class="fx-log-line" style="color: var(--text-muted);">// log output will appear here</div></div>
+      </div>
+
+      <h3>Setting up an event handler</h3>
+      <pre><code>submitButton.<span class="fn">setOnAction</span>(event -> {
+    <span class="typ">System</span>.out.<span class="fn">println</span>(<span class="str">"Submitted"</span>);
+});
+<span class="typ">System</span>.out.<span class="fn">println</span>(<span class="str">"Button registered"</span>);</code></pre>
+      <p>Output: <code>"Button registered"</code> appears first. The lambda is just registered as a callback, it doesn't execute until the user clicks. When they click, the event loop invokes the callback on the FX thread.</p>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 8.1</div>
+        <div class="mcq-q">Order of <code>"Button registered"</code> vs <code>"Submitted"</code>?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>"Button registered" first, "Submitted" later when the user clicks</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>"Submitted" first, callback runs immediately</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Both simultaneously on separate threads</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>"Button registered" first, "Submitted" immediately after on same call stack</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> <code>setOnAction</code> registers the callback; the event loop calls it later when the click happens.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 8.2</div>
+        <div class="mcq-q">A button handler does a 2-second DB query directly (no background thread). What happens?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Runs on a JavaFX-created background thread automatically</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>The UI freezes for 2 seconds because the FX thread is blocked</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>JavaFX detects slow work and moves it off the FX thread</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Results are cached so it completes immediately</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> The FX thread runs one thing at a time. A 2-second block = 2 seconds of a frozen UI.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 8.3</div>
+        <div class="mcq-q">Why does <code>onSuccess</code> run on the FX thread rather than the background thread that produced the result?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>FX thread is faster for data processing</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Background threads are killed immediately after the callable finishes</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>So the callback can safely update UI widgets</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>To prevent the callable from being cancelled</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> Rule 1 again: only the FX thread may touch UI. onSuccess usually updates labels/tables, so it must run there.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 9: UX ============ -->
+    <section id="s9">
+      <span class="section-num">// SECTION 09</span>
+      <h2>UX &amp; Accessibility</h2>
+      <p class="section-sub">Nielsen's 10 heuristics and POUR's 4 principles. Memorize them, they're easy points.</p>
+
+      <h3>Nielsen's 10 heuristics</h3>
+      <table>
+        <thead><tr><th>#</th><th>Name</th><th>One-liner</th></tr></thead>
+        <tbody>
+          <tr><td>H1</td><td>Visibility of system status</td><td>Tell users what's happening (loading spinners, progress)</td></tr>
+          <tr><td>H2</td><td>Match real world</td><td>Use language and concepts users know, not jargon</td></tr>
+          <tr><td>H3</td><td>User control &amp; freedom</td><td>Undo, cancel, clear exit</td></tr>
+          <tr><td>H4</td><td>Consistency &amp; standards</td><td>Follow platform conventions</td></tr>
+          <tr><td>H5</td><td>Error prevention</td><td>Stop mistakes before they happen (validation, confirmations)</td></tr>
+          <tr><td>H6</td><td><strong>Recognition over recall</strong></td><td>Show info; don't make users memorize across screens</td></tr>
+          <tr><td>H7</td><td>Flexibility &amp; efficiency</td><td>Shortcuts for experts; basics for novices</td></tr>
+          <tr><td>H8</td><td>Aesthetic &amp; minimalist</td><td>No unnecessary clutter</td></tr>
+          <tr><td>H9</td><td>Help users recover from errors</td><td>Clear messages, suggest the fix</td></tr>
+          <tr><td>H10</td><td>Help &amp; documentation</td><td>Easy to search, task-focused</td></tr>
+        </tbody>
+      </table>
+
+      <h3>POUR: accessibility principles</h3>
+      <table>
+        <thead><tr><th>Principle</th><th>Meaning</th><th>Example violation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>P</strong>erceivable</td><td>Users can perceive the info (not limited to one sense)</td><td>Color-only status (red/green dots) excludes colorblind users</td></tr>
+          <tr><td><strong>O</strong>perable</td><td>UI can be operated via keyboard, assistive tech, etc.</td><td>Click-only buttons with no keyboard handler</td></tr>
+          <tr><td><strong>U</strong>nderstandable</td><td>Content and UI are clear and predictable</td><td>Cryptic error messages, inconsistent navigation</td></tr>
+          <tr><td><strong>R</strong>obust</td><td>Works across browsers, screen readers, assistive tech</td><td>Non-standard elements that screen readers can't parse</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 9.1</div>
+        <div class="mcq-q">To scale a recipe, the user types the target serving count but can't see the original serving size, they must remember it from the previous screen. Which heuristic is violated?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>H6 Recognition rather than recall — display original serving size on the scaling screen</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>H3 User Control and Freedom — add an Undo button</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>H5 Error Prevention — validate positive integer</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>H2 Match with real world — use natural language</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> Users shouldn't have to memorize info across screens. Surface it where they need it.</div>
+      </div>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 9.2</div>
+        <div class="mcq-q">Difficulty is shown as green/yellow/red dots with no text or shape. Which POUR principle is violated?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Operable — motor-impaired users can't click</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Robust — renders differently across browsers</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Perceivable — colorblind users can't distinguish levels when color is the only cue</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Understandable — color metaphors differ culturally</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> Don't rely on color alone. Pair with text, shape, or icon.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 9.3</div>
+        <div class="mcq-q">An app shows no loading indicator during a 5-second upload. Which Nielsen heuristic is violated?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>H4 Consistency</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>H1 Visibility of System Status</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>H8 Aesthetic and Minimalist</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>H10 Help and Documentation</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> The user doesn't know if the app is working or frozen. Surface progress.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10: ARCHITECTURE ============ -->
+    <section id="s10">
+      <span class="section-num">// SECTION 10</span>
+      <h2>Architecture &amp; Ops</h2>
+      <p class="section-sub">Modular monoliths, FaaS, distributed fallacies, licensing, ADRs. The "one-question-each" grab bag.</p>
+
+      <h3>Modular monolith vs microservices</h3>
+      <p>A <strong>modular monolith</strong> runs as one process but enforces strict module boundaries, modules only talk through public APIs, never via shared tables. Compared to an unstructured monolith, the main win is <strong>extractability</strong>: you can lift a module into its own service later without months of untangling.</p>
+
+      <div class="callout warn">
+        <strong>Trap:</strong> modular monoliths do NOT give independent deploys (one process = one deploy) or network isolation (still in-process). Don't pick options that claim those benefits.
+      </div>
+
+      <h3>FaaS: what you control vs what the platform does</h3>
+      <table>
+        <thead><tr><th>You control</th><th>Platform controls</th></tr></thead>
+        <tbody>
+          <tr><td>The algorithm inside your function</td><td>Server hardware</td></tr>
+          <tr><td>Function input/output contract</td><td>OS configuration</td></tr>
+          <tr><td>Which runtime / language</td><td>Scaling under load</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Fallacies of distributed computing</h3>
+      <ol>
+        <li>The network is reliable</li>
+        <li><strong>Latency is zero</strong></li>
+        <li>Bandwidth is infinite</li>
+        <li>The network is secure</li>
+        <li>Topology doesn't change</li>
+        <li>There is one administrator</li>
+        <li>Transport cost is zero</li>
+        <li>The network is homogeneous</li>
+      </ol>
+
+      <p>Batching 100 results into one call instead of 100 calls combats fallacy #2 directly, 100 round trips cost 100× latency.</p>
+
+      <h3>Licensing</h3>
+      <table>
+        <thead><tr><th>License</th><th>Permits commercial use?</th><th>Must release your source?</th></tr></thead>
+        <tbody>
+          <tr><td>MIT</td><td>Yes</td><td>No, keep your code closed</td></tr>
+          <tr><td>Apache 2.0</td><td>Yes</td><td>No, plus patent grant</td></tr>
+          <tr><td><strong>GPL v3</strong></td><td>Yes</td><td><strong>Yes, derivative works must also be GPL</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger">
+        <strong>The GPL risk:</strong> if you distribute software that links a GPL library, your whole product must be released under the GPL. For proprietary software, this is usually a deal-breaker.
+      </div>
+
+      <h3>ADR format</h3>
+      <p>An Architecture Decision Record documents a choice. The standard skeleton:</p>
+      <ul>
+        <li><strong>Context</strong>, the situation and forces at play</li>
+        <li><strong>Decision</strong>, what you chose and why (reference at least one driver)</li>
+        <li><strong>Consequences</strong>, benefits AND drawbacks (both required)</li>
+      </ul>
+
+      <div class="mcq" data-correct="C">
+        <div class="mcq-label">QUICK CHECK · 10.1</div>
+        <div class="mcq-q">Primary benefit of a modular monolith over an unstructured monolith?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Eliminates network latency between modules</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Guarantees independent deploys</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>Preserves clean boundaries that make future service extraction easier</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Prevents any single bug from crashing the app</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: C.</strong> It's still one process and one deploy. The real gain is the option to extract later with minimal pain.</div>
+      </div>
+
+      <div class="mcq" data-correct="B">
+        <div class="mcq-label">QUICK CHECK · 10.2</div>
+        <div class="mcq-q">Using a startup must-ship GPL library, what's the risk?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Must credit authors but can stay proprietary</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>Distribution requires releasing their source under GPL</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>GPL prohibits commercial use entirely</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>Must pay a licensing fee for commercial distribution</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: B.</strong> GPL is copyleft: derivative works inherit the license.</div>
+      </div>
+
+      <div class="mcq" data-correct="A">
+        <div class="mcq-label">QUICK CHECK · 10.3</div>
+        <div class="mcq-q">Batching 100 test results into one API call instead of 100 calls. Which fallacy does this address?</div>
+        <div class="mcq-opts">
+          <button class="mcq-opt"><span class="letter">A</span><span>Latency is zero — 100 sequential round-trips add up</span></button>
+          <button class="mcq-opt"><span class="letter">B</span><span>There is one administrator</span></button>
+          <button class="mcq-opt"><span class="letter">C</span><span>The network is secure</span></button>
+          <button class="mcq-opt"><span class="letter">D</span><span>The network is homogeneous</span></button>
+        </div>
+        <div class="mcq-explain"><strong>Answer: A.</strong> Each call has irreducible latency. Cutting 100 round-trips to 1 is a direct latency win.</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>CS3100 Final Exam Prep · Lesson File 1 of 3</p>
+      <p style="margin-top: 6px;">Next: walk through the practice exam with File 2 · Reference: File 3 cheat sheet</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+  /* ======== MCQ interactions ======== */
+  document.querySelectorAll('.mcq').forEach(mcq => {
+    const correct = mcq.dataset.correct;
+    const opts = mcq.querySelectorAll('.mcq-opt');
+    const explain = mcq.querySelector('.mcq-explain');
+    opts.forEach((opt, i) => {
+      opt.addEventListener('click', () => {
+        const letter = opt.querySelector('.letter').textContent.trim();
+        opts.forEach(o => o.classList.remove('correct', 'incorrect'));
+        if (letter === correct) {
+          opt.classList.add('correct');
+        } else {
+          opt.classList.add('incorrect');
+          // also highlight the correct one
+          opts.forEach(o => {
+            if (o.querySelector('.letter').textContent.trim() === correct) {
+              o.classList.add('correct');
+            }
+          });
+        }
+        explain.classList.add('show');
+      });
+    });
+  });
+
+  /* ======== Sidebar active state ======== */
+  const links = document.querySelectorAll('nav.sidebar a');
+  const sections = document.querySelectorAll('section');
+  const setActive = () => {
+    let currentId = sections[0]?.id;
+    const scrollY = window.scrollY + 120;
+    sections.forEach(s => {
+      if (s.offsetTop <= scrollY) currentId = s.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + currentId);
+    });
+  };
+  window.addEventListener('scroll', setActive);
+  setActive();
+
+  /* ======== FX Thread Visualizer ======== */
+  const fxCol = document.getElementById('fxCol');
+  const bgCol = document.getElementById('bgCol');
+  const fxLog = document.getElementById('fxLog');
+  const fxRun = document.getElementById('fxRun');
+  const fxReset = document.getElementById('fxReset');
+
+  const logLine = (msg, cls='') => {
+    const div = document.createElement('div');
+    div.className = 'fx-log-line ' + cls;
+    div.textContent = msg;
+    fxLog.appendChild(div);
+    fxLog.scrollTop = fxLog.scrollHeight;
+  };
+
+  const addTask = (col, text, cls='') => {
+    const div = document.createElement('div');
+    div.className = 'fx-task';
+    div.textContent = text;
+    col.appendChild(div);
+    requestAnimationFrame(() => div.classList.add('active'));
+    return div;
+  };
+
+  const clearViz = () => {
+    fxCol.innerHTML = '';
+    bgCol.innerHTML = '';
+    fxLog.innerHTML = '<div class="fx-log-line" style="color: var(--text-muted);">// log output will appear here</div>';
+  };
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const runScenario = async () => {
+    fxRun.disabled = true;
+    clearViz();
+    await sleep(100);
+
+    const t1 = addTask(fxCol, 'BackgroundTaskRunner.run(...)');
+    logLine('[FX]  BackgroundTaskRunner.run(...) called', 'log-fx');
+    await sleep(600);
+    t1.classList.remove('active');
+    t1.classList.add('done');
+
+    const tReady = addTask(fxCol, 'log("Ready")');
+    logLine('[FX]  "Ready"', 'log-fx');
+    await sleep(500);
+    tReady.classList.remove('active');
+    tReady.classList.add('done');
+
+    // bg thread spins up
+    const bg1 = addTask(bgCol, 'loadRecipes() starting...');
+    logLine('[BG]  loadRecipes() starting (2s work)', 'log-bg');
+    await sleep(1400);
+    bg1.textContent = 'loadRecipes() done';
+    await sleep(300);
+    bg1.classList.remove('active');
+    bg1.classList.add('done');
+
+    // hop back to FX
+    const onSuccess = addTask(fxCol, 'onSuccess(recipes) on FX thread');
+    logLine('[FX]  onSuccess runs → showRecipes(recipes)', 'log-fx');
+    await sleep(800);
+    onSuccess.classList.remove('active');
+    onSuccess.classList.add('done');
+
+    logLine('// scenario complete', '');
+    fxRun.disabled = false;
+  };
+
+  fxRun.addEventListener('click', runScenario);
+  fxReset.addEventListener('click', clearViz);
+
+  /* ======== Race condition simulator ======== */
+  const raceThreadsIn = document.getElementById('raceThreadsIn');
+  const raceItersIn = document.getElementById('raceItersIn');
+  const raceThreads = document.getElementById('raceThreads');
+  const raceIters = document.getElementById('raceIters');
+  const raceMode = document.getElementById('raceMode');
+  const raceRun = document.getElementById('raceRun');
+  const raceExpected = document.getElementById('raceExpected');
+  const raceActual = document.getElementById('raceActual');
+  const raceLost = document.getElementById('raceLost');
+  const raceExplain = document.getElementById('raceExplain');
+
+  raceThreadsIn.addEventListener('input', () => raceThreads.textContent = raceThreadsIn.value);
+  raceItersIn.addEventListener('input', () => raceIters.textContent = raceItersIn.value);
+
+  raceRun.addEventListener('click', () => {
+    const threads = parseInt(raceThreadsIn.value, 10);
+    const iters = parseInt(raceItersIn.value, 10);
+    const expected = threads * iters;
+    const mode = raceMode.value;
+
+    let actual;
+    if (mode === 'unsafe') {
+      // simulate interleaving: each increment has some probability of being lost
+      // roughly model a race: drop rate grows with thread count and shrinks with iterations
+      const contentionFactor = Math.min(0.45, threads / 100 + 0.05);
+      const lossRate = contentionFactor * (1 - Math.min(0.6, iters / 8000));
+      const lost = Math.floor(expected * lossRate * (0.7 + Math.random() * 0.6));
+      actual = expected - lost;
+    } else {
+      // atomic or synchronized: no data loss
+      actual = expected;
+    }
+
+    const lost = expected - actual;
+    raceExpected.textContent = expected.toLocaleString();
+    raceActual.textContent = actual.toLocaleString();
+    raceLost.textContent = lost.toLocaleString();
+
+    // color the actual value
+    raceActual.classList.remove('warn', 'danger');
+    if (lost > 0) raceActual.classList.add(lost > expected * 0.1 ? 'danger' : 'warn');
+
+    if (mode === 'unsafe' && lost > 0) {
+      raceExplain.innerHTML = '<strong>Race condition detected.</strong> ' + lost.toLocaleString() + ' updates were lost because threads read stale values and overwrote each other. Each <code>count++</code> is really read-modify-write; interleaving loses writes.';
+    } else if (mode === 'unsafe' && lost === 0) {
+      raceExplain.innerHTML = '<strong>Got lucky this run.</strong> Unsafe code can still happen to work by chance. Run again with more threads and you\'ll see losses. That unpredictability is why these bugs are brutal in production.';
+    } else if (mode === 'atomic') {
+      raceExplain.innerHTML = '<strong>AtomicInteger is safe.</strong> <code>incrementAndGet()</code> is an atomic CPU instruction; no interleaving possible. All updates counted.';
+    } else {
+      raceExplain.innerHTML = '<strong>synchronized is safe.</strong> Each increment holds a lock; only one thread can be in the critical section at a time. Slower than AtomicInteger under contention, but correct.';
+    }
+  });
+</script>
+</body>
+</html>

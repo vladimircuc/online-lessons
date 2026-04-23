@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS3100 Final Exam Prep · Practice Exam Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-panel: #111828;
+    --bg-elevated: #1a2234;
+    --border: #2a3548;
+    --border-bright: #3d4a63;
+    --text: #e4e9f2;
+    --text-dim: #8a94a8;
+    --text-muted: #5a6478;
+    --accent: #7fd4ff;
+    --accent-dim: #4a9fd4;
+    --success: #6ee7a7;
+    --warning: #fbbf24;
+    --danger: #ff7e8a;
+    --purple: #c4a3ff;
+    --code-bg: #0d1220;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav.sidebar {
+    background: var(--bg-panel); border-right: 1px solid var(--border);
+    padding: 32px 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  nav.sidebar h2 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--text-muted); margin-bottom: 16px; font-weight: 600;
+  }
+  nav.sidebar .brand {
+    font-size: 14px; color: var(--accent); font-weight: 700;
+    margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+  nav.sidebar ul { list-style: none; }
+  nav.sidebar li { margin-bottom: 4px; }
+  nav.sidebar a {
+    display: flex; justify-content: space-between; color: var(--text-dim);
+    text-decoration: none; font-size: 13px; padding: 6px 10px;
+    border-radius: 6px; transition: all 0.15s;
+  }
+  nav.sidebar a:hover { background: var(--bg-elevated); color: var(--text); }
+  nav.sidebar a.active { background: var(--bg-elevated); color: var(--accent); }
+  nav.sidebar .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  nav.sidebar a .checkmark { font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s; }
+  nav.sidebar a.answered .checkmark { opacity: 1; }
+  nav.sidebar .section-divider {
+    font-size: 10px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.15em; margin: 20px 0 10px; padding-left: 10px;
+  }
+  .reveal-all-btn {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 10px 14px; border-radius: 6px;
+    font-size: 12px; cursor: pointer; width: 100%; margin-top: 16px;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .reveal-all-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+  main { padding: 48px 64px; max-width: 1000px; }
+  header.page-header {
+    margin-bottom: 48px; padding-bottom: 28px; border-bottom: 1px solid var(--border);
+  }
+  header.page-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  header.page-header h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 12px; }
+  header.page-header p { color: var(--text-dim); font-size: 16px; max-width: 680px; }
+
+  .part-header { margin: 64px 0 32px; padding-bottom: 20px; border-bottom: 2px solid var(--accent); }
+  .part-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .part-header h2 { font-size: 30px; font-weight: 700; }
+
+  .qcard {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 26px 28px; margin-bottom: 28px; scroll-margin-top: 24px;
+  }
+  .qcard-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; }
+  .qnum { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); font-weight: 700; letter-spacing: 0.1em; }
+  .qtopic {
+    font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.1em; background: var(--bg-elevated);
+    padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border);
+  }
+  .qbody { margin-bottom: 18px; }
+  .qbody p { margin-bottom: 12px; }
+  .qbody pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 16px; overflow-x: auto;
+    margin: 12px 0; font-size: 13px; line-height: 1.55; font-family: 'JetBrains Mono', monospace;
+  }
+  .qbody code {
+    font-family: 'JetBrains Mono', monospace; background: var(--code-bg);
+    padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
+    color: var(--accent); border: 1px solid var(--border);
+  }
+  .qbody pre code { padding: 0; border: none; background: transparent; color: var(--text); font-size: inherit; }
+
+  .qopts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .qopt {
+    padding: 10px 14px; background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+    font-size: 14px; display: flex; align-items: flex-start; gap: 12px;
+    transition: all 0.15s; font-family: inherit; color: var(--text);
+    text-align: left; width: 100%;
+  }
+  .qopt:hover { border-color: var(--border-bright); background: #1f2940; }
+  .qopt .letter {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-muted);
+    font-size: 12px; min-width: 18px; padding-top: 2px;
+  }
+  .qopt.correct { border-color: var(--success); background: rgba(110, 231, 167, 0.1); }
+  .qopt.correct .letter { color: var(--success); }
+  .qopt.incorrect { border-color: var(--danger); background: rgba(255, 126, 138, 0.1); }
+  .qopt.incorrect .letter { color: var(--danger); }
+
+  .reveal-btn {
+    background: transparent; border: 1px solid var(--border-bright);
+    color: var(--text-dim); padding: 8px 16px; border-radius: 6px;
+    cursor: pointer; font-family: inherit; font-size: 13px;
+    transition: all 0.15s; margin-right: 10px;
+  }
+  .reveal-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+  .reveal-block {
+    margin-top: 16px; padding: 22px 24px; background: var(--code-bg);
+    border-radius: 8px; border-left: 3px solid var(--accent);
+    font-size: 14px; display: none;
+  }
+  .reveal-block.show { display: block; animation: slideIn 0.3s ease; }
+  .reveal-block .answer-line {
+    font-weight: 700; color: var(--success); margin-bottom: 8px;
+    font-size: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .reveal-block .concept-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--purple);
+    text-transform: uppercase; letter-spacing: 0.1em; margin: 12px 0 8px;
+  }
+  .reveal-block .explanation { color: var(--text-dim); margin-bottom: 16px; }
+  .reveal-block .explanation p { margin-bottom: 10px; }
+  .reveal-block .explanation strong { color: var(--text); }
+  .reveal-block .explanation ul, .reveal-block .explanation ol { margin: 8px 0 10px 22px; }
+  .reveal-block .explanation li { margin-bottom: 6px; }
+
+  .reveal-block .wrong-answers {
+    background: rgba(255, 126, 138, 0.05); border-left: 2px solid var(--danger);
+    padding: 14px 16px; margin: 14px 0; border-radius: 0 6px 6px 0;
+  }
+  .reveal-block .wrong-answers .wa-head {
+    font-weight: 700; color: var(--danger); margin-bottom: 10px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .reveal-block .wrong-answers p {
+    color: var(--text-dim); margin-bottom: 10px; font-size: 13.5px;
+  }
+  .reveal-block .wrong-answers p:last-child { margin-bottom: 0; }
+  .reveal-block .wrong-answers .wa-letter {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    color: var(--danger); margin-right: 6px;
+  }
+  .reveal-block .trap {
+    padding: 12px 16px; margin: 14px 0;
+    background: rgba(251, 191, 36, 0.05); border-left: 2px solid var(--warning);
+    border-radius: 0 6px 6px 0; color: var(--text-dim); font-size: 13.5px;
+  }
+  .reveal-block .trap strong { color: var(--warning); }
+  .reveal-block .exam-tip {
+    padding: 12px 16px; margin-top: 14px;
+    background: rgba(127, 212, 255, 0.05); border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0; color: var(--text); font-size: 13.5px;
+  }
+  .reveal-block .exam-tip strong { color: var(--accent); }
+  .reveal-block code {
+    font-family: 'JetBrains Mono', monospace; background: var(--bg);
+    padding: 1px 5px; border-radius: 3px; color: var(--accent);
+    font-size: 12px; border: 1px solid var(--border);
+  }
+  .reveal-block pre {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 14px; overflow-x: auto;
+    margin: 10px 0; font-size: 12.5px; line-height: 1.55;
+    font-family: 'JetBrains Mono', monospace; color: var(--text);
+  }
+  .reveal-block pre code {
+    padding: 0; border: none; background: transparent;
+    color: var(--text); font-size: inherit;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .case {
+    background: var(--bg-panel); border: 1px solid var(--border-bright);
+    border-radius: 12px; padding: 32px 34px; margin-bottom: 36px;
+  }
+  .case-head { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .case-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--purple);
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .case-title { font-size: 24px; font-weight: 700; }
+  .case-setup { margin-bottom: 28px; color: var(--text-dim); }
+  .case-setup pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 16px; overflow-x: auto; margin: 14px 0;
+    font-size: 13px; line-height: 1.55; font-family: 'JetBrains Mono', monospace; color: var(--text);
+  }
+  .case-setup code {
+    font-family: 'JetBrains Mono', monospace; background: var(--code-bg);
+    padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
+    color: var(--accent); border: 1px solid var(--border);
+  }
+  .case-setup pre code { padding: 0; border: none; background: transparent; color: var(--text); font-size: inherit; }
+
+  .case-part {
+    margin: 20px 0; padding: 20px; background: var(--bg-elevated);
+    border-radius: 8px; border-left: 3px solid var(--accent-dim);
+  }
+  .case-part-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    color: var(--accent); font-weight: 700; margin-bottom: 10px;
+  }
+  .case-part p { margin-bottom: 10px; }
+
+  .kw { color: #ff9fd4; }
+  .str { color: var(--success); }
+  .cmt { color: var(--text-muted); font-style: italic; }
+  .typ { color: var(--purple); }
+  .num { color: var(--warning); }
+  .fn { color: var(--accent); }
+
+  ul, ol { margin-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+
+  footer {
+    margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border);
+    color: var(--text-muted); font-size: 12px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="brand">CS3100 Final · Walkthrough</div>
+  <h2>MCQ Part I</h2>
+  <ul id="q-nav"></ul>
+  <div class="section-divider">Case Studies</div>
+  <ul>
+    <li><a href="#case1"><span><span class="num">C1</span> SceneItAll</span></a></li>
+    <li><a href="#case2"><span><span class="num">C2</span> CYB Plugin</span></a></li>
+    <li><a href="#case3"><span><span class="num">C3</span> MediQueue ADR</span></a></li>
+  </ul>
+  <button class="reveal-all-btn" id="revealAllBtn">Reveal all answers</button>
+</nav>
+
+<main>
+  <header class="page-header">
+    <div class="eyebrow">FILE 2 OF 3 · PRACTICE EXAM WALKTHROUGH</div>
+    <h1>Practice Final Exam</h1>
+    <p>Every problem from the practice sheet. Answers hidden until you reveal. Each reveal has a concept tag, full walkthrough, a breakdown of why each wrong answer is wrong, the common trap, and a one-line takeaway.</p>
+  </header>
+
+  <div class="part-header">
+    <div class="eyebrow">PART I · 25 POINTS</div>
+    <h2>Multiple Choice · 25 Questions</h2>
+  </div>
+
+  <div class="qcard" id="q1" data-correct="D">
+    <div class="qcard-head"><div class="qnum">QUESTION 01</div><div class="qtopic">Dynamic Dispatch</div></div>
+    <div class="qbody">
+      <p>The SceneItAll IoT hierarchy from lecture:</p>
+      <pre>IoTDevice &lt;&lt;interface&gt;&gt;
+└── BaseIoTDevice &lt;&lt;abstract&gt;&gt;
+    ├── Fan
+    └── Light &lt;&lt;abstract&gt;&gt;
+        ├── SwitchedLight
+        └── DimmableLight
+            └── TunableWhiteLight</pre>
+      <pre><code>Light light = new TunableWhiteLight("living-room", 2700, 100);
+((DimmableLight) light).turnOn();</code></pre>
+      <p><code>TunableWhiteLight</code> overrides <code>turnOn()</code>. Which version is called?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>DimmableLight's turnOn(), because the cast changes the runtime type</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Light's turnOn(), because Light is the declared type (static dispatch)</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Compile error, can't cast Light to DimmableLight</span></button>
+      <button class="qopt"><span class="letter">D</span><span>TunableWhiteLight's turnOn(), because dynamic dispatch uses runtime type</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: D · TunableWhiteLight's turnOn()</div>
+      <div class="concept-tag">Concept: Dynamic dispatch, runtime type wins</div>
+      <div class="explanation">
+        <p><strong>What's happening, step by step:</strong></p>
+        <p>Line 1 creates a <code>TunableWhiteLight</code> object on the heap, but stores the reference in a variable <em>declared</em> as <code>Light</code>. The compiler only lets you call methods that exist on <code>Light</code> through that variable, that's the declared-type check.</p>
+        <p>Line 2 does two things. <code>(DimmableLight) light</code> is a <em>cast</em>, a compile-time assertion. It does NOT modify the object in memory, it just tells the compiler "trust me, this is a DimmableLight, let me call DimmableLight methods on it." The object on the heap is still a <code>TunableWhiteLight</code>, nothing has changed about it.</p>
+        <p>Then <code>.turnOn()</code> is called. Java uses <strong>dynamic dispatch</strong> for instance methods, it looks at the actual object in memory (runtime type), walks up the vtable, and picks the most-derived override. The runtime type is <code>TunableWhiteLight</code>, which overrides <code>turnOn()</code>, so that version runs.</p>
+        <p>The cast was only needed to satisfy the compiler if <code>turnOn()</code> is declared on <code>DimmableLight</code> but not on <code>Light</code>. At runtime the cast is invisible.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> A cast does not change the runtime type. The object stored on the heap was created with <code>new TunableWhiteLight(...)</code>, and no cast rewrites bytes in memory. Casts are purely a compile-time permission.</p>
+        <p><span class="wa-letter">B.</span> Java uses dynamic, not static, dispatch for instance methods by default. Static dispatch only applies to <code>static</code>, <code>private</code>, or <code>final</code> methods.</p>
+        <p><span class="wa-letter">C.</span> The cast is legal. <code>TunableWhiteLight</code> IS-A <code>DimmableLight</code> (subclass). If the object weren't a DimmableLight we'd get a <code>ClassCastException</code> at runtime, but it is, so this is a valid upcast-then-downcast chain.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> Students read "cast to DimmableLight" and assume the cast magically "converts" the object. They're thinking of it like primitive casts (<code>int</code> to <code>double</code>), which actually do change the value. Object casts are different, they never change the object, they just pass a type check.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Dispatch always follows the actual object. Declared types and casts control what you're <em>allowed</em> to call; runtime types decide <em>which</em> version runs.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q2" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 02</div><div class="qtopic">Static Context</div></div>
+    <div class="qbody">
+      <pre><code>public class Example {
+    int x = 10;
+    public static void printX() {
+        System.out.println(x);
+    }
+}</code></pre>
+      <p>Why doesn't this compile?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>x should be public for a static method to access it</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Static methods cannot reference instance variables directly</span></button>
+      <button class="qopt"><span class="letter">C</span><span>println cannot print an int</span></button>
+      <button class="qopt"><span class="letter">D</span><span>x must be final before a static method can use it</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Static methods cannot reference instance variables directly</div>
+      <div class="concept-tag">Concept: Static context has no `this`</div>
+      <div class="explanation">
+        <p><strong>The key distinction:</strong></p>
+        <p>A <strong>static method</strong> belongs to the class itself, not to any particular instance. You can call it without creating an object, <code>Example.printX()</code>. Because it's not tied to any instance, it has no implicit <code>this</code> reference.</p>
+        <p>An <strong>instance field</strong> like <code>int x = 10</code> only exists <em>on an instance</em>. Every <code>new Example()</code> creates a fresh <code>x</code> in that object's memory. Reading <code>x</code> always means "read <code>this.x</code>", the <code>x</code> of some specific instance.</p>
+        <p>So when <code>printX()</code> tries to reference <code>x</code>, the compiler asks: "which instance's <code>x</code>?" There isn't one, <code>printX()</code> wasn't called on an instance, and it has no <code>this</code>. Compile error: <em>"non-static variable x cannot be referenced from a static context."</em></p>
+        <p><strong>Two legal fixes:</strong></p>
+        <p>1. Make <code>x</code> static (shared across all instances, belongs to the class): <code>static int x = 10;</code></p>
+        <p>2. Pass in or hold an instance: <code>public static void printX(Example e) { System.out.println(e.x); }</code></p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Access modifiers (public/private) are a separate axis from static vs instance. Making <code>x</code> public wouldn't help, a static method still has no instance to read from. Access control is about WHO can see; static-vs-instance is about WHERE the field lives.</p>
+        <p><span class="wa-letter">C.</span> <code>System.out.println</code> is heavily overloaded and accepts <code>int</code> directly. Printing primitives is never a compile error.</p>
+        <p><span class="wa-letter">D.</span> <code>final</code> means "can't be reassigned after initialization", it has nothing to do with static-vs-instance access rules.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> Beginners learn "public means accessible" and over-generalize. But accessibility (who can see it) is independent of where it lives (static or instance). A static method has no path to an instance field regardless of its access modifier.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> If a method is <code>static</code> and it touches non-static state, it won't compile. Either make the state static too, or pass an instance.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q3" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 03</div><div class="qtopic">Collections Big-O</div></div>
+    <div class="qbody">
+      <p>Version A uses <code>ArrayList&lt;Device&gt;</code> and tests membership with a for-each loop. Version B uses <code>HashSet&lt;Device&gt;</code> and <code>contains()</code>. What's the Big-O?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Both are O(n)</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Version A is O(n), Version B is O(1)</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Version A is O(n), Version B is O(log n)</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Both O(1) because JIT optimizes small collections</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · A is O(n), B is O(1)</div>
+      <div class="concept-tag">Concept: Structure-specific complexity</div>
+      <div class="explanation">
+        <p><strong>ArrayList behavior:</strong> An ArrayList is a backing array. To check membership with a for-each loop, you walk from index 0 and compare each element. Worst case, you scan the whole array, linear time, O(n). Even the average case is O(n/2), still O(n).</p>
+        <p><strong>HashSet behavior:</strong> A HashSet is backed by a hash table. <code>contains(x)</code> computes <code>x.hashCode()</code>, goes to a bucket index, and compares against the (usually very few) entries in that bucket. Average-case: constant time, O(1). Worst case (many collisions) degrades to O(n), but with a reasonable hashCode the expected time is constant.</p>
+        <p><strong>Takeaway:</strong> Choice of data structure is the #1 determinant of performance. Switching from ArrayList to HashSet for membership testing takes your lookup from "walk the whole list" to "compute one hash and check one bucket."</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Only the ArrayList is O(n); HashSet lookup is constant-time. Treating them as equivalent ignores the entire point of choosing a hash-based structure.</p>
+        <p><span class="wa-letter">C.</span> O(log n) is TreeSet / TreeMap (binary search on a balanced tree). HashSet is O(1), not O(log n).</p>
+        <p><span class="wa-letter">D.</span> Completely fabricated. JIT does many great things (inlining, escape analysis, loop unrolling) but <em>never</em> rewrites an algorithm from linear to constant time. JIT can't change the fundamental complexity of your code.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> "JIT will optimize it" appeals to students who don't fully understand JIT. JIT is about micro-optimization (faster machine code), not algorithmic transformation. If your algorithm is O(n), JIT makes each step faster but the total work still scales linearly.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Memorize the core lookup table: ArrayList contains = O(n), HashSet contains = O(1), TreeSet contains = O(log n).</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q4" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 04</div><div class="qtopic">Nullability</div></div>
+    <div class="qbody">
+      <p>In a <code>@NullMarked</code> package:</p>
+      <pre><code>public String formatIngredient(@Nullable String prefix, String name) {
+    if (prefix == null) {
+        return name;
+    }
+    return prefix + " " + name;
+}</code></pre>
+      <p>Which is correct?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>name is assumed non-null; passing null would produce a warning/error</span></button>
+      <button class="qopt"><span class="letter">B</span><span>@Nullable on prefix is redundant, all Java params are nullable by default</span></button>
+      <button class="qopt"><span class="letter">C</span><span>@Nullable auto-throws NPE at runtime on null</span></button>
+      <button class="qopt"><span class="letter">D</span><span>@Nullable anywhere in a method signature makes all params nullable</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · name is assumed non-null</div>
+      <div class="concept-tag">Concept: @NullMarked inverts the default</div>
+      <div class="explanation">
+        <p><strong>What @NullMarked does:</strong></p>
+        <p>By default in raw Java, every reference type is implicitly nullable, any parameter might be null. <code>@NullMarked</code> (at the package or class level) flips this default, inside that scope, every unannotated reference is treated as <em>non-null</em>. You must opt IN to nullability with an explicit <code>@Nullable</code>.</p>
+        <p><strong>Applied to this method:</strong></p>
+        <p>The package is <code>@NullMarked</code>. The parameter <code>prefix</code> is explicitly <code>@Nullable</code>, callers may pass null, and the body correctly handles that with a null check. The parameter <code>name</code> has no annotation, so the tool (Checker Framework, NullAway, IntelliJ, whatever's enforcing it) treats it as non-null. If a caller passes <code>null</code> for <code>name</code>, the static analyzer flags it as a likely bug.</p>
+        <p><strong>Important nuance:</strong> These annotations feed a <em>static checker</em>, they don't add runtime checks. No NPE is injected by the annotation itself. The whole point is catching mistakes at compile time without runtime cost.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> Without <code>@NullMarked</code>, Java's default is "everything could be null." WITH <code>@NullMarked</code>, the default flips to "nothing is null unless marked." So <code>@Nullable</code> is necessary, not redundant.</p>
+        <p><span class="wa-letter">C.</span> Annotations are compile-time metadata, they don't inject any runtime checks or throw NPEs by themselves. The NPE happens if you dereference a null, but it's the dereference that throws, not the annotation.</p>
+        <p><span class="wa-letter">D.</span> Annotations are per-parameter. Marking one parameter <code>@Nullable</code> has no effect on other parameters in the same signature.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> Students confuse compile-time tooling with runtime behavior. Annotations are inert by themselves, they're just data that static analysis tools read. Knowing this distinction is what the question tests.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> In a @NullMarked package, unannotated = non-null. <code>@Nullable</code> is opt-in. Analysis happens at compile time, no runtime enforcement.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q5" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 05</div><div class="qtopic">Specifications</div></div>
+    <div class="qbody">
+      <p>Why can you use <code>HashMap</code> without reading its 2000-line implementation?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Java inlines HashMap at compile time</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Its specification tells you exactly what each method does; you treat it as a chunk</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Private fields prevent the compiler from exposing internals</span></button>
+      <button class="qopt"><span class="letter">D</span><span>All Map implementations behave identically</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Specifications enable chunking</div>
+      <div class="concept-tag">Concept: Abstraction and specification</div>
+      <div class="explanation">
+        <p><strong>The big idea, specifications are contracts.</strong></p>
+        <p>A specification tells you two things: what you need to bring in (preconditions, parameter types, state requirements) and what you'll get out (postconditions, return value, exceptions, side effects). If a class has a clear spec, you never need to read its implementation, you just trust the contract.</p>
+        <p>For <code>HashMap</code>, the spec says: <code>put(k, v)</code> stores the pair, returns the previous value for that key or null; <code>get(k)</code> returns the value if present or null; <code>containsKey(k)</code> is amortized O(1). That's enough. You can <em>use</em> HashMap while knowing nothing about its internal resizing, treeification-at-collision-threshold, bucket hashing, etc.</p>
+        <p><strong>This is called "chunking" in human cognition.</strong> Just like you don't think of a word as a sequence of letters once you learn to read, you don't think of <code>map.put(k, v)</code> as a series of internal operations. The specification lets the class become a single unit in your mental model.</p>
+        <p>Modularity, information hiding, and readability all depend on this principle. When specifications are clear, developers can work on big systems without knowing how every piece is implemented.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Java does not inline standard library classes at compile time. JIT may inline at runtime, but that's an optimization, not a reason you don't need to read the code.</p>
+        <p><span class="wa-letter">C.</span> Private fields are about encapsulation (who can access), not about whether you need to read the code. You can read HashMap's source on GitHub; the private modifiers don't hide it from a human reader.</p>
+        <p><span class="wa-letter">D.</span> Flat wrong. TreeMap has ordering guarantees HashMap doesn't. LinkedHashMap preserves insertion order. Different Map implementations behave very differently.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Students learning Collections sometimes think an interface guarantees uniform behavior across implementations. It doesn't. <code>Map</code> specifies the <em>operations</em>, but each implementation's spec adds its own guarantees.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Specifications are why software is buildable at scale. "Read the spec, trust the spec, ignore the implementation."</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q6" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 06</div><div class="qtopic">Comparator Chaining</div></div>
+    <div class="qbody">
+      <pre><code>List lights = new ArrayList&lt;&gt;(List.of(
+    new DimmableLight("bedroom", 80),
+    new DimmableLight("kitchen", 30),
+    new DimmableLight("bedroom", 50)
+));
+lights.sort(Comparator.comparing(DimmableLight::getId)
+    .thenComparingInt(DimmableLight::getBrightness));</code></pre>
+      <p>Assuming <code>toString()</code> is <code>"id/brightness"</code>, what's printed?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>[bedroom/50, bedroom/80, kitchen/30]</span></button>
+      <button class="qopt"><span class="letter">B</span><span>[bedroom/80, bedroom/50, kitchen/30]</span></button>
+      <button class="qopt"><span class="letter">C</span><span>[kitchen/30, bedroom/50, bedroom/80]</span></button>
+      <button class="qopt"><span class="letter">D</span><span>[bedroom/80, kitchen/30, bedroom/50]</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · [bedroom/50, bedroom/80, kitchen/30]</div>
+      <div class="concept-tag">Concept: Comparator.comparing().thenComparing()</div>
+      <div class="explanation">
+        <p><strong>Step-by-step sort:</strong></p>
+        <p>1. <strong>Primary sort, by id</strong> (alphabetical, String.compareTo). "bedroom" &lt; "kitchen", so both bedroom entries come before the kitchen entry.</p>
+        <p>2. <strong>Tiebreaker, by brightness</strong> (ascending int). Both bedroom entries tie on id. Among ties, <code>thenComparingInt(::getBrightness)</code> breaks by brightness ascending. 50 &lt; 80, so <code>bedroom/50</code> comes before <code>bedroom/80</code>.</p>
+        <p>3. <strong>Final order:</strong> <code>[bedroom/50, bedroom/80, kitchen/30]</code>.</p>
+        <p><strong>How chaining works:</strong> <code>Comparator.comparing(X)</code> builds a comparator on X. <code>.thenComparing(Y)</code> or <code>.thenComparingInt(Y)</code> returns a new comparator that first checks X; if X is equal (ties), then checks Y. So "thenComparing" only kicks in when the preceding comparator returns 0.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> This order [bedroom/80, bedroom/50, kitchen/30] preserves the original insertion order within the ties. The chained comparator DOES re-sort within ties, it doesn't fall back to insertion order.</p>
+        <p><span class="wa-letter">C.</span> Sorted by brightness primary (30, 50, 80). That would only happen if the brightness comparator were first. Our primary is id, so bedrooms come before kitchen.</p>
+        <p><span class="wa-letter">D.</span> This doesn't follow either the id or brightness ordering consistently, it's just plausible-looking noise.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, B.</strong> Students forget that <code>thenComparingInt</code> is not "preserve insertion order among ties", it actively sorts by the second key. Java sorts ARE stable (truly equal elements keep relative order), but only for elements that are <em>truly equal</em> under the full comparator. Here the two bedrooms aren't equal, they tie on id but differ on brightness.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> <code>.thenComparing</code> = "after ties on the first key, break by this." It fires only when the prior comparator returns 0.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q7" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 07</div><div class="qtopic">Refactoring for Testability</div></div>
+    <div class="qbody">
+      <pre><code>devices.stream()
+    .filter(d -> d.isConnected() &amp;&amp; d.getBattery() &lt; 20
+        &amp;&amp; !d.getType().equals("wired")
+        &amp;&amp; d.getLastSeen().isBefore(cutoff))
+    .collect(Collectors.toList());</code></pre>
+      <p>Best refactor for testability?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Extract the lambda body into a named method</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Use Collectors.toUnmodifiableList()</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Split into multiple chained .filter() calls</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Convert lambda to anonymous class</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · Extract to a named method</div>
+      <div class="concept-tag">Concept: Testability, controllability</div>
+      <div class="explanation">
+        <p><strong>The problem with the current code:</strong></p>
+        <p>The filter logic is a multi-condition lambda buried inside a stream pipeline. To test whether a specific Device satisfies this predicate, you'd have to: (1) construct a list with that Device in it, (2) run the whole stream, (3) check if the Device made it through. That's an integration test for what should be a tiny unit check.</p>
+        <p><strong>The refactor:</strong></p>
+        <pre><code>public static boolean <span class="fn">isLowBatteryWirelessStale</span>(<span class="typ">Device</span> d, <span class="typ">Instant</span> cutoff) {
+    <span class="kw">return</span> d.<span class="fn">isConnected</span>()
+        &amp;&amp; d.<span class="fn">getBattery</span>() &lt; 20
+        &amp;&amp; !d.<span class="fn">getType</span>().<span class="fn">equals</span>(<span class="str">"wired"</span>)
+        &amp;&amp; d.<span class="fn">getLastSeen</span>().<span class="fn">isBefore</span>(cutoff);
+}</code></pre>
+        <p>Then: <code>.filter(d -&gt; isLowBatteryWirelessStale(d, cutoff))</code>.</p>
+        <p><strong>Benefits:</strong></p>
+        <ul>
+          <li><strong>Controllability:</strong> your test can call <code>isLowBatteryWirelessStale(mockDevice, cutoff)</code> directly with crafted inputs.</li>
+          <li><strong>Observability:</strong> the boolean return is directly assertable.</li>
+          <li><strong>Readability:</strong> the name documents intent, the filter reads like English.</li>
+          <li><strong>Reusability:</strong> you can apply the same predicate elsewhere.</li>
+        </ul>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> <code>toUnmodifiableList()</code> affects the output collection's mutability. It has nothing to do with testability of the filtering logic.</p>
+        <p><span class="wa-letter">C.</span> Splitting into multiple .filter() calls can help readability, but each filter is still an inline lambda, each clause is still not independently callable from a test.</p>
+        <p><span class="wa-letter">D.</span> Anonymous classes are more verbose than lambdas but functionally equivalent. Logic is still buried inside the pipeline, no testability improvement.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> Splitting filters reads cleaner, so it feels like progress. But readability ≠ testability. Each mini-filter still lives inside the stream and can't be invoked as a standalone unit.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Named methods are testable; lambdas hidden in pipelines are not. If you want to unit-test a predicate, give it a name.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q8" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 08</div><div class="qtopic">Fragile Base Class</div></div>
+    <div class="qbody">
+      <p><code>LoggingList extends ArrayList</code> overrides both <code>add()</code> and <code>addAll()</code> to increment an <code>addCount</code>. Both JUnit tests pass. What's the problem?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>addCount should be static to share across instances</span></button>
+      <button class="qopt"><span class="letter">B</span><span>The class may not satisfy its spec if ArrayList's implementation changes</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Overriding both methods violates ISP</span></button>
+      <button class="qopt"><span class="letter">D</span><span>It violates LSP, LoggingList can't stand in for ArrayList</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Fragile base class problem</div>
+      <div class="concept-tag">Concept: Inheritance coupling to parent internals</div>
+      <div class="explanation">
+        <p><strong>What "fragile base class" means:</strong></p>
+        <p>A subclass that overrides methods on a parent class can become dependent on the parent's <em>internal</em> call patterns. If the parent is later changed, the subclass can silently break, even though neither the parent's spec nor the subclass's spec changed.</p>
+        <p><strong>Applied here:</strong></p>
+        <p>LoggingList's spec says, "addCount = total number of items added." Current implementation:</p>
+        <pre><code>@Override
+<span class="kw">public boolean</span> <span class="fn">add</span>(<span class="typ">E</span> e) {
+    addCount++;
+    <span class="kw">return</span> <span class="kw">super</span>.<span class="fn">add</span>(e);
+}
+@Override
+<span class="kw">public boolean</span> <span class="fn">addAll</span>(<span class="typ">Collection</span>&lt;? <span class="kw">extends</span> <span class="typ">E</span>&gt; c) {
+    addCount += c.<span class="fn">size</span>();
+    <span class="kw">return</span> <span class="kw">super</span>.<span class="fn">addAll</span>(c);
+}</code></pre>
+        <p>Suppose in a future Java release, <code>ArrayList.addAll</code> is rewritten to internally call <code>this.add()</code> for each element. Then a single <code>addAll(list)</code> call would increment <code>addCount</code> twice per element (once in the override of addAll, once per add). The spec silently breaks, and existing tests may still pass if they were written against the old implementation.</p>
+        <p><strong>The deeper issue:</strong> the subclass's correctness depends on implementation details of the parent that aren't guaranteed by the parent's spec. Inheritance coupling to implementation, not to interface.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Making <code>addCount</code> static would share count across ALL LoggingList instances, a semantic change, not a correctness fix. And it's not the issue.</p>
+        <p><span class="wa-letter">C.</span> Interface Segregation Principle is about not forcing clients to depend on interfaces they don't use. Overriding two parent methods has nothing to do with ISP.</p>
+        <p><span class="wa-letter">D.</span> LSP says subclasses should be substitutable for their base. LoggingList IS substitutable, it still behaves like an ArrayList externally. The fragile base issue is separate from LSP.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Both "fragile base class" and "LSP violation" involve inheritance, so students conflate them. Distinction: LSP is about EXTERNAL behavior (can I substitute?); fragile base is about INTERNAL coupling (does my correctness depend on the parent's implementation?).</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Prefer <em>composition</em> over inheritance when you need to intercept behavior. Wrap the list, don't extend it.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q9" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 09</div><div class="qtopic">Mockito verify</div></div>
+    <div class="qbody">
+      <pre><code>when(mockSensor.readTemperature("livingRoom")).thenReturn(65.0);
+ThermostatController controller = new ThermostatController(mockSensor, mockHVAC);
+controller.adjustToTargetTemperature(72.0, "livingRoom");
+verify(mockHVAC).activate("livingRoom");</code></pre>
+      <p>What does the verify line do?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Asserts that activate was called exactly once with "livingRoom"</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Configures the mock to return a value next time activate is called</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Checks that mockHVAC was constructed with "livingRoom"</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Registers a callback to the real HVAC system</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · Asserts the call happened exactly once</div>
+      <div class="concept-tag">Concept: Mockito verify vs when/thenReturn</div>
+      <div class="explanation">
+        <p><strong>Two core Mockito operations:</strong></p>
+        <p><strong>1. Stubbing (setup):</strong> <code>when(mock.method(args)).thenReturn(value)</code>. Says "the NEXT time method is called with these args, return this value." Configures the mock's behavior BEFORE the code under test runs.</p>
+        <p><strong>2. Verification (assertion):</strong> <code>verify(mock).method(args)</code>. Says "I expect method was called with these args during the test." Past-tense assertion after the code under test has run.</p>
+        <p><strong>Applied here:</strong></p>
+        <p>The test first stubs the sensor to return 65.0 (mock behavior setup). Then it runs <code>adjustToTargetTemperature(72.0, "livingRoom")</code> on the real controller. The controller, seeing that current is 65 and target is 72, should call <code>hvac.activate("livingRoom")</code>. The <code>verify</code> line asserts this call happened.</p>
+        <p><strong>Default multiplicity:</strong> <code>verify(mock).method(args)</code> with no <code>times(n)</code> asserts <em>exactly once</em>. If the method was called zero times or two+ times with those args, the verify fails.</p>
+        <p><strong>Other multiplicities:</strong> <code>verify(mock, times(3)).method()</code>, <code>verify(mock, never()).method()</code>, <code>verify(mock, atLeast(1)).method()</code>.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> That's what <code>when/thenReturn</code> does, stubbing future behavior. <code>verify</code> has the opposite direction: it checks past events.</p>
+        <p><span class="wa-letter">C.</span> Mockito doesn't observe constructor calls that way. <code>verify</code> only applies to method calls on the mock after it's been created.</p>
+        <p><span class="wa-letter">D.</span> Mocks are fake objects; they don't interact with real systems. Nothing about verify hooks into external HVAC hardware.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, B.</strong> Students mix up <code>when</code> and <code>verify</code> because they both look like "method-on-a-mock" syntax. Memory aid: <em>when = setup future, verify = assert past.</em></div>
+      <div class="exam-tip"><strong>Exam tip:</strong> when → thenReturn (setup). verify (assert). Default verify = exactly once. Know these patterns cold.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q10" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 10</div><div class="qtopic">Testability · Static Calls</div></div>
+    <div class="qbody">
+      <pre><code>public class ScheduledTask {
+    public void runIfDue() {
+        if (TimeUtils.isBusinessHours()) {
+            doWork();
+        }
+    }
+    private void doWork() { /* ... */ }
+}</code></pre>
+      <p>Dev wants to test that <code>doWork()</code> is NOT called outside business hours. What's the fundamental testing problem?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>doWork() is private so can't be invoked from a test</span></button>
+      <button class="qopt"><span class="letter">B</span><span>TimeUtils.isBusinessHours() is a static call and can't be replaced with a test double</span></button>
+      <button class="qopt"><span class="letter">C</span><span>No explicit constructor, so Mockito can't mock ScheduledTask</span></button>
+      <button class="qopt"><span class="letter">D</span><span>runIfDue() returns void, nothing to assert on</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Static calls can't be swapped in tests</div>
+      <div class="concept-tag">Concept: Designing for testability · DI over static</div>
+      <div class="explanation">
+        <p><strong>The core issue:</strong></p>
+        <p>To test both branches (business hours vs not), you need to control what <code>isBusinessHours()</code> returns during the test. With a <em>static</em> call like <code>TimeUtils.isBusinessHours()</code>, there's no seam to inject a fake, the class is reaching into a global, hard-wired dependency. Your test is stuck with whatever the real system clock returns at the moment the test runs.</p>
+        <p><strong>Why static calls are a testability anti-pattern:</strong></p>
+        <p>Static calls create <em>hidden dependencies</em>. Looking at the class's constructor or fields, you can't tell that <code>ScheduledTask</code> depends on the clock. The dependency is baked into the method body, and swapping it out requires either bytecode manipulation (PowerMock) or language-level tricks. Regular Mockito cannot mock static methods out of the box.</p>
+        <p><strong>The refactor:</strong></p>
+        <pre><code><span class="kw">public class</span> <span class="typ">ScheduledTask</span> {
+    <span class="kw">private final</span> <span class="typ">Clock</span> clock;
+    <span class="kw">public</span> <span class="fn">ScheduledTask</span>(<span class="typ">Clock</span> clock) { <span class="kw">this</span>.clock = clock; }
+    <span class="kw">public void</span> <span class="fn">runIfDue</span>() {
+        <span class="kw">if</span> (clock.<span class="fn">isBusinessHours</span>()) { <span class="fn">doWork</span>(); }
+    }
+}</code></pre>
+        <p>Now the test can pass a fake <code>Clock</code> and control both branches deterministically.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Private methods aren't a blocker, you test them indirectly through public callers. Calling <code>runIfDue()</code> and checking its effects is the correct way to test <code>doWork()</code>. Privacy ≠ untestable.</p>
+        <p><span class="wa-letter">C.</span> Mockito doesn't need an explicit constructor. It uses reflection and bytecode generation; default constructors are fine.</p>
+        <p><span class="wa-letter">D.</span> Void methods are tested by observing their side effects (state changes, calls on collaborators via <code>verify</code>). Return type isn't the blocker.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> "Private is untestable" is a beginner misconception. You don't test private methods directly, you test them through their public callers. The real testability killer here is the STATIC call.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> If you see a static call to something time/env/IO-dependent inside a method, that's a testability red flag. Inject the dependency instead.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q11" data-correct="C">
+    <div class="qcard-head"><div class="qnum">QUESTION 11</div><div class="qtopic">Modular Monolith</div></div>
+    <div class="qbody">
+      <p>A team adopts a modular monolith where Submissions and Grading communicate only through public APIs. Primary benefit vs an unstructured monolith?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Eliminates network latency and lets each module's schema evolve independently</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Guarantees independent deployment cycles</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Preserves clean boundaries for later extraction into separate services</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Prevents any single bug from crashing the entire app</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: C · Preserves boundaries for future extraction</div>
+      <div class="concept-tag">Concept: Architectural option value</div>
+      <div class="explanation">
+        <p><strong>What a modular monolith is:</strong></p>
+        <p>Still one deployable process, one JAR, one WAR, whatever, but the codebase inside is partitioned into modules (Submissions, Grading, Users, etc.), and those modules communicate only through defined public APIs. Internal classes of one module aren't reachable from another. All the code runs in the same process, but the architecture looks like microservices from the inside.</p>
+        <p><strong>What you gain:</strong></p>
+        <p>The biggest benefit is <em>architectural option value</em>. If Grading ever needs to scale independently (say, it's compute-heavy and needs 10x the cores), you can <em>extract</em> it into its own service. The boundaries are already there, you've been programming as if the modules were separate. Extracting becomes a mechanical exercise (wrap the API in HTTP, move the code, switch the callers), not a massive rewrite.</p>
+        <p>Compare to an unstructured monolith, where Submissions code reaches into Grading's internal data classes, shares a DB table, and calls 20 Grading methods from all over. Extracting is nearly impossible, you'd first have to do the boundary work (modularization) before you could even start the extraction.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Network latency isn't a factor either way, both are in-process calls. And schemas can't "evolve independently" yet, they share one DB and one deployment.</p>
+        <p><span class="wa-letter">B.</span> That's a microservices benefit. A monolith (modular or not) is one deploy unit. Modify Grading, redeploy everything.</p>
+        <p><span class="wa-letter">D.</span> Also a microservices benefit (blast radius isolation). In a monolith, an uncaught exception or OOM can crash the whole process regardless of module structure.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, B.</strong> Students conflate modular monolith with microservices. They both involve module boundaries, the key difference is DEPLOYMENT granularity. Monolith = one deploy unit. Microservices = many deploy units.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Modular monolith = clean boundaries with option to extract later. No deployment isolation, no network overhead, no fault isolation.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q12" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 12</div><div class="qtopic">Distributed Fallacies</div></div>
+    <div class="qbody">
+      <p>Pawtograder batches 100 test results into one <code>submitFeedback()</code> call instead of 100 individual calls. Which distributed fallacy most directly motivates this?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>"Latency is zero", 100 round-trips add cumulative delay</span></button>
+      <button class="qopt"><span class="letter">B</span><span>"There is one administrator", rate limits or firewall policies differ</span></button>
+      <button class="qopt"><span class="letter">C</span><span>"The network is secure", more data crossings expose more surface</span></button>
+      <button class="qopt"><span class="letter">D</span><span>"Network is homogeneous", paths behave inconsistently</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · Latency is zero</div>
+      <div class="concept-tag">Concept: 8 Fallacies of Distributed Computing</div>
+      <div class="explanation">
+        <p><strong>The 8 classic fallacies (memorize these):</strong></p>
+        <ol>
+          <li>The network is reliable</li>
+          <li>Latency is zero</li>
+          <li>Bandwidth is infinite</li>
+          <li>The network is secure</li>
+          <li>Topology doesn't change</li>
+          <li>There is one administrator</li>
+          <li>Transport cost is zero</li>
+          <li>The network is homogeneous</li>
+        </ol>
+        <p><strong>Why "Latency is zero" fits this question:</strong></p>
+        <p>Every network round-trip has an unavoidable latency, at minimum the speed-of-light delay plus protocol overhead. Even on a fast LAN, that's typically 1 to 10 ms per round trip. Cross-region, it's 50 to 200 ms. If you do 100 sequential calls, you pay that cost 100 times. 100 × 50 ms = 5 seconds wasted on round trips alone.</p>
+        <p>Batching collapses those 100 round trips into one. You still send all the same data, but you pay the latency cost ONCE. This is the textbook justification for batch APIs.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> Admin/policy variation can cause failures, but it's not the <em>direct</em> motivation for batching. Batching helps regardless of who owns what on the path.</p>
+        <p><span class="wa-letter">C.</span> Security is important and more round trips = more attack surface, but that's minor. Batching is primarily a latency optimization.</p>
+        <p><span class="wa-letter">D.</span> Path heterogeneity is real but doesn't get solved by batching. Batching reduces round-trip count, not path variability.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> Security is a valid concern, students see "100 calls" and think "more attack surface." But the PRIMARY reason to batch is performance, not security. If security were the driver, you'd encrypt, not batch.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Batching = latency fix. When you see "N calls collapsed into 1", the fallacy is almost always "latency is zero."</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q13" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 13</div><div class="qtopic">FaaS / Serverless</div></div>
+    <div class="qbody">
+      <p>Using FaaS instead of managing your own server, what do you still control?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>OS configuration</span></button>
+      <button class="qopt"><span class="letter">B</span><span>The algorithm inside the function</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Physical server hardware</span></button>
+      <button class="qopt"><span class="letter">D</span><span>How the server scales under load</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · The algorithm inside the function</div>
+      <div class="concept-tag">Concept: FaaS, what you bring vs what the platform handles</div>
+      <div class="explanation">
+        <p><strong>FaaS in one sentence:</strong> You bring the function (code that takes input, produces output). The platform handles everything else.</p>
+        <p><strong>What the platform owns in FaaS:</strong></p>
+        <ul>
+          <li>Physical hardware (data centers, servers, cooling)</li>
+          <li>OS (you don't install packages, patch kernels, configure firewalls)</li>
+          <li>Runtime (Node.js / Python / Java version, they pick)</li>
+          <li>Scaling (they spin up containers/instances as traffic arrives)</li>
+          <li>Load balancing, request routing, networking</li>
+          <li>Billing per-invocation (not per-hour-of-server)</li>
+        </ul>
+        <p><strong>What you own:</strong></p>
+        <ul>
+          <li>Your function's code, the algorithm, dependencies, business logic</li>
+          <li>Configuration of memory/timeout limits (within the platform's bounds)</li>
+          <li>Triggers (HTTP endpoint? S3 event? Cron?)</li>
+        </ul>
+        <p><strong>Real examples:</strong> AWS Lambda, Google Cloud Functions, Azure Functions, Cloudflare Workers.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> OS config is hidden from you in FaaS. You can pick a runtime version, but you don't SSH into a machine.</p>
+        <p><span class="wa-letter">C.</span> You never see the hardware. It's shared infrastructure you don't manage or know the specs of.</p>
+        <p><span class="wa-letter">D.</span> Auto-scaling is a FaaS <em>feature</em>, but it's the platform doing it, not you. You don't write "scale from 1 to 1000 instances", that's already happening automatically.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Scaling is a selling point of FaaS, so students assume they control it. But that's exactly what the platform abstracts away. You don't say "scale me now", the platform reacts to incoming requests.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> FaaS = your code + their everything. You control the function body, nothing else.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q14" data-correct="D">
+    <div class="qcard-head"><div class="qnum">QUESTION 14</div><div class="qtopic">Licensing (GPL)</div></div>
+    <div class="qbody">
+      <p>Startup distributes a desktop app. Chooses Library B (GPL v3) over Library A (MIT). What's the risk?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Must credit authors in marketing but can stay proprietary</span></button>
+      <button class="qopt"><span class="letter">B</span><span>May use for internal tools but must pay a fee to distribute commercially</span></button>
+      <button class="qopt"><span class="letter">C</span><span>GPL prohibits commercial use entirely</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Distributing software with GPL code requires releasing your own source under GPL</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: D · Copyleft requires GPL release of derivatives</div>
+      <div class="concept-tag">Concept: Copyleft vs permissive licenses</div>
+      <div class="explanation">
+        <p><strong>Two license families:</strong></p>
+        <p><strong>Permissive (MIT, BSD, Apache 2.0):</strong> You can do almost anything with the code, including ship it as part of a closed-source product. You must preserve the copyright notice and, for some, disclose patent terms, but you don't have to release your own source.</p>
+        <p><strong>Copyleft (GPL v2/v3, LGPL, AGPL):</strong> You can use the code, but if you <em>distribute</em> a product that includes it (or a derivative work), you must release your own source under the same license. This is "viral", your changes "catch" GPL on distribution.</p>
+        <p><strong>Applied to the startup:</strong></p>
+        <p>They're distributing a desktop app that links Library B (GPL v3). Because the app is a derivative work (GPL's definition is expansive, linking usually counts), distributing it means the ENTIRE app must be released under GPL. That means the startup has to publish their source code. For a closed-source commercial product, that's typically a deal-breaker.</p>
+        <p><strong>LGPL is a softer copyleft:</strong> dynamic linking to an LGPL library doesn't force your app to be GPL. This is why most widely-used C/C++ libraries (glibc, Qt's LGPL option) use LGPL.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Attribution-only is a <em>permissive</em> license (MIT, BSD). GPL is far stricter.</p>
+        <p><span class="wa-letter">B.</span> GPL has no fee. It's free to use commercially, the obligation is sharing source, not paying money.</p>
+        <p><span class="wa-letter">C.</span> GPL absolutely allows commercial use. Red Hat, Canonical, and many others sell GPL software. The obligation is source disclosure, not a commercial ban.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> "GPL = no commercial" is a persistent myth. GPL explicitly permits commercial distribution, it just requires your derivative to also be GPL (and thus source-available). Many sell GPL software commercially.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> GPL = copyleft = source must be released on distribution. MIT = permissive = do almost anything. Apache = permissive + explicit patent grant.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q15" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 15</div><div class="qtopic">Nielsen Heuristic</div></div>
+    <div class="qbody">
+      <p>To scale a recipe, user types target serving count but can't see original serving size, they must remember it from a previous screen. Which heuristic is violated?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>H6 Recognition Rather Than Recall, display original serving size on the scaling screen</span></button>
+      <button class="qopt"><span class="letter">B</span><span>H3 User Control and Freedom, add Undo</span></button>
+      <button class="qopt"><span class="letter">C</span><span>H5 Error Prevention, validate positive integers</span></button>
+      <button class="qopt"><span class="letter">D</span><span>H2 Match with real world, use natural language</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · H6 Recognition rather than Recall</div>
+      <div class="concept-tag">Concept: Nielsen's 10 usability heuristics</div>
+      <div class="explanation">
+        <p><strong>The failure:</strong></p>
+        <p>User must remember "this recipe serves 4 people" from a previous screen in order to type in a scaled target. That's a recall task, actively retrieving information from short-term memory. Short-term memory is limited (Miller's 7±2, often less under cognitive load). Forcing users to remember things between screens is a known cause of errors and friction.</p>
+        <p><strong>Recognition vs recall:</strong></p>
+        <ul>
+          <li><strong>Recognition:</strong> "Is this it?" You're given the info and identify it. Easy.</li>
+          <li><strong>Recall:</strong> "What was it?" You must pull from memory unprompted. Hard.</li>
+        </ul>
+        <p>H6 says: make objects, actions, and options visible. Don't make users remember information from one part of the interface to another. Good UIs <em>show</em> context.</p>
+        <p><strong>The fix:</strong> On the scaling screen, display "Original recipe: serves 4". Now the user just looks, no memory required.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> H3 is about undo/cancel/back out of mistakes. No mistake has been made yet, this is about memory load, not reversibility.</p>
+        <p><span class="wa-letter">C.</span> H5 is about designing to prevent invalid input (validation, disabling impossible options). Input validation is separate from displaying context.</p>
+        <p><span class="wa-letter">D.</span> H2 Match with the Real World is about using the user's vocabulary and conventions. Not relevant, the issue isn't jargon or metaphor.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> Students see a form input and default to "validate the input = H5 Error Prevention." But validation doesn't solve the memory problem. Even with perfect validation, the user still has to remember the original.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> If the user has to "remember from another screen", it's H6 Recognition Rather Than Recall. Show the info where they need it.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q16" data-correct="C">
+    <div class="qcard-head"><div class="qnum">QUESTION 16</div><div class="qtopic">POUR Accessibility</div></div>
+    <div class="qbody">
+      <p>Difficulty shown as green/yellow/red dots with no text or shape. Which POUR principle is violated?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Operable, motor-impaired users can't interact</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Robust, renders differently across browsers</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Perceivable, colorblind users can't distinguish levels from color alone</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Understandable, color carries different cultural meanings</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: C · Perceivable</div>
+      <div class="concept-tag">Concept: POUR, color must not be the sole cue</div>
+      <div class="explanation">
+        <p><strong>POUR quick refresher:</strong></p>
+        <ul>
+          <li><strong>Perceivable:</strong> Users can sense the info. Works with screen readers, colorblindness, low vision, hearing loss.</li>
+          <li><strong>Operable:</strong> Users can interact. Keyboard-only, no time limits, no seizure triggers.</li>
+          <li><strong>Understandable:</strong> Content and operation are clear. Readable language, predictable behavior.</li>
+          <li><strong>Robust:</strong> Works with current and future assistive tech. Semantic HTML, valid markup.</li>
+        </ul>
+        <p><strong>Applied here:</strong></p>
+        <p>Red/yellow/green with no text or shape means someone with red-green colorblindness (about 1 in 12 men) literally cannot perceive the difference. A screen reader sees "dot, dot, dot" because color isn't announced, the info is invisible to blind users too.</p>
+        <p>This violates "Perceivable", specifically WCAG Success Criterion 1.4.1 "Use of Color": color must not be the only visual means of conveying information.</p>
+        <p><strong>Fix:</strong> Pair each dot with a label ("Easy", "Medium", "Hard") or a shape (circle, triangle, square) or an icon. Add <code>aria-label</code> for screen readers.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Operable is about physical interaction (keyboard, timing, motion). Viewing a difficulty dot doesn't require motor control, it requires SEEING.</p>
+        <p><span class="wa-letter">B.</span> Robust is about rendering across browsers and assistive tools. Cross-browser consistency isn't the issue here.</p>
+        <p><span class="wa-letter">D.</span> Cultural color meaning (red = danger in some cultures, good luck in others) is real but secondary. Colorblindness is the universal, primary accessibility failure.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Cultural-meaning concerns feel deep and global, so students pick it. But POUR's Perceivable is more specific, color alone fails perception for colorblind and blind users, no matter the culture.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Color alone as a signal = Perceivable violation. Always pair color with text, shape, or pattern.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q17" data-correct="A">
+    <div class="qcard-head"><div class="qnum">QUESTION 17</div><div class="qtopic">Event Registration</div></div>
+    <div class="qbody">
+      <pre><code>submitButton.setOnAction(event -&gt; {
+    System.out.println("Submitted");
+});
+System.out.println("Button registered");</code></pre>
+      <p>In what order do the prints appear?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>"Button registered" first, "Submitted" when user clicks, callback fires via event loop</span></button>
+      <button class="qopt"><span class="letter">B</span><span>"Submitted" first, callback runs immediately</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Both simultaneously on separate threads</span></button>
+      <button class="qopt"><span class="letter">D</span><span>"Button registered" first, then "Submitted" immediately on same call stack</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: A · Registered first, fired later via event loop</div>
+      <div class="concept-tag">Concept: Callback registration vs invocation</div>
+      <div class="explanation">
+        <p><strong>The fundamental distinction:</strong></p>
+        <p>A callback is a <em>function-valued argument</em> you hand to some system, saying "please call this later when something happens." Registration and invocation are two different events, separated in time.</p>
+        <p><strong>Line-by-line:</strong></p>
+        <p>1. <code>submitButton.setOnAction(event -&gt; { ... })</code> takes the lambda and <em>stores</em> it in the button as its action handler. The lambda body does NOT run here. <code>setOnAction</code> is just a setter. Execution is fast.</p>
+        <p>2. <code>System.out.println("Button registered")</code> runs immediately after.</p>
+        <p>3. Sometime later, user clicks the button. The FX event loop receives a click event, looks up the button's onAction handler, and invokes the lambda. "Submitted" prints.</p>
+        <p><strong>Mental model:</strong> <code>setOnAction</code> is like telling someone, "when the phone rings, pick it up." You're giving instructions for later, not picking up the phone now. The ring (click) happens when it happens.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">B.</span> Callbacks don't auto-execute on registration. The whole point: they run in response to events, not at definition time.</p>
+        <p><span class="wa-letter">C.</span> Both happen on the FX thread (the only thread JavaFX UI uses). There's no parallelism, and the callback certainly doesn't run "simultaneously" with its own registration.</p>
+        <p><span class="wa-letter">D.</span> If the lambda ran immediately on the same call stack, you'd see "Submitted" before "Button registered", which contradicts the order stated. Also, no click has happened yet, so nothing can trigger the callback.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Students read "top to bottom" code and assume "Button registered" prints, then the lambda fires. They forget that the lambda needs a USER ACTION (click) to trigger. Without a click, the lambda just sits there.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> <code>setOnAction</code> stores the handler; the event loop invokes it later when the click arrives. Registration ≠ invocation.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q18" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 18</div><div class="qtopic">MVC Responsibility</div></div>
+    <div class="qbody">
+      <p>Version A's handler iterates ingredients and calls <code>ing.scale(factor)</code>. Version B's handler calls <code>model.scale(servings)</code>. Which follows MVC better?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Version A, Controller should drive iteration</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Version B, scaling belongs in the Model; Controller delegates</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Version A, Controller does all computation to keep Model simple</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Version B, because of bidirectional binding</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Model owns the operation</div>
+      <div class="concept-tag">Concept: MVC, separation of concerns</div>
+      <div class="explanation">
+        <p><strong>MVC responsibilities in one line each:</strong></p>
+        <ul>
+          <li><strong>Model:</strong> business data and rules. Doesn't know about UI at all.</li>
+          <li><strong>View:</strong> visual presentation. Shows what the Model says.</li>
+          <li><strong>Controller:</strong> glue. Takes user input, tells Model to do stuff, tells View to refresh.</li>
+        </ul>
+        <p><strong>Version A's mistake:</strong></p>
+        <p>The Controller is iterating the recipe's ingredients and calling <code>.scale()</code> on each one. That's business logic in the Controller. Now the scaling rule is tied to the UI, if you want to scale a recipe without a GUI (batch import, CLI tool, automated test), you have to reimplement the loop. The Model is a passive data bag, which means every consumer has to understand its internals.</p>
+        <p><strong>Version B's approach:</strong></p>
+        <p>The Controller forwards the intent, "scale to N servings." The Model's <code>scale(servings)</code> method encapsulates the logic, compute the factor, iterate ingredients, update each one. Controller is dumb glue. Benefits:</p>
+        <ul>
+          <li>Model is reusable (CLI, tests, other UIs) without touching Controller.</li>
+          <li>Model is unit-testable without booting the UI.</li>
+          <li>If scaling logic changes (round to nice fractions, respect units), one place to update.</li>
+        </ul>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Controller should NOT drive business iteration. Its job is to route input and refresh output, not do the work.</p>
+        <p><span class="wa-letter">C.</span> "Keep Model simple by putting logic in Controller" is the OPPOSITE of MVC. The Model is where logic lives; the Controller should be simple.</p>
+        <p><span class="wa-letter">D.</span> Bidirectional binding is an MVVM feature, not MVC, and not the reason B is correct. B is correct because of responsibility placement.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> Students see a fat Controller doing "real work" and think that's the Controller's job. It's not. Business logic belongs in the Model. Fat Controllers are a classic MVC anti-pattern.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> If the Controller is doing anything a CLI couldn't also do, that logic should be in the Model.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q19" data-correct="D">
+    <div class="qcard-head"><div class="qnum">QUESTION 19</div><div class="qtopic">MVVM Testing</div></div>
+    <div class="qbody">
+      <p>A test sets a ViewModel property and verifies the result without simulating a button click or starting the UI. Why does this work?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>TestFX intercepts ViewModel changes automatically</span></button>
+      <button class="qopt"><span class="letter">B</span><span>The test bypasses the ViewModel and calls Recipe.scale() directly</span></button>
+      <button class="qopt"><span class="letter">C</span><span>JavaFX property bindings are lazy</span></button>
+      <button class="qopt"><span class="letter">D</span><span>ViewModel exposes observable properties; it holds no reference to the View</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: D · ViewModel is View-agnostic</div>
+      <div class="concept-tag">Concept: MVVM, testability through decoupling</div>
+      <div class="explanation">
+        <p><strong>MVVM vs MVC quick distinction:</strong></p>
+        <p>In MVC, the Controller mediates and has direct references to Model and View. In MVVM, the ViewModel exposes observable <em>properties</em>. The View binds to those properties. The ViewModel has NO reference back to the View, it doesn't know the View exists.</p>
+        <p><strong>Why that matters for testing:</strong></p>
+        <p>Because the ViewModel only reads and writes observable data (properties, bindings), a test can:</p>
+        <ol>
+          <li>Instantiate the ViewModel (possibly with mocked services).</li>
+          <li>Set input properties: <code>vm.servingsProperty().set(8);</code></li>
+          <li>Read output properties: <code>assertEquals(expected, vm.scaledIngredientsProperty().get());</code></li>
+        </ol>
+        <p>No window. No button clicks. No Stage.show(). No TestFX robot. Just JUnit and method calls. That's the MVVM testability payoff, the ViewModel is a <em>pure</em> component that can be exercised like any other POJO.</p>
+        <p><strong>Architectural contrast:</strong></p>
+        <p>In MVC, to test controller logic triggered by a button, you typically need TestFX to simulate the click. MVVM skips that layer, you test the state machine directly.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> TestFX is a UI-level test robot, it simulates clicks, types text, queries widgets. It doesn't "automatically intercept" ViewModel changes. The whole point of MVVM tests is that you DON'T need TestFX.</p>
+        <p><span class="wa-letter">B.</span> The test explicitly uses the ViewModel (sets a property on it). Not bypassing. The reason it works is "VM is testable by itself", not "going around the VM."</p>
+        <p><span class="wa-letter">C.</span> Laziness isn't relevant, and JavaFX property bindings actually update eagerly when their inputs change (not lazy in the FP sense).</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> TestFX is a real tool students hear about, so they associate it with UI testing. But MVVM testability is about NOT needing TestFX. If your test mentions TestFX, you're probably testing MVC's View-Controller wiring, not MVVM's state logic.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> MVVM ViewModel = testable without starting the UI. Key property: "ViewModel doesn't reference the View."</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q20" data-correct="D">
+    <div class="qcard-head"><div class="qnum">QUESTION 20</div><div class="qtopic">Race Condition</div></div>
+    <div class="qbody">
+      <p>Ten threads each call <code>registerDevice()</code> which does <code>deviceCount++</code>. Why might <code>getDeviceCount()</code> return less than 10?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>int not valid for shared mutable fields</span></button>
+      <button class="qopt"><span class="letter">B</span><span>int reads are atomic, must be a CPU cache visibility issue</span></button>
+      <button class="qopt"><span class="letter">C</span><span>JVM rounds down concurrent increments for performance</span></button>
+      <button class="qopt"><span class="letter">D</span><span>deviceCount++ is read-modify-write, threads may read the same stale value</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: D · Non-atomic increment</div>
+      <div class="concept-tag">Concept: Atomicity, race condition on i++</div>
+      <div class="explanation">
+        <p><strong>Why <code>count++</code> is not atomic:</strong></p>
+        <p>Even though you write it as one character (well, two), <code>count++</code> compiles to THREE JVM operations:</p>
+        <ol>
+          <li><strong>Read</strong> current value of <code>count</code> into a register.</li>
+          <li><strong>Add</strong> 1 to the register.</li>
+          <li><strong>Write</strong> result back to <code>count</code>.</li>
+        </ol>
+        <p>Between steps, another thread can preempt. Picture two threads running simultaneously with <code>count</code> initially at 5:</p>
+        <pre><code>Thread A reads count = 5
+Thread B reads count = 5   ← both saw the same "before" value
+Thread A computes 5 + 1 = 6
+Thread B computes 5 + 1 = 6
+Thread A writes 6
+Thread B writes 6          ← final value 6, should be 7</code></pre>
+        <p>One increment is lost. With 10 threads, this can happen multiple times, ending up with any value from (theoretically) 1 to 10.</p>
+        <p><strong>The fix, three options:</strong></p>
+        <ul>
+          <li><code>AtomicInteger</code>, use <code>count.incrementAndGet()</code>, CAS-backed, lock-free, atomic.</li>
+          <li><code>synchronized</code>, wrap the increment in a synchronized block to serialize access.</li>
+          <li><code>Lock</code>, use <code>ReentrantLock</code> for more control.</li>
+        </ul>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> <code>int</code> is fine as a shared field type. The issue is the <em>operation</em> not being atomic, not the type.</p>
+        <p><span class="wa-letter">B.</span> Reads of int are atomic (in Java's memory model for 32-bit types). Visibility issues exist too, but the primary failure here is atomicity. Even with perfect cache coherence, the read-modify-write pattern still interleaves.</p>
+        <p><span class="wa-letter">C.</span> Fabricated. JVM doesn't "round down" anything. Increments that race are lost due to overwrites.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, B.</strong> Visibility (one thread sees stale cache value from another core) IS a real concurrency issue, but it's separate from atomicity. Memory fence/volatile solves visibility, they don't solve the read-modify-write race. Students confuse the two.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> <code>i++</code> = three ops = not atomic. Every time you see unsynchronized increment across threads, it's a race.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q21" data-correct="C">
+    <div class="qcard-head"><div class="qnum">QUESTION 21</div><div class="qtopic">Deadlock</div></div>
+    <div class="qbody">
+      <p>Thread A: <code>synchronized(room) { synchronized(device) {...} }</code>. Thread B: <code>synchronized(device) { synchronized(room) {...} }</code>. What can happen?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>B completes first due to less contention</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Both proceed normally, different objects don't interact</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Deadlock: A holds room waiting for device, B holds device waiting for room</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Race condition corrupts device state</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: C · Deadlock from inconsistent lock ordering</div>
+      <div class="concept-tag">Concept: Classic deadlock scenario</div>
+      <div class="explanation">
+        <p><strong>The deadlock recipe (four conditions, all met):</strong></p>
+        <ol>
+          <li><strong>Mutual exclusion:</strong> Each lock held by one thread at a time. ✓</li>
+          <li><strong>Hold and wait:</strong> Threads hold one lock while trying to acquire another. ✓</li>
+          <li><strong>No preemption:</strong> Locks can't be forcibly taken away. ✓</li>
+          <li><strong>Circular wait:</strong> A waits for a lock B holds; B waits for a lock A holds. ✓</li>
+        </ol>
+        <p><strong>The interleaving that causes it:</strong></p>
+        <pre><code>Thread A: acquire lock on room     ✓
+Thread B: acquire lock on device   ✓
+Thread A: try to acquire device    [blocked, B has it]
+Thread B: try to acquire room      [blocked, A has it]
+                                   [forever]</code></pre>
+        <p>Neither thread can make progress. They're both waiting on each other. Program doesn't crash, it HANGS.</p>
+        <p><strong>The standard fix, lock ordering:</strong></p>
+        <p>Impose a global rule: always acquire locks in the same order. "Always acquire <code>room</code> before <code>device</code>, everywhere." If both threads follow this, the circular wait can't form.</p>
+        <pre><code><span class="cmt">// Both threads use same order:</span>
+<span class="kw">synchronized</span>(room) {
+    <span class="kw">synchronized</span>(device) { ... }
+}</code></pre>
+        <p>Other fixes: try-lock with timeout, single coarse-grained lock, or use higher-level concurrent structures.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> Contention level doesn't determine completion order, and deadlock means neither completes. Misreads the situation.</p>
+        <p><span class="wa-letter">B.</span> Locks on different objects would be independent IF each thread only held one at a time. Issue is both threads try to hold BOTH. Independence breaks down.</p>
+        <p><span class="wa-letter">D.</span> Race condition = both proceed and produce wrong data. Deadlock = neither proceeds at all. This is deadlock, not a race.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, B.</strong> Students think "synchronized on different objects = no interaction." Normally true! The twist: each thread tries to hold BOTH at the same time. It's the ordering mismatch, not the objects, that creates the deadlock.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Nested <code>synchronized</code> on two objects acquired in different orders = deadlock. Fix with consistent lock ordering.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q22" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 22</div><div class="qtopic">FX Thread Blocking</div></div>
+    <div class="qbody">
+      <p>A button handler does a 2-second database search directly. What happens?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Runs in parallel on a JavaFX-created thread</span></button>
+      <button class="qopt"><span class="letter">B</span><span>UI freezes for 2 seconds; FX thread is blocked</span></button>
+      <button class="qopt"><span class="letter">C</span><span>JavaFX auto-moves slow operations to a background thread</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Search completes immediately, JavaFX caches results</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · UI freezes</div>
+      <div class="concept-tag">Concept: JavaFX single-threaded UI</div>
+      <div class="explanation">
+        <p><strong>How the FX Application Thread works:</strong></p>
+        <p>JavaFX uses one thread, the FX Application Thread, for every UI-related thing: rendering frames, dispatching events, processing animations, running handlers. Event handlers run ON this thread. If a handler takes 2 seconds, the thread is busy for 2 seconds. During those 2 seconds:</p>
+        <ul>
+          <li>No new frames are rendered, the window appears frozen.</li>
+          <li>No other events are processed, clicks, key presses, hover, all queued up.</li>
+          <li>No animations advance.</li>
+          <li>On some OSes, you get "Application not responding" after a few seconds.</li>
+        </ul>
+        <p><strong>Why this is a common bug:</strong></p>
+        <p>Students write handlers like they're plain methods, "when the button is clicked, do the thing." They forget the handler runs on the FX thread. If the "thing" involves I/O, network, DB, file access, heavy computation, the UI freezes.</p>
+        <p><strong>The fix, 3 rules for JavaFX:</strong></p>
+        <ol>
+          <li>UI touches happen ONLY on the FX thread.</li>
+          <li>Long operations happen OFF the FX thread (use <code>Task</code>, a background Executor, or <code>BackgroundTaskRunner</code>).</li>
+          <li>After background work completes, post the UI update back to the FX thread via <code>Platform.runLater()</code> (or use BackgroundTaskRunner's onSuccess which does this for you).</li>
+        </ol>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> JavaFX doesn't magically create background threads for your handler. The handler runs on whatever thread calls it, which is the FX thread.</p>
+        <p><span class="wa-letter">C.</span> Wishful thinking. JavaFX never moves your code off the FX thread unless you explicitly ask.</p>
+        <p><span class="wa-letter">D.</span> There's no "JavaFX cache" for arbitrary DB queries. Even if there were, the first call would still freeze.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, C.</strong> The "framework handles it for me" assumption. JavaFX is notably hands-off about threading, it gives you the primitives but doesn't auto-background anything.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Any slow operation in a handler freezes the UI. Never do I/O, network, or DB directly on the FX thread.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q23" data-correct="C">
+    <div class="qcard-head"><div class="qnum">QUESTION 23</div><div class="qtopic">onSuccess Callback</div></div>
+    <div class="qbody">
+      <p>In <code>BackgroundTaskRunner</code>, <code>onSuccess</code> always runs on the FX thread, not the background thread. Why?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>FX thread is faster for processing data</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Background threads are killed immediately after the callable finishes</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Running onSuccess on the FX thread lets the callback update the UI</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Prevents the callable from being cancelled mid-execution</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: C · Safe UI updates</div>
+      <div class="concept-tag">Concept: FX thread rules · UI updates must be on FX</div>
+      <div class="explanation">
+        <p><strong>The rule:</strong></p>
+        <p>In JavaFX, touching a Node (changing label text, updating a progress bar, swapping images) from a thread other than the FX Application Thread throws <code>IllegalStateException</code>. The restriction isn't arbitrary, the scene graph isn't thread-safe, and allowing background threads to mutate it would corrupt state or trigger visual glitches.</p>
+        <p><strong>What BackgroundTaskRunner does:</strong></p>
+        <pre><code><span class="typ">BackgroundTaskRunner</span>.<span class="fn">run</span>(
+    () -&gt; doSlowWork(),          <span class="cmt">// runs on a background thread</span>
+    result -&gt; updateUI(result),  <span class="cmt">// onSuccess, runs on FX thread</span>
+    err -&gt; showError(err)        <span class="cmt">// onError, also on FX thread</span>
+);</code></pre>
+        <p>Internally, the callable runs off-thread (so UI stays responsive). When it completes, the runner posts the onSuccess callback back to the FX thread (via <code>Platform.runLater()</code>) before invoking it with the result.</p>
+        <p>Best of both worlds: slow work doesn't freeze the UI, but the callback can safely do things like <code>label.setText(result)</code>.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> FX thread isn't "faster", it's <em>required</em> for UI ops. The FX thread is actually a bottleneck; you want to do as little as possible on it.</p>
+        <p><span class="wa-letter">B.</span> Background threads aren't immediately killed. Thread pools keep threads alive for reuse. Lifecycle isn't the reason.</p>
+        <p><span class="wa-letter">D.</span> Cancellation has nothing to do with which thread onSuccess runs on. The callable's cancellation state is checked before the success path fires.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> "FX thread is faster" is a persistent misconception. The FX thread is actually <em>heavily loaded</em> already (rendering, events), so you use it sparingly. The reason onSuccess runs there is access rules, not speed.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Any code that updates UI widgets must run on the FX thread. BackgroundTaskRunner.onSuccess is on FX so your UI updates are safe.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q24" data-correct="B">
+    <div class="qcard-head"><div class="qnum">QUESTION 24</div><div class="qtopic">Execution Order</div></div>
+    <div class="qbody">
+      <pre><code>BackgroundTaskRunner.run(
+    () -&gt; loadRecipes(),            // 2 seconds
+    recipes -&gt; showRecipes(recipes),
+    error   -&gt; showError(error)
+);
+log("Ready");</code></pre>
+      <p>Assuming success, in what order do things happen?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>loadRecipes → showRecipes → "Ready", all on FX thread in sequence</span></button>
+      <button class="qopt"><span class="letter">B</span><span>"Ready" on FX, then loadRecipes on bg thread, then showRecipes on FX</span></button>
+      <button class="qopt"><span class="letter">C</span><span>loadRecipes and "Ready" run simultaneously, then showRecipes</span></button>
+      <button class="qopt"><span class="letter">D</span><span>"Ready" → loadRecipes → showRecipes, all on background thread</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: B · Ready first (FX), then bg work, then FX callback</div>
+      <div class="concept-tag">Concept: Non-blocking dispatch · async scheduling</div>
+      <div class="explanation">
+        <p><strong>Trace it event by event:</strong></p>
+        <ol>
+          <li><strong>FX thread enters the handler.</strong> Hits <code>BackgroundTaskRunner.run(...)</code>.</li>
+          <li><strong><code>run()</code> is non-blocking.</strong> Queues the callable on a background thread pool and immediately returns. Nothing of <code>loadRecipes</code> has executed yet, the callable is just sitting in an executor's queue.</li>
+          <li><strong>Next line runs on FX thread: <code>log("Ready")</code>.</strong> Executes immediately because <code>run()</code> returned without blocking. "Ready" logs first.</li>
+          <li><strong>Meanwhile, on the background thread:</strong> <code>loadRecipes()</code> starts. Takes 2 seconds. The FX thread is free (handles more clicks, renders frames).</li>
+          <li><strong>loadRecipes returns its result after 2 seconds.</strong> The BackgroundTaskRunner sees success, posts <code>showRecipes(recipes)</code> back to the FX thread via <code>Platform.runLater</code>.</li>
+          <li><strong>FX thread picks up the queued task</strong> and executes <code>showRecipes(recipes)</code>.</li>
+        </ol>
+        <p>Wall-clock order: "Ready" first, then 2 seconds of quiet on the UI thread while bg thread runs, then the UI updates.</p>
+        <p><strong>Why this design matters:</strong></p>
+        <p>If <code>run()</code> blocked (option A), the UI would freeze for 2 seconds. The entire point of BackgroundTaskRunner is to AVOID blocking.</p>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> The blocking/synchronous interpretation. If it worked that way, UI would freeze for 2 seconds. The whole library exists to prevent that.</p>
+        <p><span class="wa-letter">C.</span> "loadRecipes and Ready simultaneously" isn't quite right, they run on different threads, but "Ready" completes almost immediately while loadRecipes takes 2 seconds. "Simultaneously" misses the ordering.</p>
+        <p><span class="wa-letter">D.</span> <code>log("Ready")</code> runs on whatever thread is executing the calling code (the FX thread, since this is typically in a handler). And showRecipes is posted back to FX.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, A.</strong> "Code runs top to bottom on one thread" assumption. Students forget that <code>run()</code> is async, the call returns immediately while work is still queued.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> BackgroundTaskRunner.run is non-blocking. Code after the run() call executes before the callable completes.</div>
+    </div>
+  </div>
+
+  <div class="qcard" id="q25" data-correct="C">
+    <div class="qcard-head"><div class="qnum">QUESTION 25</div><div class="qtopic">FX vs Background Threads</div></div>
+    <div class="qbody">
+      <p>Which operation works equally well on either the FX thread or a background thread?</p>
+    </div>
+    <div class="qopts">
+      <button class="qopt"><span class="letter">A</span><span>Changing GUI display between dark and light mode</span></button>
+      <button class="qopt"><span class="letter">B</span><span>Cutting power to all devices</span></button>
+      <button class="qopt"><span class="letter">C</span><span>Calling LocalDateTime.now()</span></button>
+      <button class="qopt"><span class="letter">D</span><span>Backing up all data to a server</span></button>
+    </div>
+    <button class="reveal-btn">Reveal answer</button>
+    <div class="reveal-block">
+      <div class="answer-line">Answer: C · LocalDateTime.now()</div>
+      <div class="concept-tag">Concept: FX thread rules · when it doesn't matter</div>
+      <div class="explanation">
+        <p><strong>Two rules for FX thread:</strong></p>
+        <ol>
+          <li><strong>UI updates MUST be on FX thread.</strong> Anything touching a Node or property binding visible to the UI.</li>
+          <li><strong>Slow operations MUST NOT be on FX thread.</strong> Anything that could take more than ~16ms (one frame) or blocks on I/O.</li>
+        </ol>
+        <p>An operation is "thread-neutral" only if it violates NEITHER rule: not a UI update, and not slow. Reading the clock, <code>LocalDateTime.now()</code>, is neither. Fast system call, no scene graph touching. Safe on either thread.</p>
+        <p><strong>Evaluating each option:</strong></p>
+        <ul>
+          <li><strong>A. Dark/light mode toggle, UI update.</strong> FX thread only.</li>
+          <li><strong>B. Cutting power, slow I/O</strong> (network to IoT controller). Background thread only.</li>
+          <li><strong>C. LocalDateTime.now(), fast, no UI. ✓ Thread-neutral.</strong></li>
+          <li><strong>D. Backup to server, slow network I/O.</strong> Background thread only.</li>
+        </ul>
+      </div>
+      <div class="wrong-answers">
+        <div class="wa-head">Why the others are wrong</div>
+        <p><span class="wa-letter">A.</span> UI toggle (dark/light) = mutating the scene graph. FX thread only.</p>
+        <p><span class="wa-letter">B.</span> Powering down devices likely involves network calls to each device's controller. Slow I/O, must be background.</p>
+        <p><span class="wa-letter">D.</span> Backups = lots of network I/O. Slow. Must be background.</p>
+      </div>
+      <div class="trap"><strong>Most common wrong pick, D.</strong> Backup "feels" neutral because it doesn't visibly touch UI. But anything involving a network call is slow by FX-thread standards and freezes the UI if run there.</div>
+      <div class="exam-tip"><strong>Exam tip:</strong> Thread-neutral = not a UI touch AND not slow. Clock reads, simple computation, in-memory data access all qualify.</div>
+    </div>
+  </div>
+
+  <div class="part-header">
+    <div class="eyebrow">PART II · 28 POINTS</div>
+    <h2>Case Studies</h2>
+  </div>
+
+  <div class="case" id="case1">
+    <div class="case-head">
+      <div class="case-label">CASE STUDY 1 · 10 POINTS</div>
+      <div class="case-title">SceneItAll · JavaFX Handler</div>
+    </div>
+    <div class="case-setup">
+      <p>Given the following classes:</p>
+      <pre>HouseDashboardController
+  -checkStatusButton: Button
+  -areaComboBox: ComboBox&lt;String&gt;
+  -infoLabel: Label
+  -model: Model
+  -zigbeeController: ZigbeeController
+
+Model: getArea(String) → Area
+ZigbeeController: getStatus(Area) → String
+Label: setText(String), setTextFill(Color)
+ComboBox&lt;T&gt;: getValue() → T
+Button: addEventHandler(...)</pre>
+      <p>Task: add a handler for <code>checkStatusButton</code> that asks <code>ZigbeeController</code> for the status of the area from <code>areaComboBox</code>. Display the returned string in black in <code>infoLabel</code>. If either <code>getArea()</code> or <code>getStatus()</code> throws, show a user-friendly error in red. Later tasks will also write messages (black) and errors (red) to <code>infoLabel</code>.</p>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (a), 1 pt · Which class do you modify?</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">HouseDashboardController</div>
+        <div class="concept-tag">Concept: MVC responsibilities</div>
+        <div class="explanation">
+          <p><strong>Why the Controller:</strong> The Controller's job in MVC is to connect UI widgets to business services. It's the only class here that already knows about the UI (holds refs to <code>checkStatusButton</code>, <code>areaComboBox</code>, <code>infoLabel</code>) AND knows about services (<code>model</code>, <code>zigbeeController</code>).</p>
+          <p><strong>Why not the Model or ZigbeeController:</strong> They have no reason to know about <code>infoLabel</code>. Pushing UI concerns into them would violate separation of concerns, create a dependency from Model → JavaFX, and make the Model untestable without booting the UI.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (b), 1 pt · Private helper methods</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Two helpers for reuse across later tasks</div>
+        <div class="concept-tag">Concept: DRY, plan for reuse</div>
+        <pre><code><span class="kw">private void</span> <span class="fn">showInfo</span>(<span class="typ">String</span> text) {
+    infoLabel.<span class="fn">setText</span>(text);
+    infoLabel.<span class="fn">setTextFill</span>(<span class="typ">Color</span>.BLACK);
+}
+
+<span class="kw">private void</span> <span class="fn">showError</span>(<span class="typ">String</span> text) {
+    infoLabel.<span class="fn">setText</span>(text);
+    infoLabel.<span class="fn">setTextFill</span>(<span class="typ">Color</span>.RED);
+}</code></pre>
+        <div class="explanation">
+          <p><strong>Why two helpers:</strong> The prompt tells you future tasks will also do info/error display. That's a hint, don't inline the color + text logic. Centralize it now so later tasks are one-liners.</p>
+          <p><strong>DRY benefit:</strong> If you later need to add a prefix ("ERROR: ") or log the error, you change it in one place.</p>
+          <p><strong>Private because:</strong> These are internal helpers. External callers (tests, other classes) should invoke the public handler, not these directly.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (c), 1 pt · What is T in BackgroundTaskRunner&lt;T&gt;.run()?</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">T = String</div>
+        <div class="concept-tag">Concept: Generic type inference</div>
+        <div class="explanation">
+          <p><strong>Trace it:</strong> The callable is <code>() -&gt; zigbeeController.getStatus(...)</code>. <code>getStatus(Area)</code> returns a <code>String</code>, per the given API. So the <code>Callable&lt;T&gt;</code> has T = String.</p>
+          <p>The other two arguments must match that T:</p>
+          <ul>
+            <li><code>Consumer&lt;String&gt; onSuccess</code>, consumes the returned String to display.</li>
+            <li><code>Consumer&lt;Throwable&gt; onError</code>, takes any exception thrown by the callable.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (d), 4 pts · Implementation</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Attach handler in constructor/init; call BackgroundTaskRunner inside</div>
+        <div class="concept-tag">Concept: Event handler + async work + error handling</div>
+        <pre><code>checkStatusButton.<span class="fn">addEventHandler</span>(<span class="typ">ActionEvent</span>.ACTION,
+    event -&gt; <span class="typ">BackgroundTaskRunner</span>.<span class="fn">run</span>(
+        () -&gt; zigbeeController.<span class="fn">getStatus</span>(
+                  model.<span class="fn">getArea</span>(areaComboBox.<span class="fn">getValue</span>())),
+        <span class="kw">this</span>::showInfo,
+        t -&gt; <span class="fn">showError</span>(<span class="str">"Unable to retrieve status"</span>)
+    )
+);</code></pre>
+        <div class="explanation">
+          <p><strong>Breakdown:</strong></p>
+          <p><strong>Event registration:</strong> <code>addEventHandler(ActionEvent.ACTION, handler)</code> wires the button press to the lambda. This whole call goes in the constructor or <code>initialize()</code> method.</p>
+          <p><strong>Callable (runs off FX thread):</strong> <code>() -&gt; zigbeeController.getStatus(model.getArea(areaComboBox.getValue()))</code>. Two chained calls, <code>getArea</code> to convert the combo's String to an Area, then <code>getStatus</code> to get the display string. Both can throw. Running on a background thread prevents UI freeze.</p>
+          <p><strong>onSuccess:</strong> <code>this::showInfo</code>, a method reference. The returned String is passed in, which <code>showInfo</code> displays in black. Runs on FX thread, safe to touch the label.</p>
+          <p><strong>onError:</strong> <code>t -&gt; showError("Unable to retrieve status")</code>. Any throwable from either method lands here. User gets a friendly red message, the exception object itself isn't shown (could confuse users). Also FX thread.</p>
+          <p><strong>Key pattern:</strong> The overall structure is handler → async work → onSuccess/onError with UI updates via FX. That's the pattern the rubric grades.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (e), 2 pts · Controllability &amp; Observability</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Weak controllability and weak observability; both are fixable via DI + extraction</div>
+        <div class="concept-tag">Concept: Testability, controllability and observability</div>
+        <div class="explanation">
+          <p><strong>Controllability problems (what the test can't control):</strong></p>
+          <ul>
+            <li><strong>Input comes from a GUI ComboBox widget,</strong> not a method parameter. Test has to launch a UI and manipulate the widget (TestFX) or bypass it somehow.</li>
+            <li><strong>Trigger is a button press,</strong> not a direct method call. Again requires TestFX or extraction.</li>
+            <li><strong>Depends on a real ZigbeeController,</strong> which talks to actual hardware. Test can't control what it returns without a test double.</li>
+          </ul>
+          <p><strong>Observability problem (what the test can't easily check):</strong></p>
+          <ul>
+            <li><strong>Result is a widget mutation,</strong> <code>infoLabel.setText(...)</code> and <code>setTextFill(...)</code>. Test must read back <code>infoLabel.getText()</code> and <code>getTextFill()</code> after the async work completes, requiring timing awareness.</li>
+          </ul>
+          <p><strong>Fixes:</strong></p>
+          <ol>
+            <li><strong>Dependency Injection:</strong> Constructor takes <code>ZigbeeController</code> (and Model). Test passes a Mockito mock: <code>when(mockZig.getStatus(any())).thenReturn("OK")</code>.</li>
+            <li><strong>Extract to named method:</strong> <code>public void onCheckStatus(String area)</code>. Test calls this directly, no UI, no button simulation.</li>
+            <li><strong>Observability:</strong> Use TestFX to query the widget, or expose "current status" as a ViewModel property the test can read without UI.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (f), 1 pt · Usability issue</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Color alone signals info vs error · POUR Perceivable violation</div>
+        <div class="concept-tag">Concept: Accessibility, color must not be sole cue</div>
+        <div class="explanation">
+          <p><strong>The issue:</strong> Black = info, red = error, with no text difference or shape. Colorblind users (red-green affects ~1 in 12 men) can't distinguish. Screen-reader users can't hear color.</p>
+          <p><strong>Fixes:</strong></p>
+          <ul>
+            <li>Prefix errors with "ERROR: " (or use an icon like ⚠️).</li>
+            <li>Make errors bold or italic in addition to red.</li>
+            <li>Set <code>infoLabel.setAccessibleText("Error: " + text)</code> so assistive tech announces the state.</li>
+            <li>Optionally, change the label's background or add a border in error state.</li>
+          </ul>
+          <p><strong>WCAG reference:</strong> Success Criterion 1.4.1 "Use of Color", color must not be the only visual means of conveying information.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="case" id="case2">
+    <div class="case-head">
+      <div class="case-label">CASE STUDY 2 · 12 POINTS</div>
+      <div class="case-title">The CYB Plugin · Strategy &amp; Builder</div>
+    </div>
+    <div class="case-setup">
+      <p>CookYourBooks needs multiple recipe import formats (JSON, XML, binary, OCR). The current <code>RecipeImporter</code> uses a switch over format:</p>
+      <pre><code>public Recipe importRecipe(String source, String format) {
+    switch (format) {
+        case "json":   return parseJson(source);
+        case "xml":    return parseXml(source);
+        case "binary": return parseBinary(source);
+        case "ocr":    return parseOcr(source);
+        default: throw new IllegalArgumentException("Unknown format");
+    }
+}</code></pre>
+      <p>Proposed redesign uses Strategy pattern:</p>
+      <pre><code>interface RecipeParser {
+    Recipe parse(String source);
+    boolean supports(String format);
+}</code></pre>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (a), 2 pts · SOLID violations in the switch design</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">OCP and SRP, both violated</div>
+        <div class="concept-tag">Concept: SOLID · Open-Closed &amp; Single Responsibility</div>
+        <div class="explanation">
+          <p><strong>OCP (Open/Closed Principle) violation:</strong></p>
+          <p>"Open for extension, closed for modification." Adding a new format (say, YAML) forces you to MODIFY <code>RecipeImporter</code>, edit the switch, add a case, add a parseYaml method. Every change risks breaking existing cases. The class is NOT closed to modification, it must change for every new format.</p>
+          <p>The Strategy redesign fixes this: add a new format = add a new class implementing <code>RecipeParser</code>. <code>RecipeImporter</code> itself never changes.</p>
+          <p><strong>SRP (Single Responsibility Principle) violation:</strong></p>
+          <p>"A class should have one reason to change." The current <code>RecipeImporter</code> has <em>four</em> reasons to change:</p>
+          <ul>
+            <li>JSON spec changes → edit parseJson.</li>
+            <li>XML schema changes → edit parseXml.</li>
+            <li>Binary format revision → edit parseBinary.</li>
+            <li>OCR library upgrade → edit parseOcr.</li>
+          </ul>
+          <p>Four orthogonal concerns in one class. Editing for XML risks touching JSON code. Editing for OCR risks touching binary. Each change has a larger blast radius than it should.</p>
+          <p>Strategy fixes this: each parser class has ONE responsibility. JsonRecipeParser only handles JSON.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (b), 1 pt · Arrange the redesigned body</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Order: B, D, C, A</div>
+        <div class="concept-tag">Concept: Strategy dispatch via supports() check</div>
+        <pre><code><span class="kw">return</span> parsers.<span class="fn">stream</span>()                      <span class="cmt">// B</span>
+    .<span class="fn">filter</span>(p -&gt; p.<span class="fn">supports</span>(format))        <span class="cmt">// D</span>
+    .<span class="fn">findFirst</span>().<span class="fn">orElseThrow</span>()              <span class="cmt">// C</span>
+    .<span class="fn">parse</span>(source);                          <span class="cmt">// A</span></code></pre>
+        <div class="explanation">
+          <p><strong>Flow:</strong></p>
+          <ol>
+            <li><strong>stream the parsers</strong>, turn the list of injected parsers into a stream.</li>
+            <li><strong>filter</strong>, keep only parsers whose <code>supports(format)</code> returns true.</li>
+            <li><strong>findFirst + orElseThrow</strong>, get the first match; throw NoSuchElementException if none.</li>
+            <li><strong>parse</strong>, delegate to the matched strategy.</li>
+          </ol>
+          <p><strong>Why this is nice:</strong> adding a new format means adding a new parser to the injected list. The dispatch code never changes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (c), 2 pts · Two major deficiencies in the Javadoc</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Vague pre/post-conditions · No exception/null info</div>
+        <div class="concept-tag">Concept: Specifications, restrictive/general/clear</div>
+        <div class="explanation">
+          <p>The Javadoc says <em>"Parses a recipe. @param source the data. @return the recipe"</em>. It's technically present but adds no information beyond what the method signature provides.</p>
+          <ol>
+            <li><strong>Preconditions unspecified:</strong>
+              <ul>
+                <li>Can <code>source</code> be null? If so, what happens? If not, will we throw or return null?</li>
+                <li>Can it be empty? Whitespace? Malformed?</li>
+                <li>What format does <code>source</code> represent? That's the whole question.</li>
+              </ul>
+            </li>
+            <li><strong>Postconditions and exceptions unspecified:</strong>
+              <ul>
+                <li>Can the returned Recipe be null?</li>
+                <li>Will the Recipe's fields be non-null? Title non-empty? Ingredients non-empty?</li>
+                <li>Which exception types are thrown, under what conditions? ParseException? IOException? Custom?</li>
+              </ul>
+            </li>
+          </ol>
+          <p><strong>Why this matters:</strong> A caller of <code>parse()</code> cannot write defensive code, cannot test edge cases, and cannot reason about nullability without reading the implementation. That defeats the purpose of a specification.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (d), 1 pt · Feedback to the teammate</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Be respectful AND specific</div>
+        <div class="concept-tag">Concept: Code review, HRT pillars (Humility, Respect, Trust)</div>
+        <div class="explanation">
+          <p><strong>Sample feedback:</strong></p>
+          <p>"Hey, thanks for adding documentation, great we're raising the bar on specs. A few suggestions to make this doc more useful for implementers:</p>
+          <ul>
+            <li>Could we clarify what <code>source</code> can be? Specifically, what happens on null, empty, or malformed input?</li>
+            <li>What does the method promise on success? Does it guarantee non-null Recipe? Non-empty title? Non-empty ingredients list?</li>
+            <li>Which exceptions does it throw, under what conditions? ParseException? RuntimeException? That would help callers write defensive code.</li>
+          </ul>
+          <p>Right now the doc repeats the method signature. If we tighten up those three areas, it'll be easier for me and others to use this API correctly. Happy to help draft it if useful!"</p>
+          <p><strong>Rubric:</strong> Respectful + concrete + actionable = full credit. Insulting ("this doc is useless"), vague ("needs more detail"), or empty ("looks fine") lose credit.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (e), 1 pt · LSP and OcrRecipeParser</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Subclass weakens the postcondition, LSP violation</div>
+        <div class="concept-tag">Concept: Liskov Substitution Principle</div>
+        <div class="explanation">
+          <p><strong>LSP in one sentence:</strong> A subclass (or interface implementation) must be substitutable for its parent, meaning anywhere the parent type is expected, the subclass can take its place without surprising the caller.</p>
+          <p><strong>Formal version:</strong> Subclasses may <em>strengthen</em> postconditions and <em>weaken</em> preconditions, but never the reverse.</p>
+          <p><strong>Applied to OcrRecipeParser:</strong></p>
+          <p>The interface <code>RecipeParser</code> promises "returned Recipe has non-empty ingredients." That's a postcondition. Callers rely on it, e.g., they might do <code>recipe.getIngredients().get(0)</code> without a null/empty check.</p>
+          <p>OcrRecipeParser sometimes returns a Recipe with an empty ingredients list (maybe the OCR couldn't read the ingredients section). That <em>weakens</em> the postcondition, the subclass promises LESS than the interface did. A client using the interface might crash (IndexOutOfBoundsException) when swapped onto an OcrRecipeParser, even though it was fine with JsonRecipeParser.</p>
+          <p>Substitutability is broken → LSP violation.</p>
+          <p><strong>Fixes:</strong></p>
+          <ul>
+            <li>Make OcrRecipeParser conform: throw a ParseException if ingredients can't be extracted, rather than returning empty.</li>
+            <li>OR weaken the interface contract ("may return empty ingredients") and force all callers to handle that case.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (f), 2 pts · Three test cases</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">One test per contract clause, postcondition, exception, precondition</div>
+        <div class="concept-tag">Concept: Spec-driven testing</div>
+        <div class="explanation">
+          <p><strong>Test 1, happy path (verifies postcondition):</strong></p>
+          <p>Pass well-formed source. Assert: Recipe is non-null, has a non-empty title, and a non-empty ingredients list. Confirms the positive promise of the spec.</p>
+          <p><strong>Test 2, malformed input (verifies exception behavior):</strong></p>
+          <p>Pass corrupt or truncated source. Assert: <code>ParseException</code> (or documented exception) is thrown. Use <code>assertThrows(ParseException.class, () -&gt; parser.parse(badSource))</code>.</p>
+          <p><strong>Test 3, null input (verifies precondition handling):</strong></p>
+          <p>Pass null. Assert: <code>IllegalArgumentException</code> or <code>NullPointerException</code> is thrown (both acceptable by Java convention, IAE is more informative).</p>
+          <p><strong>Why these three:</strong> Together they cover the three contract clauses (normal behavior, error behavior, input validation) with minimal overlap. Each is a reason to change of the spec, so each deserves its own test.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (g), 1 pt · Arrange the Builder calls</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Order: D, E, F, B, C, A</div>
+        <div class="concept-tag">Concept: Builder pattern, fluent API</div>
+        <pre><code><span class="typ">Recipe</span> recipe = <span class="kw">new</span> <span class="typ">RecipeBuilder</span>()             <span class="cmt">// D, start</span>
+    .<span class="fn">title</span>(<span class="str">"Chocolate Cake"</span>)                       <span class="cmt">// E, set title</span>
+    .<span class="fn">addIngredient</span>(<span class="kw">new</span> <span class="typ">MeasuredIngredient</span>(<span class="str">"flour"</span>, <span class="num">2</span>, <span class="str">"cups"</span>))  <span class="cmt">// F</span>
+    .<span class="fn">addIngredient</span>(<span class="kw">new</span> <span class="typ">MeasuredIngredient</span>(<span class="str">"sugar"</span>, <span class="num">1</span>, <span class="str">"cup"</span>))   <span class="cmt">// B</span>
+    .<span class="fn">instructions</span>(<span class="typ">List</span>.<span class="fn">of</span>(<span class="str">"Mix ingredients"</span>, <span class="str">"Bake at 350F"</span>))     <span class="cmt">// C</span>
+    .<span class="fn">build</span>();                                        <span class="cmt">// A, finish</span></code></pre>
+        <div class="explanation">
+          <p><strong>The Builder pattern:</strong> Each setter returns <code>this</code> so calls chain. Order: construct the builder, set fields in logical order, call <code>build()</code> to produce the final object.</p>
+          <p><strong>Why it's used:</strong> Lets you construct objects with many optional parameters without a giant constructor, while maintaining readability. Especially good for immutable domain objects.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Part (h), 2 pts · Problem with no-args builder()</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">No-args lets you .build() without required fields set</div>
+        <div class="concept-tag">Concept: Invariant enforcement at construction</div>
+        <div class="explanation">
+          <p><strong>The problem:</strong></p>
+          <p><code>new RecipeBuilder()</code> with no arguments creates a builder in a state where required fields haven't been set. Nothing prevents the developer from calling <code>.build()</code> immediately, producing a Recipe with a null title, empty ingredients, and null instructions. That Recipe violates its own invariants. The bug surfaces far from the construction site ("why is this Recipe's title null?") and is hard to trace back.</p>
+          <p><strong>The fix, require via constructor:</strong></p>
+          <pre><code><span class="kw">public</span> <span class="fn">RecipeBuilder</span>(<span class="typ">String</span> title) {
+    <span class="kw">if</span> (title == <span class="kw">null</span> || title.<span class="fn">isBlank</span>())
+        <span class="kw">throw new</span> <span class="typ">IllegalArgumentException</span>(<span class="str">"title required"</span>);
+    <span class="kw">this</span>.title = title;
+}</code></pre>
+          <p>Now <code>new RecipeBuilder("Chocolate Cake")</code> is the only way to construct. Title is guaranteed non-null from the start. <code>.build()</code> still validates other invariants (ingredients non-empty) before returning.</p>
+          <p><strong>Stronger version:</strong> take all required fields in the constructor, <code>new RecipeBuilder(title, ingredients)</code>. Optional fields (instructions, metadata) stay as chained setters.</p>
+          <p><strong>Why it matters:</strong> "Make illegal states unrepresentable." Enforcing invariants at construction time catches mistakes earlier and closer to the source.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="case" id="case3">
+    <div class="case-head">
+      <div class="case-label">CASE STUDY 3 · 6 POINTS</div>
+      <div class="case-title">MediQueue · Architecture Decision Record</div>
+    </div>
+    <div class="case-setup">
+      <p>Hospital patient intake system. Two options for estimated wait time:</p>
+      <ul>
+        <li><strong>Option A</strong>, Real-time estimation, each check-in triggers a live DB query</li>
+        <li><strong>Option B</strong>, Pre-computed cache, background job recomputes every 5 min; kiosks read cache</li>
+      </ul>
+      <p>Write ADR-001 with Context, Decision, Consequences (at least 2 benefits and 2 drawbacks).</p>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Full ADR answer (sample full-credit response)</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">Sample full-credit ADR, walkthrough below</div>
+        <div class="concept-tag">Concept: ADR structure, Context → Decision → Consequences</div>
+        <div class="explanation">
+          <p style="margin-top: 8px;"><strong>ADR-001, Wait Time Estimation Strategy</strong></p>
+
+          <p style="margin-top: 14px;"><strong>Context.</strong> MediQueue kiosks display estimated wait times at patient check-in. During peak hours (weekday mornings, shift handoffs), hundreds of patients may check in within a few minutes. If every check-in triggers a live DB query, the database becomes a bottleneck exactly when load is highest, potentially causing kiosk slowness or timeouts. Wait-time accuracy is desirable but not safety-critical, a slightly stale estimate (a few minutes old) is acceptable to patients and staff. An unresponsive or unavailable kiosk, however, directly harms the patient experience and can create bottlenecks in the physical intake line.</p>
+
+          <p style="margin-top: 6px;">Forces at play, <em>accuracy vs. performance</em>, <em>peak-load scalability</em>, <em>patient-facing responsiveness</em>, <em>operational simplicity</em>.</p>
+
+          <p style="margin-top: 14px;"><strong>Decision.</strong> Adopt <strong>Option B</strong>, the pre-computed cache. A background job recomputes the wait-time estimate every 5 minutes; kiosks read from the cache on each check-in. The primary architectural driver is <em>performance under peak load</em>, decoupling check-in from live computation keeps kiosks responsive even when the database is under strain.</p>
+
+          <p style="margin-top: 14px;"><strong>Consequences.</strong></p>
+          <ul style="margin-top: 6px;">
+            <li>✅ <strong>Benefit 1:</strong> Kiosks respond instantly to check-in events, no DB round-trip on the critical path. Reduced p99 latency.</li>
+            <li>✅ <strong>Benefit 2:</strong> Estimation logic is isolated in the background job, independently testable and replaceable without touching the check-in code.</li>
+            <li>⚠️ <strong>Drawback 1:</strong> Estimates may be up to ~5 minutes stale during sudden surges (mass casualty influx). Communicate to staff.</li>
+            <li>⚠️ <strong>Drawback 2:</strong> Operational complexity rises, the team must now monitor both the check-in service AND the background job (liveness, errors, stale cache alerts).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-part">
+      <div class="case-part-label">Rubric · How the 6 points are distributed</div>
+      <button class="reveal-btn">Reveal</button>
+      <div class="reveal-block">
+        <div class="answer-line">6 pt rubric breakdown</div>
+        <div class="concept-tag">Concept: ADR grading, each section earns credit independently</div>
+        <div class="explanation">
+          <ul>
+            <li><strong>Context</strong>, clearly describes the situation and forces at play, <strong>1 pt</strong>.</li>
+            <li><strong>Decision</strong>, picks one option AND justifies with at least one architectural driver from Context, <strong>1 pt</strong>. (Naming the option alone = partial; must tie to a driver.)</li>
+            <li><strong>Benefit 1</strong>, a concrete positive consequence, <strong>1 pt</strong>.</li>
+            <li><strong>Benefit 2</strong>, DISTINCT from Benefit 1, <strong>1 pt</strong>. (Two benefits that are basically the same = partial credit.)</li>
+            <li><strong>Drawback 1</strong>, a real trade-off accepted, <strong>0.5 pt</strong>.</li>
+            <li><strong>Drawback 2</strong>, DISTINCT from Drawback 1, <strong>0.5 pt</strong>.</li>
+          </ul>
+          <p><strong>Total: 6 pts.</strong></p>
+          <p><strong>Common point-losses:</strong></p>
+          <ul>
+            <li>No Context or very shallow Context (what is MediQueue, what are the forces?)</li>
+            <li>Picks an option but doesn't say WHY (missing architectural driver).</li>
+            <li>Two benefits that are paraphrases of each other ("fast" and "responsive").</li>
+            <li>Drawbacks that are benefits in disguise, or unrelated risks.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>CS3100 Final Exam Prep · Walkthrough, File 2 of 3</p>
+    <p style="margin-top: 6px;">Companion files: File 1 (Lesson) · File 3 (Study Sheet)</p>
+  </footer>
+</main>
+
+</div>
+
+<script>
+  (function() {
+    const nav = document.getElementById('q-nav');
+    for (let i = 1; i <= 25; i++) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '#q' + i;
+      a.dataset.q = i;
+      a.innerHTML = '<span><span class="num">Q' + (i < 10 ? '0' + i : i) + '</span></span><span class="checkmark">✓</span>';
+      li.appendChild(a);
+      nav.appendChild(li);
+    }
+  })();
+
+  document.querySelectorAll('.qcard').forEach(card => {
+    const correctLetter = card.dataset.correct;
+    const opts = card.querySelectorAll('.qopt');
+    const revealBtn = card.querySelector('.reveal-btn');
+    const revealBlock = card.querySelector('.reveal-block');
+
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        const letter = opt.querySelector('.letter').textContent.trim();
+        opts.forEach(o => o.classList.remove('correct', 'incorrect'));
+        if (letter === correctLetter) {
+          opt.classList.add('correct');
+        } else {
+          opt.classList.add('incorrect');
+          const correctOpt = Array.from(opts).find(o =>
+            o.querySelector('.letter').textContent.trim() === correctLetter
+          );
+          if (correctOpt) correctOpt.classList.add('correct');
+        }
+        revealBlock.classList.add('show');
+        const qid = card.id;
+        const navLink = document.querySelector('nav.sidebar a[href="#' + qid + '"]');
+        if (navLink) navLink.classList.add('answered');
+      });
+    });
+
+    if (revealBtn) {
+      revealBtn.addEventListener('click', () => {
+        revealBlock.classList.toggle('show');
+        const qid = card.id;
+        const navLink = document.querySelector('nav.sidebar a[href="#' + qid + '"]');
+        if (navLink) navLink.classList.add('answered');
+      });
+    }
+  });
+
+  document.querySelectorAll('.case-part').forEach(part => {
+    const btn = part.querySelector('.reveal-btn');
+    const block = part.querySelector('.reveal-block');
+    if (btn && block) {
+      btn.addEventListener('click', () => block.classList.toggle('show'));
+    }
+  });
+
+  document.getElementById('revealAllBtn').addEventListener('click', () => {
+    const anyHidden = Array.from(document.querySelectorAll('.reveal-block'))
+      .some(b => !b.classList.contains('show'));
+    document.querySelectorAll('.reveal-block').forEach(b => {
+      if (anyHidden) b.classList.add('show');
+      else b.classList.remove('show');
+    });
+  });
+
+  const cards = document.querySelectorAll('.qcard, .case');
+  const navLinks = document.querySelectorAll('nav.sidebar a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    cards.forEach(card => {
+      const top = card.getBoundingClientRect().top;
+      if (top < 120) current = card.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>

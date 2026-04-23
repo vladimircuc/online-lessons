@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS3100 Final Exam Prep · Study Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-panel: #111828;
+    --bg-elevated: #1a2234;
+    --border: #2a3548;
+    --border-bright: #3d4a63;
+    --text: #e4e9f2;
+    --text-dim: #8a94a8;
+    --text-muted: #5a6478;
+    --accent: #7fd4ff;
+    --accent-dim: #4a9fd4;
+    --success: #6ee7a7;
+    --warning: #fbbf24;
+    --danger: #ff7e8a;
+    --purple: #c4a3ff;
+    --code-bg: #0d1220;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  nav.sidebar {
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    padding: 32px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav.sidebar .brand {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  nav.sidebar .subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav.sidebar h2 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin: 20px 0 10px;
+    font-weight: 600;
+  }
+  nav.sidebar ol { list-style: none; counter-reset: sec; }
+  nav.sidebar li { counter-increment: sec; margin-bottom: 4px; }
+  nav.sidebar a {
+    display: block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 12.5px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  nav.sidebar a::before {
+    content: counter(sec, decimal-leading-zero);
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-right: 10px;
+  }
+  nav.sidebar a:hover {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-left-color: var(--accent);
+  }
+  main {
+    padding: 48px 56px 80px;
+    max-width: 1100px;
+  }
+  header.page-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.page-header .kicker {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  header.page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  header.page-header p {
+    color: var(--text-dim);
+    font-size: 14.5px;
+  }
+  section.card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+  section.card h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  section.card .section-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 18px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  section.card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 20px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  section.card h3:first-of-type { margin-top: 0; }
+  section.card p { color: var(--text-dim); font-size: 14px; margin-bottom: 10px; }
+  section.card p strong { color: var(--text); font-weight: 600; }
+  section.card ul { list-style: none; padding: 0; }
+  section.card ul li {
+    color: var(--text-dim);
+    font-size: 14px;
+    padding: 4px 0 4px 18px;
+    position: relative;
+  }
+  section.card ul li::before {
+    content: "›";
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  section.card ul li strong { color: var(--text); font-weight: 600; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 8px;
+    font-size: 13.5px;
+  }
+  table th, table td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table th {
+    background: var(--bg-elevated);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border-bright);
+  }
+  table th:first-child, table td:first-child {
+    padding-left: 18px;
+  }
+  table tr:last-child td { border-bottom: none; }
+  table tr:hover td { background: rgba(127, 212, 255, 0.03); }
+  code, .inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    color: var(--purple);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  pre .k { color: var(--accent); }
+  pre .s { color: var(--success); }
+  pre .c { color: var(--text-muted); font-style: italic; }
+  pre .t { color: var(--purple); }
+  pre .n { color: var(--warning); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 8px 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0; }
+  .mini {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .mini .label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .mini .title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .mini p { font-size: 13px; margin: 0; }
+  .callout {
+    border-left: 3px solid var(--warning);
+    background: rgba(251, 191, 36, 0.05);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+    font-size: 13.5px;
+    color: var(--text-dim);
+  }
+  .callout.danger { border-color: var(--danger); background: rgba(255, 126, 138, 0.05); }
+  .callout.good { border-color: var(--success); background: rgba(110, 231, 167, 0.05); }
+  .callout strong { color: var(--text); }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pill.good { background: rgba(110, 231, 167, 0.15); color: var(--success); }
+  .pill.bad { background: rgba(255, 126, 138, 0.15); color: var(--danger); }
+  .pill.mid { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+  .footer-note {
+    margin-top: 40px;
+    padding: 24px;
+    background: var(--bg-panel);
+    border: 1px dashed var(--border-bright);
+    border-radius: 10px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; color: black; }
+    .layout { grid-template-columns: 1fr; }
+    nav.sidebar { display: none; }
+    main { padding: 20px; max-width: none; }
+    section.card {
+      background: white;
+      border: 1px solid #ccc;
+      page-break-inside: avoid;
+      color: black;
+    }
+    section.card h2, section.card h3, .mini .title { color: #333; }
+    table th { background: #f0f0f0; color: #333; }
+    code, pre { background: #f8f8f8; color: #333; border-color: #ccc; }
+    .callout { background: #fafafa; }
+  }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.sidebar { position: relative; height: auto; }
+    main { padding: 24px 20px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <div class="brand">CS3100 Final Exam Prep</div>
+  <div class="subtitle">Study Sheet</div>
+
+  <h2>Language & Types</h2>
+  <ol>
+    <li><a href="#oop">Java OOP Rules</a></li>
+    <li><a href="#collections">Collections Big-O</a></li>
+    <li><a href="#nullability">Nullability</a></li>
+    <li><a href="#comparators">Comparators</a></li>
+  </ol>
+
+  <h2>Quality & Design</h2>
+  <ol>
+    <li><a href="#testing">Testing & Mockito</a></li>
+    <li><a href="#solid">SOLID</a></li>
+    <li><a href="#patterns">Strategy & Builder</a></li>
+    <li><a href="#mvc">MVC vs MVVM</a></li>
+  </ol>
+
+  <h2>Runtime & Threads</h2>
+  <ol>
+    <li><a href="#javafx">JavaFX Threading</a></li>
+    <li><a href="#concurrency">Concurrency</a></li>
+  </ol>
+
+  <h2>UX & Ops</h2>
+  <ol>
+    <li><a href="#nielsen">Nielsen's 10</a></li>
+    <li><a href="#pour">POUR</a></li>
+    <li><a href="#distributed">Distributed Fallacies</a></li>
+    <li><a href="#licensing">Licensing</a></li>
+    <li><a href="#adr">ADR Template</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="page-header">
+  <div class="kicker">File 03 · Reference</div>
+  <h1>Study Sheet</h1>
+  <p>Dense, printable reference. Everything at a glance for final-exam morning skim.</p>
+</header>
+
+<!-- ==================== 1. JAVA OOP ==================== -->
+<section class="card" id="oop">
+  <div class="section-meta">§ 01</div>
+  <h2>Java OOP Rules</h2>
+
+  <h3>Dynamic Dispatch (Instance Methods)</h3>
+  <p>Non-static method calls are dispatched on the <strong>runtime type</strong> of the object, not the declared type. Overridden methods in subclasses take over.</p>
+  <pre><span class="t">Animal</span> a = <span class="k">new</span> <span class="t">Dog</span>();
+a.speak();  <span class="c">// runs Dog.speak(), not Animal.speak()</span></pre>
+
+  <h3>Static Methods (No Dispatch)</h3>
+  <p>Static calls are resolved by the <strong>compile-time type</strong>. Subclass static methods <em>hide</em>, not override.</p>
+  <pre><span class="t">Animal</span> a = <span class="k">new</span> <span class="t">Dog</span>();
+a.taxonomy();  <span class="c">// runs Animal.taxonomy(), NOT Dog.taxonomy()</span></pre>
+
+  <h3>Field Access</h3>
+  <p>Fields also use compile-time type. Never polymorphic. Always prefer methods for overridable behavior.</p>
+
+  <h3>Casting</h3>
+  <ul>
+    <li><strong>Upcast</strong> (sub to super): implicit, always safe.</li>
+    <li><strong>Downcast</strong> (super to sub): explicit, can throw <code>ClassCastException</code>.</li>
+    <li>Use <code>instanceof</code> before downcasting, or pattern match: <code>if (a instanceof Dog d) { ... }</code>.</li>
+  </ul>
+
+  <div class="callout"><strong>Common trap:</strong> a static method called on an instance reference still resolves via the reference's declared type, not the object's runtime type.</div>
+</section>
+
+<!-- ==================== 2. COLLECTIONS ==================== -->
+<section class="card" id="collections">
+  <div class="section-meta">§ 02</div>
+  <h2>Collections Big-O</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Collection</th>
+        <th>add / put</th>
+        <th>get / contains</th>
+        <th>remove</th>
+        <th>Ordered?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ArrayList</code></td>
+        <td>O(1) amortized (end)</td>
+        <td>O(1) by index</td>
+        <td>O(n)</td>
+        <td>Insertion order</td>
+      </tr>
+      <tr>
+        <td><code>LinkedList</code></td>
+        <td>O(1) head/tail</td>
+        <td>O(n) by index</td>
+        <td>O(1) given node</td>
+        <td>Insertion order</td>
+      </tr>
+      <tr>
+        <td><code>HashMap</code></td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>None</td>
+      </tr>
+      <tr>
+        <td><code>HashSet</code></td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>None</td>
+      </tr>
+      <tr>
+        <td><code>TreeMap</code> / <code>TreeSet</code></td>
+        <td>O(log n)</td>
+        <td>O(log n)</td>
+        <td>O(log n)</td>
+        <td>Sorted by key</td>
+      </tr>
+      <tr>
+        <td><code>LinkedHashMap</code></td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>O(1) avg</td>
+        <td>Insertion order</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><strong>Gotcha:</strong> <code>ArrayList.remove(int index)</code> vs <code>.remove(Object o)</code>. Calling <code>.remove(1)</code> on <code>ArrayList&lt;Integer&gt;</code> removes by index, not value. Use <code>.remove(Integer.valueOf(1))</code> to remove by value.</div>
+
+  <h3>Picking the Right One</h3>
+  <ul>
+    <li>Need fast index access? <code>ArrayList</code>.</li>
+    <li>Frequent head/tail ops (queue, deque)? <code>ArrayDeque</code> or <code>LinkedList</code>.</li>
+    <li>Membership tests without order? <code>HashSet</code>.</li>
+    <li>Key-value, order doesn't matter? <code>HashMap</code>.</li>
+    <li>Need sorted iteration? <code>TreeMap</code> / <code>TreeSet</code>.</li>
+  </ul>
+</section>
+
+<!-- ==================== 3. NULLABILITY ==================== -->
+<section class="card" id="nullability">
+  <div class="section-meta">§ 03</div>
+  <h2>Nullability Annotations</h2>
+
+  <h3>The Rule With <code>@NullMarked</code></h3>
+  <p>When a package or class is <code>@NullMarked</code>, <strong>every reference is non-null by default</strong>. You must explicitly mark nullable ones.</p>
+  <pre><span class="n">@NullMarked</span>
+<span class="k">package</span> com.example.app;
+
+<span class="c">// inside this package:</span>
+<span class="t">String</span> name;              <span class="c">// non-null (guaranteed)</span>
+<span class="n">@Nullable</span> <span class="t">String</span> middle; <span class="c">// may be null</span></pre>
+
+  <h3>Quick Rules</h3>
+  <ul>
+    <li><strong>Parameters:</strong> if unmarked and package is <code>@NullMarked</code>, you <em>cannot</em> pass <code>null</code>.</li>
+    <li><strong>Returns:</strong> if unmarked and package is <code>@NullMarked</code>, caller doesn't need to null-check.</li>
+    <li><strong>Fields:</strong> same rules. Non-null fields must be initialized before first read.</li>
+    <li><code>@Nullable</code> on a return means the caller <strong>must</strong> handle <code>null</code>.</li>
+  </ul>
+
+  <div class="callout good"><strong>Benefit:</strong> compile-time checking catches nulls before they become <code>NullPointerException</code> at runtime.</div>
+</section>
+
+<!-- ==================== 4. COMPARATORS ==================== -->
+<section class="card" id="comparators">
+  <div class="section-meta">§ 04</div>
+  <h2>Comparator Patterns</h2>
+
+  <h3>Basic Chaining</h3>
+  <pre><span class="t">Comparator</span>&lt;<span class="t">Person</span>&gt; byAgeThenName =
+    <span class="t">Comparator</span>.comparingInt(<span class="t">Person</span>::getAge)
+              .thenComparing(<span class="t">Person</span>::getName);</pre>
+
+  <h3>Reversal & Null Handling</h3>
+  <pre><span class="c">// descending by age</span>
+<span class="t">Comparator</span>.comparingInt(<span class="t">Person</span>::getAge).reversed();
+
+<span class="c">// nulls first</span>
+<span class="t">Comparator</span>.nullsFirst(<span class="t">Comparator</span>.naturalOrder());</pre>
+
+  <h3>Which Method to Use</h3>
+  <table>
+    <thead><tr><th>Use case</th><th>Method</th></tr></thead>
+    <tbody>
+      <tr><td>Key is <code>int</code></td><td><code>comparingInt</code></td></tr>
+      <tr><td>Key is <code>long</code></td><td><code>comparingLong</code></td></tr>
+      <tr><td>Key is <code>double</code></td><td><code>comparingDouble</code></td></tr>
+      <tr><td>Key is any object</td><td><code>comparing</code></td></tr>
+      <tr><td>Secondary sort</td><td><code>thenComparing</code> (or primitive variants)</td></tr>
+      <tr><td>Natural order (Comparable)</td><td><code>naturalOrder()</code></td></tr>
+      <tr><td>Reverse natural</td><td><code>reverseOrder()</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><strong>Trap:</strong> using <code>comparing(Person::getAge)</code> autoboxes every <code>int</code> to <code>Integer</code>. Prefer <code>comparingInt</code> for primitives.</div>
+</section>
+
+<!-- ==================== 5. TESTING ==================== -->
+<section class="card" id="testing">
+  <div class="section-meta">§ 05</div>
+  <h2>Testing & Mockito</h2>
+
+  <h3>Mockito Core Syntax</h3>
+  <pre><span class="c">// stubbing a return value</span>
+<span class="t">when</span>(mockRepo.findById(<span class="s">"42"</span>)).thenReturn(<span class="t">Optional</span>.of(user));
+
+<span class="c">// stubbing an exception</span>
+<span class="t">when</span>(mockRepo.findById(<span class="t">any</span>())).thenThrow(<span class="k">new</span> <span class="t">DbException</span>());
+
+<span class="c">// verifying an interaction</span>
+verify(mockRepo).save(user);
+verify(mockRepo, times(<span class="s">2</span>)).save(<span class="t">any</span>());
+verify(mockRepo, never()).delete(<span class="t">any</span>());</pre>
+
+  <h3>Testability Red Flags</h3>
+  <div class="grid-2">
+    <div class="mini">
+      <div class="label">Flag 01</div>
+      <div class="title">Static method calls</div>
+      <p>Can't mock easily. <code>LocalDateTime.now()</code> inside logic forces clock-dependent tests.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Flag 02</div>
+      <div class="title">new inside constructor</div>
+      <p>Hard-coded dependencies. No way to substitute a fake.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Flag 03</div>
+      <div class="title">Private collaborators</div>
+      <p>If a dependency is created privately and never injected, it can't be mocked.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Flag 04</div>
+      <div class="title">God methods</div>
+      <p>Long methods that do I/O, computation, and persistence can't be tested in isolation.</p>
+    </div>
+  </div>
+
+  <h3>Fix: Constructor Injection</h3>
+  <pre><span class="c">// before (hard to test)</span>
+<span class="k">class</span> <span class="t">Service</span> {
+  <span class="k">private</span> <span class="t">Repo</span> repo = <span class="k">new</span> <span class="t">Repo</span>();  <span class="c">// baked in</span>
+}
+
+<span class="c">// after (testable)</span>
+<span class="k">class</span> <span class="t">Service</span> {
+  <span class="k">private final</span> <span class="t">Repo</span> repo;
+  <span class="k">public</span> <span class="t">Service</span>(<span class="t">Repo</span> repo) { <span class="k">this</span>.repo = repo; }
+}</pre>
+</section>
+
+<!-- ==================== 6. SOLID ==================== -->
+<section class="card" id="solid">
+  <div class="section-meta">§ 06</div>
+  <h2>SOLID</h2>
+
+  <table>
+    <thead>
+      <tr><th>Letter</th><th>Principle</th><th>One-liner</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pill good">S</span></td>
+        <td>Single Responsibility</td>
+        <td>A class should have one reason to change.</td>
+      </tr>
+      <tr>
+        <td><span class="pill good">O</span></td>
+        <td>Open / Closed</td>
+        <td>Open for extension, closed for modification. Add behavior without editing existing code.</td>
+      </tr>
+      <tr>
+        <td><span class="pill good">L</span></td>
+        <td>Liskov Substitution</td>
+        <td>Subtypes must be usable wherever the supertype is expected, without breaking contracts.</td>
+      </tr>
+      <tr>
+        <td><span class="pill good">I</span></td>
+        <td>Interface Segregation</td>
+        <td>Many small, focused interfaces beat one fat interface.</td>
+      </tr>
+      <tr>
+        <td><span class="pill good">D</span></td>
+        <td>Dependency Inversion</td>
+        <td>Depend on abstractions, not concrete classes. Inject dependencies.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Classic Violations</h3>
+  <ul>
+    <li><strong>SRP violated:</strong> one class does parsing, validation, persistence, and UI.</li>
+    <li><strong>OCP violated:</strong> a <code>switch</code> on <code>type</code> that grows every time a new type is added.</li>
+    <li><strong>LSP violated:</strong> <code>Square extends Rectangle</code> where <code>setWidth</code> also changes height.</li>
+    <li><strong>ISP violated:</strong> a <code>Printer</code> interface forcing <code>fax()</code> and <code>scan()</code> on every implementation.</li>
+    <li><strong>DIP violated:</strong> a high-level class <code>new</code>-ing a concrete DB driver.</li>
+  </ul>
+</section>
+
+<!-- ==================== 7. PATTERNS ==================== -->
+<section class="card" id="patterns">
+  <div class="section-meta">§ 07</div>
+  <h2>Strategy & Builder</h2>
+
+  <h3>Strategy Pattern</h3>
+  <p>Encapsulates <strong>interchangeable algorithms</strong> behind a common interface. Lets the caller swap behavior at runtime.</p>
+  <pre><span class="k">interface</span> <span class="t">PricingStrategy</span> {
+  <span class="k">double</span> price(<span class="t">Cart</span> cart);
+}
+<span class="k">class</span> <span class="t">RegularPricing</span> <span class="k">implements</span> <span class="t">PricingStrategy</span> { ... }
+<span class="k">class</span> <span class="t">BlackFridayPricing</span> <span class="k">implements</span> <span class="t">PricingStrategy</span> { ... }
+
+<span class="k">class</span> <span class="t">Checkout</span> {
+  <span class="k">private final</span> <span class="t">PricingStrategy</span> pricing;
+  <span class="t">Checkout</span>(<span class="t">PricingStrategy</span> p) { <span class="k">this</span>.pricing = p; }
+}</pre>
+
+  <div class="callout good"><strong>When to use:</strong> you have a growing <code>if/switch</code> chain selecting between algorithm variants. Strategy turns that into polymorphism. Satisfies OCP.</div>
+
+  <h3>Builder Pattern</h3>
+  <p>Constructs objects step by step. Great for objects with many optional params or where order of setters matters.</p>
+  <pre><span class="t">Pizza</span> p = <span class="k">new</span> <span class="t">Pizza</span>.<span class="t">Builder</span>(<span class="s">"large"</span>)
+    .withCheese(<span class="s">"mozzarella"</span>)
+    .withTopping(<span class="s">"pepperoni"</span>)
+    .withTopping(<span class="s">"mushrooms"</span>)
+    .build();</pre>
+
+  <ul>
+    <li>Usually a static nested <code>Builder</code> class.</li>
+    <li>Each setter returns <code>this</code> for chaining.</li>
+    <li>Terminal <code>build()</code> returns the immutable product.</li>
+    <li>Avoid telescoping constructors: <code>new Pizza("large", "mozzarella", "pepperoni", null, null, false)</code>.</li>
+  </ul>
+</section>
+
+<!-- ==================== 8. MVC vs MVVM ==================== -->
+<section class="card" id="mvc">
+  <div class="section-meta">§ 08</div>
+  <h2>MVC vs MVVM</h2>
+
+  <table>
+    <thead>
+      <tr><th></th><th>MVC</th><th>MVVM</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Model</strong></td>
+        <td>Domain + data</td>
+        <td>Domain + data</td>
+      </tr>
+      <tr>
+        <td><strong>Middle layer</strong></td>
+        <td><em>Controller:</em> receives input, mutates model</td>
+        <td><em>ViewModel:</em> exposes observable state, commands</td>
+      </tr>
+      <tr>
+        <td><strong>View</strong></td>
+        <td>Renders model, sends events to controller</td>
+        <td>Binds declaratively to ViewModel observables</td>
+      </tr>
+      <tr>
+        <td><strong>Communication</strong></td>
+        <td>Imperative: view asks controller, controller pushes to view</td>
+        <td>Reactive: binding keeps view in sync automatically</td>
+      </tr>
+      <tr>
+        <td><strong>Testability</strong></td>
+        <td>Controller testable, view usually not</td>
+        <td>ViewModel highly testable (just data + commands, no UI)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><strong>JavaFX angle:</strong> FXML + <code>Controller</code> classes are MVC. Observable properties (<code>StringProperty</code>, <code>IntegerProperty</code>) with bindings push you toward MVVM.</div>
+</section>
+
+<!-- ==================== 9. JAVAFX THREADING ==================== -->
+<section class="card" id="javafx">
+  <div class="section-meta">§ 09</div>
+  <h2>JavaFX Threading Rules</h2>
+
+  <div class="grid-3">
+    <div class="mini">
+      <div class="label">Rule 01</div>
+      <div class="title">Only FX Thread touches UI</div>
+      <p>Any read/write of scene graph nodes must happen on the JavaFX Application Thread.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Rule 02</div>
+      <div class="title">Never block the FX Thread</div>
+      <p>Long work (I/O, sleeps, big computation) freezes the UI. Offload to background.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Rule 03</div>
+      <div class="title">Hop back with runLater</div>
+      <p>After background work finishes, publish results to UI via <code>Platform.runLater</code> or equivalent.</p>
+    </div>
+  </div>
+
+  <h3>The BackgroundTaskRunner Shape</h3>
+  <pre><span class="c">// 1. event handler fires on FX thread</span>
+button.setOnAction(e -&gt; {
+    status.setText(<span class="s">"Loading..."</span>);          <span class="c">// OK, on FX</span>
+
+    backgroundTaskRunner.run(() -&gt; {
+        <span class="c">// 2. this runs on a background thread</span>
+        <span class="t">Data</span> d = slowNetworkCall();
+        <span class="k">return</span> d;
+    }, result -&gt; {
+        <span class="c">// 3. callback runs back on FX thread</span>
+        label.setText(result.summary());      <span class="c">// OK, back on FX</span>
+    });
+});</pre>
+
+  <div class="callout danger"><strong>Wrong:</strong> calling <code>label.setText()</code> from inside the background lambda. That's a UI mutation off the FX thread, and JavaFX will throw.</div>
+
+  <div class="callout danger"><strong>Also wrong:</strong> calling <code>Thread.sleep(5000)</code> or doing blocking I/O directly in the event handler. Freezes every animation and input until it returns.</div>
+</section>
+
+<!-- ==================== 10. CONCURRENCY ==================== -->
+<section class="card" id="concurrency">
+  <div class="section-meta">§ 10</div>
+  <h2>Concurrency</h2>
+
+  <h3>Why <code>i++</code> is a Race</h3>
+  <p><code>i++</code> is not atomic. It's three steps: read <code>i</code>, add 1, write <code>i</code>. Two threads can each read the same value, both add 1, both write the same result. One increment is lost.</p>
+  <pre><span class="c">// two threads each do 1000 iterations of counter++</span>
+<span class="c">// expected: 2000</span>
+<span class="c">// actual: something less, nondeterministic</span></pre>
+
+  <h3>Fixes</h3>
+  <div class="grid-3">
+    <div class="mini">
+      <div class="label">Fix 01</div>
+      <div class="title">synchronized</div>
+      <p>Mutual exclusion on a block or method. Only one thread holds the lock at a time.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Fix 02</div>
+      <div class="title">AtomicInteger</div>
+      <p>Lock-free atomic ops like <code>incrementAndGet()</code>. Fast for simple counters.</p>
+    </div>
+    <div class="mini">
+      <div class="label">Fix 03</div>
+      <div class="title">ReentrantLock</div>
+      <p>Explicit lock/unlock. More flexible (<code>tryLock</code>, fair ordering) but requires <code>try/finally</code>.</p>
+    </div>
+  </div>
+
+  <h3>Deadlock</h3>
+  <p>Two threads hold locks the other needs, and neither releases. Classic pattern: thread A locks X then Y, thread B locks Y then X.</p>
+  <ul>
+    <li><strong>Prevent:</strong> always acquire locks in the same global order.</li>
+    <li><strong>Detect:</strong> thread dumps show blocked threads waiting on held locks.</li>
+    <li><strong>Avoid holding multiple locks</strong> when possible.</li>
+  </ul>
+
+  <h3>Visibility (happens-before)</h3>
+  <p>Without synchronization, a write on one thread may never be seen by another. Use <code>volatile</code>, <code>synchronized</code>, or <code>java.util.concurrent</code> classes to establish visibility.</p>
+</section>
+
+<!-- ==================== 11. NIELSEN ==================== -->
+<section class="card" id="nielsen">
+  <div class="section-meta">§ 11</div>
+  <h2>Nielsen's 10 Usability Heuristics</h2>
+
+  <table>
+    <thead><tr><th>#</th><th>Heuristic</th><th>One-line</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Visibility of system status</td><td>Always show what's happening (loading spinners, progress).</td></tr>
+      <tr><td>2</td><td>Match between system and real world</td><td>Use the user's language, not internal jargon.</td></tr>
+      <tr><td>3</td><td>User control and freedom</td><td>Support undo, redo, easy exits from mistakes.</td></tr>
+      <tr><td>4</td><td>Consistency and standards</td><td>Same words, same actions, same layouts across the app.</td></tr>
+      <tr><td>5</td><td>Error prevention</td><td>Design so errors are impossible or confirmed before committing.</td></tr>
+      <tr><td>6</td><td>Recognition over recall</td><td>Show options. Don't make users remember things from another screen.</td></tr>
+      <tr><td>7</td><td>Flexibility and efficiency</td><td>Shortcuts for experts, clear paths for novices.</td></tr>
+      <tr><td>8</td><td>Aesthetic and minimalist design</td><td>No clutter. Every extra element competes for attention.</td></tr>
+      <tr><td>9</td><td>Help users recover from errors</td><td>Plain-language messages, indicate the problem, suggest a fix.</td></tr>
+      <tr><td>10</td><td>Help and documentation</td><td>Searchable, task-focused, not a dump of features.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ==================== 12. POUR ==================== -->
+<section class="card" id="pour">
+  <div class="section-meta">§ 12</div>
+  <h2>POUR (WCAG Accessibility Principles)</h2>
+
+  <table>
+    <thead><tr><th>Letter</th><th>Principle</th><th>Means</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill mid">P</span></td>
+        <td>Perceivable</td>
+        <td>Content must be detectable by all senses that matter.</td>
+        <td>Alt text on images, captions on video.</td>
+      </tr>
+      <tr>
+        <td><span class="pill mid">O</span></td>
+        <td>Operable</td>
+        <td>Controls and navigation must be usable by everyone.</td>
+        <td>Keyboard-only navigation, no seizure-triggering flashes.</td>
+      </tr>
+      <tr>
+        <td><span class="pill mid">U</span></td>
+        <td>Understandable</td>
+        <td>Information and UI operation must make sense.</td>
+        <td>Clear labels, predictable behavior, plain error messages.</td>
+      </tr>
+      <tr>
+        <td><span class="pill mid">R</span></td>
+        <td>Robust</td>
+        <td>Works with current and future assistive tech.</td>
+        <td>Valid HTML, proper ARIA roles, semantic markup.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ==================== 13. DISTRIBUTED FALLACIES ==================== -->
+<section class="card" id="distributed">
+  <div class="section-meta">§ 13</div>
+  <h2>The 8 Fallacies of Distributed Computing</h2>
+
+  <p>Assumptions naive developers make that aren't true in distributed systems:</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Fallacy</th><th>Reality</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>The network is reliable</td><td>Packets drop, connections die.</td></tr>
+      <tr><td>2</td><td>Latency is zero</td><td>Round trips cost milliseconds to seconds.</td></tr>
+      <tr><td>3</td><td>Bandwidth is infinite</td><td>Pipes have limits; big payloads throttle.</td></tr>
+      <tr><td>4</td><td>The network is secure</td><td>Assume eavesdroppers and attackers. Encrypt.</td></tr>
+      <tr><td>5</td><td>Topology doesn't change</td><td>Nodes join, leave, move, reroute.</td></tr>
+      <tr><td>6</td><td>There is one administrator</td><td>Multiple orgs, different policies, different uptime.</td></tr>
+      <tr><td>7</td><td>Transport cost is zero</td><td>Serialization, encryption, routing all cost CPU and money.</td></tr>
+      <tr><td>8</td><td>The network is homogeneous</td><td>Different protocols, platforms, vendors.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout"><strong>Exam tip:</strong> if a question asks what assumption a buggy distributed design is making, it's almost always one of these 8.</div>
+</section>
+
+<!-- ==================== 14. LICENSING ==================== -->
+<section class="card" id="licensing">
+  <div class="section-meta">§ 14</div>
+  <h2>Open-Source Licensing</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>License</th>
+        <th>Copyleft?</th>
+        <th>Attribution</th>
+        <th>Commercial use</th>
+        <th>Key obligation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>MIT</strong></td>
+        <td><span class="pill good">No</span></td>
+        <td>Required</td>
+        <td>Yes</td>
+        <td>Include copyright + license text. That's it.</td>
+      </tr>
+      <tr>
+        <td><strong>Apache 2.0</strong></td>
+        <td><span class="pill good">No</span></td>
+        <td>Required</td>
+        <td>Yes</td>
+        <td>MIT-ish, plus explicit patent grant and NOTICE file.</td>
+      </tr>
+      <tr>
+        <td><strong>GPL (v2/v3)</strong></td>
+        <td><span class="pill bad">Strong</span></td>
+        <td>Required</td>
+        <td>Yes (but viral)</td>
+        <td>Any distributed derivative must also be GPL, with source available.</td>
+      </tr>
+      <tr>
+        <td><strong>LGPL</strong></td>
+        <td><span class="pill mid">Weak</span></td>
+        <td>Required</td>
+        <td>Yes</td>
+        <td>Modifications to the library are GPL, but linking apps aren't forced open.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout danger"><strong>GPL viral effect:</strong> if you ship a product that statically links GPL code, the whole product must be GPL and you must provide source. This is why companies often avoid GPL dependencies.</div>
+  <div class="callout good"><strong>Permissive (MIT/Apache):</strong> safe for closed-source products. Just credit upstream.</div>
+</section>
+
+<!-- ==================== 15. ADR ==================== -->
+<section class="card" id="adr">
+  <div class="section-meta">§ 15</div>
+  <h2>ADR (Architecture Decision Record) Template</h2>
+
+  <p>A short document capturing <strong>one</strong> architectural decision and <strong>why</strong>. Lives in version control next to the code.</p>
+
+  <h3>Skeleton</h3>
+  <pre><span class="n"># Title:</span> short noun phrase naming the decision
+
+<span class="n">## Status</span>
+proposed | accepted | deprecated | superseded by ADR-NNN
+
+<span class="n">## Context</span>
+The forces at play. What problem are we solving? What constraints exist?
+Technical, business, team, timeline. Be honest about tradeoffs.
+
+<span class="n">## Decision</span>
+What we're doing. One clear sentence, then supporting detail.
+
+<span class="n">## Consequences</span>
+What becomes easier, what becomes harder, what risks we accept,
+what we'll need to revisit.</pre>
+
+  <h3>What Makes a Good ADR</h3>
+  <ul>
+    <li><strong>Short.</strong> One page, not ten.</li>
+    <li><strong>Written at decision time,</strong> not reverse-engineered later.</li>
+    <li><strong>Records alternatives considered,</strong> not just the choice.</li>
+    <li><strong>Immutable once accepted.</strong> Supersede with a new ADR instead of editing.</li>
+    <li><strong>Numbered sequentially</strong> (ADR-001, ADR-002, ...) for easy cross-reference.</li>
+  </ul>
+
+  <div class="callout good"><strong>MediQueue-style answer pattern:</strong> state the decision, list 2-3 alternatives rejected with reasons, name concrete consequences (positive and negative).</div>
+</section>
+
+<div class="footer-note">
+  End of study sheet · CS3100 Final Exam Prep · Print or keep open for exam-day skim
+</div>
+
+</main>
+</div>
+</body>
+</html>
