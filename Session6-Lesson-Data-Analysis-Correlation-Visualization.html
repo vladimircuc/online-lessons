@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 6: Data Analysis, Correlation & Visualization</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--red:#ef4444;--orange:#f97316;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}.val{color:var(--green)}.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.tip{padding:14px 16px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(147,197,253,0.85)}
+.tip::before{content:'💡 '}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ '}
+.check-section{margin:20px 0;padding:20px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:12px}
+.check-section h3{color:var(--purple);margin-top:0}
+.q{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0}
+.q-prompt{font-size:14px;color:var(--text);margin-bottom:10px;white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.answer{display:none;margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:8px;font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.answer.show{display:block}
+.review-section{margin-top:40px;padding:24px;background:rgba(59,130,246,0.04);border:2px solid rgba(59,130,246,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0;color:var(--accent2)}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.4);color:var(--accent2)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(59,130,246,0.18);border-color:rgba(59,130,246,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.vs-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.vs-table th{padding:8px 10px;background:rgba(59,130,246,0.08);color:var(--accent);font-weight:700;border:1px solid var(--border);text-align:center}
+.vs-table td{padding:8px 10px;border:1px solid rgba(255,255,255,0.04);color:var(--dim);text-align:center;font-size:12px}
+.vs-table td:first-child{text-align:left;color:var(--text);font-weight:600}
+.scenario{background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.12);border-radius:12px;padding:20px;margin:16px 0}
+.scenario h3{margin-top:0;color:var(--accent2)}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 6 / Big Idea 2 Part 2</div>
+<h1>Data Analysis, Correlation & Visualization</h1>
+<p>How to extract information from data, what correlation actually means (and doesn't mean), how visualizations can inform or mislead, and how to handle the reading passage questions on the exam. This finishes Big Idea 2.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this lesson:</strong>
+<a href="#extract">1. Extracting Information from Data</a>
+<a href="#clean">2. Cleaning & Combining Data</a>
+<a href="#corr">3. Correlation vs Causation</a>
+<a href="#viz">4. Data Visualization & Misleading Graphs</a>
+<a href="#passage">5. Reading Passage Questions (Exam Strategy)</a>
+<a href="#review">6. End of Lesson Review (18 Questions)</a>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2 id="extract">1. Extracting Information from Data</h2>
+<p><strong>Data</strong> is raw values (numbers, text, dates). <strong>Information</strong> is what you get when you process, analyze, or interpret that data. The exam tests whether you understand the difference.</p>
+
+<div class="concept">
+<h3>Data → Processing → Information</h3>
+<pre><span class="key">Data:</span>       [85, 92, 78, 95, 88, 71, 90]
+             (just numbers, no meaning by themselves)
+
+<span class="key">Processing:</span> Compute the average
+             sum = 599, count = 7, avg = 85.6
+
+<span class="key">Information:</span> "The class average is 85.6"
+             (now it MEANS something)</pre>
+</div>
+
+<div class="concept">
+<h3>What You Can Extract</h3>
+<pre><span class="val">From a dataset, you can compute:</span>
+  - Average (mean)
+  - Minimum / Maximum
+  - Count (how many match a condition)
+  - Trends over time (increasing, decreasing, stable)
+  - Patterns (which category is most common?)
+  - Comparisons between groups
+
+<span class="val">You CANNOT determine from data alone:</span>
+  - WHY something happened (causation)
+  - What WILL happen in the future (prediction needs a model)
+  - Whether the data collection was fair/unbiased</pre>
+</div>
+
+<div class="concept">
+<h3>Large Data Sets</h3>
+<p>The exam specifically mentions working with large data sets. Key points:</p>
+<pre><span class="val">Benefits of large datasets:</span>
+  - More data → more reliable patterns
+  - Can reveal trends invisible in small samples
+  - Can be processed by computers (humans can't manually)
+
+<span class="val">Challenges:</span>
+  - May contain errors, missing values, duplicates
+  - Storage and processing require significant resources
+  - Privacy concerns when data contains PII
+  - Bias in HOW data was collected carries into results</pre>
+</div>
+
+<div class="tip"><strong>Exam pattern:</strong> "What information can be determined from this data?" questions. The answer is always something you can COMPUTE from the values. If the answer requires knowing WHY or making assumptions not in the data, it's wrong.</div>
+
+<div class="check-section">
+<h3>Quick Check: Extracting Information</h3>
+<div class="q">
+<div class="q-prompt">A dataset contains the daily high
+temperature for a city over 365 days.
+
+Which CAN be determined from this data?
+A. The hottest day of the year
+B. Why July was the hottest month
+C. Whether climate change caused the heat
+D. What the temperature will be next year</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">A. The hottest day of the year.
+
+This is a simple max operation on the data.
+
+B requires knowing WHY (causation).
+C requires scientific analysis beyond this data.
+D requires prediction, not just this year's data.
+
+The exam always asks: "can you COMPUTE this
+from the given data, or does it require
+outside information?"</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">A school collects: student name, grade level,
+GPA, and number of absences for all students.
+
+Name two pieces of information that
+can be extracted from this data.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Examples:
+1. "The average GPA for 10th graders is 3.2"
+   (filter by grade, compute average)
+
+2. "Students with fewer than 5 absences have
+    a higher average GPA than those with 10+"
+   (filter into groups, compare averages)
+
+Other valid answers:
+- Which grade level has the highest average GPA
+- The student with the most absences
+- The correlation between absences and GPA</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2 id="clean">2. Cleaning & Combining Data</h2>
+
+<div class="concept">
+<h3>Data Cleaning</h3>
+<p>Real-world data is messy. Before analyzing, you often need to clean it:</p>
+<pre><span class="key">Common problems:</span>
+  - Missing values (blank cells, null entries)
+  - Duplicates (same record appears twice)
+  - Inconsistent formatting ("USA", "US", "United States")
+  - Errors/typos (age = 999, temperature = -500°F)
+  - Outdated information
+
+<span class="key">Cleaning steps:</span>
+  - Remove or fill in missing values
+  - Remove duplicates
+  - Standardize formats
+  - Fix or remove obvious errors
+  - Validate against known constraints</pre>
+</div>
+
+<div class="concept">
+<h3>Combining Data from Multiple Sources</h3>
+<p>Merging datasets can reveal insights that neither dataset alone could show.</p>
+<pre><span class="val">Example:</span>
+  Dataset A: Student names and test scores
+  Dataset B: Student names and hours of sleep
+
+  Combined: Can now explore the RELATIONSHIP
+  between sleep and test performance.
+
+<span class="key">Challenges of combining:</span>
+  - Different formats (dates, names, units)
+  - Missing matches (student in A but not in B)
+  - Different collection methods → different biases
+  - Privacy: combining datasets can re-identify
+    people even if individual sets are anonymous</pre>
+</div>
+
+<div class="trap"><strong>Re-identification risk.</strong> Two anonymous datasets, when combined, can sometimes identify individuals. Example: a dataset of "zip code, age, gender" plus a dataset of "zip code, age, medical condition" could reveal who has which condition. The exam tests this privacy concept.</div>
+
+<div class="check-section">
+<h3>Quick Check: Data Cleaning</h3>
+<div class="q">
+<div class="q-prompt">A survey dataset has these issues:
+- 15 out of 1000 responses have blank ages
+- Some entries list "New York" and others "NY"
+- One entry has age listed as 350
+
+What cleaning steps are needed?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">1. Handle missing ages: either remove those
+   15 rows or fill in with a reasonable estimate
+
+2. Standardize location names: convert all
+   "New York" to "NY" (or vice versa) so they
+   group together in analysis
+
+3. Fix or remove the age=350 entry: this is
+   clearly an error (no human is 350 years old)
+
+All three must be done BEFORE analysis,
+otherwise results will be inaccurate.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2 id="corr">3. Correlation vs Causation</h2>
+<p>This is one of the <strong>most tested concepts</strong> on the AP CSP exam. You WILL see at least 1-2 questions on this.</p>
+
+<div class="concept">
+<h3>Correlation: Two Things Happen Together</h3>
+<pre><span class="val">Correlation</span> means two variables tend to
+change together in a pattern.
+
+<span class="key">Positive correlation:</span>
+  As one goes up, the other goes up too.
+  Example: Height and shoe size.
+  Taller people tend to have bigger feet.
+
+<span class="key">Negative correlation:</span>
+  As one goes up, the other goes down.
+  Example: Temperature and heating bill.
+  Warmer weather → lower heating costs.
+
+<span class="key">No correlation:</span>
+  No pattern between the two variables.
+  Example: Shoe size and test scores.</pre>
+</div>
+
+<div class="concept">
+<h3>Causation: One Thing CAUSES the Other</h3>
+<pre><span class="val">Causation</span> means one variable DIRECTLY
+causes the other to change.
+
+<span class="key">This is MUCH harder to prove than correlation.</span>
+
+Just because two things correlate does NOT
+mean one causes the other.</pre>
+</div>
+
+<div class="concept">
+<h3>The Classic Examples</h3>
+<pre><span class="key">Example 1: Ice cream sales and drownings</span>
+  Both increase in summer.
+  Correlation? YES.
+  Does ice cream CAUSE drowning? NO.
+  Hidden variable: HOT WEATHER causes both.
+
+<span class="key">Example 2: Shoe size and reading level in kids</span>
+  Kids with bigger feet read better.
+  Correlation? YES.
+  Do big feet CAUSE better reading? NO.
+  Hidden variable: AGE. Older kids have
+  bigger feet AND read better.
+
+<span class="key">Example 3: Smoking and lung cancer</span>
+  Smokers get lung cancer more often.
+  Correlation? YES.
+  Does smoking CAUSE lung cancer? YES.
+  (Proven through decades of controlled studies,
+  not just observational data.)</pre>
+</div>
+
+<div class="trap"><strong>The exam's favorite trap:</strong> giving you a correlation and asking which conclusion is valid. The WRONG answers will claim causation. The RIGHT answer will say something like "there is an association between X and Y" or "X and Y are correlated." If an answer says "X causes Y" based on data alone, it's almost always wrong.</div>
+
+<div class="concept">
+<h3>Confounding Variables (Lurking Variables)</h3>
+<p>A <strong>confounding variable</strong> is a hidden third factor that influences both variables, creating a false appearance of causation.</p>
+<pre><span class="val">The pattern on the exam:</span>
+  "Data shows A and B are correlated.
+   Which BEST explains this relationship?"
+
+  Wrong answer: "A causes B"
+  Wrong answer: "B causes A"
+  Right answer:  "A third variable C could
+                  influence both A and B"
+  OR
+  Right answer:  "There is a correlation but
+                  causation cannot be determined"</pre>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Correlation vs Causation</h3>
+<div class="q">
+<div class="q-prompt">A study finds that students who eat
+breakfast score higher on exams.
+
+Which conclusion is VALID?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">VALID: "There is a positive correlation
+between eating breakfast and exam scores."
+
+NOT VALID: "Eating breakfast causes higher
+exam scores."
+
+Possible confounding variables:
+- Students who eat breakfast may have more
+  stable home lives (better study habits)
+- They may be morning people (more alert)
+- Wealthier families → both better nutrition
+  AND better educational resources
+
+Correlation ≠ causation!</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">Data shows cities with more police officers
+also have higher crime rates.
+
+Does hiring police cause crime?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">No. The causation likely runs the OTHER way
+(or through a confounding variable):
+
+- Cities with HIGH CRIME hire more police
+  (crime causes more hiring, not the reverse)
+- Larger cities have both more crime AND
+  more police (population is the confounding
+  variable)
+
+This is a classic example of REVERSE CAUSATION
+and confounding variables. The data shows
+correlation, but the obvious causal conclusion
+is backwards.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<h2 id="viz">4. Data Visualization & Misleading Graphs</h2>
+
+<div class="concept">
+<h3>Why Visualize?</h3>
+<pre><span class="val">Benefits:</span>
+  - Patterns visible at a glance
+  - Easier to communicate findings
+  - Can reveal trends, outliers, clusters
+  - Accessible to non-technical audiences
+
+<span class="val">Choosing the right chart:</span>
+  Bar chart:  Compare categories
+  Line graph: Show change over time (trends)
+  Pie chart:  Show parts of a whole (proportions)
+  Scatter plot: Show relationship between 2 variables
+  Histogram:  Show distribution of values</pre>
+</div>
+
+<div class="concept">
+<h3>How Graphs Can MISLEAD</h3>
+<p>This is heavily tested. The exam will show you a graph and ask what's wrong with it.</p>
+<pre><span class="key">Trick 1: Truncated Y-axis</span>
+  Starting the y-axis at 95 instead of 0
+  makes a difference of 95→100 look HUGE.
+  A 5% increase looks like a 100% increase.
+
+<span class="key">Trick 2: Cherry-picked time range</span>
+  Showing only Jan-Mar of a stock that
+  happened to go up, ignoring the rest
+  of the year when it crashed.
+
+<span class="key">Trick 3: Manipulated scale</span>
+  Unequal intervals on the x or y axis.
+  Stretching or compressing the scale
+  to exaggerate or minimize changes.
+
+<span class="key">Trick 4: Missing context</span>
+  "Sales doubled!" (from 2 to 4)
+  Sounds impressive without knowing
+  the competitor sold 10,000.
+
+<span class="key">Trick 5: Correlation presented as causation</span>
+  Graph title says "X causes Y" when
+  the data only shows correlation.
+
+<span class="key">Trick 6: Biased sample</span>
+  Survey of only your friends about
+  "best pizza place" isn't representative.</pre>
+</div>
+
+<div class="trap"><strong>The exam question pattern:</strong> "Which of the following could be a problem with the conclusion drawn from this visualization?" Look for truncated axes, cherry-picked data, small sample sizes, or causal claims from correlational data.</div>
+
+<div class="check-section">
+<h3>Quick Check: Visualization</h3>
+<div class="q">
+<div class="q-prompt">A company's graph shows profit "soaring"
+from $1,000,000 to $1,050,000.
+The y-axis starts at $990,000.
+
+What is misleading about this graph?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">The y-axis is TRUNCATED.
+
+By starting at $990,000 instead of $0,
+the $50,000 increase (5%) looks enormous
+visually, taking up most of the chart height.
+
+If the y-axis started at $0, the increase
+would look like a tiny bump, which is more
+accurate for a 5% change.
+
+This is the #1 misleading graph trick
+on the AP exam.</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">A news article shows that a city's
+crime rate dropped 50% from 2023 to 2024.
+The data shows: 4 crimes in 2023,
+2 crimes in 2024.
+
+What's the problem?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">The sample size is too small.
+
+"50% drop" is technically true (4 → 2),
+but the numbers are so tiny that random
+variation could easily explain the change.
+
+One more crime in 2024 would make it a
+25% drop instead of 50%.
+
+Small numbers make percentages misleading.
+Always look at the RAW numbers, not just
+the percentages.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2 id="passage">5. Reading Passage Questions (Exam Strategy)</h2>
+<p>5 of the 70 MCQ come with a <strong>reading passage about a computing innovation</strong>. These aren't harder, just longer. Here's how to handle them.</p>
+
+<div class="concept">
+<h3>What These Look Like</h3>
+<p>You'll get a short paragraph (3-5 sentences) describing a computing innovation, like a fitness tracker, a recommendation algorithm, or a smart home system. Then 1-2 questions about it.</p>
+</div>
+
+<div class="concept">
+<h3>Strategy</h3>
+<pre><span class="val">1. Read the passage FIRST, not the questions.</span>
+   Understand what the innovation does before
+   looking at what they're asking.
+
+<span class="val">2. Identify the data.</span>
+   What data does it collect? How is it used?
+   Is there PII? What metadata might exist?
+
+<span class="val">3. Think about impact.</span>
+   What's the benefit? What's the concern?
+   Who benefits? Who might be harmed?
+
+<span class="val">4. Watch for correlation/causation traps.</span>
+   If the passage says "users who do X also
+   do Y," that's correlation, not causation.
+
+<span class="val">5. Eliminate obviously wrong answers.</span>
+   Usually 2 answers are clearly wrong,
+   leaving you to decide between 2 plausible ones.</pre>
+</div>
+
+<div class="scenario">
+<h3>Practice Passage</h3>
+<p style="color:var(--text);font-size:14px;line-height:1.7">A fitness app collects users' daily step counts, heart rate, sleep duration, and GPS location data. The app uses this data to provide personalized health recommendations and displays trends over time through graphs and charts. Users can share their data with friends through a social feature. The company that makes the app states in their privacy policy that anonymized user data may be shared with third-party health researchers.</p>
+</div>
+
+<div class="check-section">
+<h3>Practice: Passage Questions</h3>
+<div class="q">
+<div class="q-prompt">Based on the passage above:
+
+Which of the following is a privacy
+concern with this app?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">GPS location data is PII and could reveal
+where users live, work, and travel.
+
+Even "anonymized" data could potentially
+be re-identified when combined with other
+datasets (re-identification risk).
+
+The social sharing feature could expose
+health data to unintended audiences.
+
+Third-party sharing means users lose
+control over how their data is used.</div>
+</div>
+
+<div class="q">
+<div class="q-prompt">The app shows a graph indicating that
+users who walk 10,000+ steps per day
+have lower resting heart rates.
+
+Which conclusion is supported by this data?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">SUPPORTED: "There is a correlation between
+higher step counts and lower resting heart rate."
+
+NOT SUPPORTED: "Walking 10,000 steps per day
+causes a lower resting heart rate."
+
+Why not causation? People who walk more may
+also eat healthier, be younger, or have fewer
+health conditions. Without a controlled study,
+causation cannot be established from app data.</div>
+</div>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div class="review-section" id="review">
+<h2>End of Lesson Review</h2>
+<p style="margin-bottom:20px">Mixed from all sections. Includes passage-style questions.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+function reveal(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+
+const RQS=[
+{q:"What is the difference between\ndata and information?",a:1,o:["A. They are the same thing","B. Data is raw values, information is processed/interpreted data","C. Information is raw, data is processed","D. Data is digital, information is analog"],e:"Data = raw values (numbers, text). Information = meaningful output after processing/analyzing the data."},
+{q:"A dataset shows that cities with more\nlibraries have higher average incomes.\nWhich is a valid conclusion?",a:2,o:["A. Libraries cause higher incomes","B. Higher incomes cause more libraries","C. There is a correlation between libraries and income","D. Libraries have no relationship to income"],e:"C is the only valid conclusion from data alone. A and B claim causation. The real explanation likely involves confounding variables (wealthier cities fund both libraries and have higher-paying jobs)."},
+{q:"A graph shows Company A's stock rising\nfrom $50 to $55. The y-axis starts at $48.\nThis graph is misleading because:",a:0,o:["A. The truncated y-axis exaggerates the 10% gain","B. The stock didn't actually increase","C. The x-axis is wrong","D. Pie charts should be used instead"],e:"Starting the y-axis at $48 instead of $0 makes the $5 increase look dramatic. If the axis started at $0, the increase would look proportionally small."},
+{q:"Two anonymous datasets are combined.\nDataset 1: zip code, age, gender.\nDataset 2: zip code, age, medical condition.\nWhat is the risk?",a:1,o:["A. The datasets will be too large","B. Individuals may be re-identified despite anonymization","C. The data will become corrupted","D. No risk since both are anonymous"],e:"Combining multiple data points (zip, age, gender) can uniquely identify individuals, revealing their medical conditions. This is the re-identification problem."},
+{q:"Which is NOT a benefit of large datasets?",a:2,o:["A. More reliable patterns","B. Can reveal hidden trends","C. Guaranteed to be free of bias","D. Computers can process them quickly"],e:"Large datasets can still be biased if the data COLLECTION was biased. More data doesn't fix a flawed collection method."},
+{q:"A scatter plot shows a negative\ncorrelation between two variables.\nThis means:",a:1,o:["A. As one increases, the other increases","B. As one increases, the other decreases","C. There is no relationship","D. One causes the other to decrease"],e:"Negative correlation: one goes up, other goes down. D is wrong because correlation is not causation."},
+{q:"A survey asks 10 people their favorite\ncolor and concludes \"80% of people\nprefer blue.\" What's the problem?",a:0,o:["A. Sample size is too small to generalize","B. The survey is biased toward blue","C. 80% is too high to be real","D. Colors can't be measured"],e:"10 people is far too few to represent the general population. The result could easily change with a larger sample."},
+{q:"A fitness study finds that people who\nexercise 5+ hours/week have lower\nstress levels. A valid conclusion is:",a:2,o:["A. Exercise eliminates stress","B. Stressed people don't exercise","C. There is an association between exercise and lower stress","D. 5 hours is the optimal amount"],e:"C states an association (correlation) without claiming causation. A claims causation. B and D go beyond the data."},
+{q:"Passage: A ride-sharing app collects\npickup/dropoff locations, time of day,\nand payment info for every ride.\n\nWhich is metadata for a ride?",a:3,o:["A. The route taken during the ride","B. The conversation between driver and passenger","C. The driver's rating of the passenger","D. The timestamp and GPS coordinates of pickup"],e:"Timestamp and GPS describe properties of the ride (when and where). The route and conversation are the experience itself. The rating is feedback, not metadata about the ride data."},
+{q:"A dataset has these problems:\n- Some ages are listed as -5\n- \"Male\" and \"M\" used interchangeably\n- 50 duplicate entries\n\nWhat must happen BEFORE analysis?",a:3,o:["A. Remove only the negatives","B. Standardize only the gender field","C. Remove only duplicates","D. Fix all three issues: remove invalid ages, standardize formats, remove duplicates"],e:"ALL cleaning must happen before analysis. Any one of these issues could skew results. Cleaning is not optional."},
+{q:"A news headline says: \"Study proves\nthat coffee drinkers live longer!\"\nThe study actually found a correlation.\nWhat is wrong with the headline?",a:1,o:["A. Coffee doesn't exist","B. The headline claims causation when the study only found correlation","C. The study was about tea, not coffee","D. Living longer can't be measured"],e:"The study found correlation (coffee drinkers tend to live longer). The headline says \"proves\" causation. Confounding variables: coffee drinkers may be wealthier, have better healthcare, etc."},
+{q:"Which visualization is best for showing\nhow a population changed over 50 years?",a:1,o:["A. Pie chart","B. Line graph","C. Bar chart","D. Scatter plot"],e:"Line graph is best for showing change over TIME (trends). Pie chart shows proportions at one point. Bar chart compares categories. Scatter plot shows relationships between two variables."},
+{q:"A school collects student data:\nname, GPA, clubs, and free lunch status.\n\nUsing this data, which CANNOT be\ndetermined?",a:3,o:["A. Average GPA of students in the chess club","B. How many students receive free lunch","C. The most popular club","D. Whether joining clubs causes higher GPAs"],e:"D requires causation. The data can show correlation (club members have higher GPAs) but cannot prove clubs CAUSE higher GPAs. A, B, C are all computable from the data."},
+{q:"Passage: A smart thermostat learns\nwhen residents are home and adjusts\ntemperature automatically. It collects\ntemperature preferences, schedules,\nand motion sensor data.\n\nWhich is a beneficial effect?",a:0,o:["A. Reduced energy consumption from automatic adjustments","B. The company can sell user schedules to burglars","C. Users lose control of their thermostat","D. The device uses too much electricity"],e:"A is a clear benefit. B is criminal misuse, not a normal beneficial effect. C is the opposite of the product's goal. D contradicts the energy-saving purpose."},
+{q:"Passage (continued): The thermostat data\nshows that homes set to 72°F have lower\nenergy bills than homes set to 68°F.\n\nWhich is a valid concern about this finding?",a:2,o:["A. 72°F is always better than 68°F","B. The thermostat is broken","C. Homes set to 72°F may be newer with better insulation, making the comparison unfair","D. Temperature doesn't affect energy bills"],e:"C identifies a confounding variable (home age/insulation). The temperature setting alone might not explain the difference. A claims causation. B and D are unsupported."},
+{q:"A company combines purchase history\nwith social media data. This is\nproblematic because:",a:1,o:["A. It makes the dataset too large","B. Users may not have consented to their data being combined across platforms","C. Purchase data is always inaccurate","D. Social media doesn't contain useful data"],e:"Users consented to each platform individually, not to having their data merged. Combined data reveals much more about a person than either set alone, raising consent and privacy concerns."},
+{q:"A histogram shows test scores for\n500 students. Most scores cluster\naround 75-85. A few are below 30.\nThe low scores are called:",a:2,o:["A. Errors","B. Metadata","C. Outliers","D. Confounding variables"],e:"Outliers are data points far from the majority. They may be valid (a student who didn't study) or errors (wrong data entry). They should be investigated, not automatically removed."},
+{q:"Which is the BEST way to determine\nif a new drug actually reduces headaches\n(not just correlation)?",a:3,o:["A. Survey people who take the drug","B. Look at sales data","C. Find a correlation in existing health records","D. Conduct a controlled experiment with a placebo group"],e:"Only a controlled experiment with random assignment and a placebo can establish causation. Surveys and health records only show correlation."}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel=""><div class="rq-num">Question ${i+1} of ${RQS.length}</div><div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;});
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button><div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+function selOpt(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function chkQ(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');btn.textContent='Try Again';btn.onclick=function(){rsQ(qid,ans);};}
+function rsQ(qid,ans){const c=document.getElementById(qid);c.dataset.rev='0';c.dataset.sel='';c.querySelectorAll('.opt').forEach(o=>o.classList.remove('locked','sel','right','wrong'));c.querySelector('.expl').classList.remove('show');const b=c.querySelector('.chk');b.textContent='Check Answer';b.classList.remove('rdy');b.onclick=function(){chkQ(b,qid,ans);};}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
