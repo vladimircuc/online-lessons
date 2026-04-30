@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milestone 3 Practice Test — Solutions</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#0f1117;--bg2:#161822;--bg3:#1c1f2e;--card:#1a1d2b;--border:#2a2d3e;--text:#d4d7e5;--text2:#9498ab;--accent:#6c9bff;--green:#5ce0a8;--green-bg:rgba(92,224,168,0.08);--red:#ff6b7a;--red-bg:rgba(255,107,122,0.08);--yellow:#ffd76c;--purple:#b494f7;--orange:#ff9b5e;--code-bg:#121420;--shadow:0 4px 24px rgba(0,0,0,0.3);}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:17px;}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;overflow-x:auto;}
+.topbar .label{font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase;}
+.topbar .parts{display:flex;gap:6px;}
+.topbar .part-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.topbar .part-btn:hover{border-color:var(--accent);color:var(--text);}
+.topbar .part-btn.active{background:var(--accent);color:#0f1117;border-color:var(--accent);font-weight:600;}
+.section{display:none;max-width:860px;margin:0 auto;padding:100px 28px 80px;animation:fadeUp 0.4s ease;}
+.section.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+h1{font-family:'Source Serif 4',serif;font-size:2.5em;font-weight:700;line-height:1.2;margin-bottom:12px;}
+h1 em{font-style:italic;color:var(--accent);}
+h2{font-family:'Source Serif 4',serif;font-size:1.6em;font-weight:600;margin:44px 0 14px;line-height:1.3;}
+h3{font-size:1.12em;font-weight:600;margin:28px 0 10px;color:var(--accent);}
+p{margin:12px 0;}strong{color:var(--text);font-weight:600;}
+.subtitle{font-size:1.05em;color:var(--text2);margin-bottom:36px;line-height:1.6;}
+.session-tag{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin:24px 0;box-shadow:var(--shadow);}
+.card.green-border{border-left:3px solid var(--green);}
+.card.yellow-border{border-left:3px solid var(--yellow);}
+.card.red-border{border-left:3px solid var(--red);}
+.card.accent-border{border-left:3px solid var(--accent);}
+.card-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;}
+.card-label.green{color:var(--green);}
+.card-label.yellow{color:var(--yellow);}
+.card-label.red{color:var(--red);}
+.card-label.blue{color:var(--accent);}
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.8;overflow-x:auto;white-space:pre;color:var(--text);}
+.code-block .kw{color:var(--purple);font-weight:600;}
+.code-block .fn{color:var(--accent);}
+.code-block .str{color:var(--green);}
+.code-block .cmt{color:var(--text2);font-style:italic;}
+.code-block .num{color:var(--orange);}
+.code-block .type{color:var(--yellow);}
+code{font-family:'JetBrains Mono',monospace;background:var(--code-bg);padding:2px 7px;border-radius:4px;font-size:0.88em;color:var(--green);}
+.reveal-container{margin:20px 0;}
+.reveal-btn{background:var(--bg3);border:1px solid var(--border);color:var(--accent);padding:12px 24px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;width:100%;text-align:left;transition:all 0.2s;}
+.reveal-btn:hover{border-color:var(--accent);background:var(--bg2);}
+.reveal-content{display:none;padding:20px 24px;margin-top:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;animation:fadeUp 0.3s ease;}
+.reveal-content.show{display:block;}
+.nav-footer{display:flex;justify-content:space-between;align-items:center;margin-top:60px;padding-top:28px;border-top:1px solid var(--border);}
+.nav-footer button{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.nav-footer button:hover{border-color:var(--accent);color:var(--accent);}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0;}
+ul,ol{margin:12px 0 12px 28px;}li{margin:6px 0;}
+.text-center{text-align:center;}.mt-2{margin-top:16px;}.small{font-size:0.88em;color:var(--text2);}
+.q-num{display:inline-block;background:var(--accent);color:#0f1117;font-size:12px;font-weight:700;padding:2px 10px;border-radius:4px;margin-bottom:8px;}
+.legal{color:var(--green);font-weight:600;}.illegal{color:var(--red);font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="label">Practice Test</span>
+  <div class="parts" id="navParts"></div>
+</div>
+
+<!-- ═══════════ PART 1: MULTIPLE CHOICE ═══════════ -->
+<div class="section active" id="part1">
+  <div class="session-tag">Milestone 3 Practice Test</div>
+  <h1>Section 1: <em>Multiple Choice</em></h1>
+  <p class="subtitle">Each question MAY have multiple correct answers. Select ALL correct options. Try on paper first.</p>
+
+  <div class="card">
+    <span class="q-num">Q1</span>
+    <p><strong>Which operation has the lowest precedence?</strong></p>
+    <p>a) *A &nbsp;&nbsp; b) A.B &nbsp;&nbsp; c) A->B &nbsp;&nbsp; d) A[B]</p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: a) *A</strong></p>
+      <p class="small">The dot (.), arrow (->), and subscript ([]) operators are all postfix/member-access operators with very high precedence. The dereference operator (*) is a unary prefix operator with lower precedence than all of them.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="q-num">Q2</span>
+    <p><strong>Which of the following declarations is NOT a valid c-string?</strong></p>
+    <p>a) <code>char you[] = {'b','i','g',0};</code></p>
+    <p>b) <code>char will[] = "WOW";</code></p>
+    <p>c) <code>char pass[256] = "";</code></p>
+    <p>d) <code>char cop3014[4] = {'H','U','G','E'};</code></p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: d)</strong></p>
+      <p class="small">Option d has exactly 4 chars in a size-4 array, leaving no room for the null terminator '\0'. Without '\0' at the end, it's a char array but NOT a valid c-string. Option a uses 0 (which is the same as '\0'), b auto-adds '\0', and c initializes to an empty string with '\0' at position 0.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="q-num">Q3</span>
+    <p><strong>Which of the following is NOT a C++ primitive type?</strong></p>
+    <p>a) long &nbsp;&nbsp; b) bool &nbsp;&nbsp; c) string &nbsp;&nbsp; d) int</p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: c) string</strong></p>
+      <p class="small">string is a class from the C++ standard library (&lt;string&gt;), not a primitive/built-in type. long, bool, and int are all primitive types built into the language.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="q-num">Q4</span>
+    <p><strong>Which functions are NOT included in cmath?</strong></p>
+    <p>a) int abs(int) &nbsp;&nbsp; b) int pow(int, int) &nbsp;&nbsp; c) int rand() &nbsp;&nbsp; d) double sin(double)</p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: c) rand()</strong></p>
+      <p class="small">rand() is in &lt;cstdlib&gt;, not &lt;cmath&gt;. abs, pow, and sin are all math functions found in &lt;cmath&gt;.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="q-num">Q5</span>
+    <p><strong>Given <code>int foo(char b);</code>, which is a valid overload?</strong></p>
+    <p>a) <code>int foo2(char b);</code></p>
+    <p>b) <code>char foo(char c);</code></p>
+    <p>c) <code>int foo(char c='z');</code></p>
+    <p>d) <code>int foo(float f);</code></p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: d)</strong></p>
+      <p class="small">Overloading requires the same function name with different parameter types. a) has a different name (foo2), not an overload. b) same name and same parameter type (char), only differs by return type, which doesn't count for overloading, so it's a redefinition error. c) same signature as the original (int foo(char)), the default value doesn't create a new overload. d) different parameter type (float vs char), valid overload.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="q-num">Q6</span>
+    <p><strong>Which would be valid cases for a switch statement?</strong></p>
+    <p>a) an integer literal &nbsp;&nbsp; b) a constant character &nbsp;&nbsp; c) a non-constant boolean variable &nbsp;&nbsp; d) a float literal</p>
+  </div>
+  <div class="reveal-container">
+    <button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button>
+    <div class="reveal-content">
+      <p><strong>Answer: a) and b)</strong></p>
+      <p class="small">Switch cases must be constant integral expressions. Integer literals (a) and constant characters (b) qualify. A non-constant variable (c) is not a compile-time constant, so it can't be a case label. Floats (d) are not integral types and can't be used in switch at all.</p>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span></span>
+    <button onclick="goTo(2)">Legal/Illegal →</button>
+  </div>
+</div>
+
+<!-- ═══════════ PART 2: LEGAL/ILLEGAL ═══════════ -->
+<div class="section" id="part2">
+  <div class="session-tag">Section 2</div>
+  <h1><em>Legal</em> or Illegal?</h1>
+  <p class="subtitle">For each function declaration, state whether it's legal or illegal. If illegal, state why.</p>
+
+  <div class="card"><span class="q-num">1</span><div class="code-block"><span class="type">void</span> <span class="fn">print_to_file</span>(<span class="type">ofstream</span> file);</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="illegal">ILLEGAL.</p><p class="small">ofstream cannot be passed by value because its copy constructor is deleted. Stream objects must be passed by reference: <code>ofstream&amp; file</code>.</p></div></div>
+
+  <div class="card"><span class="q-num">2</span><div class="code-block"><span class="type">int</span>**** <span class="fn">confuse</span>(<span class="type">char</span>[][<span class="num">1</span>], <span class="type">int</span> = <span class="str">'c'</span>);</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="legal">LEGAL.</p><p class="small">Returns a pointer-to-pointer-to-pointer-to-pointer-to-int (unusual but valid). Takes a 2D char array (first dimension can be empty) and an int with default value 'c' (char implicitly converts to int, which is 99). Weird, but syntactically correct.</p></div></div>
+
+  <div class="card"><span class="q-num">3</span><div class="code-block"><span class="type">int</span> <span class="fn">1st</span>(<span class="type">int</span> a, <span class="type">int</span> b);</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="illegal">ILLEGAL.</p><p class="small">Identifiers cannot start with a digit. "1st" is not a valid function name. It would need to be something like "first" or "_1st".</p></div></div>
+
+  <div class="card"><span class="q-num">4</span><div class="code-block"><span class="type">long</span> <span class="fn">short</span>();</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="illegal">ILLEGAL.</p><p class="small">"short" is a C++ reserved word (a primitive type). You cannot use reserved words as function names.</p></div></div>
+
+  <div class="card"><span class="q-num">5</span><p class="small" style="color:var(--text2);margin-bottom:8px;">(Assume struct cat has been declared above)</p><div class="code-block"><span class="type">cat</span>* <span class="fn">alyst</span>();</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="legal">LEGAL.</p><p class="small">Returns a pointer to cat. The function name "alyst" is a valid identifier (making "cat" + "alyst" = "catalyst", clever naming).</p></div></div>
+
+  <div class="card"><span class="q-num">6</span><div class="code-block"><span class="type">char</span> <span class="fn">acter</span>(<span class="type">cat</span> dog);</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="legal">LEGAL.</p><p class="small">Returns a char, takes a cat struct parameter named "dog." The parameter name being "dog" is misleading but perfectly legal. ("char" + "acter" = "character")</p></div></div>
+
+  <div class="card"><span class="q-num">7</span><div class="code-block"><span class="type">cat</span> <span class="fn">cats</span>(<span class="kw">const</span> <span class="type">cat</span>, <span class="kw">const</span> <span class="type">cat</span>&, <span class="type">cat</span>&);</div></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content"><p class="legal">LEGAL.</p><p class="small">Returns a cat. Takes three parameters: a const cat by value (no name, which is allowed in declarations), a const cat by reference, and a cat by reference. Parameter names are optional in declarations.</p></div></div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(1)">← Multiple Choice</button>
+    <button onclick="goTo(3)">Short Answer →</button>
+  </div>
+</div>
+
+<!-- ═══════════ PART 3: SHORT ANSWER ═══════════ -->
+<div class="section" id="part3">
+  <div class="session-tag">Section 3</div>
+  <h1><em>Short</em> Answer</h1>
+  <p class="subtitle">2-6 sentences each. Include code or diagrams as needed.</p>
+
+  <div class="card"><span class="q-num">Q1</span><p><strong>Functions can pass parameters by value, reference, or address. Explain how each is distinct.</strong></p></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p><strong>Pass by value</strong> <code>void f(int x)</code>: a copy of the argument is made. Changes inside the function don't affect the original. Call: <code>f(num)</code>.</p>
+    <p><strong>Pass by reference</strong> <code>void f(int &x)</code>: the parameter becomes an alias (nickname) for the original variable. Changes inside the function DO affect the original. Call: <code>f(num)</code>.</p>
+    <p><strong>Pass by address</strong> <code>void f(int *x)</code>: the function receives a pointer holding the address of the original. You use *x to access/modify the value at that address. Call: <code>f(&num)</code>.</p>
+    <p class="small">Reference and address both allow modification of the original, but differ in syntax: reference uses & in the declaration and is used like a normal variable inside the function, while address uses * in the declaration, requires & at the call site, and uses *x to access the value.</p>
+  </div></div>
+
+  <div class="card"><span class="q-num">Q2</span><p><strong>Stack allocated arrays must have their size known at compile time. Why? And why do dynamically allocated arrays not have the same restriction?</strong></p></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p>Stack-allocated arrays (like <code>int arr[100];</code>) live in the function's stack frame. The compiler needs to know exactly how much stack space to reserve when it compiles the code, before the program ever runs. A variable size would mean the compiler can't calculate the frame size.</p>
+    <p>Dynamic arrays (like <code>new int[n]</code>) live on the heap, which is managed at runtime by the operating system. The heap can allocate any amount of memory on the fly when the program asks for it, so the size can be determined during execution.</p>
+  </div></div>
+
+  <div class="card"><span class="q-num">Q3</span><p><strong>Why is it a good idea to initialize pointers to null, and reset them to null when no longer in use?</strong></p></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p>An uninitialized pointer holds a garbage address. If you accidentally dereference it, you access random memory, which can crash your program or cause unpredictable behavior with no helpful error message. Initializing to <code>nullptr</code> means if you accidentally dereference it, you get a clear null pointer error instead of silent corruption.</p>
+    <p>Resetting to null after <code>delete</code> prevents "dangling pointers," where the pointer still holds the address of freed memory. You can also check <code>if(ptr != nullptr)</code> before using it to avoid errors.</p>
+  </div></div>
+
+  <div class="card"><span class="q-num">Q4</span><p><strong>What is a memory leak? Show an example and explain why it's a problem.</strong></p></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p>A memory leak occurs when dynamically allocated memory is never freed, making it permanently unavailable to the program.</p>
+    <div class="code-block"><span class="type">int</span>* p = <span class="kw">new</span> <span class="type">int</span>(<span class="num">5</span>);  <span class="cmt">// allocate memory</span>
+p = <span class="kw">new</span> <span class="type">int</span>(<span class="num">10</span>);         <span class="cmt">// allocate NEW memory, old address is LOST</span>
+<span class="cmt">// the first allocation can never be freed because no pointer references it anymore</span></div>
+    <p>This is a problem because leaked memory accumulates over time. In long-running programs (servers, games), repeated leaks can exhaust available memory and eventually crash the system.</p>
+  </div></div>
+
+  <div class="card"><span class="q-num">Q5</span><p><strong>Many functions of the c-string library are "unsafe," while their string library counterparts are "safe." Why?</strong></p></div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p>C-string functions like <code>strcpy</code>, <code>strcat</code>, and <code>gets</code> don't check bounds. They blindly write characters into the destination buffer without checking if there's enough room. If the source is longer than the destination, they write past the end of the array, corrupting adjacent memory (buffer overflow).</p>
+    <p>The C++ <code>string</code> class manages its own memory automatically. It knows its own size, resizes when needed, and checks bounds. Operations like <code>=</code>, <code>+</code>, and <code>.append()</code> can't write past the end because the string object handles allocation internally.</p>
+  </div></div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(2)">← Legal/Illegal</button>
+    <button onclick="goTo(4)">Hostile Code →</button>
+  </div>
+</div>
+
+<!-- ═══════════ PART 4: HOSTILE CODE ═══════════ -->
+<div class="section" id="part4">
+  <div class="session-tag">Section 4</div>
+  <h1>Hostile Code <em>Comprehension</em></h1>
+  <p class="subtitle">Find the exact output. All programs compile. Trace carefully on paper first.</p>
+
+  <!-- HOSTILE 1 -->
+  <div class="card">
+    <span class="q-num">Program 1</span>
+    <div class="code-block"><span class="type">int</span> <span class="fn">main</span>(){
+
+    <span class="type">int</span> a[<span class="num">5</span>]={<span class="num">5</span>,<span class="num">3</span>,<span class="num">1</span>,<span class="num">4</span>,<span class="num">0</span>};
+    <span class="type">int</span>* f=a+<span class="num">2</span>;
+    <span class="kw">do</span>
+    {
+        f=a+*f;
+        cout&lt;&lt;*f;
+    } <span class="kw">while</span> (f!=a);
+
+    cout&lt;&lt; *a;
+
+    <span class="kw">return</span> *f;
+}</div>
+  </div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p><strong>Output: <code>34055</code></strong></p>
+    <p><strong>Trace:</strong></p>
+    <p>Array: a[0]=5, a[1]=3, a[2]=1, a[3]=4, a[4]=0. Initially f = a+2, so f points to a[2]=1.</p>
+    <p><strong>Iteration 1:</strong> f = a + *f = a + 1 → f points to a[1]=3. Print 3.</p>
+    <p><strong>Iteration 2:</strong> f = a + *f = a + 3 → f points to a[3]=4. Print 4.</p>
+    <p><strong>Iteration 3:</strong> f = a + *f = a + 4 → f points to a[4]=0. Print 0.</p>
+    <p><strong>Iteration 4:</strong> f = a + *f = a + 0 = a → f points to a[0]=5. Print 5. Check: f != a? f == a, so loop ENDS.</p>
+    <p>After loop: cout << *a = 5. Print 5.</p>
+    <p>Total output: <code>3</code><code>4</code><code>0</code><code>5</code><code>5</code> = <code>34055</code></p>
+    <p class="small">Return *f = 5 (the program's exit code, not printed).</p>
+  </div></div>
+
+  <!-- HOSTILE 2 -->
+  <div class="card">
+    <span class="q-num">Program 2</span>
+    <div class="code-block"><span class="kw">struct</span> <span class="type">ure</span>{
+    <span class="type">char</span> ts;
+    <span class="type">char</span> ming;
+    <span class="type">char</span> lie;
+};
+
+<span class="type">void</span> <span class="fn">ten</span>(<span class="type">ure</span>& whatnot, <span class="type">ure</span> ka)
+{
+    whatnot.ts=ka.lie;
+    cout&lt;&lt;(ka.ts?<span class="str">'B'</span>:<span class="str">'I'</span>);
+    ka.ming=whatnot.lie;
+    <span class="kw">return</span>;
+}
+
+<span class="type">int</span> <span class="fn">main</span>()
+{
+    <span class="type">ure</span> al,right,pal;
+
+    right.lie  =<span class="str">'G'</span>;
+    pal.lie    =<span class="str">'O'</span>;
+    right.ming =<span class="str">'N'</span>;
+    pal.ts     =<span class="str">'\0'</span>;
+    al.ts      =<span class="str">'L'</span>;
+    al.ming    =<span class="str">'E'</span>;
+    right.ts   =<span class="str">'S'</span>;
+    pal.ming   =<span class="str">'?'</span>;
+    al.lie     =<span class="str">'!'</span>;
+
+    <span class="fn">ten</span>(al,right);
+    <span class="fn">ten</span>(pal,pal);
+
+    cout&lt;&lt;right.ming&lt;&lt;al.ts&lt;&lt;pal.ts&lt;&lt;endl;
+}</div>
+  </div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p><strong>Output: <code>BINGO</code></strong></p>
+    <p><strong>Initial state:</strong></p>
+    <p>al: {ts='L', ming='E', lie='!'} , right: {ts='S', ming='N', lie='G'} , pal: {ts='\0', ming='?', lie='O'}</p>
+    <p><strong>ten(al, right):</strong> whatnot = al (by reference), ka = copy of right = {ts='S', ming='N', lie='G'}</p>
+    <ul>
+      <li>whatnot.ts = ka.lie → al.ts = 'G'</li>
+      <li>cout << (ka.ts ? 'B' : 'I') → ka.ts='S' which is non-zero (true) → prints <strong>B</strong></li>
+      <li>ka.ming = whatnot.lie = '!' (but ka is a copy, right is unchanged)</li>
+    </ul>
+    <p><strong>ten(pal, pal):</strong> whatnot = pal (by reference), ka = copy of pal = {ts='\0', ming='?', lie='O'}</p>
+    <ul>
+      <li>whatnot.ts = ka.lie → pal.ts = 'O'</li>
+      <li>cout << (ka.ts ? 'B' : 'I') → ka.ts='\0' which is 0 (false) → prints <strong>I</strong></li>
+      <li>ka.ming = whatnot.lie = 'O' (copy, pal unchanged for ming)</li>
+    </ul>
+    <p><strong>Line 35:</strong> cout << right.ming << al.ts << pal.ts = 'N' << 'G' << 'O' → prints <strong>NGO</strong></p>
+    <p>Total: B + I + NGO = <strong>BINGO</strong></p>
+  </div></div>
+
+  <!-- HOSTILE 3 -->
+  <div class="card">
+    <span class="q-num">Program 3</span>
+    <div class="code-block"><span class="kw">struct</span> <span class="type">relay</span>
+{
+    <span class="type">int</span> i;
+    <span class="type">relay</span>* r;
+};
+
+<span class="type">int</span> <span class="fn">main</span>()
+{
+    <span class="type">relay</span> a,b,c;
+
+    a.i=<span class="num">3</span>; b.i=<span class="num">2</span>; c.i=<span class="num">1</span>;
+    a.r=&b; b.r=&c; c.r=&a;
+
+    <span class="kw">for</span>(<span class="type">int</span> i=<span class="num">1</span>;i&lt;<span class="num">4</span>;i++)
+        cout&lt;&lt;a.r->r->r->r->i;
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</div>
+  </div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Answer</button><div class="reveal-content">
+    <p><strong>Output: <code>222</code></strong></p>
+    <p><strong>The chain:</strong> a.r=&b, b.r=&c, c.r=&a. This is a circular linked list: a→b→c→a→b→c→...</p>
+    <p><strong>Trace <code>a.r->r->r->r->i</code>:</strong></p>
+    <ul>
+      <li>a.r = &b (at b)</li>
+      <li>->r = b.r = &c (at c)</li>
+      <li>->r = c.r = &a (at a)</li>
+      <li>->r = a.r = &b (at b)</li>
+      <li>->i = b.i = 2</li>
+    </ul>
+    <p>The chain always resolves to b.i = 2. The loop runs 3 times (i=1,2,3), printing 2 each time. Output: <strong>222</strong>.</p>
+  </div></div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(3)">← Short Answer</button>
+    <button onclick="goTo(5)">You're the Compiler →</button>
+  </div>
+</div>
+
+<!-- ═══════════ PART 5: YOU'RE THE COMPILER ═══════════ -->
+<div class="section" id="part5">
+  <div class="session-tag">Section 5</div>
+  <h1>You're the <em>Compiler</em></h1>
+  <p class="subtitle">At each numbered line, state whether there is a compiler error. No helpful colors this time.</p>
+
+  <div class="card">
+    <div class="code-block" style="font-size:13px;">#include&lt;iostream&gt;
+#include&lt;string&gt;
+using namespace std;
+
+int main()
+{
+    struct something_or_other{ };           <span class="cmt">// 1</span>
+    char c, buff[1];                        <span class="cmt">// 2</span>
+    long pi = static_cast&lt;char&gt;('3');       <span class="cmt">// 3</span>
+    char _python;                           <span class="cmt">// 4</span>
+    bool flag = 2;                          <span class="cmt">// 5</span>
+    int** mat = new int[15][20];            <span class="cmt">// 6</span>
+    for(int ponder,wonder; c++ &gt; _python; ) <span class="cmt">// 7</span>
+    { while(int num=5)                      <span class="cmt">// 8</span>
+    getline(buff,20); }                     <span class="cmt">// 9</span>
+    return true;                            <span class="cmt">// 10</span>
+}</div>
+  </div>
+
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show All Answers</button><div class="reveal-content">
+    <p><strong>Line 1:</strong> <span class="legal">OK.</span> Defining a struct inside main is allowed in C++.</p>
+    <p><strong>Line 2:</strong> <span class="legal">OK.</span> Declares a char and a char array of size 1. Unusual but valid.</p>
+    <p><strong>Line 3:</strong> <span class="legal">OK.</span> Casts '3' (ASCII 51) to char, then implicitly converts to long. pi = 51.</p>
+    <p><strong>Line 4:</strong> <span class="legal">OK.</span> Identifiers can start with underscores. _python is valid.</p>
+    <p><strong>Line 5:</strong> <span class="legal">OK.</span> 2 is non-zero, implicitly converts to true. flag = true.</p>
+    <p><strong>Line 6:</strong> <span class="illegal">ERROR.</span> <code>new int[15][20]</code> returns type <code>int(*)[20]</code> (pointer to array of 20 ints), not <code>int**</code>. Type mismatch.</p>
+    <p><strong>Line 7:</strong> <span class="legal">OK.</span> Declares two ints (wonder is unused but legal). Condition compares c++ to _python. Uninitialized values, but it compiles.</p>
+    <p><strong>Line 8:</strong> <span class="legal">OK.</span> Declaring a variable in a while condition is legal. num=5 is always non-zero (true), so this is an infinite loop, but it compiles.</p>
+    <p><strong>Line 9:</strong> <span class="illegal">ERROR.</span> <code>getline(buff, 20)</code> doesn't match any overload. The free function getline needs an istream as the first argument: <code>getline(cin, stringVar)</code> or as a member: <code>cin.getline(buff, 20)</code>.</p>
+    <p><strong>Line 10:</strong> <span class="legal">OK.</span> true implicitly converts to 1. main returns int, and 1 is a valid int.</p>
+  </div></div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(4)">← Hostile Code</button>
+    <button onclick="goTo(6)">Code Writing →</button>
+  </div>
+</div>
+
+<!-- ═══════════ PART 6: CODE WRITING ═══════════ -->
+<div class="section" id="part6">
+  <div class="session-tag">Section 6</div>
+  <h1>Code <em>Writing</em></h1>
+  <p class="subtitle">Write the full program. No compiler allowed. 30 minutes max each.</p>
+
+  <h2>Problem 1: 3D Dynamic Matrix</h2>
+  <div class="card">
+    <p>Read in three integers: height, width, depth. Dynamically allocate a 3D integer matrix of that shape. Populate it so each slot holds the sum of its indices (e.g., slot [h][w][d] = h+w+d). Print it as a series of 2D slices (one per depth level). Deallocate with no leaks.</p>
+    <p class="small mt-2">Sample: H=2 W=3 D=4</p>
+    <div class="code-block" style="font-size:12px;">0 1 2    1 2 3    2 3 4    3 4 5
+1 2 3    2 3 4    3 4 5    4 5 6</div>
+  </div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button><div class="reveal-content">
+    <div class="code-block"><span class="kw">#include</span>&lt;iostream&gt;
+<span class="kw">using namespace</span> std;
+
+<span class="type">int</span> <span class="fn">main</span>()
+{
+    <span class="type">int</span> H, W, D;
+    cout &lt;&lt; <span class="str">"Enter the H,W,D: "</span>;
+    cin &gt;&gt; H &gt;&gt; W &gt;&gt; D;
+
+    <span class="cmt">// Allocate 3D array: array of pointers to arrays of pointers to ints</span>
+    <span class="type">int</span>*** matrix = <span class="kw">new</span> <span class="type">int</span>**[H];
+    <span class="kw">for</span>(<span class="type">int</span> h = <span class="num">0</span>; h &lt; H; h++)
+    {
+        matrix[h] = <span class="kw">new</span> <span class="type">int</span>*[W];
+        <span class="kw">for</span>(<span class="type">int</span> w = <span class="num">0</span>; w &lt; W; w++)
+            matrix[h][w] = <span class="kw">new</span> <span class="type">int</span>[D];
+    }
+
+    <span class="cmt">// Populate: each slot = sum of indices</span>
+    <span class="kw">for</span>(<span class="type">int</span> h = <span class="num">0</span>; h &lt; H; h++)
+        <span class="kw">for</span>(<span class="type">int</span> w = <span class="num">0</span>; w &lt; W; w++)
+            <span class="kw">for</span>(<span class="type">int</span> d = <span class="num">0</span>; d &lt; D; d++)
+                matrix[h][w][d] = h + w + d;
+
+    <span class="cmt">// Print as 2D slices (one per depth)</span>
+    <span class="kw">for</span>(<span class="type">int</span> d = <span class="num">0</span>; d &lt; D; d++)
+    {
+        <span class="kw">for</span>(<span class="type">int</span> h = <span class="num">0</span>; h &lt; H; h++)
+        {
+            <span class="kw">for</span>(<span class="type">int</span> w = <span class="num">0</span>; w &lt; W; w++)
+                cout &lt;&lt; matrix[h][w][d] &lt;&lt; <span class="str">" "</span>;
+            cout &lt;&lt; endl;
+        }
+        cout &lt;&lt; endl;
+    }
+
+    <span class="cmt">// Deallocate in reverse order</span>
+    <span class="kw">for</span>(<span class="type">int</span> h = <span class="num">0</span>; h &lt; H; h++)
+    {
+        <span class="kw">for</span>(<span class="type">int</span> w = <span class="num">0</span>; w &lt; W; w++)
+            <span class="kw">delete</span>[] matrix[h][w];
+        <span class="kw">delete</span>[] matrix[h];
+    }
+    <span class="kw">delete</span>[] matrix;
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</div>
+    <div class="card yellow-border" style="margin-top:12px;"><div class="card-label yellow">Key Points</div>
+      <p>3D dynamic allocation requires 3 levels of new: int*** for height, int** for each row, int* for each column. Deallocation must happen in reverse order (innermost first). The printing loops are depth-first to create 2D slices.</p>
+    </div>
+  </div></div>
+
+  <h2>Problem 2: Caesar Cipher with Files</h2>
+  <div class="card">
+    <p>Create a function <code>caesar</code> taking an input stream and output stream. Read through the input, shift each letter 3 positions forward (wrapping: x→a, y→b, z→c). Leave non-letters unchanged. In main, read a filename, open it, call caesar with the file as input and cout as output.</p>
+    <p class="small mt-2">Sample file "message.txt":</p>
+    <div class="code-block" style="font-size:13px;">Alea iacta est.
+Veni, vidi, vici.
+What are you gonna do, stab me?</div>
+    <p class="small">Output:</p>
+    <div class="code-block" style="font-size:13px;">Dohd ldfwd hvw.
+Yhql, ylgl, ylfl.
+Zkdw duh brx jrqqd gr, vwde ph?</div>
+  </div>
+  <div class="reveal-container"><button class="reveal-btn" onclick="toggleReveal(this)">▶ Show Solution</button><div class="reveal-content">
+    <div class="code-block"><span class="kw">#include</span>&lt;iostream&gt;
+<span class="kw">#include</span>&lt;fstream&gt;
+<span class="kw">#include</span>&lt;string&gt;
+<span class="kw">using namespace</span> std;
+
+<span class="type">void</span> <span class="fn">caesar</span>(<span class="type">istream</span>& in, <span class="type">ostream</span>& out);
+
+<span class="type">int</span> <span class="fn">main</span>()
+{
+    <span class="type">string</span> filename;
+    cout &lt;&lt; <span class="str">"Enter the filename: "</span>;
+    cin &gt;&gt; filename;
+
+    <span class="type">ifstream</span> inFile;
+    inFile.<span class="fn">open</span>(filename);
+
+    <span class="kw">if</span>(!inFile)
+    {
+        cout &lt;&lt; <span class="str">"Error opening file"</span> &lt;&lt; endl;
+        <span class="kw">return</span> <span class="num">0</span>;
+    }
+
+    <span class="fn">caesar</span>(inFile, cout);
+
+    inFile.<span class="fn">close</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}
+
+<span class="type">void</span> <span class="fn">caesar</span>(<span class="type">istream</span>& in, <span class="type">ostream</span>& out)
+{
+    <span class="type">char</span> c;
+    <span class="kw">while</span>(in.<span class="fn">get</span>(c))
+    {
+        <span class="kw">if</span>(c &gt;= <span class="str">'a'</span> && c &lt;= <span class="str">'z'</span>)
+            out &lt;&lt; (<span class="type">char</span>)((<span class="str">'a'</span>) + (c - <span class="str">'a'</span> + <span class="num">3</span>) % <span class="num">26</span>);
+        <span class="kw">else if</span>(c &gt;= <span class="str">'A'</span> && c &lt;= <span class="str">'Z'</span>)
+            out &lt;&lt; (<span class="type">char</span>)((<span class="str">'A'</span>) + (c - <span class="str">'A'</span> + <span class="num">3</span>) % <span class="num">26</span>);
+        <span class="kw">else</span>
+            out &lt;&lt; c;
+    }
+}</div>
+    <div class="card yellow-border" style="margin-top:12px;"><div class="card-label yellow">Key Points</div>
+      <p>Use <code>istream&</code> and <code>ostream&</code> as parameter types (not ifstream/ofstream), so the function works with any stream. Use <code>in.get(c)</code> to read character by character (including spaces and newlines). The shift formula <code>(c - 'a' + 3) % 26 + 'a'</code> handles wrapping: 'x'→'a', 'y'→'b', 'z'→'c'. Handle uppercase and lowercase separately. Non-letters pass through unchanged.</p>
+    </div>
+  </div></div>
+
+  <div class="nav-footer">
+    <button onclick="goTo(5)">← You're the Compiler</button>
+    <span></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+const partNames=["Multiple Choice","Legal/Illegal","Short Answer","Hostile Code","You're the Compiler","Code Writing"];
+const navContainer=document.getElementById('navParts');
+partNames.forEach((name,i)=>{const btn=document.createElement('button');btn.className='part-btn'+(i===0?' active':'');btn.textContent=(i+1)+'. '+name;btn.onclick=()=>goTo(i+1);navContainer.appendChild(btn);});
+function goTo(n){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('part'+n).classList.add('active');document.querySelectorAll('.part-btn').forEach((b,i)=>b.classList.toggle('active',i===n-1));window.scrollTo({top:0,behavior:'smooth'});}
+function toggleReveal(btn){const c=btn.nextElementSibling;const s=c.classList.contains('show');c.classList.toggle('show');btn.textContent=s?'▶ Show Answer':'▼ Hide Answer';}
+</script>
+</body>
+</html>
