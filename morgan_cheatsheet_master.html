@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ Milestone 3 — Master Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#0f1117;--bg2:#161822;--bg3:#1c1f2e;--card:#1a1d2b;--border:#2a2d3e;--text:#d4d7e5;--text2:#9498ab;--accent:#6c9bff;--green:#5ce0a8;--green-bg:rgba(92,224,168,0.08);--red:#ff6b7a;--red-bg:rgba(255,107,122,0.08);--yellow:#ffd76c;--purple:#b494f7;--orange:#ff9b5e;--code-bg:#121420;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:12px;overflow-x:auto;}
+.topbar .label{font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase;}
+.topbar .parts{display:flex;gap:5px;}
+.topbar .part-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.topbar .part-btn:hover{border-color:var(--accent);color:var(--text);}
+.topbar .part-btn.active{background:var(--accent);color:#0f1117;border-color:var(--accent);font-weight:600;}
+
+.section{display:none;max-width:900px;margin:0 auto;padding:80px 24px 60px;}
+.section.active{display:block;}
+
+h1{font-size:1.8em;font-weight:700;margin-bottom:8px;color:var(--text);}
+h1 em{font-style:italic;color:var(--accent);}
+h2{font-size:1.2em;font-weight:700;margin:28px 0 10px;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:6px;}
+h3{font-size:1em;font-weight:600;margin:18px 0 6px;color:var(--yellow);}
+p{margin:6px 0;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:10px 0;}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+.box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:14px;}
+.box.hl-blue{border-left:3px solid var(--accent);}
+.box.hl-green{border-left:3px solid var(--green);}
+.box.hl-red{border-left:3px solid var(--red);}
+.box.hl-yellow{border-left:3px solid var(--yellow);}
+.box-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.box-title.blue{color:var(--accent);}
+.box-title.green{color:var(--green);}
+.box-title.red{color:var(--red);}
+.box-title.yellow{color:var(--yellow);}
+.box-title.purple{color:var(--purple);}
+
+code{font-family:'JetBrains Mono',monospace;background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:0.88em;color:var(--green);}
+.cb{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;overflow-x:auto;white-space:pre;color:var(--text);}
+
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;}
+th{background:var(--bg3);text-align:left;padding:8px 10px;font-weight:600;border-bottom:2px solid var(--border);color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+
+ul{margin:4px 0 4px 20px;font-size:14px;}
+li{margin:3px 0;}
+.small{font-size:0.85em;color:var(--text2);}
+.g{color:var(--green);}
+.r{color:var(--red);}
+.y{color:var(--yellow);}
+.b{color:var(--accent);}
+.p{color:var(--purple);}
+
+hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+.nav-footer{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--border);}
+.nav-footer button{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.nav-footer button:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="label">Cheat Sheet</span>
+  <div class="parts" id="navParts"></div>
+</div>
+
+<!-- ═══════════ 1: TYPES, VARIABLES, OPERATORS ═══════════ -->
+<div class="section active" id="part1">
+  <h1>Types, Variables & <em>Operators</em></h1>
+
+  <h2>Primitive Types</h2>
+  <table>
+    <tr><th>Type</th><th>Size</th><th>Example</th></tr>
+    <tr><td>int</td><td>4 bytes</td><td><code>int x = 5;</code></td></tr>
+    <tr><td>double</td><td>8 bytes</td><td><code>double pi = 3.14;</code></td></tr>
+    <tr><td>char</td><td>1 byte</td><td><code>char c = 'A';</code> (ASCII 65)</td></tr>
+    <tr><td>bool</td><td>1 byte</td><td><code>bool flag = true;</code> (any non-zero = true)</td></tr>
+    <tr><td>long</td><td>8 bytes</td><td><code>long big = 999999999;</code></td></tr>
+    <tr><td>short</td><td>2 bytes</td><td><code>short s = 10;</code></td></tr>
+  </table>
+  <p class="small"><span class="r">string is NOT a primitive</span>, it's a class from &lt;string&gt;.</p>
+
+  <h2>Integer Division & Modulo</h2>
+  <div class="grid2">
+    <div class="box hl-blue"><div class="box-title blue">Integer / Integer = Integer</div><code>7 / 2 = 3</code> (truncated, not rounded)<br><code>7 % 2 = 1</code> (remainder)</div>
+    <div class="box hl-green"><div class="box-title green">Any double = double result</div><code>7.0 / 2 = 3.5</code><br><code>(double)7 / 2 = 3.5</code></div>
+  </div>
+
+  <h2>Operator Precedence (high to low)</h2>
+  <table>
+    <tr><th>Level</th><th>Operators</th><th>Notes</th></tr>
+    <tr><td>Highest</td><td><code>() [] . -></code></td><td>Parentheses, subscript, member access</td></tr>
+    <tr><td>Unary</td><td><code>* & ++ -- ! (cast)</code></td><td>Dereference, address-of, increment</td></tr>
+    <tr><td>Arithmetic</td><td><code>* / %</code> then <code>+ -</code></td><td>Multiply/divide before add/subtract</td></tr>
+    <tr><td>Relational</td><td><code>< <= > >=</code> then <code>== !=</code></td><td></td></tr>
+    <tr><td>Logical</td><td><code>&&</code> then <code>||</code></td><td>AND before OR</td></tr>
+    <tr><td>Lowest</td><td><code>= += -= *= /=</code></td><td>Assignment operators</td></tr>
+  </table>
+  <p class="small"><span class="y">Key exam fact:</span> <code>*A</code> (dereference) has lower precedence than <code>A.B</code>, <code>A->B</code>, <code>A[B]</code>.</p>
+
+  <h2>Type Conversions</h2>
+  <div class="grid2">
+    <div class="box"><div class="box-title yellow">Implicit</div><code>bool flag = 2;</code> → true (non-zero)<br><code>long x = 'A';</code> → 65<br><code>double d = 5;</code> → 5.0</div>
+    <div class="box"><div class="box-title yellow">Explicit (cast)</div><code>static_cast&lt;int&gt;(3.7)</code> → 3<br><code>(char)(65)</code> → 'A'<br><code>(double)(7/2)</code> → 3.0 (too late!)<br><code>(double)7/2</code> → 3.5 ✓</div>
+  </div>
+
+  <h2>ASCII Quick Reference</h2>
+  <p><code>'0'</code>=48 &nbsp; <code>'A'</code>=65 &nbsp; <code>'Z'</code>=90 &nbsp; <code>'a'</code>=97 &nbsp; <code>'z'</code>=122 &nbsp; <code>'\0'</code>=0</p>
+  <p class="small">Lexicographic order: digits &lt; uppercase &lt; lowercase. So "2apples" &lt; "Banana" &lt; "banana".</p>
+
+  <div class="nav-footer"><span></span><button onclick="goTo(2)">Strings & Arrays →</button></div>
+</div>
+
+<!-- ═══════════ 2: STRINGS & ARRAYS ═══════════ -->
+<div class="section" id="part2">
+  <h1>Strings & <em>Arrays</em></h1>
+
+  <h2>C-Strings (char arrays)</h2>
+  <div class="cb">char s1[] = "Hello";           <span style="color:var(--text2);">// size 6: H,e,l,l,o,\0</span>
+char s2[] = {'H','i','\0'};    <span style="color:var(--text2);">// valid c-string (has \0)</span>
+char s3[4] = {'H','U','G','E'};<span style="color:var(--red);"> // NOT a valid c-string (no room for \0)</span></div>
+
+  <div class="grid2">
+    <div class="box hl-red"><div class="box-title red">C-String Functions (unsafe)</div>
+      <code>strlen(s)</code> , length (not counting \0)<br>
+      <code>strcpy(dst, src)</code> , copy (no bounds check!)<br>
+      <code>strcat(dst, src)</code> , concatenate<br>
+      <code>strcmp(a, b)</code> , compare (0 = equal)<br>
+      Header: <code>&lt;cstring&gt;</code>
+    </div>
+    <div class="box hl-green"><div class="box-title green">String Object (safe)</div>
+      <code>s.length()</code> or <code>s.size()</code><br>
+      <code>s1 = s2;</code> , copy<br>
+      <code>s1 + s2;</code> , concatenate<br>
+      <code>s1 == s2</code> , compare (true/false)<br>
+      Header: <code>&lt;string&gt;</code>
+    </div>
+  </div>
+  <p class="small"><span class="y">Why c-string is "unsafe":</span> No bounds checking. strcpy/strcat can write past the end of the buffer (buffer overflow). String objects manage their own memory and resize automatically.</p>
+
+  <h2>Reading Strings</h2>
+  <div class="cb">cin >> name;                 <span style="color:var(--text2);">// stops at space</span>
+getline(cin, name);          <span style="color:var(--text2);">// reads full line (string object)</span>
+cin.getline(buf, size);      <span style="color:var(--text2);">// reads full line (c-string/char array)</span></div>
+  <div class="box hl-red"><div class="box-title red">⚠️ The cin >> then getline trap</div>
+    <code>cin >></code> leaves a <code>\n</code> in the buffer. Next <code>getline</code> reads it as empty string.<br>
+    <strong>Fix:</strong> Add <code>cin.ignore();</code> between them.
+  </div>
+
+  <h2>Arrays</h2>
+  <div class="cb">int arr[5] = {10, 20, 30, 40, 50};
+arr[0]   <span style="color:var(--text2);">// first element (10)</span>
+arr[4]   <span style="color:var(--text2);">// last element (50)</span>
+<span style="color:var(--text2);">// Passed to functions by reference automatically, must send size too</span></div>
+
+  <h2>Character Functions (&lt;cctype&gt;)</h2>
+  <p><code>toupper(c)</code> <code>tolower(c)</code> <code>isalpha(c)</code> <code>isdigit(c)</code> <code>isspace(c)</code> <code>isupper(c)</code> <code>islower(c)</code></p>
+
+  <h2>cmath Functions</h2>
+  <p><code>abs()</code> <code>pow(base,exp)</code> <code>sqrt()</code> <code>sin()</code> <code>cos()</code> <code>ceil()</code> <code>floor()</code></p>
+  <p class="small"><span class="r">rand() is in &lt;cstdlib&gt;</span>, NOT cmath.</p>
+
+  <div class="nav-footer"><button onclick="goTo(1)">← Types</button><button onclick="goTo(3)">Functions →</button></div>
+</div>
+
+<!-- ═══════════ 3: FUNCTIONS ═══════════ -->
+<div class="section" id="part3">
+  <h1><em>Functions</em></h1>
+
+  <h2>Three Ways to Pass Parameters</h2>
+  <table>
+    <tr><th>Method</th><th>Declaration</th><th>Call</th><th>Modify original?</th></tr>
+    <tr><td>Value</td><td><code>void f(int x)</code></td><td><code>f(num)</code></td><td><span class="r">No</span> (copy)</td></tr>
+    <tr><td>Reference</td><td><code>void f(int &x)</code></td><td><code>f(num)</code></td><td><span class="g">Yes</span> (alias)</td></tr>
+    <tr><td>Address</td><td><code>void f(int *x)</code></td><td><code>f(&num)</code></td><td><span class="g">Yes</span> (pointer)</td></tr>
+  </table>
+  <p class="small"><strong>Reference variable:</strong> a formal parameter that is a nickname for the actual parameter. Changes to it affect the original. Example: <code>void change(int &ref);</code></p>
+
+  <h2>Function Overloading</h2>
+  <div class="box hl-blue"><div class="box-title blue">Rules</div>
+    <ul>
+      <li>Same name, <strong>different parameter types or count</strong></li>
+      <li>Return type alone does NOT count</li>
+      <li>Default parameters don't create new overloads</li>
+      <li>Different parameter NAMES don't count</li>
+    </ul>
+    <div class="cb">int foo(char b);       <span style="color:var(--text2);">// original</span>
+int foo(float f);      <span style="color:var(--green);">// valid overload (different param type)</span>
+char foo(char c);      <span style="color:var(--red);">// INVALID (same param type, only return differs)</span>
+int foo(char c='z');   <span style="color:var(--red);">// INVALID (same signature as original)</span></div>
+  </div>
+
+  <h2>Identifier Rules</h2>
+  <ul>
+    <li>Can contain: letters, digits, underscores</li>
+    <li><span class="r">Cannot start with a digit</span> (<code>1st</code> is illegal)</li>
+    <li><span class="g">Can start with underscore</span> (<code>_python</code> is legal)</li>
+    <li><span class="r">Cannot be a reserved word</span> (<code>short</code>, <code>int</code>, <code>struct</code>, etc.)</li>
+  </ul>
+
+  <h2>Stream Parameters</h2>
+  <div class="box hl-red"><div class="box-title red">⚠️ Streams cannot be passed by value</div>
+    <code>void f(ofstream file);</code> <span class="r">ILLEGAL</span> (copy constructor deleted)<br>
+    <code>void f(ofstream &file);</code> <span class="g">LEGAL</span> (pass by reference)<br>
+    <code>void f(istream &in, ostream &out);</code> <span class="g">LEGAL</span> (generic streams)
+  </div>
+
+  <h2>Switch Statement</h2>
+  <div class="grid2">
+    <div class="box hl-green"><div class="box-title green">Valid case labels</div>Integer literals, constant chars, const int<br><code>case 5:</code> ✓<br><code>case 'A':</code> ✓</div>
+    <div class="box hl-red"><div class="box-title red">Invalid case labels</div>Variables (non-const), floats, strings<br><code>case x:</code> ✗ (not const)<br><code>case 3.14:</code> ✗ (float)</div>
+  </div>
+  <p class="small"><span class="y">Fall-through:</span> Without <code>break</code>, execution continues into the next case. <code>switch(2){ case 2: cout<<"B"; case 3: cout<<"C"; }</code> prints "BC".</p>
+
+  <div class="nav-footer"><button onclick="goTo(2)">← Strings</button><button onclick="goTo(4)">Pointers →</button></div>
+</div>
+
+<!-- ═══════════ 4: POINTERS ═══════════ -->
+<div class="section" id="part4">
+  <h1><em>Pointers</em></h1>
+
+  <h2>Core Operations</h2>
+  <table>
+    <tr><th>What</th><th>Code</th><th>Meaning</th></tr>
+    <tr><td>Declare</td><td><code>int* ptr;</code></td><td>ptr can hold an address of an int</td></tr>
+    <tr><td>Address-of</td><td><code>&x</code></td><td>Gets address of x</td></tr>
+    <tr><td>Assign</td><td><code>ptr = &x;</code></td><td>ptr now points to x</td></tr>
+    <tr><td>Dereference</td><td><code>*ptr</code></td><td>Value at ptr's address</td></tr>
+    <tr><td>Change via ptr</td><td><code>*ptr = 99;</code></td><td>Changes x to 99</td></tr>
+    <tr><td>Null</td><td><code>int* p = nullptr;</code></td><td>Points to nothing</td></tr>
+  </table>
+
+  <h2>Pointer Arithmetic & Arrays</h2>
+  <div class="cb">int arr[5] = {10,20,30,40,50};
+int* p = arr;          <span style="color:var(--text2);">// same as &arr[0]</span>
+
+<span style="color:var(--text2);">// ALL of these access arr[3] = 40:</span>
+arr[3]    *(arr+3)    *(p+3)    p[3]
+
+p++;                   <span style="color:var(--text2);">// moves to next element (adds sizeof(int) bytes)</span>
+p--;                   <span style="color:var(--text2);">// moves back one element</span></div>
+  <p class="small"><span class="r">*arr[i]</span> is a <span class="r">double dereference error</span> if arr is int[]. arr[i] is already an int, you can't dereference an int.</p>
+
+  <h2>Dynamic Memory</h2>
+  <div class="grid2">
+    <div class="box hl-green"><div class="box-title green">Allocate</div><code>int* p = new int;</code> (one)<br><code>int* arr = new int[n];</code> (array)</div>
+    <div class="box hl-red"><div class="box-title red">Deallocate</div><code>delete p;</code> (one)<br><code>delete[] arr;</code> (array, MUST use [])</div>
+  </div>
+
+  <h3>Why initialize to null?</h3>
+  <p>Uninitialized pointers hold garbage addresses. Dereferencing = crash or silent corruption. <code>nullptr</code> gives a clear error and can be checked: <code>if(ptr != nullptr)</code>.</p>
+
+  <h3>Memory Leak</h3>
+  <div class="cb">int* p = new int(5);   <span style="color:var(--text2);">// allocate</span>
+p = new int(10);       <span style="color:var(--red);">// LEAK: first allocation's address is lost forever</span></div>
+  <p class="small">Leaked memory can never be freed. Over time, it exhausts available memory.</p>
+
+  <h3>Stack vs Heap</h3>
+  <table>
+    <tr><th>Stack</th><th>Heap</th></tr>
+    <tr><td>Size known at compile time</td><td>Size decided at runtime</td></tr>
+    <tr><td><code>int arr[100];</code></td><td><code>int* arr = new int[n];</code></td></tr>
+    <tr><td>Freed automatically</td><td>Must <code>delete</code> manually</td></tr>
+  </table>
+
+  <h2>char* Special Rules</h2>
+  <div class="cb">char* p = st;
+cout << p;     <span style="color:var(--text2);">// prints ENTIRE STRING (not address!)</span>
+cout << *p;    <span style="color:var(--text2);">// prints first character only</span>
+cout << (void*)p; <span style="color:var(--text2);">// prints the actual address</span></div>
+
+  <h2>3D Dynamic Allocation Pattern</h2>
+  <div class="cb"><span style="color:var(--text2);">// Allocate</span>
+int*** m = new int**[H];
+for(h) m[h] = new int*[W];
+for(h) for(w) m[h][w] = new int[D];
+
+<span style="color:var(--text2);">// Deallocate (reverse order!)</span>
+for(h) for(w) delete[] m[h][w];
+for(h) delete[] m[h];
+delete[] m;</div>
+
+  <div class="nav-footer"><button onclick="goTo(3)">← Functions</button><button onclick="goTo(5)">Structs →</button></div>
+</div>
+
+<!-- ═══════════ 5: STRUCTURES ═══════════ -->
+<div class="section" id="part5">
+  <h1><em>Structures</em></h1>
+
+  <h2>Define, Create, Access</h2>
+  <div class="cb">struct Student {
+    string name;
+    int age;
+    double gpa;
+};
+
+Student s1;
+s1.name = "Morgan";    <span style="color:var(--text2);">// dot operator for regular variables</span></div>
+
+  <h2>Nested Structs</h2>
+  <div class="cb">struct Date { int month, day, year; };
+struct Flight {
+    string flNo;
+    Date date;          <span style="color:var(--text2);">// struct inside struct</span>
+};
+
+Flight f;
+f.date.year = 2026;    <span style="color:var(--text2);">// double dot for nested access</span></div>
+
+  <h2>Arrays of Structs</h2>
+  <div class="cb">Student roster[30];
+roster[0].name = "Alice";
+roster[i].gpa            <span style="color:var(--text2);">// index first, then dot</span></div>
+
+  <h2>Dynamic Structs</h2>
+  <div class="cb">Student* arr = new Student[n];  <span style="color:var(--text2);">// dynamic array</span>
+arr[i].name = "Bob";           <span style="color:var(--text2);">// still use dot with []</span>
+delete[] arr;
+
+Student* ptr = new Student;    <span style="color:var(--text2);">// single dynamic struct</span>
+ptr->name = "Carol";           <span style="color:var(--text2);">// arrow operator for pointer-to-struct</span>
+(*ptr).name = "Carol";         <span style="color:var(--text2);">// same thing, ugly version</span>
+delete ptr;</div>
+
+  <h2>Structs & Functions</h2>
+  <div class="cb"><span style="color:var(--text2);">// Print (doesn't modify, pass by value is fine)</span>
+void print(Student s);
+
+<span style="color:var(--text2);">// Read (modifies, MUST use reference)</span>
+void read(Student &s);
+
+<span style="color:var(--text2);">// Array (always by reference automatically)</span>
+void readAll(Student arr[], int size);</div>
+
+  <h2>Self-Referential Structs (Linked Structures)</h2>
+  <div class="cb">struct relay {
+    int i;
+    relay* r;   <span style="color:var(--text2);">// pointer to another relay</span>
+};
+
+relay a, b, c;
+a.r = &b; b.r = &c; c.r = &a;  <span style="color:var(--text2);">// circular: a→b→c→a</span>
+a.r->r->i                       <span style="color:var(--text2);">// follows chain: a→b→c, gets c.i</span></div>
+  <p class="small"><span class="y">Exam trick:</span> Count the arrows to trace which struct you land on. a.r->r->r->r chains through the circle.</p>
+
+  <h2>Structs with Pass by Ref vs Value</h2>
+  <div class="box hl-yellow"><div class="box-title yellow">⚠️ Exam Trap (from Practice Test)</div>
+    <code>void f(Type& x, Type y)</code>: x is the original (changes stick), y is a copy (changes lost).<br>
+    If you call <code>f(obj, obj)</code>, x IS obj but y is a COPY of obj at call time.
+  </div>
+
+  <div class="nav-footer"><button onclick="goTo(4)">← Pointers</button><button onclick="goTo(6)">File I/O →</button></div>
+</div>
+
+<!-- ═══════════ 6: FILE IO ═══════════ -->
+<div class="section" id="part6">
+  <h1>File <em>I/O</em></h1>
+
+  <h2>Setup</h2>
+  <div class="cb">#include&lt;fstream&gt;
+
+ifstream inFile;               <span style="color:var(--text2);">// for reading</span>
+inFile.open("data.txt");
+if(!inFile) { /* error */ }    <span style="color:var(--text2);">// always check</span>
+inFile.close();                <span style="color:var(--text2);">// close when done</span>
+
+ofstream outFile;              <span style="color:var(--text2);">// for writing</span>
+outFile.open("out.txt");
+outFile << "Hello" << endl;
+outFile.close();</div>
+
+  <h2>Reading Patterns</h2>
+  <div class="grid3">
+    <div class="box"><div class="box-title blue">Known count</div><div class="cb" style="font-size:12px;">for(int i=0; i&lt;n; i++)
+  inFile >> arr[i];</div></div>
+    <div class="box"><div class="box-title green">Unknown count</div><div class="cb" style="font-size:12px;">while(inFile >> val)
+{
+  sum += val;
+  count++;
+}</div></div>
+    <div class="box"><div class="box-title yellow">Read lines</div><div class="cb" style="font-size:12px;">while(getline(inFile, line))
+{
+  // process line
+}</div></div>
+  </div>
+
+  <h2>Reading Formatted Input (slashes, colons)</h2>
+  <div class="cb"><span style="color:var(--text2);">// Input: 04/20/2026 13:20</span>
+char slash, colon;
+cin >> month >> slash >> day >> slash >> year >> hour >> colon >> minute;
+<span style="color:var(--text2);">// char variables "eat" the separators</span></div>
+
+  <h2>Counting Words in a Line</h2>
+  <div class="cb">int words = 0;
+if(line.length() > 0) words = 1;
+for(int i = 0; i < line.length(); i++)
+    if(line[i] == ' ') words++;
+<span style="color:var(--text2);">// words = spaces + 1</span></div>
+
+  <h2>The cin.ignore() Rule</h2>
+  <div class="cb">inFile >> number;    <span style="color:var(--text2);">// reads number, leaves \n</span>
+inFile.ignore();     <span style="color:var(--text2);">// eat the \n</span>
+getline(inFile, line); <span style="color:var(--text2);">// NOW reads the actual next line</span></div>
+
+  <h2>Caesar Cipher Pattern (from Practice Test)</h2>
+  <div class="cb"><span style="color:var(--text2);">// Shift letter by 3, wrapping z→c</span>
+if(c >= 'a' && c <= 'z')
+    out << (char)('a' + (c - 'a' + 3) % 26);
+else if(c >= 'A' && c <= 'Z')
+    out << (char)('A' + (c - 'A' + 3) % 26);
+else
+    out << c;  <span style="color:var(--text2);">// non-letters unchanged</span></div>
+  <p class="small">Use <code>in.get(c)</code> to read character by character (including spaces/newlines).</p>
+
+  <div class="nav-footer"><button onclick="goTo(5)">← Structs</button><button onclick="goTo(7)">Tricky Patterns →</button></div>
+</div>
+
+<!-- ═══════════ 7: TRICKY PATTERNS ═══════════ -->
+<div class="section" id="part7">
+  <h1>Tricky <em>Patterns</em></h1>
+  <p class="small" style="margin-bottom:20px;">Patterns from the practice test "Hostile Code" and "You're the Compiler" sections.</p>
+
+  <h2>Pointer Chasing Through an Array</h2>
+  <div class="cb">int a[5] = {5,3,1,4,0};
+int* f = a+2;          <span style="color:var(--text2);">// f → a[2] = 1</span>
+f = a + *f;            <span style="color:var(--text2);">// f = a + (value at f) = a + 1 → a[1]</span></div>
+  <p class="small"><span class="y">Pattern:</span> the value at the pointer becomes the next index. Trace step by step.</p>
+
+  <h2>Ternary Operator with Chars</h2>
+  <div class="cb">cout << (ka.ts ? 'B' : 'I');
+<span style="color:var(--text2);">// if ka.ts is non-zero (any char except '\0') → 'B'</span>
+<span style="color:var(--text2);">// if ka.ts is '\0' (null character = 0) → 'I'</span></div>
+  <p class="small"><code>'\0'</code> is the ONLY char that evaluates to false. Every other char is "truthy".</p>
+
+  <h2>Double Increment in Loop</h2>
+  <div class="cb">for(int i=0; i < strlen(st); i++)
+    st[i++] = toupper(st[i]);
+<span style="color:var(--text2);">// i++ in the BODY (post-increment) + i++ in the HEADER</span>
+<span style="color:var(--text2);">// = skip every other character. Only even indices get uppercased.</span></div>
+
+  <h2>Circular Struct Pointers</h2>
+  <div class="cb">a.r=&b;  b.r=&c;  c.r=&a;   <span style="color:var(--text2);">// a→b→c→a→b→c→...</span>
+
+a.r->r->r->r->i
+<span style="color:var(--text2);">// a.r=b, ->r=c, ->r=a, ->r=b, ->i = b.i</span>
+<span style="color:var(--text2);">// Count: 4 arrows from a = goes around circle once + 1 = lands on b</span></div>
+
+  <h2>Compiler Error Gotchas</h2>
+  <table>
+    <tr><th>Code</th><th>Verdict</th><th>Why</th></tr>
+    <tr><td><code>struct S{};</code> inside main</td><td><span class="g">OK</span></td><td>Legal in C++</td></tr>
+    <tr><td><code>bool flag = 2;</code></td><td><span class="g">OK</span></td><td>2 converts to true</td></tr>
+    <tr><td><code>long x = static_cast&lt;char&gt;('3');</code></td><td><span class="g">OK</span></td><td>char→long implicit</td></tr>
+    <tr><td><code>int** m = new int[15][20];</code></td><td><span class="r">ERROR</span></td><td>Returns int(*)[20], not int**</td></tr>
+    <tr><td><code>while(int n=5)</code></td><td><span class="g">OK</span></td><td>Declares n in condition, infinite loop but compiles</td></tr>
+    <tr><td><code>getline(buf, 20);</code></td><td><span class="r">ERROR</span></td><td>Missing stream argument</td></tr>
+    <tr><td><code>return true;</code> in int main</td><td><span class="g">OK</span></td><td>true converts to 1</td></tr>
+  </table>
+
+  <h2>Common Exam Mistakes Summary</h2>
+  <div class="grid2">
+    <div class="box hl-red"><div class="box-title red">Don't Do</div>
+      <ul style="font-size:13px;">
+        <li><code>delete arr</code> when used <code>new[]</code></li>
+        <li><code>*arr[i]</code> double dereference</li>
+        <li><code>f(val)</code> when f expects <code>int*</code></li>
+        <li>Forget <code>cin.ignore()</code></li>
+        <li>Pass stream by value</li>
+        <li>Function name starting with digit</li>
+        <li>Use reserved word as identifier</li>
+        <li>Overload by return type only</li>
+      </ul>
+    </div>
+    <div class="box hl-green"><div class="box-title green">Do Remember</div>
+      <ul style="font-size:13px;">
+        <li><code>delete[]</code> matches <code>new[]</code></li>
+        <li>Check <code>if(!inFile)</code> after open</li>
+        <li>Close files when done</li>
+        <li>Init pointers to <code>nullptr</code></li>
+        <li>Pass streams by reference</li>
+        <li><code>'\0'</code> = false, all other chars = true</li>
+        <li>Integer division truncates</li>
+        <li>Divide by 3.0 not 3 for averages</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="nav-footer"><button onclick="goTo(6)">← File I/O</button><span></span></div>
+</div>
+
+<script>
+const partNames=["Types & Operators","Strings & Arrays","Functions","Pointers","Structures","File I/O","Tricky Patterns"];
+const nav=document.getElementById('navParts');
+partNames.forEach((n,i)=>{const b=document.createElement('button');b.className='part-btn'+(i===0?' active':'');b.textContent=(i+1)+'. '+n;b.onclick=()=>goTo(i+1);nav.appendChild(b);});
+function goTo(n){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('part'+n).classList.add('active');document.querySelectorAll('.part-btn').forEach((b,i)=>b.classList.toggle('active',i===n-1));window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
+</html>
