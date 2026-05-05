@@ -1,0 +1,3067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Design Catch-Up: Sessions 8 to 13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E0F12;
+  --bg-elev: #16181D;
+  --bg-elev-2: #1D2026;
+  --border: #2A2E36;
+  --border-warm: #3A322A;
+  --text: #F2EFE8;
+  --text-dim: #A39E94;
+  --text-faint: #6E6A62;
+  --accent: #FF6B47;
+  --accent-warm: #FFA97A;
+  --accent-dim: #5B2917;
+  --teal: #7DD3C0;
+  --gold: #E8B964;
+  --green: #87C09A;
+  --red: #E5736B;
+  --code-bg: #0A0B0E;
+  --sidebar-w: 300px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ APP LAYOUT ============ */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  padding: 36px 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+@media (max-width: 900px) {
+  .sidebar { position: static; height: auto; padding: 24px; }
+}
+
+.sidebar-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-brand::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.sidebar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.25;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+
+.tab-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 32px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.35;
+  transition: background 0.15s, color 0.15s;
+  border-left: 2px solid transparent;
+}
+.tab-btn:hover { background: rgba(255, 107, 71, 0.06); color: var(--text); }
+.tab-btn.active {
+  background: rgba(255, 107, 71, 0.1);
+  color: var(--text);
+  border-left-color: var(--accent);
+}
+.tab-btn .tab-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  min-width: 22px;
+  flex-shrink: 0;
+}
+.tab-btn.active .tab-num { color: var(--accent); }
+
+.sidebar-divider { border: 0; border-top: 1px dashed var(--border); margin: 24px 0; }
+.sidebar-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sidebar-note { font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+
+.mobile-dropdown { display: none; }
+@media (max-width: 900px) {
+  .tab-list { display: none; }
+  .mobile-dropdown {
+    display: block;
+    width: 100%;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+}
+
+/* ============ CONTENT AREA ============ */
+.content {
+  padding: 56px 64px 120px;
+  max-width: 920px;
+  width: 100%;
+}
+@media (max-width: 900px) { .content { padding: 32px 24px 80px; } }
+@media (max-width: 720px) { .content { padding: 24px 20px 80px; } body { font-size: 16px; } }
+
+/* ============ TAB PANELS ============ */
+.tab-panel { display: none; animation: fadeIn 0.3s ease-out; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ MODULE CONTENT ============ */
+.module-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+h2.module-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin-bottom: 16px;
+}
+h2.module-title em { font-style: italic; color: var(--accent-warm); }
+
+.module-desc { font-size: 18px; color: var(--text-dim); margin-bottom: 40px; max-width: 720px; }
+
+h3.section-head {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 500;
+  margin: 48px 0 16px;
+  letter-spacing: -0.01em;
+}
+
+p { margin-bottom: 16px; }
+p.dim { color: var(--text-dim); }
+
+ul.bullets { margin: 16px 0 24px 0; padding-left: 24px; }
+ul.bullets li { margin-bottom: 8px; color: var(--text-dim); }
+ul.bullets li strong { color: var(--text); }
+
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: var(--bg-elev-2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-warm);
+  border: 1px solid var(--border);
+}
+
+/* ============ TALKING POINTS ============ */
+.talking-points {
+  background: linear-gradient(135deg, rgba(232, 185, 100, 0.06), rgba(232, 185, 100, 0.02));
+  border-left: 3px solid var(--gold);
+  padding: 22px 28px;
+  margin: 32px 0;
+  border-radius: 0 8px 8px 0;
+}
+.talking-points-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.talking-points-label::before { content: '◆'; font-size: 14px; }
+.talking-points p { font-size: 15.5px; margin-bottom: 10px; }
+.talking-points p:last-child { margin-bottom: 0; }
+
+/* ============ CONCEPT BOX ============ */
+.concept-box {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin: 28px 0;
+}
+.concept-box h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  color: var(--accent-warm);
+  font-style: italic;
+}
+
+/* ============ DO THIS CALLOUT ============ */
+.do-this {
+  background: rgba(255, 107, 71, 0.07);
+  border: 1px solid rgba(255, 107, 71, 0.25);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.do-this-icon {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.do-this-text { font-size: 16px; line-height: 1.55; padding-top: 4px; }
+.do-this-text strong { color: var(--accent-warm); }
+
+/* ============ CODE BLOCKS ============ */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.code-filename {
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-filename::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.copy-btn.copied { background: var(--green); color: var(--bg); border-color: var(--green); }
+.code-block pre { padding: 20px 22px; overflow-x: auto; margin: 0; }
+.code-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre;
+}
+
+/* Subtle styling for inline comments to make them more readable */
+.code-block code::selection { background: rgba(255, 107, 71, 0.3); }
+
+/* ============ RESULT BOX (replaces iframe previews) ============ */
+.result-box {
+  background: linear-gradient(135deg, rgba(135, 192, 154, 0.06), rgba(135, 192, 154, 0.02));
+  border: 1px solid rgba(135, 192, 154, 0.25);
+  border-left: 3px solid var(--green);
+  padding: 22px 28px;
+  margin: 28px 0;
+  border-radius: 0 10px 10px 0;
+}
+.result-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(135, 192, 154, 0.6);
+}
+.result-box p { font-size: 15.5px; margin-bottom: 10px; }
+.result-box p:last-child { margin-bottom: 0; }
+
+/* ============ MCQ ============ */
+.mcq {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin: 36px 0;
+}
+.mcq-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mcq-label::before {
+  content: '?';
+  width: 20px;
+  height: 20px;
+  background: var(--teal);
+  color: var(--bg);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+.mcq-question {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  font-style: italic;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.mcq-options { display: flex; flex-direction: column; gap: 10px; }
+.mcq-option {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: all 0.15s;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.mcq-option:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.mcq-option .opt-letter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--bg);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.mcq-option.correct { background: rgba(135, 192, 154, 0.1); border-color: var(--green); }
+.mcq-option.correct .opt-letter { background: var(--green); color: var(--bg); }
+.mcq-option.wrong { background: rgba(229, 115, 107, 0.08); border-color: var(--red); }
+.mcq-option.wrong .opt-letter { background: var(--red); color: var(--bg); }
+.mcq-feedback {
+  margin-top: 18px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+  display: none;
+}
+.mcq-feedback.show { display: block; }
+.mcq-feedback.correct { background: rgba(135, 192, 154, 0.08); border-left: 3px solid var(--green); }
+.mcq-feedback.wrong { background: rgba(229, 115, 107, 0.08); border-left: 3px solid var(--red); }
+.mcq-feedback strong { color: var(--accent-warm); }
+
+/* ============ PRONUNCIATION ============ */
+.pronunciation {
+  background: linear-gradient(135deg, rgba(125, 211, 192, 0.05), rgba(125, 211, 192, 0.01));
+  border: 1px solid rgba(125, 211, 192, 0.25);
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin: 24px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pronunciation-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.pronunciation-term {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-style: italic;
+}
+.pronunciation-pron {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--accent-warm);
+}
+
+/* ============ COMPARISON TOGGLE ============ */
+.comparison {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 28px 0;
+  overflow: hidden;
+}
+.comparison-tabs {
+  display: flex;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border);
+}
+.cmp-tab {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 18px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+}
+.cmp-tab:hover { color: var(--text); }
+.cmp-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.cmp-panel { display: none; background: var(--code-bg); padding: 0; }
+.cmp-panel.active { display: block; }
+.cmp-panel pre {
+  padding: 24px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre;
+}
+
+/* ============ STEP PATTERN ============ */
+.step-pattern {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 28px 0;
+}
+.step-row {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.step-num {
+  background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+  color: var(--bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.step-detail { color: var(--text-dim); font-size: 14.5px; }
+
+/* ============ GRID DEMO ============ */
+.grid-demo {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+}
+.grid-demo-controls {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.grid-control {
+  flex: 1;
+  min-width: 180px;
+}
+.grid-control label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+.grid-val {
+  font-size: 16px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-left: 4px;
+}
+.grid-control input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-elev-2);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+.grid-control input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.grid-control input[type=range]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 0;
+}
+.grid-demo-output {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.grid-cell {
+  background: linear-gradient(135deg, rgba(255, 107, 71, 0.15), rgba(255, 107, 71, 0.05));
+  border: 1px solid rgba(255, 107, 71, 0.4);
+  border-radius: 6px;
+  padding: 32px 16px;
+  text-align: center;
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  color: var(--accent-warm);
+  transition: all 0.3s ease;
+}
+.grid-demo-code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent-warm);
+}
+
+/* ============ VARS DEMO ============ */
+.vars-demo {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+  --demo-bg: #fafaf7;
+  --demo-text: #222222;
+  --demo-accent: #b94e2c;
+}
+.vars-demo-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.vars-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-elev-2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.vars-control label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.vars-control input[type=color] {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0;
+}
+.vars-control input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+.vars-control input[type=color]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+.vars-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-warm);
+}
+.vars-demo-output {
+  background: var(--demo-bg);
+  padding: 24px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.vars-card {
+  border-left: 4px solid var(--demo-accent);
+  padding-left: 16px;
+  transition: border-color 0.2s;
+}
+.vars-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  color: var(--demo-text);
+  margin-bottom: 6px;
+  transition: color 0.2s;
+}
+.vars-demo-output p {
+  color: var(--demo-text);
+  margin-bottom: 12px;
+  font-size: 14.5px;
+  transition: color 0.2s;
+}
+.vars-card-btn {
+  background: var(--demo-accent);
+  color: white;
+  border: 0;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+}
+
+/* ============ SVG DEMO ============ */
+.svg-demo {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+}
+@media (max-width: 720px) {
+  .svg-demo { grid-template-columns: 1fr; }
+  .svg-demo-stage { display: flex; justify-content: center; }
+}
+.svg-demo-stage svg {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.svg-demo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.svg-control label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.svg-control label span {
+  color: var(--accent);
+  font-weight: 700;
+}
+.svg-control input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-elev-2);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+.svg-control input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.svg-control input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 0;
+}
+.svg-demo-code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--accent-warm);
+  margin-top: 8px;
+}
+
+/* ============ EASE DEMO ============ */
+.ease-demo {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+}
+.ease-demo-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.ease-btn {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ease-btn:hover { color: var(--text); border-color: var(--accent); }
+.ease-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.ease-demo-track {
+  background: var(--bg-elev-2);
+  height: 60px;
+  border-radius: 30px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.ease-ball {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+  border-radius: 50%;
+  transform: translateY(-50%);
+  transition: left 1s linear;
+  box-shadow: 0 0 20px rgba(255, 107, 71, 0.4);
+}
+.ease-ball.go { left: calc(100% - 52px); }
+.ease-demo-code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent-warm);
+}
+
+/* ============ LESSON END ============ */
+.lesson-end {
+  text-align: center;
+  padding: 60px 0 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+.lesson-end h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent-warm);
+  margin-bottom: 16px;
+}
+.lesson-end p { color: var(--text-dim); }
+
+/* ============ PREV/NEXT ============ */
+.tab-nav {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 60px 0 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  min-width: 200px;
+}
+.nav-btn:hover { border-color: var(--accent); background: rgba(255, 107, 71, 0.05); }
+.nav-btn.next { text-align: right; align-items: flex-end; }
+.nav-btn-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.nav-btn-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; }
+
+/* ============ PANEL HEADER PILL ============ */
+.panel-header {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, var(--bg) 80%, transparent);
+  z-index: 10;
+  margin: -56px -64px 32px;
+  padding: 24px 64px 24px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 900px) {
+  .panel-header { margin: -32px -24px 24px; padding: 20px 24px; }
+}
+.panel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.panel-pill .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">Lesson</div>
+    <h1 class="sidebar-title">Web Design,<br>Sessions 8 to 13.</h1>
+    <select class="mobile-dropdown" id="mobile-tab-select"></select>
+    <ul class="tab-list" id="tab-list"></ul>
+    <hr class="sidebar-divider">
+    <div class="sidebar-meta">For Vlad</div>
+    <p class="sidebar-note">Each tab is a self-contained module. Walk through the talking points (gold), then have him copy the code, save, refresh. Comments inside the code explain what each piece does.</p>
+  </aside>
+
+  <main class="content" id="content">
+    <!-- MODULE 0: STARTING PROJECT -->
+<section class="tab-panel module" id="m0">
+  <div class="module-num">Module 00 · The Foundation</div>
+  <h2 class="module-title">The starting <em>project</em>.</h2>
+  <p class="module-desc">Before we add anything new, let's set up the simple portfolio site we'll improve for the rest of this lesson. By the end, this same site will have JavaScript interactions, a working contact form, a CSS Grid gallery, theme switching, an SVG logo, and animations.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Two files, <code class="inline">index.html</code> and <code class="inline">styles.css</code>, sitting in the same folder. Everything we add today plugs into these two files.</p>
+    <p>Walk Jack through the structure: header with nav, three sections (About, Gallery, Contact), and the CSS that styles them. This is review of Sessions 2 to 6, don't dwell here.</p>
+  </div>
+
+  <h3 class="section-head">Set up the folder</h3>
+  <p class="dim">Create a folder anywhere on your computer. Inside, create two files: <code class="inline">index.html</code> and <code class="inline">styles.css</code>. Open the folder in VS Code.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">Paste the following into <strong>index.html</strong> and save.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;Jack Kennedy · Portfolio&lt;/title&gt;
+
+  &lt;!-- Link to the external stylesheet sitting in the same folder --&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;!-- The site header: name + navigation --&gt;
+  &lt;header&gt;
+    &lt;h1&gt;Jack Kennedy&lt;/h1&gt;
+    &lt;nav&gt;
+      &lt;a href="#about"&gt;About&lt;/a&gt;
+      &lt;a href="#gallery"&gt;Gallery&lt;/a&gt;
+      &lt;a href="#contact"&gt;Contact&lt;/a&gt;
+    &lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;!-- Main content area --&gt;
+  &lt;main&gt;
+
+    &lt;!-- Each section has an id so the nav links can jump to it --&gt;
+    &lt;section id="about"&gt;
+      &lt;h2&gt;About&lt;/h2&gt;
+      &lt;p&gt;I am a designer studying at The College of New Jersey. I make
+         websites, posters, and the occasional zine.&lt;/p&gt;
+    &lt;/section&gt;
+
+    &lt;section id="gallery"&gt;
+      &lt;h2&gt;Gallery&lt;/h2&gt;
+      &lt;div class="photos"&gt;
+        &lt;img src="https://picsum.photos/seed/one/400/300" alt="Photo one"&gt;
+        &lt;img src="https://picsum.photos/seed/two/400/300" alt="Photo two"&gt;
+        &lt;img src="https://picsum.photos/seed/three/400/300" alt="Photo three"&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section id="contact"&gt;
+      &lt;h2&gt;Contact&lt;/h2&gt;
+      &lt;p&gt;Reach me at jack@example.com.&lt;/p&gt;
+    &lt;/section&gt;
+
+  &lt;/main&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">Paste the following into <strong>styles.css</strong> and save.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* Body sets up the page-wide defaults: font, max width, color */
+body {
+  font-family: Georgia, serif;
+  max-width: 720px;
+  margin: 0 auto;          /* auto left/right centers the page */
+  padding: 32px 24px;
+  color: #222;
+  background: #fafaf7;
+}
+
+/* Header gets a strong line under it to separate from content */
+header {
+  border-bottom: 2px solid #222;
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+
+h1 { font-size: 32px; margin-bottom: 8px; }
+
+/* Nav links sit inline, no underline by default */
+nav a {
+  margin-right: 18px;
+  color: #222;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;   /* invisible line, ready for hover */
+}
+
+/* On hover, the line becomes visible (the trick: same border, just colored) */
+nav a:hover {
+  border-bottom-color: #222;
+}
+
+section { margin: 48px 0; }
+h2 { font-size: 22px; margin-bottom: 12px; }
+
+/* Photos sit in a flex row that wraps when it runs out of space */
+.photos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.photos img {
+  width: 200px;
+  height: 150px;
+  object-fit: cover;       /* crop to fill, don't squish */
+  border-radius: 2px;
+}</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">3</div>
+    <div class="do-this-text">Double-click <strong>index.html</strong> in your folder. It opens in your browser.</div>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What you'll see</div>
+    <p>A simple page with "Jack Kennedy" as the heading, three nav links underneath (About, Gallery, Contact), and three stacked sections. The Gallery section shows three placeholder photos in a row. Clicking a nav link jumps the page down to that section.</p>
+    <p>Boring on purpose. Every module after this one transforms it.</p>
+  </div>
+
+</section>
+
+
+<!-- MODULE 1: JAVASCRIPT BASICS -->
+<section class="tab-panel module" id="m1">
+  <div class="module-num">Module 01 · Session 08, Part A</div>
+  <h2 class="module-title">JavaScript, the <em>behavior</em> layer.</h2>
+  <p class="module-desc">JavaScript is a dynamic programming language that web browsers can interpret. Most often it is used to create dynamic web interfaces, things that respond when a user interacts. HTML is structure, CSS is appearance, JavaScript is behavior.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>The mental model: HTML is the skeleton, CSS is skin and clothes, JavaScript is the muscles and brain. Without JS, the page just sits there.</p>
+    <p>Three places JS can live: external file (cleanest, what we'll do), embedded in a script tag, or inline as an attribute. We'll use embedded for simplicity, but in production you'd use external files.</p>
+    <p>Six core concepts covered in the prof's syllabus: variables, data types, operators, conditionals, loops, functions. We'll touch the first two and functions today, plus the click handler pattern that ties it all together.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">DOM</span>
+    <span class="pronunciation-pron">"dom" (rhymes with mom)</span>
+    <span class="pronunciation-term">console</span>
+    <span class="pronunciation-pron">"KON-sole"</span>
+  </div>
+
+  <h3 class="section-head">The three places JavaScript lives</h3>
+
+  <div class="concept-box">
+    <h4>1. External file (recommended for real projects)</h4>
+    <p>Put your JS in a separate <code class="inline">.js</code> file and link it. Keeps HTML clean.</p>
+    <pre style="background: #0A0B0E; padding: 14px; border-radius: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EFE8; overflow-x: auto;"><code>&lt;script src="js/myscript.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="concept-box">
+    <h4>2. Embedded in the page (what we'll use today)</h4>
+    <p>Put your JS directly inside a script tag. Fine for small projects and learning.</p>
+    <pre style="background: #0A0B0E; padding: 14px; border-radius: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EFE8; overflow-x: auto;"><code>&lt;script&gt;
+  alert("Hello!");
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="concept-box">
+    <h4>3. Inline (avoid for anything serious)</h4>
+    <p>Stuck inside an HTML attribute. Hard to maintain.</p>
+    <pre style="background: #0A0B0E; padding: 14px; border-radius: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EFE8; overflow-x: auto;"><code>&lt;button onclick="alert('Hi!');"&gt;Click me&lt;/button&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Add your first script</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>index.html</strong>, find the closing <code class="inline">&lt;/body&gt;</code> tag near the bottom. Add this <code class="inline">&lt;script&gt;</code> block <strong>just above it</strong>.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · just before &lt;/body&gt;</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;script&gt;
+
+  // console.log writes a message to the browser's developer console.
+  // Useful for debugging. Doesn't show on the page itself.
+  console.log("Hello from JavaScript!");
+
+  // alert pops up a dialog box. Annoying for users, fine for testing.
+  alert("The page is alive.");
+
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>An alert popup appears with the text "The page is alive." Close it.</p>
+    <p>If you open the developer console (right-click anywhere on the page, choose Inspect, click the Console tab), you'll see the line "Hello from JavaScript!" printed there.</p>
+  </div>
+
+  <h3 class="section-head">Variables and functions</h3>
+  <p>The two most fundamental JavaScript concepts: variables store values, functions store actions.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · variables</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// "let" creates a variable whose value can change later
+let count = 0;
+count = count + 1;       // now count is 1
+
+// "const" creates a variable whose value cannot be reassigned
+const name = "Jack";
+
+// Variables can hold different types of data:
+let age = 21;            // number
+let isStudent = true;    // boolean (true or false)
+let hobbies = ["design", "music"];   // array (a list)</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · functions</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// A function is a packaged set of instructions you can run later.
+// Define it once with the "function" keyword, run it as many times as you want.
+function sayHi() {
+  alert("Hi!");
+}
+
+// Calling the function actually runs the code inside it
+sayHi();   // popup appears
+sayHi();   // popup appears again</code></pre>
+  </div>
+
+  <h3 class="section-head">The whole point: react to a click</h3>
+  <p>This is the move that actually makes pages interactive. Pick an element, listen for an event (like a click), run a function.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">In <strong>index.html</strong>, find the About section. Add a button right after the paragraph.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside the About section</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;section id="about"&gt;
+  &lt;h2&gt;About&lt;/h2&gt;
+  &lt;p&gt;I am a designer studying at The College of New Jersey. I make
+     websites, posters, and the occasional zine.&lt;/p&gt;
+
+  &lt;!-- New: a button with an id so JavaScript can find it --&gt;
+  &lt;button id="surprise-btn"&gt;Click for a surprise&lt;/button&gt;
+&lt;/section&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">Replace your <code class="inline">&lt;script&gt;</code> tag at the bottom with this one.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · the &lt;script&gt; tag</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;script&gt;
+
+  // STEP 1: find the button on the page.
+  // document.getElementById takes an id string, returns the matching element.
+  const btn = document.getElementById("surprise-btn");
+
+  // STEP 2: listen for a click on that button.
+  // addEventListener takes two things: the event name ("click")
+  // and a function to run whenever that event happens.
+  btn.addEventListener("click", function() {
+
+    // STEP 3: this code runs every time the button is clicked.
+    alert("Surprise! You clicked the button.");
+
+  });
+
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>You'll see a button under the About paragraph. Clicking it triggers a popup with the text "Surprise! You clicked the button." Close it. Click again. Same thing happens. The function runs every time the click event fires.</p>
+  </div>
+
+  <p class="dim">This three-step pattern (find element, listen for event, do something) is the entire core of interactive JavaScript. Everything else builds on it.</p>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why do we put the <code class="inline" style="font-size: 16px;">&lt;script&gt;</code> tag at the bottom of the body, not in the head?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>It looks cleaner</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>The HTML loads first so JavaScript can find elements</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>JavaScript only works at the bottom</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>The browser requires it there</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> If the script runs before the HTML exists, <code class="inline">document.getElementById("surprise-btn")</code> returns nothing because the button hasn't been created yet. Putting the script at the bottom guarantees the page is fully built before JS runs.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">addEventListener("click", ...)</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Clicks the element automatically</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Adds a button to the page</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Runs a function whenever the element is clicked</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Stops the page from being clicked</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> An event listener listens for an event (click, hover, keypress, etc.) and runs your function when it happens.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 2: jQuery -->
+<section class="tab-panel module" id="m2">
+  <div class="module-num">Module 02 · Session 08, Part B</div>
+  <h2 class="module-title">jQuery, the easy <em>mode</em>.</h2>
+  <p class="module-desc">jQuery is a cross-browser JavaScript library designed to simplify common tasks: selecting elements, handling events, animations, special effects. It's old now, but your prof wants you to know it because it's still everywhere on the web.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>jQuery's pitch: "this thing that takes 4 lines of vanilla JS, jQuery does in 1." That's it. It's a wrapper that makes common tasks shorter to write.</p>
+    <p>To use it, you load the jQuery library from a CDN (a fast file host), then you can use the magic <code class="inline">$</code> symbol as a shortcut to grab elements and do things with them.</p>
+    <p>Modern frameworks (React, Vue) have replaced jQuery for most new work, but knowing it is still required because tons of existing sites and plugins use it.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">jQuery</span>
+    <span class="pronunciation-pron">"jay-QUEER-ee"</span>
+    <span class="pronunciation-term">CDN</span>
+    <span class="pronunciation-pron">"see-dee-EN" (each letter)</span>
+  </div>
+
+  <h3 class="section-head">See the difference: vanilla vs jQuery</h3>
+  <p>Same task, two ways to write it. Click the toggle to compare.</p>
+
+  <div class="comparison" id="cmp1">
+    <div class="comparison-tabs">
+      <button class="cmp-tab active" data-target="vanilla">Vanilla JavaScript</button>
+      <button class="cmp-tab" data-target="jquery">jQuery</button>
+    </div>
+    <div class="cmp-panel active" data-name="vanilla">
+      <pre><code>// Find the button
+const btn = document.getElementById("surprise-btn");
+
+// Find the about section
+const about = document.getElementById("about");
+
+// Add click listener
+btn.addEventListener("click", function() {
+  // Toggle the "highlighted" class on the about section
+  about.classList.toggle("highlighted");
+});</code></pre>
+    </div>
+    <div class="cmp-panel" data-name="jquery">
+      <pre><code>// Same thing, in jQuery:
+$("#surprise-btn").on("click", function() {
+  $("#about").toggleClass("highlighted");
+});</code></pre>
+    </div>
+  </div>
+
+  <p class="dim">Same result, fewer lines. The trade-off is loading an extra library, but for school projects and small sites that's fine.</p>
+
+  <h3 class="section-head">Add jQuery to the page</h3>
+  <p>You don't install anything. You link to a hosted version using a script tag, the same way you'd link external CSS.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>index.html</strong>, replace your existing <code class="inline">&lt;script&gt;</code> at the bottom with these <strong>two</strong> script tags.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · just before &lt;/body&gt;</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;!-- Load the jQuery library from a CDN. This must come BEFORE your code. --&gt;
+&lt;script src="https://code.jquery.com/jquery-3.7.1.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- Your code that uses jQuery --&gt;
+&lt;script&gt;
+
+  // $(document).ready(...) is jQuery's way of saying:
+  // "wait until the page is fully loaded, then run this code."
+  $(document).ready(function() {
+
+    // $("#surprise-btn") is jQuery's shortcut for getElementById.
+    // .on("click", ...) attaches a click listener.
+    $("#surprise-btn").on("click", function() {
+
+      // $("#about") finds the about section.
+      // .toggleClass("highlighted") adds the class if missing,
+      // removes it if present. Perfect for on/off effects.
+      $("#about").toggleClass("highlighted");
+
+    });
+
+  });
+
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add the highlighted class so the toggle has something to do.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to the bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* When this class is on the section, give it a yellow background.
+   The transition makes the color change fade in instead of jumping. */
+.highlighted {
+  background: #fff3a0;
+  padding: 16px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>Click the surprise button. The About section turns yellow. Click again, it turns back to normal. <code class="inline">.toggleClass()</code> flips the class on and off each time.</p>
+  </div>
+
+  <h3 class="section-head">jQuery selectors: same as CSS</h3>
+  <p>If you can write a CSS selector, you already know jQuery selectors. Same exact syntax inside the <code class="inline">$()</code>.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">jQuery selectors · reference</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>$("h2")              // every &lt;h2&gt; on the page
+$("#about")          // the element with id="about"
+$(".photos")         // every element with class="photos"
+$(".photos img")     // every &lt;img&gt; inside .photos
+$("nav a")           // every &lt;a&gt; inside &lt;nav&gt;
+$("input[type=email]")   // every email input</code></pre>
+  </div>
+
+  <h3 class="section-head">Common jQuery methods</h3>
+  <p>Once you've selected something with <code class="inline">$()</code>, you can chain methods to read or change it.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">jQuery methods · reference</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// CHANGE TEXT
+$("h1").text("New name");          // replaces the text inside h1
+
+// CHANGE HTML (text + tags)
+$("#about").html("&lt;em&gt;italic&lt;/em&gt;");
+
+// CHANGE CSS DIRECTLY
+$("h1").css("color", "red");
+$("h1").css({ color: "red", fontSize: "40px" });
+
+// ADD / REMOVE / TOGGLE CLASSES
+$("#about").addClass("highlighted");
+$("#about").removeClass("highlighted");
+$("#about").toggleClass("highlighted");
+
+// SHOW / HIDE
+$("#about").hide();
+$("#about").show();
+$("#about").fadeOut();    // animated
+$("#about").fadeIn();     // animated
+
+// CHAIN MULTIPLE METHODS TOGETHER
+$("h1").css("color", "red").text("Boom").addClass("loud");</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">$("#gallery").toggleClass("highlighted")</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Always adds the class</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Always removes the class</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Adds the class if missing, removes if present</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Renames the class</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> That's what "toggle" means. It flips between on and off. Useful for dark mode buttons, opening menus, showing/hiding panels.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why do we wrap our code in <code class="inline" style="font-size: 16px;">$(document).ready(...)</code>?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>It is required by jQuery</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>To wait until the HTML is fully built before running</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>To make the code load faster</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>To prevent CSS from loading first</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Same problem as before, just packaged differently. If we try to grab <code class="inline">#surprise-btn</code> before it exists, we get nothing.
+    </div>
+  </div>
+
+</section>
+
+<!-- MODULE 3: IMAGE GALLERY PLUGIN -->
+<section class="tab-panel module" id="m3">
+  <div class="module-num">Module 03 · Session 08, Assignment</div>
+  <h2 class="module-title">An image <em>gallery</em> plugin.</h2>
+  <p class="module-desc">A jQuery plugin is jQuery code that someone else wrote, packaged up, and shared so you can drop it into your page. Your Session 8 assignment is to add a real image gallery using a plugin. We'll use Swiper.js, a popular free slider library.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>The pattern for any plugin is always the same four steps: link the CSS file, link the JS file, write the HTML structure the plugin expects, then activate the plugin with one line of JavaScript.</p>
+    <p>Once Jack understands this pattern, he can use any plugin. Swiper, Slick, Lightbox, Fotorama, all of them follow this exact pattern.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">Swiper</span>
+    <span class="pronunciation-pron">"SWY-per"</span>
+    <span class="pronunciation-term">CDN</span>
+    <span class="pronunciation-pron">"see-dee-EN"</span>
+  </div>
+
+  <h3 class="section-head">The four-step plugin pattern</h3>
+  <div class="step-pattern">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Link the plugin's CSS</div>
+        <div class="step-detail">Goes in the <code class="inline">&lt;head&gt;</code>, brings in the plugin's styles.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Link the plugin's JavaScript</div>
+        <div class="step-detail">Goes near <code class="inline">&lt;/body&gt;</code>, brings in the plugin's behavior.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Write the HTML structure</div>
+        <div class="step-detail">Each plugin expects specific class names and nesting. Read the docs.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Activate the plugin</div>
+        <div class="step-detail">One line of JavaScript that tells the plugin which element to take over.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-head">Step 1, link Swiper's CSS</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">In <strong>index.html</strong>, in the <code class="inline">&lt;head&gt;</code>, add Swiper's stylesheet right after your <code class="inline">styles.css</code> link.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside &lt;head&gt;</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;link rel="stylesheet" href="styles.css"&gt;
+
+&lt;!-- Swiper's styles, loaded from a CDN. This must be in the head. --&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Step 2, link Swiper's JavaScript</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">Just before <code class="inline">&lt;/body&gt;</code>, add Swiper's JS right after the jQuery script.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · before &lt;/body&gt;</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;script src="https://code.jquery.com/jquery-3.7.1.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- Swiper's JavaScript. Order matters: jQuery first, then Swiper, then your code. --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Step 3, write the structure Swiper expects</h3>
+  <p>Each plugin has a specific HTML structure it looks for. Swiper expects three nested divs and special class names. We replace your simple <code class="inline">.photos</code> div with this.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">3</div>
+    <div class="do-this-text">Replace your entire <code class="inline">&lt;section id="gallery"&gt;</code> with this.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · the gallery section</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;section id="gallery"&gt;
+  &lt;h2&gt;Gallery&lt;/h2&gt;
+
+  &lt;!-- The outer .swiper div is the slider container.
+       The class "my-gallery" is our custom one, used in step 4. --&gt;
+  &lt;div class="swiper my-gallery"&gt;
+
+    &lt;!-- .swiper-wrapper holds all the slides --&gt;
+    &lt;div class="swiper-wrapper"&gt;
+
+      &lt;!-- Each .swiper-slide is one slide. Add as many as you want. --&gt;
+      &lt;div class="swiper-slide"&gt;
+        &lt;img src="https://picsum.photos/seed/one/800/500" alt="Photo one"&gt;
+      &lt;/div&gt;
+      &lt;div class="swiper-slide"&gt;
+        &lt;img src="https://picsum.photos/seed/two/800/500" alt="Photo two"&gt;
+      &lt;/div&gt;
+      &lt;div class="swiper-slide"&gt;
+        &lt;img src="https://picsum.photos/seed/three/800/500" alt="Photo three"&gt;
+      &lt;/div&gt;
+      &lt;div class="swiper-slide"&gt;
+        &lt;img src="https://picsum.photos/seed/four/800/500" alt="Photo four"&gt;
+      &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;!-- These three divs are the previous, next, and pagination dots.
+         Swiper sees them and wires them up automatically. --&gt;
+    &lt;div class="swiper-button-prev"&gt;&lt;/div&gt;
+    &lt;div class="swiper-button-next"&gt;&lt;/div&gt;
+    &lt;div class="swiper-pagination"&gt;&lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Step 4, activate the plugin</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">4</div>
+    <div class="do-this-text">Update your custom script (the one with <code class="inline">$(document).ready</code>) to also activate Swiper.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · your script tag</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;script&gt;
+  $(document).ready(function() {
+
+    $("#surprise-btn").on("click", function() {
+      $("#about").toggleClass("highlighted");
+    });
+
+    // ACTIVATE SWIPER
+    // The string ".my-gallery" tells Swiper which element to turn into a slider.
+    // The object after it is configuration: which features to enable.
+    new Swiper(".my-gallery", {
+      loop: true,                              // wrap around at the end
+      navigation: {
+        nextEl: ".swiper-button-next",         // which element is the "next" button
+        prevEl: ".swiper-button-prev",         // which element is the "prev" button
+      },
+      pagination: {
+        el: ".swiper-pagination",              // where to render the dots
+        clickable: true,                       // dots can be clicked to jump
+      },
+    });
+
+  });
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Step 5, fix the slide image sizing</h3>
+  <p>By default the images might overflow. Constrain them with CSS.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">5</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>.my-gallery {
+  margin: 24px 0;
+  border-radius: 4px;
+  overflow: hidden;          /* clip anything that pokes outside */
+}
+
+.my-gallery img {
+  width: 100%;               /* fill the slide width */
+  height: 360px;             /* fixed height for consistency */
+  object-fit: cover;         /* crop to fill instead of stretching */
+  display: block;
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>Your gallery section now shows one large image at a time. There are arrows on the left and right to navigate, plus clickable dots underneath. Swiping on touch devices works automatically. The slider loops, so clicking next on the last slide goes to the first.</p>
+    <p>You followed the four-step pattern. Same pattern works for any other plugin you find.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the typical four-step pattern for using a jQuery plugin?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Download files, install npm, build, deploy</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Link CSS, link JS, add HTML structure, activate the plugin</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Activate, link, structure, refresh</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Write your own version from scratch</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Almost every plugin works this way. The activation step is what tells the plugin which element on your page to take over.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">In <code class="inline" style="font-size: 16px;">new Swiper(".my-gallery", {...})</code>, what is the first argument?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>The image source</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>A CSS selector pointing to the slider container</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>The plugin name</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>The animation speed</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> The first argument tells Swiper which element on the page should become the slider. The second argument (the object) is the configuration.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 4: FORMS -->
+<section class="tab-panel module" id="m4">
+  <div class="module-num">Module 04 · Session 09</div>
+  <h2 class="module-title">Forms that <em>actually</em> work.</h2>
+  <p class="module-desc">HTML forms allow you to capture user input and use it in your application, pass it to other applications (like mail servers), or save it for later. Login forms, contact forms, comment forms, search bars, all forms.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Every form input you've ever seen on the web is one of about 8 HTML elements: <code class="inline">form</code>, <code class="inline">input</code>, <code class="inline">textarea</code>, <code class="inline">select</code>, <code class="inline">label</code>, <code class="inline">fieldset</code>, <code class="inline">legend</code>, <code class="inline">button</code>.</p>
+    <p>The big concept: by default, when you submit a form, the browser tries to reload the page and send data to a server. For a portfolio site without a backend, we use JavaScript to intercept that submit and just show a thank-you message. The prof also mentions FormSpree.io as a free way to actually receive form submissions via email.</p>
+  </div>
+
+  <h3 class="section-head">Form elements cheat sheet</h3>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">HTML · form elements</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;!-- The wrapper. Everything goes inside. --&gt;
+&lt;form&gt;...&lt;/form&gt;
+
+&lt;!-- Single-line text input. The "type" changes the keyboard
+     and validation: text, email, tel, url, number, password, date, etc. --&gt;
+&lt;input type="text"&gt;
+
+&lt;!-- Multi-line text input. Use rows to set the visible height. --&gt;
+&lt;textarea rows="5"&gt;&lt;/textarea&gt;
+
+&lt;!-- Dropdown menu --&gt;
+&lt;select&gt;
+  &lt;option value="design"&gt;Design&lt;/option&gt;
+  &lt;option value="code"&gt;Code&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;!-- Label connects to an input via matching for/id.
+     Click the label, the input gets focused. --&gt;
+&lt;label for="email"&gt;Email&lt;/label&gt;
+&lt;input type="email" id="email"&gt;
+
+&lt;!-- Submit button. Type=submit makes Enter submit the form. --&gt;
+&lt;button type="submit"&gt;Send&lt;/button&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Build the contact form</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">Replace your entire <code class="inline">&lt;section id="contact"&gt;</code> with this.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · the contact section</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;section id="contact"&gt;
+  &lt;h2&gt;Contact&lt;/h2&gt;
+
+  &lt;!-- id lets us target the form with JavaScript later --&gt;
+  &lt;form id="contact-form"&gt;
+
+    &lt;!-- Each input has its own label. for="name" matches id="name". --&gt;
+    &lt;label for="name"&gt;Name&lt;/label&gt;
+    &lt;input type="text" id="name" name="name" required&gt;
+
+    &lt;!-- type="email" makes the browser validate that it looks like an email.
+         "required" prevents submission if empty. --&gt;
+    &lt;label for="email"&gt;Email&lt;/label&gt;
+    &lt;input type="email" id="email" name="email" required&gt;
+
+    &lt;!-- textarea is multi-line. rows controls visible height. --&gt;
+    &lt;label for="message"&gt;Message&lt;/label&gt;
+    &lt;textarea id="message" name="message" rows="5" required&gt;&lt;/textarea&gt;
+
+    &lt;!-- type="submit" makes this button submit the form on click or Enter --&gt;
+    &lt;button type="submit"&gt;Send&lt;/button&gt;
+
+  &lt;/form&gt;
+
+  &lt;!-- This will be hidden by default and shown after submit. --&gt;
+  &lt;p id="form-success" style="display: none;"&gt;Thanks, your message has been sent.&lt;/p&gt;
+
+&lt;/section&gt;</code></pre>
+  </div>
+
+  <h3 class="section-head">Style the form</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* Stack form elements vertically with flexbox */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px;
+}
+
+/* Bold labels with a bit of breathing room above */
+form label {
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+/* Style inputs and textareas the same way for consistency */
+form input,
+form textarea {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background: white;
+}
+
+/* When focused (clicked into), darken the border for a subtle highlight */
+form input:focus,
+form textarea:focus {
+  outline: none;             /* remove the browser's default ring */
+  border-color: #222;
+}
+
+/* Submit button styling */
+form button {
+  margin-top: 18px;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 15px;
+  background: #222;
+  color: white;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-start;    /* don't stretch full width */
+}
+
+form button:hover {
+  background: #444;
+}</code></pre>
+  </div>
+
+  <h3 class="section-head">Catch the submit with JavaScript</h3>
+  <p>Right now the form will try to reload the page when submitted. We use JavaScript to stop that and show a success message instead.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">3</div>
+    <div class="do-this-text">Inside your <code class="inline">$(document).ready(...)</code> block, add this new section.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside $(document).ready</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// Listen for the form's "submit" event.
+// This fires when the user clicks the submit button OR presses Enter in a field.
+$("#contact-form").on("submit", function(event) {
+
+  // STOP THE BROWSER'S DEFAULT BEHAVIOR.
+  // Without this, the page reloads and tries to send data to a server.
+  event.preventDefault();
+
+  // Read what the user typed into each field.
+  // .val() is jQuery's shortcut to get an input's current value.
+  const name = $("#name").val();
+  const email = $("#email").val();
+  const message = $("#message").val();
+
+  // Log the data to the console so we can see it (great for testing).
+  console.log("Form submitted:", { name, email, message });
+
+  // Hide the form, show the success message.
+  $("#contact-form").hide();
+  $("#form-success").show();
+
+});</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>You see a clean form with three fields and a Send button. Try submitting it empty, the browser blocks you because of <code class="inline">required</code>. Type something invalid into the email field, the browser blocks that too because of <code class="inline">type="email"</code>.</p>
+    <p>Fill it out properly and click Send. The form disappears, replaced by "Thanks, your message has been sent." Open the browser console (F12), you'll see the logged data.</p>
+  </div>
+
+  <h3 class="section-head">Quick note: tables</h3>
+  <p>Session 9 also covers HTML tables. They're for tabular data only (like a spreadsheet), not for layout. You won't need them for a portfolio, but here's the structure if it comes up:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">HTML · table structure</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;table&gt;
+  &lt;tr&gt;                        &lt;!-- table row --&gt;
+    &lt;th&gt;Name&lt;/th&gt;             &lt;!-- table heading cell --&gt;
+    &lt;th&gt;Role&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Jack&lt;/td&gt;             &lt;!-- table data cell --&gt;
+    &lt;td&gt;Designer&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">event.preventDefault()</code> do in a form submit handler?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Validates the form fields</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Submits the form to a server</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Stops the browser's default submit behavior</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Sends an email automatically</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Without it, the browser reloads the page. With it, you stop that and decide what happens (show a message, send an AJAX request, animate, whatever).
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why does <code class="inline" style="font-size: 16px;">&lt;label for="email"&gt;</code> need to match <code class="inline" style="font-size: 16px;">&lt;input id="email"&gt;</code>?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>To make the label appear in bold</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>To link them for accessibility and click-to-focus</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>It's a CSS requirement</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>To prevent the form from submitting</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Matching IDs link the label to the input. Screen readers announce the label when the input is focused, and clicking the label moves focus to the input.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 5: CSS GRID -->
+<section class="tab-panel module" id="m5">
+  <div class="module-num">Module 05 · Session 10</div>
+  <h2 class="module-title">CSS <em>Grid</em> layouts.</h2>
+  <p class="module-desc">CSS Grid Layout is the most powerful layout system available in CSS. It is a 2-dimensional system, meaning it can handle both columns and rows, unlike flexbox which is largely 1-dimensional. You apply CSS rules both to a parent (the Grid Container) and to its children (the Grid Items).</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Two key concepts: parent (Grid Container) and children (Grid Items). Set <code class="inline">display: grid</code> on the parent, then describe the structure with <code class="inline">grid-template-columns</code> and <code class="inline">grid-template-rows</code>.</p>
+    <p>The <code class="inline">fr</code> unit is the magic. It means "fraction of available space." <code class="inline">1fr 1fr 1fr</code> = three equal columns. <code class="inline">2fr 1fr</code> = first column twice as wide as the second.</p>
+    <p>Use the interactive demo below to show Jack how fr units split space proportionally.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">fr</span>
+    <span class="pronunciation-pron">"eff-arr" or "fraction"</span>
+    <span class="pronunciation-term">repeat</span>
+    <span class="pronunciation-pron">"ree-PEAT"</span>
+  </div>
+
+  <h3 class="section-head">Visualize fr units</h3>
+  <p>Drag the sliders to change the fr values. Watch how the columns redistribute.</p>
+
+  <div class="grid-demo">
+    <div class="grid-demo-controls">
+      <div class="grid-control">
+        <label>Column A: <span class="grid-val" id="frA">1</span><span style="color: var(--text-faint)">fr</span></label>
+        <input type="range" min="1" max="6" value="1" id="sliderA">
+      </div>
+      <div class="grid-control">
+        <label>Column B: <span class="grid-val" id="frB">1</span><span style="color: var(--text-faint)">fr</span></label>
+        <input type="range" min="1" max="6" value="1" id="sliderB">
+      </div>
+      <div class="grid-control">
+        <label>Column C: <span class="grid-val" id="frC">1</span><span style="color: var(--text-faint)">fr</span></label>
+        <input type="range" min="1" max="6" value="1" id="sliderC">
+      </div>
+    </div>
+    <div class="grid-demo-output" id="gridOut">
+      <div class="grid-cell">A</div>
+      <div class="grid-cell">B</div>
+      <div class="grid-cell">C</div>
+    </div>
+    <div class="grid-demo-code" id="gridCode">grid-template-columns: 1fr 1fr 1fr;</div>
+  </div>
+
+  <h3 class="section-head">Add a Grid gallery to your site</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">In <strong>index.html</strong>, in your gallery section <strong>after</strong> the Swiper, add a second gallery.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside #gallery, after the Swiper</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;h3&gt;More work&lt;/h3&gt;
+
+&lt;!-- The .photo-grid class will become a Grid Container in CSS --&gt;
+&lt;div class="photo-grid"&gt;
+  &lt;img src="https://picsum.photos/seed/g1/400/400" alt="Work 1"&gt;
+  &lt;img src="https://picsum.photos/seed/g2/400/400" alt="Work 2"&gt;
+  &lt;img src="https://picsum.photos/seed/g3/400/400" alt="Work 3"&gt;
+  &lt;img src="https://picsum.photos/seed/g4/400/400" alt="Work 4"&gt;
+  &lt;img src="https://picsum.photos/seed/g5/400/400" alt="Work 5"&gt;
+  &lt;img src="https://picsum.photos/seed/g6/400/400" alt="Work 6"&gt;
+&lt;/div&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>.photo-grid {
+  /* Turn this element into a Grid Container.
+     Its direct children automatically become Grid Items. */
+  display: grid;
+
+  /* Three columns, all equal width.
+     Each "1fr" means one fraction of available space. */
+  grid-template-columns: 1fr 1fr 1fr;
+
+  /* Space between items (rows AND columns) */
+  gap: 12px;
+
+  margin-top: 24px;
+}
+
+.photo-grid img {
+  width: 100%;               /* fill the column */
+  aspect-ratio: 1 / 1;       /* force a square shape */
+  object-fit: cover;         /* crop instead of stretching */
+  border-radius: 4px;
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>Six images arranged in a clean 3-column grid. Two rows of three. Equal gaps between them. Grid figured out the second row automatically because we only specified columns.</p>
+  </div>
+
+  <h3 class="section-head">Make it responsive with one trick</h3>
+  <p>Three columns looks fine on desktop, terrible on mobile. The <code class="inline">repeat()</code> + <code class="inline">auto-fit</code> + <code class="inline">minmax()</code> combo is the industry standard way to make a grid that adapts automatically without media queries.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, replace your <code class="inline">grid-template-columns</code> line with this.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · the .photo-grid rule</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>.photo-grid {
+  display: grid;
+
+  /* repeat(): "make a bunch of columns following this pattern"
+     auto-fit:  "as many as fit in the available space"
+     minmax(180px, 1fr): "each column is at least 180px wide,
+                          but can grow up to 1fr to share leftover space" */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 12px;
+  margin-top: 24px;
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>The grid now has as many columns as fit. On a wide desktop browser, you might see 4 columns. On a phone, it drops to 1 or 2. Resize your browser window slowly to watch it adapt. No media queries required.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">grid-template-columns: 1fr 2fr 1fr</code> mean?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Three columns, all equal width</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Three columns, the middle one twice as wide as the others</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Four columns of varied width</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Three rows of different heights</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> The fr unit splits available space proportionally. 1 + 2 + 1 = 4 parts total, so the columns get 25%, 50%, 25%.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">In <code class="inline" style="font-size: 16px;">repeat(auto-fit, minmax(180px, 1fr))</code>, what does <code class="inline" style="font-size: 16px;">auto-fit</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Sets a fixed number of columns</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Lets the browser decide how many columns fit</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Stretches all columns to equal height</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Hides columns that don't fit</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> auto-fit is what makes the layout responsive without media queries. The browser checks available space and creates as many columns as can fit while respecting the minimum width.
+    </div>
+  </div>
+
+</section>
+
+<!-- MODULE 6: CSS VARIABLES -->
+<section class="tab-panel module" id="m6">
+  <div class="module-num">Module 06 · Session 11</div>
+  <h2 class="module-title">CSS Custom Properties (a.k.a. <em>Variables</em>).</h2>
+  <p class="module-desc">CSS Custom Properties are a way to abstract complexity. Define a value once, reference it everywhere with <code class="inline">var()</code>. Change the variable, the whole site updates. They make sites easier to maintain and they make features like dark mode trivial.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>You define variables on <code class="inline">:root</code>, the pseudo-class for the document root (basically the <code class="inline">&lt;html&gt;</code> element). You use them with the <code class="inline">var()</code> function. Variable names always start with two hyphens.</p>
+    <p>The killer use case: theming. Instead of writing <code class="inline">color: #FF6B47</code> in 40 places, you write it once as <code class="inline">--accent: #FF6B47</code> and use <code class="inline">color: var(--accent)</code> everywhere. To rebrand the site, change one line.</p>
+    <p>Use the interactive demo below to show Jack how changing a variable cascades through the page instantly.</p>
+  </div>
+
+  <h3 class="section-head">Watch variables cascade</h3>
+  <p>Change the swatches below to see how every element using <code class="inline">var(--accent)</code> updates at once.</p>
+
+  <div class="vars-demo">
+    <div class="vars-demo-controls">
+      <div class="vars-control">
+        <label for="varBg">--bg</label>
+        <input type="color" id="varBg" value="#fafaf7">
+        <span class="vars-val" id="varBgVal">#fafaf7</span>
+      </div>
+      <div class="vars-control">
+        <label for="varText">--text</label>
+        <input type="color" id="varText" value="#222222">
+        <span class="vars-val" id="varTextVal">#222222</span>
+      </div>
+      <div class="vars-control">
+        <label for="varAccent">--accent</label>
+        <input type="color" id="varAccent" value="#b94e2c">
+        <span class="vars-val" id="varAccentVal">#b94e2c</span>
+      </div>
+    </div>
+    <div class="vars-demo-output" id="varsOut">
+      <div class="vars-card">
+        <h4 class="vars-card-title">Sample card</h4>
+        <p>This card uses three variables. Try changing them.</p>
+        <button class="vars-card-btn">A button</button>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-head">Define your design tokens</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">1</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this <strong>at the very top</strong>, before everything else.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · top of file</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* :root is the entire HTML document.
+   Variables defined here are accessible to any rule below. */
+:root {
+
+  /* Naming convention: every variable starts with -- (two dashes) */
+  --bg: #fafaf7;
+  --text: #222222;
+  --accent: #b94e2c;
+  --border: #cccccc;
+
+  /* Variables aren't just for colors. Spacing, sizes, anything: */
+  --radius: 4px;
+  --space: 16px;
+}</code></pre>
+  </div>
+
+  <h3 class="section-head">Use the variables</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">2</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, replace your existing <code class="inline">body</code>, <code class="inline">header</code>, and <code class="inline">nav a</code> rules with these versions that use the variables.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · replace existing rules</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>body {
+  font-family: Georgia, serif;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px;
+
+  /* var(--name) reads the variable's current value */
+  color: var(--text);
+  background: var(--bg);
+}
+
+header {
+  border-bottom: 2px solid var(--text);
+  padding-bottom: var(--space);     /* uses the spacing variable */
+  margin-bottom: 32px;
+}
+
+nav a {
+  margin-right: 18px;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+/* On hover, the underline becomes the accent color.
+   This single line is now your brand color, controlled from one place. */
+nav a:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}</code></pre>
+  </div>
+
+  <h3 class="section-head">The payoff: a dark mode toggle</h3>
+  <p>Now that everything reads from variables, dark mode is just swapping the variable values. We add a class to <code class="inline">&lt;body&gt;</code> that overrides them.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">3</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this below your <code class="inline">:root</code> block.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · below :root</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* When body has the .dark class, redefine the variables.
+   Every rule that uses var(--bg), var(--text), var(--accent)
+   automatically picks up these new values. No other CSS changes needed. */
+body.dark {
+  --bg: #1a1a1a;
+  --text: #f0f0f0;
+  --accent: #ff8c66;
+  --border: #444;
+}</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">4</div>
+    <div class="do-this-text">In <strong>index.html</strong>, add a theme toggle button in the header next to the nav.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside &lt;header&gt;</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;header&gt;
+  &lt;h1&gt;Jack Kennedy&lt;/h1&gt;
+  &lt;nav&gt;
+    &lt;a href="#about"&gt;About&lt;/a&gt;
+    &lt;a href="#gallery"&gt;Gallery&lt;/a&gt;
+    &lt;a href="#contact"&gt;Contact&lt;/a&gt;
+  &lt;/nav&gt;
+
+  &lt;!-- New: the theme toggle button --&gt;
+  &lt;button id="theme-toggle"&gt;Dark mode&lt;/button&gt;
+&lt;/header&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">5</div>
+    <div class="do-this-text">Inside your <code class="inline">$(document).ready(...)</code> block, add the toggle handler.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside $(document).ready</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>$("#theme-toggle").on("click", function() {
+
+  // Toggle the .dark class on body. This swaps all the variables.
+  $("body").toggleClass("dark");
+
+  // Update the button label so users know what it'll do next.
+  // .hasClass returns true/false depending on whether the class is there.
+  if ($("body").hasClass("dark")) {
+    $(this).text("Light mode");
+  } else {
+    $(this).text("Dark mode");
+  }
+
+});</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>The header now has a "Dark mode" button. Click it. The entire page swaps to dark colors instantly. The button label changes to "Light mode." Click it again to flip back.</p>
+    <p>Important: notice that we didn't write any CSS rules for "what dark mode looks like for the header" or "for nav links." We just changed the variable values. Every rule that uses those variables updated automatically.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the syntax for using a CSS variable in a property?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">$variable</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">@variable</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span><code class="inline">var(--name)</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">--name</code> alone</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> You define a variable with <code class="inline">--name: value</code> and you use it with <code class="inline">var(--name)</code>. Two different syntaxes, easy to mix up at first.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why does adding <code class="inline" style="font-size: 16px;">body.dark { --bg: #1a1a1a }</code> change the background everywhere?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>It directly sets the background color</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>It overrides the variable, every <code class="inline">var(--bg)</code> picks up the new value</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>JavaScript repaints the page</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>The browser remembers user preferences</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> CSS variables follow normal cascade rules. When body has the dark class, its variable values override the ones on <code class="inline">:root</code>, and any rule using <code class="inline">var(--bg)</code> picks up the new value.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 7: SVG -->
+<section class="tab-panel module" id="m7">
+  <div class="module-num">Module 07 · Session 11</div>
+  <h2 class="module-title">SVG, the secret <em>weapon</em>.</h2>
+  <p class="module-desc">SVG (Scalable Vector Graphics) defines vector-based web graphics in XML format. In HTML5 you can embed SVG elements directly into your HTML pages. Unlike a JPG or PNG, SVG stays sharp at any size, can be styled with CSS, and can be animated.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>SVG is just markup, like HTML. You can paste it directly into your page. Three ways to add SVG to a page: as inline <code class="inline">&lt;svg&gt;</code> markup, as the source of an <code class="inline">&lt;img&gt;</code> tag, or as a CSS background image. Inline is the most powerful because you can style and animate it with CSS.</p>
+    <p>The basic shapes you'll use most: <code class="inline">circle</code>, <code class="inline">rect</code>, <code class="inline">line</code>, <code class="inline">path</code>, <code class="inline">text</code>. Use the slider demo below to see how the circle's parameters work.</p>
+    <p>Important: since SVG is XML, every tag must be properly closed. Self-closing tags use the slash like <code class="inline">&lt;circle ... /&gt;</code>.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">SVG</span>
+    <span class="pronunciation-pron">"ess-vee-JEE"</span>
+    <span class="pronunciation-term">viewBox</span>
+    <span class="pronunciation-pron">"VYOO-box"</span>
+  </div>
+
+  <h3 class="section-head">Play with an SVG circle</h3>
+  <p>Drag the sliders to change <code class="inline">cx</code> (center x), <code class="inline">cy</code> (center y), and <code class="inline">r</code> (radius). Watch the circle move and resize.</p>
+
+  <div class="svg-demo">
+    <div class="svg-demo-stage">
+      <svg id="svgStage" viewBox="0 0 100 100" width="240" height="240">
+        <rect x="0" y="0" width="100" height="100" fill="#1D2026"/>
+        <line x1="50" y1="0" x2="50" y2="100" stroke="#3A322A" stroke-width="0.3" stroke-dasharray="2"/>
+        <line x1="0" y1="50" x2="100" y2="50" stroke="#3A322A" stroke-width="0.3" stroke-dasharray="2"/>
+        <circle id="svgCircle" cx="50" cy="50" r="25" fill="none" stroke="#FF6B47" stroke-width="3"/>
+      </svg>
+    </div>
+    <div class="svg-demo-controls">
+      <div class="svg-control">
+        <label>cx (center x): <span id="cxVal">50</span></label>
+        <input type="range" min="10" max="90" value="50" id="cxSlider">
+      </div>
+      <div class="svg-control">
+        <label>cy (center y): <span id="cyVal">50</span></label>
+        <input type="range" min="10" max="90" value="50" id="cySlider">
+      </div>
+      <div class="svg-control">
+        <label>r (radius): <span id="rVal">25</span></label>
+        <input type="range" min="5" max="45" value="25" id="rSlider">
+      </div>
+      <div class="svg-demo-code" id="svgCode">&lt;circle cx="50" cy="50" r="25" /&gt;</div>
+    </div>
+  </div>
+
+  <h3 class="section-head">Add an SVG logo to the header</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>index.html</strong>, replace your <code class="inline">&lt;h1&gt;Jack Kennedy&lt;/h1&gt;</code> with this h1 that contains an inline SVG mark.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside header</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;h1 class="brand"&gt;
+
+  &lt;!-- viewBox creates a 50x50 unit virtual canvas.
+       The shapes inside use those coordinates.
+       width and height set the actual rendered size. --&gt;
+  &lt;svg class="logo" viewBox="0 0 50 50" width="40" height="40"&gt;
+
+    &lt;!-- A circle: center x=25, center y=25, radius 22.
+         The 50x50 viewBox means it sits centered with a small margin.
+         "currentColor" is magic: it inherits the surrounding text color. --&gt;
+    &lt;circle cx="25" cy="25" r="22" fill="none"
+            stroke="currentColor" stroke-width="3"/&gt;
+
+    &lt;!-- A line from top-left to bottom-right of the circle --&gt;
+    &lt;line x1="15" y1="15" x2="35" y2="35"
+          stroke="currentColor" stroke-width="3"/&gt;
+
+  &lt;/svg&gt;
+
+  Jack Kennedy
+&lt;/h1&gt;</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this for spacing.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>.brand {
+  display: flex;
+  align-items: center;       /* vertically center the SVG with the text */
+  gap: 10px;                 /* space between SVG and text */
+}
+
+.logo {
+  flex-shrink: 0;            /* don't let the SVG shrink if space gets tight */
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>A small circle-with-slash icon appears next to your name in the header. If you toggle dark mode (Module 6), the icon flips colors automatically because <code class="inline">stroke="currentColor"</code> follows the text color.</p>
+  </div>
+
+  <h3 class="section-head">SVG basic shapes cheat sheet</h3>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">SVG · all the basic shapes</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;!-- Rectangle: x, y are the top-left corner --&gt;
+&lt;rect x="10" y="10" width="40" height="40" fill="orange"/&gt;
+
+&lt;!-- Circle: cx, cy = center; r = radius --&gt;
+&lt;circle cx="25" cy="25" r="20" fill="teal"/&gt;
+
+&lt;!-- Ellipse: like circle but with two radii --&gt;
+&lt;ellipse cx="25" cy="25" rx="20" ry="10" fill="purple"/&gt;
+
+&lt;!-- Line: from (x1,y1) to (x2,y2). Stroke is required. --&gt;
+&lt;line x1="0" y1="0" x2="50" y2="50" stroke="black"/&gt;
+
+&lt;!-- Polygon: a closed shape from a list of points --&gt;
+&lt;polygon points="25,5 45,45 5,45" fill="crimson"/&gt;
+
+&lt;!-- Text: x, y is the baseline of the first character --&gt;
+&lt;text x="10" y="30" font-size="14"&gt;Hello&lt;/text&gt;</code></pre>
+  </div>
+
+  <p class="dim">For complex shapes (curves, irregular outlines), use <code class="inline">&lt;path&gt;</code>. You don't write paths by hand: you make them in Illustrator, Figma, or Boxy SVG, then export to SVG.</p>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does the <code class="inline" style="font-size: 16px;">viewBox</code> attribute on an SVG define?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>The actual pixel size on screen</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>The internal coordinate system the shapes use</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>The background color of the SVG</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>How many shapes are inside</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> viewBox is the virtual canvas. The actual rendered size comes from <code class="inline">width</code>/<code class="inline">height</code> attributes or CSS. The SVG scales whatever you drew in the viewBox to fit the rendered size, which is why SVGs stay sharp at any size.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why is <code class="inline" style="font-size: 16px;">stroke="currentColor"</code> useful?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>It makes the stroke invisible</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>It inherits the surrounding text color</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>It animates the stroke</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>It only works in dark mode</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Inline SVGs respect CSS, including the special <code class="inline">currentColor</code> keyword. Your icon automatically matches whatever text color is in effect, including theme changes and hover states.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 8: ANIMATION -->
+<section class="tab-panel module" id="m8">
+  <div class="module-num">Module 08 · Session 13</div>
+  <h2 class="module-title">Web <em>animation</em>.</h2>
+  <p class="module-desc">Animation makes a site feel alive. The two main tools: CSS transitions (smooth interpolation between two states) and CSS keyframes (multi-step animations on a timeline). Both are pure CSS, no JavaScript needed for the basics.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Restraint is the principle. One or two well-placed animations make a site feel polished. Animations everywhere make it feel like a 2008 Flash site. Pick a few moments (page load, hover, button feedback) and animate those well.</p>
+    <p>Transitions are for "from state A to state B" (hover effects, theme changes). Keyframes are for "step 1, step 2, step 3" (entrance animations, looping effects, complex sequences).</p>
+    <p>Important note from the prof's syllabus: respect <code class="inline">prefers-reduced-motion</code> for accessibility. Some users are sensitive to motion. We add a media query that disables animation for them.</p>
+  </div>
+
+  <h3 class="section-head">See easing functions in action</h3>
+  <p>The same animation feels different depending on its easing curve. Click each button to see the difference.</p>
+
+  <div class="ease-demo">
+    <div class="ease-demo-controls">
+      <button class="ease-btn active" data-ease="linear">linear</button>
+      <button class="ease-btn" data-ease="ease">ease</button>
+      <button class="ease-btn" data-ease="ease-in">ease-in</button>
+      <button class="ease-btn" data-ease="ease-out">ease-out</button>
+      <button class="ease-btn" data-ease="cubic-bezier(.68,-0.55,.27,1.55)">spring</button>
+    </div>
+    <div class="ease-demo-track">
+      <div class="ease-ball" id="easeBall"></div>
+    </div>
+    <div class="ease-demo-code" id="easeCode">transition: transform 1s linear;</div>
+  </div>
+
+  <h3 class="section-head">Smooth hover with transitions</h3>
+  <p>The pattern: declare a transition on the base state, then change the property on hover.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, replace your <code class="inline">.photo-grid img</code> rule.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · update photo grid images</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>.photo-grid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+
+  /* TRANSITION RULE
+     Says: "smoothly animate transform and box-shadow over 0.3s using ease curve"
+     Without this, hover changes happen instantly (jarring).
+     With it, they fade smoothly. */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.photo-grid img:hover {
+  /* On hover, scale up slightly and add a shadow.
+     Because of the transition above, this happens smoothly. */
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>Hover any photo in the grid. It scales up smoothly to 105% and lifts off the page with a soft shadow. Move your cursor away, it eases back. The 0.3 second timing makes it feel responsive without being slow.</p>
+  </div>
+
+  <h3 class="section-head">A keyframe animation for entrance</h3>
+  <p>Let's fade and slide elements in when the page loads. Keyframes describe the state at each step (or just <code class="inline">from</code> and <code class="inline">to</code>). The <code class="inline">animation</code> property attaches the keyframes to an element.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* Define the animation. "fade-in-up" is just a name we picked.
+   "from" = starting state, "to" = ending state.
+   The browser interpolates between them automatically. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;                          /* invisible */
+    transform: translateY(12px);         /* shifted down 12px */
+  }
+  to {
+    opacity: 1;                          /* fully visible */
+    transform: translateY(0);            /* in its natural position */
+  }
+}
+
+/* Apply the animation:
+   - name: fade-in-up (the keyframes above)
+   - duration: 0.6s
+   - timing: ease-out (slows down at the end) */
+header {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+main section {
+  animation: fade-in-up 0.6s ease-out;
+
+  /* "backwards" means: before the animation starts (during the delay),
+     show the "from" state. Without this, sections would flash visible
+     for a split second before animating in. */
+  animation-fill-mode: backwards;
+}
+
+/* Stagger the sections so they appear one after another.
+   :nth-child(1) is the first section, (2) the second, etc. */
+main section:nth-child(1) { animation-delay: 0.1s; }
+main section:nth-child(2) { animation-delay: 0.2s; }
+main section:nth-child(3) { animation-delay: 0.3s; }</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>The header fades in from below. Then About appears. Then Gallery. Then Contact. Each one staggered by 100 milliseconds. The whole entrance takes about a second total. It feels designed instead of all-at-once.</p>
+  </div>
+
+  <h3 class="section-head">Trigger an animation on a click</h3>
+  <p>You can also fire animations on user actions by adding/removing a class with JavaScript. Let's wire the surprise button to make the heading shake.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add the shake keyframes and a trigger class.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · add to bottom</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* Multi-step keyframe: starts at 0%, hits intermediate states, ends at 100%.
+   This bounces the element left and right twice. */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }   /* start and end at center */
+  25%      { transform: translateX(-6px); } /* a quarter through, left */
+  75%      { transform: translateX(6px); }  /* three quarters through, right */
+}
+
+/* Apply only when this class is added. */
+.shake {
+  animation: shake 0.4s ease-in-out;
+}</code></pre>
+  </div>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">Update your surprise button handler in <strong>index.html</strong>.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside $(document).ready</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>$("#surprise-btn").on("click", function() {
+
+  // Add the .shake class. CSS sees it and runs the shake animation.
+  $("h1").addClass("shake");
+
+  // Remove the class after the animation finishes (400ms).
+  // Why? Without this, clicking again wouldn't re-trigger the animation,
+  // because the class is already there.
+  setTimeout(function() {
+    $("h1").removeClass("shake");
+  }, 400);
+
+});</code></pre>
+  </div>
+
+  <h3 class="section-head">Respect users who don't want motion</h3>
+  <p>Some users have motion sensitivity. Browsers expose a <code class="inline">prefers-reduced-motion</code> media query that lets us disable animations for them. The prof's syllabus calls this out.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the very bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · accessibility tail</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>/* If the user has set their OS to reduce motion,
+   strip out all animations and transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What this does</div>
+    <p>For most users, nothing changes, your animations still work. For users who have set "Reduce motion" in their OS settings (System Settings on Mac, or Windows Settings), all animations effectively disappear. Same site, accessible to everyone.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the difference between a CSS transition and a CSS keyframe animation?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>They are the same thing</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Transitions move between two states; keyframes can have many steps</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Transitions need JavaScript; keyframes do not</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Keyframes only work on hover</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Transitions interpolate from "current value" to "new value" when something triggers a change. Keyframes let you describe a multi-step animation timeline.
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">In a staggered entrance, what does <code class="inline" style="font-size: 16px;">animation-delay: 0.2s</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Makes the animation last 0.2 seconds</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Waits 0.2 seconds before the animation starts</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Repeats the animation every 0.2 seconds</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Slows down the animation</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Delay is the wait time before the animation kicks off. Different delays on different elements create a staggered effect that feels more designed than everything moving in unison.
+    </div>
+  </div>
+
+  <div class="lesson-end">
+    <h2>You did it.</h2>
+    <p>From a static portfolio to an interactive site with theme switching, a slider, a working form, a responsive grid, an SVG logo, and animations.</p>
+    <p style="margin-top: 24px;">Refresh, click around, break something. Then fix it. That's the loop.</p>
+  </div>
+
+</section>
+  </main>
+</div>
+
+<script>
+const TABS = [
+  { id: 'm0', label: 'The starting project' },
+  { id: 'm1', label: 'JavaScript Basics' },
+  { id: 'm2', label: 'jQuery, the easy mode' },
+  { id: 'm3', label: 'An image gallery plugin' },
+  { id: 'm4', label: 'Forms that actually work' },
+  { id: 'm5', label: 'CSS Grid layouts' },
+  { id: 'm6', label: 'CSS Variables' },
+  { id: 'm7', label: 'SVG, the secret weapon' },
+  { id: 'm8', label: 'Web animation' },
+];
+
+// Build sidebar tabs
+const tabList = document.getElementById('tab-list');
+TABS.forEach((tab, i) => {
+  const li = document.createElement('li');
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn';
+  btn.dataset.target = tab.id;
+  btn.innerHTML = `<span class="tab-num">${String(i).padStart(2, '0')}</span><span>${tab.label}</span>`;
+  btn.addEventListener('click', () => switchTab(tab.id));
+  li.appendChild(btn);
+  tabList.appendChild(li);
+});
+
+// Mobile dropdown
+const mobileSel = document.getElementById('mobile-tab-select');
+TABS.forEach((tab, i) => {
+  const opt = document.createElement('option');
+  opt.value = tab.id;
+  opt.textContent = `${String(i).padStart(2, '0')}  ·  ${tab.label}`;
+  mobileSel.appendChild(opt);
+});
+mobileSel.addEventListener('change', (e) => switchTab(e.target.value));
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById(id);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector(`.tab-btn[data-target="${id}"]`);
+  if (btn) btn.classList.add('active');
+  if (mobileSel.value !== id) mobileSel.value = id;
+  history.replaceState(null, '', `#${id}`);
+  window.scrollTo(0, 0);
+}
+
+function buildPanelNav() {
+  TABS.forEach((tab, i) => {
+    const panel = document.getElementById(tab.id);
+    if (!panel) return;
+    const nav = document.createElement('div');
+    nav.className = 'tab-nav';
+    if (i > 0) {
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'nav-btn prev';
+      prevBtn.innerHTML = `<span class="nav-btn-label">← Previous</span><span class="nav-btn-title">${TABS[i-1].label}</span>`;
+      prevBtn.addEventListener('click', () => switchTab(TABS[i-1].id));
+      nav.appendChild(prevBtn);
+    } else {
+      nav.appendChild(document.createElement('div'));
+    }
+    if (i < TABS.length - 1) {
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'nav-btn next';
+      nextBtn.innerHTML = `<span class="nav-btn-label">Next →</span><span class="nav-btn-title">${TABS[i+1].label}</span>`;
+      nextBtn.addEventListener('click', () => switchTab(TABS[i+1].id));
+      nav.appendChild(nextBtn);
+    }
+    panel.appendChild(nav);
+  });
+}
+
+function addPanelHeaders() {
+  TABS.forEach((tab, i) => {
+    const panel = document.getElementById(tab.id);
+    if (!panel) return;
+    const header = document.createElement('div');
+    header.className = 'panel-header';
+    header.innerHTML = `<span class="panel-pill"><span class="dot"></span>Module ${String(i).padStart(2, '0')} of ${String(TABS.length - 1).padStart(2, '0')} · ${tab.label}</span>`;
+    panel.insertBefore(header, panel.firstChild);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  addPanelHeaders();
+  buildPanelNav();
+  initInteractiveDemos();
+  const hash = window.location.hash.slice(1);
+  const validTab = TABS.find(t => t.id === hash);
+  switchTab(validTab ? hash : 'm0');
+});
+
+// Copy buttons
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('copy-btn')) {
+    const block = e.target.closest('.code-block');
+    const code = block.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      e.target.classList.add('copied');
+      const orig = e.target.innerText;
+      e.target.innerText = 'Copied';
+      setTimeout(() => { e.target.classList.remove('copied'); e.target.innerText = orig; }, 1400);
+    });
+  }
+});
+
+// MCQ
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.mcq-option')) {
+    const btn = e.target.closest('.mcq-option');
+    const mcq = btn.closest('.mcq');
+    if (mcq.dataset.answered === 'true') return;
+    const correct = btn.dataset.correct === 'true';
+    mcq.querySelectorAll('.mcq-option').forEach(opt => {
+      opt.disabled = true;
+      if (opt.dataset.correct === 'true') opt.classList.add('correct');
+    });
+    if (!correct) btn.classList.add('wrong');
+    const feedback = mcq.querySelector('.mcq-feedback');
+    feedback.classList.add('show');
+    feedback.classList.add(correct ? 'correct' : 'wrong');
+    mcq.dataset.answered = 'true';
+  }
+});
+
+// Keyboard nav
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const activePanel = document.querySelector('.tab-panel.active');
+  if (!activePanel) return;
+  const currentIdx = TABS.findIndex(t => t.id === activePanel.id);
+  if (e.key === 'ArrowRight' && currentIdx < TABS.length - 1) switchTab(TABS[currentIdx + 1].id);
+  else if (e.key === 'ArrowLeft' && currentIdx > 0) switchTab(TABS[currentIdx - 1].id);
+});
+
+// =============== INTERACTIVE DEMOS ===============
+function initInteractiveDemos() {
+
+  // --- Vanilla vs jQuery comparison toggle ---
+  document.querySelectorAll('.comparison').forEach(cmp => {
+    const tabs = cmp.querySelectorAll('.cmp-tab');
+    const panels = cmp.querySelectorAll('.cmp-panel');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        panels.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const target = t.dataset.target;
+        cmp.querySelector(`.cmp-panel[data-name="${target}"]`).classList.add('active');
+      });
+    });
+  });
+
+  // --- CSS Grid fr unit demo ---
+  const sliderA = document.getElementById('sliderA');
+  const sliderB = document.getElementById('sliderB');
+  const sliderC = document.getElementById('sliderC');
+  if (sliderA && sliderB && sliderC) {
+    const updateGrid = () => {
+      const a = sliderA.value, b = sliderB.value, c = sliderC.value;
+      document.getElementById('frA').textContent = a;
+      document.getElementById('frB').textContent = b;
+      document.getElementById('frC').textContent = c;
+      const cols = `${a}fr ${b}fr ${c}fr`;
+      document.getElementById('gridOut').style.gridTemplateColumns = cols;
+      document.getElementById('gridCode').textContent = `grid-template-columns: ${cols};`;
+    };
+    [sliderA, sliderB, sliderC].forEach(s => s.addEventListener('input', updateGrid));
+  }
+
+  // --- CSS Variables demo ---
+  const varBg = document.getElementById('varBg');
+  const varText = document.getElementById('varText');
+  const varAccent = document.getElementById('varAccent');
+  if (varBg && varText && varAccent) {
+    const demoEl = document.querySelector('.vars-demo');
+    const updateVars = () => {
+      demoEl.style.setProperty('--demo-bg', varBg.value);
+      demoEl.style.setProperty('--demo-text', varText.value);
+      demoEl.style.setProperty('--demo-accent', varAccent.value);
+      document.getElementById('varBgVal').textContent = varBg.value;
+      document.getElementById('varTextVal').textContent = varText.value;
+      document.getElementById('varAccentVal').textContent = varAccent.value;
+    };
+    [varBg, varText, varAccent].forEach(s => s.addEventListener('input', updateVars));
+  }
+
+  // --- SVG circle demo ---
+  const cxSlider = document.getElementById('cxSlider');
+  const cySlider = document.getElementById('cySlider');
+  const rSlider = document.getElementById('rSlider');
+  if (cxSlider && cySlider && rSlider) {
+    const circle = document.getElementById('svgCircle');
+    const updateSvg = () => {
+      const cx = cxSlider.value, cy = cySlider.value, r = rSlider.value;
+      circle.setAttribute('cx', cx);
+      circle.setAttribute('cy', cy);
+      circle.setAttribute('r', r);
+      document.getElementById('cxVal').textContent = cx;
+      document.getElementById('cyVal').textContent = cy;
+      document.getElementById('rVal').textContent = r;
+      document.getElementById('svgCode').textContent = `<circle cx="${cx}" cy="${cy}" r="${r}" />`;
+    };
+    [cxSlider, cySlider, rSlider].forEach(s => s.addEventListener('input', updateSvg));
+  }
+
+  // --- Easing demo ---
+  const easeBtns = document.querySelectorAll('.ease-btn');
+  const easeBall = document.getElementById('easeBall');
+  if (easeBtns.length && easeBall) {
+    let currentEase = 'linear';
+    const animate = () => {
+      easeBall.classList.remove('go');
+      easeBall.style.transitionTimingFunction = currentEase;
+      requestAnimationFrame(() => requestAnimationFrame(() => easeBall.classList.add('go')));
+    };
+    easeBtns.forEach(b => {
+      b.addEventListener('click', () => {
+        easeBtns.forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        currentEase = b.dataset.ease;
+        document.getElementById('easeCode').textContent = `transition: transform 1s ${currentEase};`;
+        animate();
+      });
+    });
+    // Start a loop so the ball keeps demonstrating
+    setInterval(() => {
+      if (document.querySelector('.tab-panel.active')?.id === 'm8') animate();
+    }, 1600);
+    // Trigger first animation
+    setTimeout(animate, 500);
+  }
+}
+</script>
+
+</body>
+</html>

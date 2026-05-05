@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 7: Impact of Computing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#10b981;--accent2:#34d399;--green:#22c55e;--red:#ef4444;--orange:#f97316;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:820px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}.val{color:var(--green)}.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.tip{padding:14px 16px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(110,231,183,0.85)}
+.tip::before{content:'💡 '}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ '}
+.check-section{margin:20px 0;padding:20px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:12px}
+.check-section h3{color:var(--purple);margin-top:0}
+.q{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0}
+.q-prompt{font-size:14px;color:var(--text);margin-bottom:10px;white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.answer{display:none;margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:8px;font-family:'Fira Code',monospace;font-size:13px;color:rgba(134,239,172,0.9);white-space:pre-wrap;line-height:1.6}
+.answer.show{display:block}
+.review-section{margin-top:40px;padding:24px;background:rgba(16,185,129,0.04);border:2px solid rgba(16,185,129,0.15);border-radius:14px}
+.review-section h2{border:none;margin-top:0;padding-top:0;color:var(--accent2)}
+.opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.opt{display:block;width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.65);padding:9px 13px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-family:'Fira Code',monospace;transition:all 0.15s}
+.opt.sel{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.4);color:var(--accent2)}
+.opt.right{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.4);color:var(--green)}
+.opt.wrong{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);color:var(--red)}
+.opt.locked{cursor:default}
+.chk{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:rgba(255,255,255,0.2);padding:6px 14px;border-radius:6px;cursor:default;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.chk.rdy{background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.35);color:var(--accent);cursor:pointer}
+.expl{margin-top:10px;padding:12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:rgba(134,239,172,0.85);line-height:1.5;display:none}
+.expl.show{display:block}
+.rq{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.rq-num{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.rq-text{font-size:14px;color:var(--text);white-space:pre-wrap;font-family:'Fira Code',monospace;line-height:1.7;margin-bottom:12px}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.dual{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+.dual-card{flex:1 1 280px;padding:16px;border-radius:10px}
+.dual-card h4{font-size:14px;margin-bottom:8px}
+.dual-card p{font-size:13px;margin:4px 0}
+.benefit{background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12)}
+.benefit h4{color:var(--green)}
+.concern{background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.12)}
+.concern h4{color:var(--red)}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 7 / Big Idea 5</div>
+<h1>Impact of Computing</h1>
+<p>How computing affects society, culture, security, and ethics. This is 21-26% of the exam. It's all conceptual, no code tracing, but the vocabulary is dense and the questions can be tricky because they require nuanced thinking.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this lesson:</strong>
+<a href="#effects">1. Beneficial & Harmful Effects</a>
+<a href="#divide">2. The Digital Divide</a>
+<a href="#bias">3. Computing Bias</a>
+<a href="#crowd">4. Crowdsourcing</a>
+<a href="#legal">5. Legal & Ethical: Copyright, Creative Commons, Open Source</a>
+<a href="#pii">6. PII & Data Privacy</a>
+<a href="#security">7. Cybersecurity: Encryption, Phishing, Malware</a>
+<a href="#auth">8. Authentication & Cookies</a>
+<a href="#review">9. End of Lesson Review (18 Questions)</a>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2 id="effects">1. Beneficial & Harmful Effects</h2>
+<p>Every computing innovation has <strong>BOTH</strong> beneficial and harmful effects. The exam will never ask if something is purely good or purely bad. It always asks you to consider both sides.</p>
+
+<div class="concept">
+<h3>The Key Principle</h3>
+<pre>Every computing innovation:
+  ✓ Has <span class="val">intended</span> benefits (what it was designed to do)
+  ✓ Has <span class="key">unintended</span> consequences (side effects nobody planned)
+  ✓ Affects different groups <span class="key">differently</span>
+  ✓ Can be used in ways the creators <span class="key">didn't anticipate</span></pre>
+</div>
+
+<div class="concept">
+<h3>Examples the Exam Loves</h3>
+
+<div class="dual">
+<div class="dual-card benefit">
+<h4>Social Media Benefits</h4>
+<p>Connects people globally</p>
+<p>Enables free expression and organizing</p>
+<p>Small businesses can reach customers</p>
+<p>Rapid information sharing in emergencies</p>
+</div>
+<div class="dual-card concern">
+<h4>Social Media Concerns</h4>
+<p>Spreads misinformation rapidly</p>
+<p>Cyberbullying and harassment</p>
+<p>Addiction and mental health effects</p>
+<p>Echo chambers and filter bubbles</p>
+</div>
+</div>
+
+<div class="dual">
+<div class="dual-card benefit">
+<h4>Autonomous Vehicles Benefits</h4>
+<p>Could reduce human-error crashes</p>
+<p>Mobility for elderly/disabled</p>
+<p>More efficient traffic flow</p>
+</div>
+<div class="dual-card concern">
+<h4>Autonomous Vehicles Concerns</h4>
+<p>Job loss for drivers</p>
+<p>Ethical decisions in crash scenarios</p>
+<p>Software bugs could be fatal</p>
+<p>Liability when accidents happen</p>
+</div>
+</div>
+
+<div class="dual">
+<div class="dual-card benefit">
+<h4>Machine Learning Benefits</h4>
+<p>Medical diagnosis assistance</p>
+<p>Personalized recommendations</p>
+<p>Fraud detection</p>
+</div>
+<div class="dual-card concern">
+<h4>Machine Learning Concerns</h4>
+<p>Algorithmic bias from training data</p>
+<p>Job displacement</p>
+<p>Opaque decision-making ("black box")</p>
+<p>Surveillance capabilities</p>
+</div>
+</div>
+</div>
+
+<div class="tip"><strong>Exam strategy:</strong> When asked about effects of a computing innovation, ALWAYS give both a benefit AND a concern. If you can only think of one side, you're missing something.</div>
+
+<div class="check-section">
+<h3>Quick Check: Effects</h3>
+<div class="q">
+<div class="q-prompt">A ride-sharing app like Uber/Lyft.
+Give 2 benefits and 2 concerns.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Benefits:
+1. Convenient, affordable transportation
+2. Income opportunity for drivers
+
+Concerns:
+1. Reduced income for traditional taxi drivers
+2. Surge pricing exploits high-demand situations
+3. Safety concerns (unvetted drivers)
+4. Gig workers lack benefits (no insurance, etc.)
+5. Collects extensive location/payment data</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2 id="divide">2. The Digital Divide</h2>
+
+<div class="concept">
+<h3>Definition</h3>
+<p>The <strong>digital divide</strong> is the gap between those who have access to computing technology and the internet and those who don't. It's not just about having a device, it's about meaningful, reliable access.</p>
+</div>
+
+<div class="concept">
+<h3>What Causes It</h3>
+<pre><span class="key">Economic:</span>     Low-income families can't afford devices/internet
+<span class="key">Geographic:</span>   Rural areas lack broadband infrastructure
+<span class="key">Age:</span>          Elderly may lack digital literacy
+<span class="key">Disability:</span>   Technology not designed for accessibility
+<span class="key">Global:</span>       Developing countries have limited infrastructure
+<span class="key">Education:</span>    Schools in poor districts have fewer devices</pre>
+</div>
+
+<div class="concept">
+<h3>Why It Matters</h3>
+<pre>People without access miss out on:
+  - Online education and job applications
+  - Telehealth and government services
+  - Communication and social connection
+  - Economic opportunities (remote work, e-commerce)
+
+The divide <span class="key">reinforces</span> existing inequalities:
+  Those already disadvantaged fall further behind.</pre>
+</div>
+
+<div class="concept">
+<h3>Solutions (Exam Asks About These)</h3>
+<pre>  - Public Wi-Fi and library computer access
+  - Government subsidies for broadband in rural areas
+  - Low-cost device programs for students
+  - Accessible design (screen readers, captions, etc.)
+  - Digital literacy training programs</pre>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Digital Divide</h3>
+<div class="q">
+<div class="q-prompt">A school district moves all homework
+online. Which students are most affected
+by this decision, and why?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Students without reliable internet access
+or personal devices at home are most affected.
+
+This disproportionately impacts:
+- Low-income families
+- Rural students with no broadband
+- Students in crowded homes with shared devices
+
+Moving homework online assumes all students
+have equal access, which widens the digital
+divide rather than closing it.
+
+Solutions: provide loaner devices, offer
+offline alternatives, extend library hours.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2 id="bias">3. Computing Bias</h2>
+
+<div class="concept">
+<h3>What Is Computing Bias?</h3>
+<p>Bias in computing happens when algorithms or systems <strong>systematically produce unfair results</strong> that favor or disadvantage certain groups.</p>
+</div>
+
+<div class="concept">
+<h3>Where Bias Comes From</h3>
+<pre><span class="key">1. Biased training data:</span>
+   If a hiring algorithm is trained on past hiring data
+   where 90% of hires were men, it may learn to
+   favor male applicants. The data reflects past bias,
+   and the algorithm perpetuates it.
+
+<span class="key">2. Biased programmers:</span>
+   Developers' unconscious assumptions get baked into
+   the system. If all testers are young, they may not
+   catch issues affecting elderly users.
+
+<span class="key">3. Biased design choices:</span>
+   Facial recognition trained mostly on light-skinned
+   faces performs worse on darker skin tones.
+   The choice of training data IS a design choice.
+
+<span class="key">4. Exclusion:</span>
+   If a dataset doesn't include certain groups at all,
+   the algorithm won't work well for those groups.</pre>
+</div>
+
+<div class="concept">
+<h3>Real-World Examples (Exam Loves These)</h3>
+<pre>  - Facial recognition: higher error rates for
+    women and people of color
+  - Hiring algorithms: favoring male candidates
+    based on historical hiring patterns
+  - Predictive policing: over-policing communities
+    that were already over-policed in the data
+  - Healthcare algorithms: underestimating needs
+    of Black patients based on cost data
+  - Search engines: reinforcing stereotypes in
+    image results and autocomplete suggestions</pre>
+</div>
+
+<div class="trap"><strong>Key exam point:</strong> The algorithm itself isn't "racist" or "sexist," it's reflecting the bias in its training data or design. The responsibility lies with the humans who chose the data and designed the system. But the IMPACT on affected groups is real regardless of intent.</div>
+
+<div class="check-section">
+<h3>Quick Check: Bias</h3>
+<div class="q">
+<div class="q-prompt">A loan approval algorithm is trained on
+10 years of past lending decisions.
+Historically, applicants from certain
+zip codes were denied more often.
+
+What is the risk of using this algorithm?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">The algorithm will learn to deny applicants
+from those zip codes at higher rates,
+perpetuating historical discrimination.
+
+If those zip codes correlate with race or
+income, the algorithm effectively discriminates
+based on those factors, even if race/income
+aren't explicitly in the data.
+
+This is called "proxy discrimination": zip code
+acts as a proxy for race/class.
+
+Solution: audit the algorithm for disparate
+impact across demographics, diversify training
+data, and include human oversight.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<h2 id="crowd">4. Crowdsourcing</h2>
+
+<div class="concept">
+<h3>Definition</h3>
+<p><strong>Crowdsourcing</strong> uses contributions from a large number of people, often online, to accomplish a task, gather data, or fund a project.</p>
+</div>
+
+<div class="concept">
+<h3>Types & Examples</h3>
+<pre><span class="key">Knowledge sharing:</span>
+  Wikipedia (collaborative encyclopedia)
+  Stack Overflow (community Q&A for programmers)
+  Open-source software (Linux, Python)
+
+<span class="key">Citizen science:</span>
+  Foldit (protein folding game for research)
+  Galaxy Zoo (classifying galaxies from images)
+  eBird (birdwatchers reporting sightings)
+
+<span class="key">Crowdfunding:</span>
+  Kickstarter, GoFundMe, Indiegogo
+  Individuals fund projects with small donations
+
+<span class="key">Data collection:</span>
+  Waze (drivers reporting traffic/hazards)
+  OpenStreetMap (community-built maps)
+  reCAPTCHA (humans labeling images for AI)</pre>
+</div>
+
+<div class="concept">
+<h3>Benefits & Limitations</h3>
+<div class="dual">
+<div class="dual-card benefit">
+<h4>Benefits</h4>
+<p>Diverse perspectives and expertise</p>
+<p>Scales beyond what one person/org can do</p>
+<p>Low cost per contributor</p>
+<p>Rapid data collection</p>
+</div>
+<div class="dual-card concern">
+<h4>Limitations</h4>
+<p>Quality control is difficult</p>
+<p>Contributions may be inaccurate or biased</p>
+<p>Not representative of all populations</p>
+<p>Can be manipulated (fake reviews, vandalism)</p>
+</div>
+</div>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Crowdsourcing</h3>
+<div class="q">
+<div class="q-prompt">Wikipedia is a crowdsourced encyclopedia.
+Give one benefit and one limitation
+of using crowdsourcing for this purpose.</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Benefit: Massive scale. Millions of articles
+in hundreds of languages, covering far more
+topics than any traditional encyclopedia could.
+Updated in real-time as events happen.
+
+Limitation: Quality varies. Anyone can edit,
+so information may be inaccurate, biased, or
+vandalized. Popular topics get more attention
+and accuracy than niche ones. Editors may have
+their own biases about what's "neutral."</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2 id="legal">5. Legal & Ethical: Copyright, Creative Commons, Open Source</h2>
+
+<div class="concept">
+<h3>Copyright</h3>
+<pre><span class="key">What:</span> Legal protection for original creative works.
+       Automatically applies when you create something.
+<span class="key">What it means:</span> Others cannot copy, distribute, or modify
+       your work without permission.
+<span class="key">Examples:</span> Music, software, books, images, code.
+<span class="key">Duration:</span> Creator's lifetime + 70 years (in the US).
+<span class="key">Violation:</span> Using copyrighted material without permission
+       is infringement (illegal).</pre>
+</div>
+
+<div class="concept">
+<h3>Creative Commons (CC)</h3>
+<pre><span class="key">What:</span> A set of FREE licenses that let creators
+       choose HOW their work can be shared.
+<span class="key">Why:</span>  Copyright is "all rights reserved."
+       Creative Commons is "some rights reserved."
+
+<span class="val">Common CC conditions:</span>
+  BY       = Give credit to the creator (attribution)
+  SA       = Share-alike (derivatives use same license)
+  NC       = Non-commercial use only
+  ND       = No derivatives (can't modify)
+
+<span class="val">Example:</span> CC BY-NC means you can use it for free
+if you give credit and don't make money from it.</pre>
+</div>
+
+<div class="concept">
+<h3>Open Source</h3>
+<pre><span class="key">What:</span> Software whose source code is publicly available.
+       Anyone can view, modify, and distribute it.
+<span class="key">Examples:</span> Linux, Python, Firefox, Android (partially)
+<span class="key">Benefit:</span> Community improvement, transparency, free to use
+<span class="key">NOT the same as "no copyright":</span>
+       Open source still has licenses (MIT, GPL, Apache)
+       that set rules for how it can be used.</pre>
+</div>
+
+<div class="tip"><strong>Exam distinction:</strong> Copyright = automatic, all rights reserved. Creative Commons = creator CHOOSES to share some rights. Open source = source code available, specific license terms apply. Public domain = no copyright, completely free to use (like very old works).</div>
+
+<div class="check-section">
+<h3>Quick Check: Legal</h3>
+<div class="q">
+<div class="q-prompt">A student uses an image from Google
+for a school project. The image has
+a "CC BY-NC" license. Is this OK?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Yes, as long as:
+1. They give credit (BY = attribution required)
+2. It's for a school project, not for profit
+   (NC = non-commercial)
+
+They would NOT be allowed to:
+- Use it in something they sell
+- Claim they created it
+- Use it without crediting the creator</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<h2 id="pii">6. PII & Data Privacy</h2>
+
+<div class="concept">
+<h3>PII (Personally Identifiable Information)</h3>
+<pre><span class="key">Definition:</span> Any data that can identify a specific person.
+
+<span class="val">Obvious PII:</span>
+  Full name, email, phone number, SSN,
+  home address, date of birth, driver's license
+
+<span class="val">Less obvious PII:</span>
+  IP address, GPS location, biometric data
+  (fingerprints, face scans), browsing history,
+  device ID, cookies
+
+<span class="key">Why it matters:</span> PII can be used for identity theft,
+  stalking, discrimination, or surveillance
+  if it falls into the wrong hands.</pre>
+</div>
+
+<div class="concept">
+<h3>How PII Is Collected</h3>
+<pre>  - Account sign-ups (name, email, password)
+  - Location services (GPS, Wi-Fi triangulation)
+  - Cookies and tracking pixels on websites
+  - Social media posts and interactions
+  - Purchases and financial transactions
+  - IoT devices (smart speakers, fitness trackers)
+  - Public records (voter rolls, property records)</pre>
+</div>
+
+<div class="concept">
+<h3>Data Breaches</h3>
+<pre><span class="key">What:</span> Unauthorized access to stored personal data.
+<span class="key">Impact:</span> Identity theft, financial loss, privacy violation.
+<span class="key">Examples:</span> Company databases hacked, exposing millions
+       of users' names, emails, passwords, credit cards.
+<span class="key">Why it happens:</span> Weak security, unpatched software,
+       phishing attacks on employees, insider threats.</pre>
+</div>
+
+<div class="trap"><strong>Exam point:</strong> Even "anonymized" data can sometimes be re-identified by combining it with other datasets. True anonymity is very hard to achieve. The exam loves questions about the gap between claimed privacy and actual risk.</div>
+
+<div class="check-section">
+<h3>Quick Check: PII</h3>
+<div class="q">
+<div class="q-prompt">Which of the following is PII?
+A. A country's population
+B. The average temperature today
+C. A user's IP address
+D. The number of cars on a highway</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">C. An IP address.
+
+An IP address can be traced to a specific
+device and location, potentially identifying
+an individual user.
+
+A, B, and D are aggregate/general data that
+don't identify a specific person.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<h2 id="security">7. Cybersecurity: Encryption, Phishing, Malware</h2>
+
+<div class="concept">
+<h3>Encryption</h3>
+<pre><span class="key">What:</span> Converting readable data (plaintext) into
+       unreadable scrambled data (ciphertext) using a key.
+<span class="key">Why:</span>  Protects data during transmission and storage.
+
+<span class="val">Symmetric encryption:</span>
+  Same key to encrypt AND decrypt.
+  Fast, but you need a secure way to share the key.
+  Example: You and your friend both know the password.
+
+<span class="val">Public key (asymmetric) encryption:</span>
+  TWO keys: a public key (shared openly) and a
+  private key (kept secret by the owner).
+  - Encrypt with PUBLIC key → only PRIVATE key can decrypt
+  - Anyone can send you encrypted messages
+  - Only YOU can read them (with your private key)
+  
+  Used in: HTTPS, email encryption, digital signatures</pre>
+</div>
+
+<div class="concept">
+<h3>Phishing</h3>
+<pre><span class="key">What:</span> A social engineering attack where an attacker
+       sends fake messages pretending to be a
+       trusted source (bank, school, employer).
+<span class="key">Goal:</span> Trick the victim into revealing passwords,
+       credit card numbers, or clicking malicious links.
+<span class="key">How to spot it:</span>
+  - Urgent language ("Your account will be deleted!")
+  - Suspicious sender address (slight misspellings)
+  - Generic greetings ("Dear Customer" not your name)
+  - Links that don't match the claimed destination
+<span class="key">Key point:</span> Phishing targets HUMANS, not technology.
+  The best firewall can't stop someone from
+  voluntarily typing their password into a fake site.</pre>
+</div>
+
+<div class="concept">
+<h3>Other Threats</h3>
+<pre><span class="key">Malware:</span> Software designed to damage or gain
+  unauthorized access. Includes viruses, worms,
+  ransomware, spyware, trojans.
+
+<span class="key">Keylogger:</span> Records everything you type
+  (passwords, messages, credit card numbers).
+
+<span class="key">Ransomware:</span> Encrypts your files and demands
+  payment to unlock them.
+
+<span class="key">DDoS (Distributed Denial of Service):</span>
+  Floods a server with so many requests that
+  it can't serve legitimate users. Doesn't steal
+  data, just takes the service offline.</pre>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Security</h3>
+<div class="q">
+<div class="q-prompt">What is the difference between symmetric
+and public key encryption?</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">Symmetric: ONE key for both encrypt and decrypt.
+Both sender and receiver must have the same key.
+Problem: how do you securely share the key?
+
+Public key: TWO keys. Public key encrypts,
+private key decrypts. You can share your public
+key with everyone. Only your private key can
+decode messages encrypted with your public key.
+Solves the key-sharing problem.</div>
+</div>
+</div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<h2 id="auth">8. Authentication & Cookies</h2>
+
+<div class="concept">
+<h3>Authentication</h3>
+<pre><span class="key">What:</span> Verifying that a user is who they claim to be.
+
+<span class="val">Three factors of authentication:</span>
+  1. Something you <span class="key">KNOW</span>    (password, PIN, security question)
+  2. Something you <span class="key">HAVE</span>    (phone for SMS code, security key, badge)
+  3. Something you <span class="key">ARE</span>     (fingerprint, face scan, iris scan)
+
+<span class="val">Multifactor authentication (MFA):</span>
+  Uses TWO or more factors from DIFFERENT categories.
+  Example: Password (know) + SMS code (have)
+  
+  NOT multifactor: Password + security question
+  (both are "something you know" = same category)</pre>
+</div>
+
+<div class="trap"><strong>Exam trap:</strong> Two passwords or a password + security question is NOT multifactor because they're both "something you know." MFA requires factors from different categories.</div>
+
+<div class="concept">
+<h3>Cookies & Digital Footprint</h3>
+<pre><span class="key">Cookies:</span> Small data files websites store on your browser.
+  - Track login sessions (stay signed in)
+  - Remember preferences (language, dark mode)
+  - Track browsing behavior for advertising
+  - Can be used across sites (third-party cookies)
+
+<span class="key">Digital footprint:</span> The trail of data you leave online.
+  <span class="val">Active:</span> Things you intentionally post (social media, emails)
+  <span class="val">Passive:</span> Things collected without your direct action
+           (cookies, IP logs, location tracking, metadata)
+
+<span class="key">Key point:</span> Your digital footprint is essentially permanent.
+  Even deleted content may be cached, screenshotted,
+  or stored on servers somewhere.</pre>
+</div>
+
+<div class="check-section">
+<h3>Quick Check: Authentication & Cookies</h3>
+<div class="q">
+<div class="q-prompt">Which is TRUE multifactor authentication?
+
+A. Password + security question
+B. Fingerprint + face scan
+C. Password + SMS code sent to phone
+D. Two different passwords</div>
+<button class="reveal-btn" onclick="reveal(this)">Show Answer</button>
+<div class="answer">C. Password (something you KNOW) +
+SMS code (something you HAVE, your phone).
+
+A is NOT MFA: both are "something you know."
+B is debatable but technically both are
+"something you are" (same category).
+D is NOT MFA: both are "something you know."
+
+True MFA combines DIFFERENT categories.</div>
+</div>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div class="review-section" id="review">
+<h2>End of Lesson Review</h2>
+<p style="margin-bottom:20px">Mixed from all 8 sections. Exam-style.</p>
+<div id="review-qs"></div>
+</div>
+
+<script>
+function reveal(btn){const a=btn.nextElementSibling;const s=a.classList.contains('show');a.classList.toggle('show');btn.textContent=s?'Show Answer':'Hide';btn.classList.toggle('on',!s);}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+
+const RQS=[
+{q:"A new app connects volunteer tutors\nwith students in underserved areas.\nName one benefit and one concern.",a:0,o:["A. Benefit: increases access to education. Concern: students without internet can't use it (widens digital divide).","B. Benefit: eliminates all educational inequality. Concern: none, this is purely positive.","C. Benefit: tutors earn high salaries. Concern: too many students sign up.","D. Benefit: reduces screen time. Concern: tutors may be unqualified."],e:"A correctly identifies both a real benefit (access) and a real concern (digital divide). B is wrong because no single app eliminates all inequality. C and D don't match the scenario well."},
+{q:"A hiring algorithm trained on past data\nfavors candidates from certain universities.\nThis is an example of:",a:1,o:["A. The digital divide","B. Computing bias from biased training data","C. Phishing","D. Open source software"],e:"The algorithm learned bias from historical hiring patterns. It perpetuates the bias by favoring the same types of candidates that were favored before."},
+{q:"Password + fingerprint scan is\nmultifactor authentication because:",a:2,o:["A. It uses two passwords","B. It uses two things you know","C. It combines something you know with something you are","D. Fingerprints are more secure than passwords"],e:"Password = something you know. Fingerprint = something you are. Two different categories = true MFA."},
+{q:"Which is NOT PII?",a:3,o:["A. Email address","B. GPS location","C. Fingerprint scan","D. The current temperature outside"],e:"Temperature is general environmental data, not tied to any individual. Email, GPS, and fingerprints can all identify a specific person."},
+{q:"Creative Commons BY-SA means:",a:1,o:["A. You can use it however you want with no restrictions","B. You must give credit (BY) and share derivatives under the same license (SA)","C. You can only use it for non-commercial purposes","D. The work has no copyright"],e:"BY = attribution required. SA = share-alike (your derivative must use the same CC license). The work still has copyright, the creator just chose to share some rights."},
+{q:"A DDoS attack:",a:0,o:["A. Floods a server with requests to take it offline","B. Steals passwords through fake emails","C. Encrypts files and demands ransom","D. Records keystrokes"],e:"DDoS overwhelms a server with traffic. B is phishing. C is ransomware. D is a keylogger."},
+{q:"The digital divide is BEST described as:",a:1,o:["A. The gap between fast and slow computers","B. The gap between those with and without access to computing technology","C. The difference between digital and analog signals","D. The divide between Mac and PC users"],e:"The digital divide is about unequal ACCESS to technology and internet, driven by income, geography, age, and other factors."},
+{q:"Which is an example of crowdsourcing?",a:2,o:["A. A company hiring one expert consultant","B. A government building a road","C. Wikipedia, where thousands of volunteers write and edit articles","D. A single programmer writing an app"],e:"Crowdsourcing uses contributions from a large group of people. Wikipedia's volunteer editors are the classic example."},
+{q:"Public key encryption uses:",a:1,o:["A. One key for everything","B. A public key to encrypt and a private key to decrypt","C. No keys at all","D. A password shared between two people"],e:"Two keys: public (shared) encrypts, private (secret) decrypts. This solves the key-sharing problem of symmetric encryption."},
+{q:"A student posts a photo on social media\nthen deletes it 5 minutes later.\nIs the photo truly gone?",a:1,o:["A. Yes, deleting removes it completely","B. No, it may still exist in screenshots, caches, server backups, or others' downloads","C. Yes, if they also clear their browser history","D. Only if they posted it anonymously"],e:"Digital footprint is essentially permanent. Others may have screenshotted it, servers may have cached it, and backups may retain it."},
+{q:"Phishing targets:",a:2,o:["A. Computer hardware","B. Software vulnerabilities","C. Human behavior (tricking people into revealing information)","D. Network protocols"],e:"Phishing is social engineering. It exploits human trust, not technical vulnerabilities. The human is the weak point."},
+{q:"A fitness app is free but collects\ndetailed health and location data.\nWhich concern is MOST relevant?",a:0,o:["A. Users are paying with their personal data instead of money, with unclear privacy implications","B. The app doesn't have enough features","C. Free apps always contain viruses","D. Fitness data is never useful"],e:"'If the product is free, you are the product.' The real cost is personal data. Users may not understand how their health and location data will be used, sold, or shared."},
+{q:"An algorithm used for sentencing in\ncriminal courts shows racial disparities\nin its recommendations. This is:",a:1,o:["A. Normal and acceptable","B. An example of computing bias with serious real-world consequences","C. Proof that algorithms are always racist","D. Irrelevant since judges make final decisions"],e:"B is correct. The bias likely comes from training data reflecting historical disparities in the criminal justice system. The impact is real: it affects people's freedom. C is too absolute. D ignores that judges may rely heavily on the algorithm's recommendation."},
+{q:"Open source software is:",a:2,o:["A. Software that has no copyright","B. Software that is always free to download","C. Software whose source code is publicly available for viewing and modification","D. Software made by the government"],e:"Open source means the source code is accessible. It still has a license (copyright). Many are free, but 'open source' specifically refers to code access, not price."},
+{q:"A company encrypts customer data\nbut an employee falls for a phishing email\nand reveals the decryption key.\nThe vulnerability was:",a:1,o:["A. The encryption algorithm was too weak","B. The human factor, social engineering bypassed technical security","C. The firewall failed","D. The data wasn't actually encrypted"],e:"The encryption was fine. The human was tricked. This illustrates that security is only as strong as its weakest link, which is often people, not technology."},
+{q:"Third-party cookies can:",a:0,o:["A. Track your browsing across multiple websites for targeted advertising","B. Only store your login information for one site","C. Protect your privacy","D. Speed up your internet connection"],e:"Third-party cookies are placed by advertisers, not the site you're visiting. They track your behavior across many sites to build a profile for targeted ads."},
+{q:"Which is a passive digital footprint?",a:2,o:["A. A tweet you posted","B. A review you wrote on Amazon","C. Your IP address being logged by a website you visited","D. An email you sent"],e:"Passive footprint = data collected without your deliberate action. Your IP is logged automatically when you visit a site. A, B, D are all active (you intentionally created that content)."},
+{q:"Ransomware is dangerous because:",a:0,o:["A. It encrypts your files and demands payment, and paying doesn't guarantee recovery","B. It makes your computer run slowly","C. It changes your desktop wallpaper","D. It sends spam emails from your account"],e:"Ransomware locks your files with encryption. Even if you pay, there's no guarantee the attacker will give you the key. Prevention (backups, not clicking suspicious links) is the best defense."}
+];
+
+const rDiv=document.getElementById('review-qs');
+RQS.forEach((q,i)=>{
+    const qid='rq'+i;
+    let h=`<div class="rq" id="${qid}" data-rev="0" data-sel=""><div class="rq-num">Question ${i+1} of ${RQS.length}</div><div class="rq-text">${esc(q.q)}</div><div class="opts">`;
+    q.o.forEach((opt,oi)=>{h+=`<button class="opt" data-i="${oi}" onclick="selOpt(this,'${qid}')">${esc(opt)}</button>`;});
+    h+=`</div><button class="chk" onclick="chkQ(this,'${qid}',${q.a})">Check Answer</button><div class="expl">${esc(q.e)}</div></div>`;
+    rDiv.innerHTML+=h;
+});
+function selOpt(btn,qid){const c=document.getElementById(qid);if(c.dataset.rev==='1')return;c.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));btn.classList.add('sel');c.dataset.sel=btn.dataset.i;c.querySelector('.chk').classList.add('rdy');}
+function chkQ(btn,qid,ans){const c=document.getElementById(qid);if(!c.dataset.sel||c.dataset.sel==='')return;c.dataset.rev='1';const s=parseInt(c.dataset.sel);c.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('locked');o.classList.remove('sel');if(i===ans)o.classList.add('right');else if(i===s&&i!==ans)o.classList.add('wrong');});c.querySelector('.expl').classList.add('show');btn.textContent='Try Again';btn.onclick=function(){rsQ(qid,ans);};}
+function rsQ(qid,ans){const c=document.getElementById(qid);c.dataset.rev='0';c.dataset.sel='';c.querySelectorAll('.opt').forEach(o=>o.classList.remove('locked','sel','right','wrong'));c.querySelector('.expl').classList.remove('show');const b=c.querySelector('.chk');b.textContent='Check Answer';b.classList.remove('rdy');b.onclick=function(){chkQ(b,qid,ans);};}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
