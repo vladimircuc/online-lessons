@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP-165 Final Exam Practice, Travis</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0891b2;
+    --accent-hover: #0e7490;
+    --accent-soft: #ecfeff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #f472b6;
+    --string: #86efac;
+    --comment: #94a3b8;
+    --type: #7dd3fc;
+    --num: #fbbf24;
+    --good: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    color: var(--text);
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .legend {
+    background: var(--accent-soft);
+    border: 1px solid #a5f3fc;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #155e75;
+  }
+  .exercise {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .ex-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .ex-num {
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  h2 {
+    margin: 0;
+    font-size: 19px;
+  }
+  .problem {
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+    padding: 12px 16px;
+    margin: 12px 0 16px;
+    border-radius: 4px;
+    font-size: 14.5px;
+  }
+  .problem ul { margin: 6px 0 0; padding-left: 22px; }
+  .problem li { margin-bottom: 3px; }
+  .problem code {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  button.toggle {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  button.toggle:hover { background: var(--accent-hover); }
+  .answer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .answer.hidden { display: none; }
+  .answer h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .answer h3:not(:first-child) { margin-top: 16px; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  code { font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--num); }
+  .explain {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .explain strong { color: #854d0e; }
+  .gotcha {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 13.5px;
+  }
+  .gotcha strong { color: #b91c1c; }
+  .meta {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>ITP-165 Final Exam, Practice Sheet</h1>
+  <div class="sub">Tutoring session, Travis. Exam date: May 8, 2026.</div>
+</header>
+
+<div class="legend">
+  Click <strong>Show Answer</strong> on each exercise after Travis attempts it. Each answer includes the full code plus a written explanation of why it works.
+</div>
+
+<!-- ============ PROGRAM 1: TRIP SCHEDULER ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 1</span>
+    <h2>Define a struct called Trip</h2>
+  </div>
+  <div class="problem">
+    Define a struct called <code>Trip</code> that contains:
+    <ul>
+      <li>the name of a city</li>
+      <li>a number 1-365 for the proposed date to leave</li>
+      <li>a number 1-365 for the proposed date to return</li>
+    </ul>
+  </div>
+  <button class="toggle" onclick="toggleAns('a1', this)">Show Answer</button>
+  <div id="a1" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">struct</span> <span class="ty">Trip</span> {
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave;
+    <span class="ty">int</span> back;
+};</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      A struct is a custom type that bundles related data. Three fields here, one string and two ints. <strong>Don't forget the semicolon</strong> after the closing brace, that's the most common mistake. Using <code>string</code> requires <code>#include &lt;string&gt;</code> at the top of the file.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 2</span>
+    <h2>Function to read trips from a file</h2>
+  </div>
+  <div class="problem">
+    Function name <code>load</code>. Parameters: filename and a vector of Trips. Each line is a trip: city followed by a comma, then 2 numbers. Store each as a Trip in the vector.
+  </div>
+  <button class="toggle" onclick="toggleAns('a2', this)">Show Answer</button>
+  <div id="a2" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> load(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp; trips) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave, back;
+    <span class="kw">while</span> (getline(fin, city, <span class="st">','</span>)) {
+        fin &gt;&gt; leave &gt;&gt; back;
+        fin.ignore();  <span class="cm">// skip the newline before next getline</span>
+        <span class="ty">Trip</span> t;
+        t.city = city;
+        t.leave = leave;
+        t.back = back;
+        trips.push_back(t);
+    }
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      The vector parameter MUST be passed by reference with the <code>&amp;</code>, otherwise we'd be filling a local copy that gets discarded. <code>getline(fin, city, ',')</code> reads everything up to the comma into <code>city</code>. Then <code>fin &gt;&gt; leave &gt;&gt; back</code> reads the two ints (whitespace-separated, including the leading space after the comma is skipped automatically by <code>&gt;&gt;</code>). The <code>fin.ignore()</code> swallows the leftover newline so the next <code>getline</code> starts cleanly.
+    </div>
+    <div class="gotcha">
+      <strong>Common bug:</strong> Forgetting the <code>&amp;</code> on the vector parameter. Code compiles, runs, but no trips appear because they're added to a copy.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 3</span>
+    <h2>Function to print one trip</h2>
+  </div>
+  <div class="problem">
+    Function name <code>print</code>. One parameter: a Trip. Print like <code>"Los Angeles 34-38"</code>.
+  </div>
+  <button class="toggle" onclick="toggleAns('a3', this)">Show Answer</button>
+  <div id="a3" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> print(<span class="ty">Trip</span> t) {
+    cout &lt;&lt; t.city &lt;&lt; <span class="st">" "</span> &lt;&lt; t.leave &lt;&lt; <span class="st">"-"</span> &lt;&lt; t.back &lt;&lt; endl;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Access struct fields with the dot operator. Output is space, then numbers separated by a hyphen. <code>void</code> because we print but return nothing. Could also pass by const reference (<code>const Trip&amp; t</code>) for efficiency, but plain by-value is acceptable since a Trip is small.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 4</span>
+    <h2>Function to print non-overlapping trips</h2>
+  </div>
+  <div class="problem">
+    Function name <code>skej</code>. Parameter: vector of Trips. Skip trips that start on or before the day you come back from the previously printed trip. Trips are already sorted by start day.
+  </div>
+  <button class="toggle" onclick="toggleAns('a4', this)">Show Answer</button>
+  <div id="a4" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> skej(<span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp; trips) {
+    <span class="ty">int</span> lastReturn = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; trips.size(); i++) {
+        <span class="kw">if</span> (trips[i].leave &gt; lastReturn) {
+            print(trips[i]);
+            lastReturn = trips[i].back;
+        }
+    }
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Track the return day of the last trip we printed. For each trip, only print it if its start day is strictly greater than that. After printing, update <code>lastReturn</code>. Initializing to 0 means the very first trip always prints (since all leave days are 1 or higher).
+    </div>
+    <div class="gotcha">
+      <strong>Watch the comparison:</strong> The problem says skip trips that start "before or on" the previous return. So we print only when <code>leave &gt; lastReturn</code>, not <code>&gt;=</code>.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 5</span>
+    <h2>Main program</h2>
+  </div>
+  <div class="problem">
+    Put it all together. Includes at top, call <code>load</code> with <code>"travel.txt"</code>, then call <code>skej</code>.
+  </div>
+  <button class="toggle" onclick="toggleAns('a5', this)">Show Answer</button>
+  <div id="a5" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;string&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// struct Trip { ... };</span>
+<span class="cm">// void load(...) { ... }</span>
+<span class="cm">// void print(...) { ... }</span>
+<span class="cm">// void skej(...) { ... }</span>
+
+<span class="ty">int</span> main() {
+    <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt; trips;
+    load(<span class="st">"travel.txt"</span>, trips);
+    skej(trips);
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Four standard includes cover everything: <code>iostream</code> for cout, <code>fstream</code> for ifstream, <code>vector</code> and <code>string</code> for the data types. Declare the vector empty, load fills it, skej prints from it.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROGRAM 2: BIRTHDAY PARADOX ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 6</span>
+    <h2>Function to make random birthdays</h2>
+  </div>
+  <div class="problem">
+    Function name <code>makeDays</code>. Parameter: group size. Put that many random ints (1-365) into a vector. Return the vector.
+  </div>
+  <button class="toggle" onclick="toggleAns('a6', this)">Show Answer</button>
+  <div id="a6" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; makeDays(<span class="ty">int</span> size) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; days;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; size; i++) {
+        days.push_back(rand() % <span class="nu">365</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> days;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      <code>rand() % 365</code> gives a number from 0 to 364. Adding 1 shifts to 1-365 as required. Loop <code>size</code> times, push each random number, return the vector.
+    </div>
+    <div class="gotcha">
+      <strong>Setup matters:</strong> <code>srand(time(0))</code> must be called once in main, otherwise <code>rand()</code> gives the same sequence every run. Also need <code>#include &lt;cstdlib&gt;</code> for rand and <code>#include &lt;ctime&gt;</code> for time.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 7</span>
+    <h2>Function to find duplicates</h2>
+  </div>
+  <div class="problem">
+    Function name <code>match</code>. Parameter: vector of ints. Compare every int to every other int. Return true if any two are the same, false otherwise.
+  </div>
+  <button class="toggle" onclick="toggleAns('a7', this)">Show Answer</button>
+  <div id="a7" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">bool</span> match(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+            <span class="kw">if</span> (v[i] == v[j]) <span class="kw">return</span> <span class="kw">true</span>;
+        }
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Classic nested loop pattern for comparing every pair. Outer loop picks the first item, inner loop checks every later item. Starting <code>j = i + 1</code> avoids comparing an item to itself and avoids checking the same pair twice. The moment we find a match, return true and exit. If we finish both loops without finding one, return false.
+    </div>
+    <div class="gotcha">
+      <strong>Don't write</strong> <code>j = 0</code> in the inner loop, that compares every element to itself and gives a false positive on every call.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 8</span>
+    <h2>Function to run 100 trials and return average match rate</h2>
+  </div>
+  <div class="problem">
+    Function name <code>trial</code>. Parameter: group size. Run makeDays + match 100 times. Count matches. Probability is count / 100. Print group size and probability. Return the probability.
+  </div>
+  <button class="toggle" onclick="toggleAns('a8', this)">Show Answer</button>
+  <div id="a8" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">double</span> trial(<span class="ty">int</span> size) {
+    <span class="ty">int</span> count = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++) {
+        <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; days = makeDays(size);
+        <span class="kw">if</span> (match(days)) count++;
+    }
+    <span class="ty">double</span> prob = count / <span class="nu">100.0</span>;
+    cout &lt;&lt; <span class="st">"size="</span> &lt;&lt; size &lt;&lt; <span class="st">" prob="</span> &lt;&lt; prob &lt;&lt; endl;
+    <span class="kw">return</span> prob;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Loop 100 times. Each iteration: get a fresh random vector, check for a match, increment count if found. Compute probability as a double, print, return.
+    </div>
+    <div class="gotcha">
+      <strong>The biggest gotcha on this whole exam:</strong> <code>count / 100</code> is integer division. If count is 47, you get 0, not 0.47. Use <code>count / 100.0</code> (note the .0) to force double division. This is the question that catches almost every student.
+    </div>
+  </div>
+</div>
+
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 9</span>
+    <h2>Main program: find smallest group with probable match</h2>
+  </div>
+  <div class="problem">
+    Call <code>trial(2)</code>, <code>trial(3)</code>, etc. in a loop. Stop when the return value is greater than 0.5.
+  </div>
+  <button class="toggle" onclick="toggleAns('a9', this)">Show Answer</button>
+  <div id="a9" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;cstdlib&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;ctime&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// vector&lt;int&gt; makeDays(int size) { ... }</span>
+<span class="cm">// bool match(vector&lt;int&gt; v) { ... }</span>
+<span class="cm">// double trial(int size) { ... }</span>
+
+<span class="ty">int</span> main() {
+    srand(time(<span class="nu">0</span>));
+    <span class="ty">int</span> size = <span class="nu">2</span>;
+    <span class="kw">while</span> (trial(size) &lt;= <span class="nu">0.5</span>) {
+        size++;
+    }
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      <code>srand(time(0))</code> seeds the random generator once at program start. The while loop calls <code>trial(size)</code>, and as long as it returns 0.5 or less, we increment size and try again. As soon as <code>trial</code> returns more than 0.5, the loop exits. The final printed line is the smallest group size where match probability exceeds 50%.
+    </div>
+    <div class="gotcha">
+      <strong>Don't put srand inside the loop.</strong> Seed once, at the top of main. Seeding repeatedly with the same time value resets the sequence.
+    </div>
+  </div>
+</div>
+
+<div class="meta">End of practice sheet, 9 exercises</div>
+
+</div>
+
+<script>
+function toggleAns(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+}
+</script>
+
+</body>
+</html>

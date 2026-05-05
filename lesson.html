@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP-165 Final Prep, Concept Lessons</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0891b2;
+    --accent-hover: #0e7490;
+    --accent-soft: #ecfeff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #f472b6;
+    --string: #86efac;
+    --comment: #94a3b8;
+    --type: #7dd3fc;
+    --num: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  .sub { color: var(--muted); font-size: 14.5px; }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    background: var(--card);
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 22px;
+    position: sticky;
+    top: 8px;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { background: var(--accent-soft); color: var(--accent); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 26px 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  h2 { margin: 0 0 6px; font-size: 22px; color: var(--accent); }
+  .lead {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+  h3 {
+    margin: 22px 0 10px;
+    font-size: 17px;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+  }
+  p { margin: 8px 0 12px; font-size: 15px; }
+  .panel ul, .panel ol { font-size: 15px; padding-left: 22px; }
+  .panel li { margin-bottom: 4px; }
+  code.inline {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  pre code { font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--num); }
+
+  .gotcha {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+  .gotcha strong { color: #b91c1c; }
+  .tip {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+  .tip strong { color: #15803d; }
+
+  .practice {
+    margin-top: 26px;
+    border-top: 2px dashed var(--border);
+    padding-top: 22px;
+  }
+  .practice-tag {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .practice-tag.bonus {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .practice-tag.mock {
+    background: #fce7f3;
+    color: #9f1239;
+  }
+  .problem-text {
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+    padding: 12px 16px;
+    margin: 10px 0 14px;
+    border-radius: 4px;
+    font-size: 14.5px;
+  }
+  .problem-text ul { margin: 6px 0 0; padding-left: 20px; }
+  .problem-text li { margin-bottom: 3px; }
+
+  button.toggle {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  button.toggle:hover { background: var(--accent-hover); }
+  .answer {
+    margin-top: 14px;
+  }
+  .answer.hidden { display: none; }
+
+  .mock-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .mock-block h4 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .mock-num {
+    background: #db2777;
+    color: white;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .program-divider {
+    text-align: center;
+    margin: 28px 0 20px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+  }
+  .program-divider::before, .program-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: var(--border);
+  }
+  .program-divider::before { left: 0; }
+  .program-divider::after { right: 0; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>ITP-165 Final Exam Prep, Concept Lessons</h1>
+  <div class="sub">Travis, full topic walkthrough, easiest to hardest. Mock exam at the end.</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="basics" onclick="showTab('basics')">1. Basics</button>
+  <button class="tab-btn" data-tab="functions" onclick="showTab('functions')">2. Functions</button>
+  <button class="tab-btn" data-tab="structs" onclick="showTab('structs')">3. Structs</button>
+  <button class="tab-btn" data-tab="vectors" onclick="showTab('vectors')">4. Vectors</button>
+  <button class="tab-btn" data-tab="loops" onclick="showTab('loops')">5. Loops</button>
+  <button class="tab-btn" data-tab="random" onclick="showTab('random')">6. Random</button>
+  <button class="tab-btn" data-tab="casting" onclick="showTab('casting')">7. Casting</button>
+  <button class="tab-btn" data-tab="fileio" onclick="showTab('fileio')">8. File I/O</button>
+  <button class="tab-btn" data-tab="mock" onclick="showTab('mock')">Mock Exam</button>
+</nav>
+
+<!-- ============ TAB 1: BASICS ============ -->
+<div class="tab-content active" id="basics">
+<div class="panel">
+  <h2>1. Basics &amp; Includes</h2>
+  <div class="lead">Every C++ program starts with the same skeleton. Get this fluent and the rest gets easier.</div>
+
+  <h3>The skeleton</h3>
+  <p>Every program needs <code class="inline">int main()</code>. Above it go the <code class="inline">#include</code> lines for any libraries you use, plus <code class="inline">using namespace std;</code> so you can write <code class="inline">cout</code> instead of <code class="inline">std::cout</code>.</p>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    cout &lt;&lt; <span class="st">"Hello"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+
+  <h3>Which include do I need?</h3>
+  <ul>
+    <li><code class="inline">&lt;iostream&gt;</code> for <code class="inline">cout</code>, <code class="inline">cin</code>, <code class="inline">endl</code></li>
+    <li><code class="inline">&lt;fstream&gt;</code> for <code class="inline">ifstream</code> (file reading)</li>
+    <li><code class="inline">&lt;vector&gt;</code> for <code class="inline">vector&lt;T&gt;</code></li>
+    <li><code class="inline">&lt;string&gt;</code> for <code class="inline">string</code></li>
+    <li><code class="inline">&lt;cstdlib&gt;</code> for <code class="inline">rand()</code> and <code class="inline">srand()</code></li>
+    <li><code class="inline">&lt;ctime&gt;</code> for <code class="inline">time()</code></li>
+  </ul>
+
+  <div class="tip"><strong>Memory aid:</strong> if you see ifstream in your code, you need fstream. If you see vector, you need vector. If you see rand, you need cstdlib AND ctime (because you also need time for srand).</div>
+
+  <h3>Output basics</h3>
+  <p><code class="inline">cout &lt;&lt;</code> sends data to the screen. Chain multiple values with more <code class="inline">&lt;&lt;</code>. <code class="inline">endl</code> ends the line.</p>
+<pre><code>cout &lt;&lt; <span class="st">"Score: "</span> &lt;&lt; score &lt;&lt; <span class="st">" / "</span> &lt;&lt; total &lt;&lt; endl;</code></pre>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 5</span>
+    <div class="problem-text">
+      Put includes at top, declare vector of Trips, call <code class="inline">load("travel.txt", trips)</code>, then call <code class="inline">skej(trips)</code>.
+    </div>
+    <button class="toggle" onclick="toggleAns('p1a', this)">Show Answer</button>
+    <div id="p1a" class="answer hidden">
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;string&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt; trips;
+    load(<span class="st">"travel.txt"</span>, trips);
+    skej(trips);
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a complete C++ program that prints <code class="inline">"ITP-165 Final, May 8"</code> on its own line.
+    </div>
+    <button class="toggle" onclick="toggleAns('p1b', this)">Show Answer</button>
+    <div id="p1b" class="answer hidden">
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    cout &lt;&lt; <span class="st">"ITP-165 Final, May 8"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 2: FUNCTIONS ============ -->
+<div class="tab-content" id="functions">
+<div class="panel">
+  <h2>2. Functions</h2>
+  <div class="lead">A function is a named block of code with inputs (parameters) and an output (return value). Every problem on this exam asks you to write functions.</div>
+
+  <h3>Anatomy of a function</h3>
+<pre><code><span class="ty">return_type</span> name(<span class="ty">type</span> param1, <span class="ty">type</span> param2) {
+    <span class="cm">// body</span>
+    <span class="kw">return</span> something;
+}</code></pre>
+  <p>If a function returns nothing, the return type is <code class="inline">void</code> and you skip the return statement.</p>
+
+  <h3>Two examples</h3>
+<pre><code><span class="cm">// Returns an int</span>
+<span class="ty">int</span> add(<span class="ty">int</span> a, <span class="ty">int</span> b) {
+    <span class="kw">return</span> a + b;
+}
+
+<span class="cm">// Returns nothing, just prints</span>
+<span class="kw">void</span> greet(<span class="ty">string</span> name) {
+    cout &lt;&lt; <span class="st">"Hi "</span> &lt;&lt; name &lt;&lt; endl;
+}</code></pre>
+
+  <h3>By value vs by reference</h3>
+  <p>Normally a parameter is a <strong>copy</strong> of what was passed in. Changes to it inside the function don't affect the original. Add an <code class="inline">&amp;</code> after the type and you're working with the original directly.</p>
+<pre><code><span class="cm">// By value, x outside is unchanged</span>
+<span class="kw">void</span> doubleIt(<span class="ty">int</span> x) { x = x * <span class="nu">2</span>; }
+
+<span class="cm">// By reference, x outside IS changed</span>
+<span class="kw">void</span> doubleIt(<span class="ty">int</span>&amp; x) { x = x * <span class="nu">2</span>; }</code></pre>
+
+  <div class="gotcha"><strong>When to use &amp;:</strong> when you need the function to modify the variable, OR when the variable is big (like a vector) and copying it would waste time. The <code class="inline">load</code> function on your exam needs <code class="inline">&amp;</code> on the vector parameter, otherwise it fills a copy that disappears.</div>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 3</span>
+    <div class="problem-text">
+      Function name <code class="inline">print</code>. Parameter: a Trip. Print like <code class="inline">"Los Angeles 34-38"</code>. No return.
+    </div>
+    <button class="toggle" onclick="toggleAns('p2a', this)">Show Answer</button>
+    <div id="p2a" class="answer hidden">
+<pre><code><span class="kw">void</span> print(<span class="ty">Trip</span> t) {
+    cout &lt;&lt; t.city &lt;&lt; <span class="st">" "</span> &lt;&lt; t.leave &lt;&lt; <span class="st">"-"</span> &lt;&lt; t.back &lt;&lt; endl;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a function called <code class="inline">larger</code> that takes two ints and returns the larger one. If they're equal, return either.
+    </div>
+    <button class="toggle" onclick="toggleAns('p2b', this)">Show Answer</button>
+    <div id="p2b" class="answer hidden">
+<pre><code><span class="ty">int</span> larger(<span class="ty">int</span> a, <span class="ty">int</span> b) {
+    <span class="kw">if</span> (a &gt; b) <span class="kw">return</span> a;
+    <span class="kw">return</span> b;
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 3: STRUCTS ============ -->
+<div class="tab-content" id="structs">
+<div class="panel">
+  <h2>3. Structs</h2>
+  <div class="lead">A struct lets you bundle related variables into one custom type. Think of it as a recipe card with named slots.</div>
+
+  <h3>Defining a struct</h3>
+<pre><code><span class="kw">struct</span> <span class="ty">Book</span> {
+    <span class="ty">string</span> title;
+    <span class="ty">string</span> author;
+    <span class="ty">int</span> year;
+};</code></pre>
+  <div class="gotcha"><strong>The semicolon after the closing brace is required.</strong> Forget it and you'll get a wall of confusing compile errors. This is the #1 struct mistake.</div>
+
+  <h3>Using a struct</h3>
+<pre><code><span class="ty">Book</span> b;
+b.title = <span class="st">"Dune"</span>;
+b.author = <span class="st">"Herbert"</span>;
+b.year = <span class="nu">1965</span>;
+
+cout &lt;&lt; b.title &lt;&lt; <span class="st">" by "</span> &lt;&lt; b.author &lt;&lt; endl;</code></pre>
+  <p>The dot operator (<code class="inline">.</code>) gets you in and out of struct fields, both for reading and writing.</p>
+
+  <h3>Passing structs to functions</h3>
+<pre><code><span class="kw">void</span> printBook(<span class="ty">Book</span> b) {
+    cout &lt;&lt; b.title &lt;&lt; <span class="st">" ("</span> &lt;&lt; b.year &lt;&lt; <span class="st">")"</span> &lt;&lt; endl;
+}</code></pre>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 1</span>
+    <div class="problem-text">
+      Define a struct <code class="inline">Trip</code> with: city name, day to leave (1-365), day to return (1-365).
+    </div>
+    <button class="toggle" onclick="toggleAns('p3a', this)">Show Answer</button>
+    <div id="p3a" class="answer hidden">
+<pre><code><span class="kw">struct</span> <span class="ty">Trip</span> {
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave;
+    <span class="ty">int</span> back;
+};</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Define a struct called <code class="inline">Student</code> with a name (string), a year level (int 1-4), and a GPA (double).
+    </div>
+    <button class="toggle" onclick="toggleAns('p3b', this)">Show Answer</button>
+    <div id="p3b" class="answer hidden">
+<pre><code><span class="kw">struct</span> <span class="ty">Student</span> {
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> year;
+    <span class="ty">double</span> gpa;
+};</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 4: VECTORS ============ -->
+<div class="tab-content" id="vectors">
+<div class="panel">
+  <h2>4. Vectors</h2>
+  <div class="lead">A vector is a resizable array. You'll use it on every multi-part question on this exam.</div>
+
+  <h3>The basics</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; nums;       <span class="cm">// empty vector of ints</span>
+nums.push_back(<span class="nu">10</span>);     <span class="cm">// add to end</span>
+nums.push_back(<span class="nu">20</span>);
+nums.push_back(<span class="nu">30</span>);
+
+cout &lt;&lt; nums[<span class="nu">0</span>];        <span class="cm">// prints 10</span>
+cout &lt;&lt; nums.size();    <span class="cm">// prints 3</span></code></pre>
+
+  <h3>Vectors of structs</h3>
+  <p>Same thing, just put the struct name in the angle brackets.</p>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt; trips;
+<span class="ty">Trip</span> t;
+t.city = <span class="st">"Denver"</span>;
+t.leave = <span class="nu">100</span>;
+t.back = <span class="nu">110</span>;
+trips.push_back(t);</code></pre>
+
+  <h3>Looping over a vector</h3>
+<pre><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; nums.size(); i++) {
+    cout &lt;&lt; nums[i] &lt;&lt; endl;
+}</code></pre>
+
+  <h3>Pass by reference for vectors</h3>
+  <p>Vectors can hold thousands of items. Copying them is slow. Always pass with <code class="inline">&amp;</code> unless you have a good reason not to.</p>
+<pre><code><span class="cm">// Right way</span>
+<span class="kw">void</span> fillVec(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v) {
+    v.push_back(<span class="nu">99</span>);
+}
+
+<span class="cm">// Wrong, the push_back happens to a local copy</span>
+<span class="kw">void</span> fillVec(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    v.push_back(<span class="nu">99</span>);
+}</code></pre>
+
+  <div class="tip"><strong>Returning vs reference:</strong> a function can either fill a vector via reference parameter (like <code class="inline">load</code>) OR build one locally and return it (like <code class="inline">makeDays</code>). Both are valid, the exam tests both styles.</div>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 6</span>
+    <div class="problem-text">
+      Function <code class="inline">makeDays</code>, parameter is group size (int). Put that many random ints (1-365) into a vector. Return the vector.
+    </div>
+    <button class="toggle" onclick="toggleAns('p4a', this)">Show Answer</button>
+    <div id="p4a" class="answer hidden">
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; makeDays(<span class="ty">int</span> size) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; days;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; size; i++) {
+        days.push_back(rand() % <span class="nu">365</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> days;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a function <code class="inline">sumAll</code> that takes a <code class="inline">vector&lt;int&gt;</code> and returns the sum of all its elements.
+    </div>
+    <button class="toggle" onclick="toggleAns('p4b', this)">Show Answer</button>
+    <div id="p4b" class="answer hidden">
+<pre><code><span class="ty">int</span> sumAll(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="ty">int</span> total = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        total += v[i];
+    }
+    <span class="kw">return</span> total;
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 5: LOOPS ============ -->
+<div class="tab-content" id="loops">
+<div class="panel">
+  <h2>5. Loops</h2>
+  <div class="lead">For loops, while loops, and the all-important nested for loop pattern.</div>
+
+  <h3>Standard for loop</h3>
+<pre><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">10</span>; i++) {
+    cout &lt;&lt; i &lt;&lt; endl;
+}</code></pre>
+  <p>Three parts: initialize (<code class="inline">int i = 0</code>), condition checked before each iteration (<code class="inline">i &lt; 10</code>), update at end of each iteration (<code class="inline">i++</code>).</p>
+
+  <h3>While loop</h3>
+  <p>Use a while loop when you don't know the number of iterations up front.</p>
+<pre><code><span class="ty">int</span> x = <span class="nu">2</span>;
+<span class="kw">while</span> (x &lt; <span class="nu">100</span>) {
+    x = x * <span class="nu">2</span>;
+}
+<span class="cm">// x is now 128</span></code></pre>
+
+  <h3>Nested for loops, the every-pair pattern</h3>
+  <p>Two loops, one inside the other. Used to compare every element to every other element. The trick is the inner loop starts at <code class="inline">i + 1</code>, not 0, so we don't compare an item to itself or check the same pair twice.</p>
+<pre><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+    <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+        <span class="cm">// compare v[i] to v[j] here</span>
+    }
+}</code></pre>
+
+  <div class="gotcha"><strong>Common bug:</strong> writing <code class="inline">j = 0</code> instead of <code class="inline">j = i + 1</code>. This makes <code class="inline">v[i] == v[j]</code> always true when <code class="inline">i == j</code>, so any non-empty vector "has a match".</div>
+
+  <h3>Looping with a state variable</h3>
+  <p>Sometimes you need to remember something from a previous iteration. Declare the variable BEFORE the loop, update it inside.</p>
+<pre><code><span class="ty">int</span> max = <span class="nu">0</span>;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+    <span class="kw">if</span> (v[i] &gt; max) max = v[i];
+}</code></pre>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 4</span>
+    <div class="problem-text">
+      Function <code class="inline">skej</code>, parameter is a vector of Trips. Print non-overlapping trips, skip ones that start on or before the previous trip's return day.
+    </div>
+    <button class="toggle" onclick="toggleAns('p5a', this)">Show Answer</button>
+    <div id="p5a" class="answer hidden">
+<pre><code><span class="kw">void</span> skej(<span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp; trips) {
+    <span class="ty">int</span> lastReturn = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; trips.size(); i++) {
+        <span class="kw">if</span> (trips[i].leave &gt; lastReturn) {
+            print(trips[i]);
+            lastReturn = trips[i].back;
+        }
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 7</span>
+    <div class="problem-text">
+      Function <code class="inline">match</code>, parameter is a vector of ints. Return true if any two are the same, false otherwise.
+    </div>
+    <button class="toggle" onclick="toggleAns('p5c', this)">Show Answer</button>
+    <div id="p5c" class="answer hidden">
+<pre><code><span class="ty">bool</span> match(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+            <span class="kw">if</span> (v[i] == v[j]) <span class="kw">return</span> <span class="kw">true</span>;
+        }
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a function <code class="inline">printEvens</code> that takes a vector of ints and prints only the even ones, one per line.
+    </div>
+    <button class="toggle" onclick="toggleAns('p5b', this)">Show Answer</button>
+    <div id="p5b" class="answer hidden">
+<pre><code><span class="kw">void</span> printEvens(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">if</span> (v[i] % <span class="nu">2</span> == <span class="nu">0</span>) {
+            cout &lt;&lt; v[i] &lt;&lt; endl;
+        }
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 6: RANDOM NUMBERS ============ -->
+<div class="tab-content" id="random">
+<div class="panel">
+  <h2>6. Random Numbers</h2>
+  <div class="lead">Two functions and two includes. Once you memorize the formula, this is easy points on the exam.</div>
+
+  <h3>Setup</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;cstdlib&gt;</span>   <span class="cm">// rand, srand</span>
+<span class="kw">#include</span> <span class="st">&lt;ctime&gt;</span>     <span class="cm">// time</span></code></pre>
+
+  <h3>Seeding, do this once at the top of main</h3>
+<pre><code>srand(time(<span class="nu">0</span>));</code></pre>
+  <p><code class="inline">srand</code> seeds the random number generator. <code class="inline">time(0)</code> returns the current time in seconds, so each run gets a different seed and different numbers.</p>
+  <div class="gotcha"><strong>Don't seed inside a loop or function that runs many times.</strong> If you do, repeated calls within the same second produce the same seed and identical sequences. Seed once, in main, before any rand calls.</div>
+
+  <h3>The range formula</h3>
+<pre><code>rand() % N           <span class="cm">// 0 to N-1</span>
+rand() % N + <span class="nu">1</span>       <span class="cm">// 1 to N</span>
+rand() % <span class="nu">365</span> + <span class="nu">1</span>     <span class="cm">// 1 to 365 (a day of the year)</span>
+rand() % <span class="nu">6</span> + <span class="nu">1</span>       <span class="cm">// 1 to 6 (a die roll)</span></code></pre>
+
+  <p>The pattern: <code class="inline">rand() % range + start</code>. The modulo gives you 0 up to range-1, then you shift up by start.</p>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 6</span>
+    <div class="problem-text">
+      Function <code class="inline">makeDays(int size)</code>, returns a vector of <code class="inline">size</code> random ints between 1 and 365.
+    </div>
+    <button class="toggle" onclick="toggleAns('p6a', this)">Show Answer</button>
+    <div id="p6a" class="answer hidden">
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; makeDays(<span class="ty">int</span> size) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; days;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; size; i++) {
+        days.push_back(rand() % <span class="nu">365</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> days;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a function <code class="inline">rollDice(int n)</code> that returns a vector of <code class="inline">n</code> random dice rolls (each 1-6).
+    </div>
+    <button class="toggle" onclick="toggleAns('p6b', this)">Show Answer</button>
+    <div id="p6b" class="answer hidden">
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; rollDice(<span class="ty">int</span> n) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; rolls;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; n; i++) {
+        rolls.push_back(rand() % <span class="nu">6</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> rolls;
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 7: CASTING / PROBABILITY ============ -->
+<div class="tab-content" id="casting">
+<div class="panel">
+  <h2>7. Type Casting &amp; Probability Math</h2>
+  <div class="lead">The most-missed concept on this style of exam. One little decimal point is the difference between 0 and 0.47.</div>
+
+  <h3>Integer division, the trap</h3>
+  <p>When both operands are integers, C++ throws away the decimal portion of the result.</p>
+<pre><code><span class="ty">int</span> a = <span class="nu">5</span> / <span class="nu">2</span>;          <span class="cm">// a is 2, NOT 2.5</span>
+<span class="ty">int</span> b = <span class="nu">47</span> / <span class="nu">100</span>;        <span class="cm">// b is 0, NOT 0.47</span></code></pre>
+
+  <h3>The fix, force a double</h3>
+  <p>Make at least one of the operands a double. Easiest way: write the literal with a <code class="inline">.0</code>.</p>
+<pre><code><span class="ty">double</span> a = <span class="nu">5</span> / <span class="nu">2.0</span>;       <span class="cm">// 2.5, correct</span>
+<span class="ty">double</span> b = <span class="nu">47</span> / <span class="nu">100.0</span>;     <span class="cm">// 0.47, correct</span></code></pre>
+
+  <p>You can also cast explicitly:</p>
+<pre><code><span class="ty">double</span> b = (<span class="ty">double</span>)<span class="nu">47</span> / <span class="nu">100</span>;  <span class="cm">// also 0.47</span></code></pre>
+
+  <div class="gotcha"><strong>The exam will catch you with this.</strong> If <code class="inline">count</code> is an int and you write <code class="inline">count / 100</code>, the result is always 0 unless count is exactly 100 or higher. Always write <code class="inline">count / 100.0</code> when computing a probability or percentage.</div>
+
+  <h3>Probability pattern</h3>
+<pre><code><span class="ty">int</span> hits = <span class="nu">0</span>;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++) {
+    <span class="kw">if</span> (somethingHappened()) hits++;
+}
+<span class="ty">double</span> probability = hits / <span class="nu">100.0</span>;</code></pre>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 8</span>
+    <div class="problem-text">
+      Function <code class="inline">trial(int size)</code>, runs makeDays + match 100 times, counts matches, calculates probability, prints group size and probability, returns probability.
+    </div>
+    <button class="toggle" onclick="toggleAns('p7a', this)">Show Answer</button>
+    <div id="p7a" class="answer hidden">
+<pre><code><span class="ty">double</span> trial(<span class="ty">int</span> size) {
+    <span class="ty">int</span> count = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++) {
+        <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; days = makeDays(size);
+        <span class="kw">if</span> (match(days)) count++;
+    }
+    <span class="ty">double</span> prob = count / <span class="nu">100.0</span>;
+    cout &lt;&lt; <span class="st">"size="</span> &lt;&lt; size &lt;&lt; <span class="st">" prob="</span> &lt;&lt; prob &lt;&lt; endl;
+    <span class="kw">return</span> prob;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Write a function <code class="inline">battingAvg(int hits, int atBats)</code> that returns the batting average as a double (hits divided by atBats).
+    </div>
+    <button class="toggle" onclick="toggleAns('p7b', this)">Show Answer</button>
+    <div id="p7b" class="answer hidden">
+<pre><code><span class="ty">double</span> battingAvg(<span class="ty">int</span> hits, <span class="ty">int</span> atBats) {
+    <span class="kw">return</span> hits / (<span class="ty">double</span>)atBats;
+}
+
+<span class="cm">// Or equivalently:</span>
+<span class="cm">// return (double)hits / atBats;</span></code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 8: FILE I/O ============ -->
+<div class="tab-content" id="fileio">
+<div class="panel">
+  <h2>8. File I/O</h2>
+  <div class="lead">The hardest part of this exam. Master this and the rest is downhill.</div>
+
+  <h3>Open a file for reading</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+
+<span class="ty">ifstream</span> fin(<span class="st">"data.txt"</span>);</code></pre>
+  <p>That's it. <code class="inline">fin</code> is now connected to the file. You can read from it the same way you'd read from <code class="inline">cin</code>.</p>
+
+  <h3>Two ways to read</h3>
+  <p><strong>The <code class="inline">&gt;&gt;</code> operator</strong> reads one whitespace-separated token at a time. Spaces, tabs, and newlines all count as whitespace.</p>
+<pre><code><span class="ty">int</span> x;
+<span class="ty">string</span> word;
+fin &gt;&gt; x;       <span class="cm">// reads next number</span>
+fin &gt;&gt; word;    <span class="cm">// reads next word</span></code></pre>
+
+  <p><strong>getline</strong> reads up to a delimiter character. Default delimiter is newline.</p>
+<pre><code><span class="ty">string</span> line;
+getline(fin, line);              <span class="cm">// read whole line</span>
+getline(fin, name, <span class="st">','</span>);        <span class="cm">// read up to a comma</span></code></pre>
+
+  <h3>The mixed-reading problem</h3>
+  <p>The exam gives you lines like <code class="inline">Chicago, 45 55</code>. The city name has spaces in it (think "New York"), so <code class="inline">&gt;&gt;</code> would only grab "New". You need <code class="inline">getline</code> with a comma delimiter for the city, then <code class="inline">&gt;&gt;</code> for the two numbers.</p>
+<pre><code><span class="ty">string</span> city;
+<span class="ty">int</span> a, b;
+getline(fin, city, <span class="st">','</span>);  <span class="cm">// "New York"</span>
+fin &gt;&gt; a &gt;&gt; b;            <span class="cm">// 45 and 55</span>
+fin.ignore();             <span class="cm">// throw away the newline</span></code></pre>
+  <div class="gotcha"><strong>Why <code class="inline">fin.ignore()</code>?</strong> After reading the two ints with <code class="inline">&gt;&gt;</code>, the file position is sitting just before the newline. The next <code class="inline">getline</code> would read an empty string (because it stops at that newline immediately). <code class="inline">fin.ignore()</code> skips one character (the newline) so the next loop iteration starts on the next real line.</div>
+
+  <h3>The full pattern in a loop</h3>
+<pre><code><span class="kw">while</span> (getline(fin, city, <span class="st">','</span>)) {
+    fin &gt;&gt; a &gt;&gt; b;
+    fin.ignore();
+    <span class="cm">// build struct, push_back</span>
+}</code></pre>
+  <p>Putting <code class="inline">getline</code> in the while condition is clever: it keeps looping as long as the read succeeds, and stops automatically at end of file.</p>
+
+  <div class="practice">
+    <span class="practice-tag">From Travis's exam, Part 2</span>
+    <div class="problem-text">
+      Function <code class="inline">load(string filename, vector&lt;Trip&gt;&amp; trips)</code>. Each line is a city, comma, then two ints. Build a Trip and push to vector.
+    </div>
+    <button class="toggle" onclick="toggleAns('p8a', this)">Show Answer</button>
+    <div id="p8a" class="answer hidden">
+<pre><code><span class="kw">void</span> load(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp; trips) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave, back;
+    <span class="kw">while</span> (getline(fin, city, <span class="st">','</span>)) {
+        fin &gt;&gt; leave &gt;&gt; back;
+        fin.ignore();
+        <span class="ty">Trip</span> t;
+        t.city = city;
+        t.leave = leave;
+        t.back = back;
+        trips.push_back(t);
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="practice">
+    <span class="practice-tag bonus">Bonus practice</span>
+    <div class="problem-text">
+      Suppose you have a struct <code class="inline">Person { string name; int age; }</code>. Write a function <code class="inline">loadPeople(string filename, vector&lt;Person&gt;&amp; people)</code> that reads lines like <code class="inline">"Alice, 25"</code> and adds them to the vector.
+    </div>
+    <button class="toggle" onclick="toggleAns('p8b', this)">Show Answer</button>
+    <div id="p8b" class="answer hidden">
+<pre><code><span class="kw">void</span> loadPeople(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Person</span>&gt;&amp; people) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> age;
+    <span class="kw">while</span> (getline(fin, name, <span class="st">','</span>)) {
+        fin &gt;&gt; age;
+        fin.ignore();
+        <span class="ty">Person</span> p;
+        p.name = name;
+        p.age = age;
+        people.push_back(p);
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 9: MOCK EXAM ============ -->
+<div class="tab-content" id="mock">
+<div class="panel">
+  <h2>Mock Exam</h2>
+  <div class="lead">Two programs in the same style as Travis's practice sheet, with different domains. Have him work through these on his own as a final check.</div>
+
+  <div class="program-divider">Program 1, Hotel Reservations (Parts 1-5)</div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 1</span> Define a Reservation struct</h4>
+    <div class="problem-text">
+      Define a struct called <code class="inline">Reservation</code> that contains:
+      <ul>
+        <li>the guest's name</li>
+        <li>a number 1-365 for the check-in day</li>
+        <li>a number 1-365 for the check-out day</li>
+      </ul>
+    </div>
+    <button class="toggle" onclick="toggleAns('m1', this)">Show Answer</button>
+    <div id="m1" class="answer hidden">
+<pre><code><span class="kw">struct</span> <span class="ty">Reservation</span> {
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> checkIn;
+    <span class="ty">int</span> checkOut;
+};</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 2</span> Function to read reservations from a file</h4>
+    <div class="problem-text">
+      Function name <code class="inline">load</code>. Parameters: filename and a vector of Reservations. Each line is: guest name, comma, then 2 numbers.
+      <br><br>Example file <code class="inline">bookings.txt</code>:
+      <br><code class="inline">Smith, 100 105</code>
+      <br><code class="inline">Garcia Lopez, 110 120</code>
+      <br><code class="inline">Chen, 118 125</code>
+    </div>
+    <button class="toggle" onclick="toggleAns('m2', this)">Show Answer</button>
+    <div id="m2" class="answer hidden">
+<pre><code><span class="kw">void</span> load(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Reservation</span>&gt;&amp; bookings) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> in, out;
+    <span class="kw">while</span> (getline(fin, name, <span class="st">','</span>)) {
+        fin &gt;&gt; in &gt;&gt; out;
+        fin.ignore();
+        <span class="ty">Reservation</span> r;
+        r.name = name;
+        r.checkIn = in;
+        r.checkOut = out;
+        bookings.push_back(r);
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 3</span> Function to print one reservation</h4>
+    <div class="problem-text">
+      Function name <code class="inline">print</code>. Parameter: a Reservation. Print like <code class="inline">"Smith 100-105"</code>.
+    </div>
+    <button class="toggle" onclick="toggleAns('m3', this)">Show Answer</button>
+    <div id="m3" class="answer hidden">
+<pre><code><span class="kw">void</span> print(<span class="ty">Reservation</span> r) {
+    cout &lt;&lt; r.name &lt;&lt; <span class="st">" "</span> &lt;&lt; r.checkIn &lt;&lt; <span class="st">"-"</span> &lt;&lt; r.checkOut &lt;&lt; endl;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 4</span> Function to print non-overlapping bookings</h4>
+    <div class="problem-text">
+      Function name <code class="inline">book</code>. Parameter: vector of Reservations. Print bookings that don't overlap, skip ones whose check-in is on or before the previously printed booking's check-out. The reservations are already in order of check-in day.
+      <br><br>Example output for the file above:
+      <br><code class="inline">Smith 100-105</code>
+      <br><code class="inline">Garcia Lopez 110-120</code>
+    </div>
+    <button class="toggle" onclick="toggleAns('m4', this)">Show Answer</button>
+    <div id="m4" class="answer hidden">
+<pre><code><span class="kw">void</span> book(<span class="ty">vector</span>&lt;<span class="ty">Reservation</span>&gt;&amp; bookings) {
+    <span class="ty">int</span> lastOut = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; bookings.size(); i++) {
+        <span class="kw">if</span> (bookings[i].checkIn &gt; lastOut) {
+            print(bookings[i]);
+            lastOut = bookings[i].checkOut;
+        }
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 5</span> Main program</h4>
+    <div class="problem-text">
+      Includes at top, call <code class="inline">load</code> with <code class="inline">"bookings.txt"</code>, then call <code class="inline">book</code>.
+    </div>
+    <button class="toggle" onclick="toggleAns('m5', this)">Show Answer</button>
+    <div id="m5" class="answer hidden">
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;string&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// struct Reservation, load, print, book functions above</span>
+
+<span class="ty">int</span> main() {
+    <span class="ty">vector</span>&lt;<span class="ty">Reservation</span>&gt; bookings;
+    load(<span class="st">"bookings.txt"</span>, bookings);
+    book(bookings);
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="program-divider">Program 2, Lottery Number Probability (Parts 6-9)</div>
+
+  <p style="font-size: 14.5px; color: var(--muted);">In a lottery, you pick numbers from 1 to 50. We want to find out how big a group of pickers needs to be before two of them probably picked the same number.</p>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 6</span> Function to generate random lottery picks</h4>
+    <div class="problem-text">
+      Function name <code class="inline">pickNumbers</code>. Parameter: group size (number of picks). Put that many random ints (1-50) into a vector. Return the vector.
+    </div>
+    <button class="toggle" onclick="toggleAns('m6', this)">Show Answer</button>
+    <div id="m6" class="answer hidden">
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; pickNumbers(<span class="ty">int</span> size) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; picks;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; size; i++) {
+        picks.push_back(rand() % <span class="nu">50</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> picks;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 7</span> Function to detect duplicates</h4>
+    <div class="problem-text">
+      Function name <code class="inline">duplicate</code>. Parameter: vector of ints. Compare every int to every other int. Return true if any two are the same, false otherwise.
+    </div>
+    <button class="toggle" onclick="toggleAns('m7', this)">Show Answer</button>
+    <div id="m7" class="answer hidden">
+<pre><code><span class="ty">bool</span> duplicate(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+            <span class="kw">if</span> (v[i] == v[j]) <span class="kw">return</span> <span class="kw">true</span>;
+        }
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 8</span> Run 100 trials and return match rate</h4>
+    <div class="problem-text">
+      Function name <code class="inline">trial</code>. Parameter: group size. Call <code class="inline">pickNumbers</code> and <code class="inline">duplicate</code> 100 times. Count the duplicates. Probability is count / 100. Print group size and probability. Return the probability.
+    </div>
+    <button class="toggle" onclick="toggleAns('m8', this)">Show Answer</button>
+    <div id="m8" class="answer hidden">
+<pre><code><span class="ty">double</span> trial(<span class="ty">int</span> size) {
+    <span class="ty">int</span> count = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++) {
+        <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; picks = pickNumbers(size);
+        <span class="kw">if</span> (duplicate(picks)) count++;
+    }
+    <span class="ty">double</span> prob = count / <span class="nu">100.0</span>;
+    cout &lt;&lt; <span class="st">"size="</span> &lt;&lt; size &lt;&lt; <span class="st">" prob="</span> &lt;&lt; prob &lt;&lt; endl;
+    <span class="kw">return</span> prob;
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="mock-block">
+    <h4><span class="mock-num">PART 9</span> Main, find smallest group with probable duplicate</h4>
+    <div class="problem-text">
+      Don't forget the includes. Call <code class="inline">trial(2)</code>, <code class="inline">trial(3)</code>, etc. in a loop. Stop when the return value is greater than 0.5.
+    </div>
+    <button class="toggle" onclick="toggleAns('m9', this)">Show Answer</button>
+    <div id="m9" class="answer hidden">
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;cstdlib&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;ctime&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// pickNumbers, duplicate, trial functions above</span>
+
+<span class="ty">int</span> main() {
+    srand(time(<span class="nu">0</span>));
+    <span class="ty">int</span> size = <span class="nu">2</span>;
+    <span class="kw">while</span> (trial(size) &lt;= <span class="nu">0.5</span>) {
+        size++;
+    }
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    </div>
+  </div>
+
+  <p style="margin-top: 24px; padding: 14px 18px; background: var(--accent-soft); border-radius: 8px; font-size: 14px; color: #155e75;">
+    Note: with a range of only 1-50 (vs 1-365 for birthdays), the threshold hits much faster. Travis should expect the loop to stop around size 8 or 9, not 23 like the birthday problem. Good place to ask him to predict the answer before running.
+  </p>
+</div>
+</div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector('[data-tab="' + id + '"]').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleAns(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+}
+</script>
+
+</body>
+</html>
