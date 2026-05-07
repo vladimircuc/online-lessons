@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP-165 Homework, Travis</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0891b2;
+    --accent-hover: #0e7490;
+    --accent-soft: #ecfeff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #f472b6;
+    --string: #86efac;
+    --comment: #94a3b8;
+    --type: #7dd3fc;
+    --num: #fbbf24;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  .sub { color: var(--muted); font-size: 14.5px; }
+
+  .intro {
+    background: var(--accent-soft);
+    border: 1px solid #a5f3fc;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    font-size: 14.5px;
+    color: #155e75;
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    background: var(--card);
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 22px;
+    position: sticky;
+    top: 8px;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { background: var(--accent-soft); color: var(--accent); }
+  .tab-btn.active { background: var(--accent); color: white; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 26px 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  h2 { margin: 0 0 6px; font-size: 22px; color: var(--accent); }
+  .lead {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 28px 0 14px;
+  }
+  .section-label.code-tag { background: #dbeafe; color: #1e40af; }
+
+  /* MCQ */
+  .mcq {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+  }
+  .mcq-q {
+    font-weight: 500;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  .mcq-q .qnum {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .mcq-q code {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+  }
+  .options { display: flex; flex-direction: column; gap: 6px; }
+  .opt {
+    text-align: left;
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct {
+    background: var(--good-bg);
+    border-color: var(--good);
+    color: #14532d;
+    font-weight: 500;
+  }
+  .opt.wrong {
+    background: var(--bad-bg);
+    border-color: var(--bad);
+    color: #7f1d1d;
+  }
+  .feedback {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct {
+    background: var(--good-bg);
+    color: #14532d;
+    border-left: 4px solid var(--good);
+  }
+  .feedback.wrong {
+    background: var(--bad-bg);
+    color: #7f1d1d;
+    border-left: 4px solid var(--bad);
+  }
+
+  /* Code writing */
+  .code-q {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .code-q-text {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .code-q-text .qnum {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .code-q-text code {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+  }
+  textarea.write {
+    width: 100%;
+    min-height: 130px;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 13.5px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text);
+    resize: vertical;
+    line-height: 1.55;
+  }
+  textarea.write:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  button.toggle {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  button.toggle:hover { background: var(--accent-hover); }
+  button.clear {
+    background: white;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  button.clear:hover { background: #f1f5f9; }
+
+  .answer {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .answer.hidden { display: none; }
+  .answer h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  pre code { font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--num); }
+
+  .explain {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin: 0;
+  }
+  .explain strong { color: #854d0e; }
+
+  .progress-note {
+    margin-top: 30px;
+    padding: 14px 18px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #065f46;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>ITP-165 Homework</h1>
+  <div class="sub">Travis, work through these on your own. Exam: May 8, 2026.</div>
+</header>
+
+<div class="intro">
+  <strong>How to use this:</strong> Click through the tabs in order. For each multiple choice question, click the answer you think is right, you'll get instant feedback. For the code writing questions, type your answer in the box, then click Show Answer to compare. Your typed code is saved automatically, so you can close this and come back. Work through every tab before our next session.
+</div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="basics" onclick="showTab('basics')">1. Basics</button>
+  <button class="tab-btn" data-tab="functions" onclick="showTab('functions')">2. Functions</button>
+  <button class="tab-btn" data-tab="structs" onclick="showTab('structs')">3. Structs</button>
+  <button class="tab-btn" data-tab="vectors" onclick="showTab('vectors')">4. Vectors</button>
+  <button class="tab-btn" data-tab="loops" onclick="showTab('loops')">5. Loops</button>
+  <button class="tab-btn" data-tab="random" onclick="showTab('random')">6. Random</button>
+  <button class="tab-btn" data-tab="casting" onclick="showTab('casting')">7. Casting</button>
+  <button class="tab-btn" data-tab="fileio" onclick="showTab('fileio')">8. File I/O</button>
+</nav>
+
+<!-- ============ TAB 1: BASICS ============ -->
+<div class="tab-content active" id="basics">
+<div class="panel">
+  <h2>1. Basics &amp; Includes</h2>
+  <div class="lead">Warm up with the building blocks. Every C++ program needs these.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">1.1</span> Which include do you need at the top of your file to use <code>cout</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Vectors don\'t have anything to do with cout.')">&lt;vector&gt;</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. iostream gives you cout, cin, and endl.')">&lt;iostream&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'fstream is for file reading and writing, not regular console output.')">&lt;fstream&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'string is needed for the string type, not for cout.')">&lt;string&gt;</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">1.2</span> What does <code>endl</code> do?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'endl does not stop the program. return 0 in main does that.')">Ends the program</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. endl ends the current line so the next output starts on a fresh line.')">Starts a new line</button>
+      <button class="opt" onclick="answer(this, false, 'cin reads input, not endl.')">Reads input from the user</button>
+      <button class="opt" onclick="answer(this, false, 'endl prints, it doesn\'t store anything.')">Stores a value in a variable</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">1.3</span> Which line goes at the very TOP of a C++ file?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'main is the function that runs your code, but includes come above it.')">int main()</button>
+      <button class="opt" onclick="answer(this, false, 'cout statements go inside main, not at the top of the file.')">cout &lt;&lt; "Hello";</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Includes always go at the very top, before main.')">#include &lt;iostream&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'return 0 goes at the end of main, not at the top of the file.')">return 0;</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">1.4</span> Why do we write <code>using namespace std;</code> at the top?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'It is not required by the compiler, just convenient.')">It is required for the program to run</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Without it, you would have to write std::cout, std::endl, std::string, etc.')">So we can write cout instead of std::cout</button>
+      <button class="opt" onclick="answer(this, false, 'It does not affect speed in any way.')">It makes the program run faster</button>
+      <button class="opt" onclick="answer(this, false, 'Comments use // or /* */, not namespace.')">It adds comments to the code</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">1.5</span> Write a complete C++ program that prints exactly: <code>Hello, my name is Travis</code></div>
+    <textarea class="write" id="b5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('b5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('b5')">Clear</button>
+    </div>
+    <div id="b5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    cout &lt;&lt; <span class="st">"Hello, my name is Travis"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Three things every program needs: the include for cout, the main function, and a return 0 at the end. The text inside cout goes in double quotes.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">1.6</span> Write a program that declares an int <code>age</code> set to 25, and prints <code>I am 25 years old</code> using that variable.</div>
+    <textarea class="write" id="b6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('b6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('b6')">Clear</button>
+    </div>
+    <div id="b6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    <span class="ty">int</span> age = <span class="nu">25</span>;
+    cout &lt;&lt; <span class="st">"I am "</span> &lt;&lt; age &lt;&lt; <span class="st">" years old"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> You can chain multiple things to cout with <code>&lt;&lt;</code>. Notice the spaces inside the quotes so the words don't run together.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 2: FUNCTIONS ============ -->
+<div class="tab-content" id="functions">
+<div class="panel">
+  <h2>2. Functions</h2>
+  <div class="lead">A function takes inputs (parameters) and gives back an output (return value).</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">2.1</span> What return type do you use for a function that doesn't return anything?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'int means the function returns a whole number.')">int</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. void means the function returns nothing.')">void</button>
+      <button class="opt" onclick="answer(this, false, 'bool returns true or false.')">bool</button>
+      <button class="opt" onclick="answer(this, false, 'string returns text.')">string</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">2.2</span> How do you make a parameter modify the original variable that was passed in?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'The asterisk is used for pointers, which is a different topic. On this exam you use references.')">Add * before the name</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. The ampersand makes it a reference, so changes affect the original.')">Add &amp; after the type</button>
+      <button class="opt" onclick="answer(this, false, 'const does the opposite, it prevents changes.')">Add const before the type</button>
+      <button class="opt" onclick="answer(this, false, '@ is not C++ syntax.')">Add @ after the name</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">2.3</span> What does this function return when called as <code>add(4, 6)</code>?<br><code>int add(int a, int b) { return a + b; }</code></div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'That is just a, not a + b.')">4</button>
+      <button class="opt" onclick="answer(this, false, 'That is just b, not a + b.')">6</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. 4 + 6 is 10.')">10</button>
+      <button class="opt" onclick="answer(this, false, 'The function does have a return value.')">Nothing</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">2.4</span> Where do parameters go in a function definition?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Square brackets are used for arrays and vectors, not function parameters.')">In square brackets [ ]</button>
+      <button class="opt" onclick="answer(this, false, 'Curly braces hold the body of the function, not the parameters.')">In curly braces { }</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Parameters go in parentheses, separated by commas.')">In parentheses ( )</button>
+      <button class="opt" onclick="answer(this, false, 'Angle brackets are used for templates like vector&lt;int&gt;.')">In angle brackets &lt; &gt;</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">2.5</span> Write a function called <code>doubleIt</code> that takes an int and returns it multiplied by 2.</div>
+    <textarea class="write" id="f5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('f5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('f5')">Clear</button>
+    </div>
+    <div id="f5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">int</span> doubleIt(<span class="ty">int</span> x) {
+    <span class="kw">return</span> x * <span class="nu">2</span>;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Return type is int. The parameter x is what gets passed in. We return x times 2.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">2.6</span> Write a function called <code>greet</code> that takes a string name and prints <code>"Hello, [name]!"</code>. The function returns nothing.</div>
+    <textarea class="write" id="f6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('f6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('f6')">Clear</button>
+    </div>
+    <div id="f6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">void</span> greet(<span class="ty">string</span> name) {
+    cout &lt;&lt; <span class="st">"Hello, "</span> &lt;&lt; name &lt;&lt; <span class="st">"!"</span> &lt;&lt; endl;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Return type is void since the function only prints, it doesn't return anything. The exclamation mark goes inside its own pair of quotes after the name.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 3: STRUCTS ============ -->
+<div class="tab-content" id="structs">
+<div class="panel">
+  <h2>3. Structs</h2>
+  <div class="lead">A struct bundles related data into one custom type.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">3.1</span> What punctuation goes after the closing brace of a struct definition?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'A period is not used to end struct definitions.')">A period</button>
+      <button class="opt" onclick="answer(this, false, 'Commas separate items, they don\'t end definitions.')">A comma</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. The semicolon is required, this is one of the most common bugs to forget.')">A semicolon</button>
+      <button class="opt" onclick="answer(this, false, 'Something is required after the closing brace.')">Nothing</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">3.2</span> Given <code>Book b;</code>, how do you set the title field to "Dune"?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'The arrow operator is used with pointers, not regular struct variables.')">b-&gt;title = "Dune";</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. The dot operator accesses struct fields.')">b.title = "Dune";</button>
+      <button class="opt" onclick="answer(this, false, 'The double colon is for namespaces and classes, not for accessing struct fields.')">b::title = "Dune";</button>
+      <button class="opt" onclick="answer(this, false, 'Square brackets are for arrays and vectors, not for struct field access.')">b[title] = "Dune";</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">3.3</span> What's wrong with this struct?<br><code>struct Car { int year; string model }</code></div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, true, 'Correct. There is no semicolon after the closing brace, and also one is missing after string model.')">Missing semicolons</button>
+      <button class="opt" onclick="answer(this, false, 'Field order does not matter in a struct.')">The fields are in the wrong order</button>
+      <button class="opt" onclick="answer(this, false, 'Curly braces are correct for struct definitions.')">Should use parentheses instead of curly braces</button>
+      <button class="opt" onclick="answer(this, false, 'Something is wrong, look more carefully at the punctuation.')">Nothing is wrong</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">3.4</span> Can a struct contain different data types in its fields?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, true, 'Correct. That is the whole point of a struct, to bundle different types together.')">Yes, that is the main purpose of a struct</button>
+      <button class="opt" onclick="answer(this, false, 'Structs can mix types, that would be more like an array.')">No, all fields must be the same type</button>
+      <button class="opt" onclick="answer(this, false, 'There is no two-field limit in a struct.')">Only if there are exactly 2 fields</button>
+      <button class="opt" onclick="answer(this, false, 'Strings are commonly used in structs.')">Only if none of the fields are strings</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">3.5</span> Define a struct called <code>Dog</code> with two fields: a name (string) and an age (int).</div>
+    <textarea class="write" id="s5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('s5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('s5')">Clear</button>
+    </div>
+    <div id="s5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">struct</span> <span class="ty">Dog</span> {
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> age;
+};</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Don't forget the semicolon at the very end after the closing brace. Each field also needs its own semicolon.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">3.6</span> Define a struct called <code>Movie</code> with three fields: a title (string), a release year (int), and a rating (double). Then in main, declare a Movie variable, set all three fields, and print them.</div>
+    <textarea class="write" id="s6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('s6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('s6')">Clear</button>
+    </div>
+    <div id="s6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">struct</span> <span class="ty">Movie</span> {
+    <span class="ty">string</span> title;
+    <span class="ty">int</span> year;
+    <span class="ty">double</span> rating;
+};
+
+<span class="ty">int</span> main() {
+    <span class="ty">Movie</span> m;
+    m.title = <span class="st">"Inception"</span>;
+    m.year = <span class="nu">2010</span>;
+    m.rating = <span class="nu">8.8</span>;
+    cout &lt;&lt; m.title &lt;&lt; <span class="st">" ("</span> &lt;&lt; m.year &lt;&lt; <span class="st">") "</span> &lt;&lt; m.rating &lt;&lt; endl;
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> The struct goes above main. Inside main, declare a Movie variable with <code>Movie m;</code>, then use the dot operator to set each field one by one.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 4: VECTORS ============ -->
+<div class="tab-content" id="vectors">
+<div class="panel">
+  <h2>4. Vectors</h2>
+  <div class="lead">A vector is a list that can grow and shrink as needed.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">4.1</span> How do you add an element to the end of vector <code>v</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'add is not a method on vectors in C++.')">v.add(x);</button>
+      <button class="opt" onclick="answer(this, false, 'append is not a vector method in C++. That might be from a different language.')">v.append(x);</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. push_back adds to the end of a vector.')">v.push_back(x);</button>
+      <button class="opt" onclick="answer(this, false, 'insert exists but takes a position, push_back is the simple way to add to the end.')">v.insert(x);</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">4.2</span> How do you check how many elements are in vector <code>v</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'length without parentheses would not work, and length is not a vector method anyway.')">v.length</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. size() returns the number of elements, with parentheses.')">v.size()</button>
+      <button class="opt" onclick="answer(this, false, 'count is for counting specific values, not for total size.')">v.count()</button>
+      <button class="opt" onclick="answer(this, false, 'That is not C++ syntax, methods are called with the dot operator.')">length(v)</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">4.3</span> What does <code>vector&lt;int&gt; nums;</code> create?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'It creates a vector, not a single int.')">A single int variable named nums</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. It creates an empty vector that holds ints. You add to it with push_back.')">An empty vector that holds ints</button>
+      <button class="opt" onclick="answer(this, false, 'It is empty until you add something with push_back.')">A vector with one int already in it</button>
+      <button class="opt" onclick="answer(this, false, 'The angle brackets specify int, not string.')">A vector that holds strings</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">4.4</span> Why do we pass a vector to a function with <code>&amp;</code> like <code>vector&lt;int&gt;&amp; v</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Vectors with & still work the same way, the syntax just changes who owns the data.')">Vectors only work with the ampersand</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Without it, you get a copy. With it, changes affect the original vector.')">So changes inside the function affect the original</button>
+      <button class="opt" onclick="answer(this, false, 'The ampersand is not used as a comment marker.')">It is a comment marker</button>
+      <button class="opt" onclick="answer(this, false, 'The ampersand does not change what gets returned.')">It tells the function to return the vector</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">4.5</span> Write code that creates a vector of ints, adds the numbers 5, 10, and 15 to it, then prints the size of the vector. (Just the code inside main is fine.)</div>
+    <textarea class="write" id="v5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('v5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('v5')">Clear</button>
+    </div>
+    <div id="v5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; nums;
+nums.push_back(<span class="nu">5</span>);
+nums.push_back(<span class="nu">10</span>);
+nums.push_back(<span class="nu">15</span>);
+cout &lt;&lt; nums.size() &lt;&lt; endl;</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Declare an empty vector, push_back three values, then print the size. The output will be 3 since there are 3 elements.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">4.6</span> Write a function called <code>sumAll</code> that takes a <code>vector&lt;int&gt;</code> and returns the total sum of all numbers in it.</div>
+    <textarea class="write" id="v6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('v6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('v6')">Clear</button>
+    </div>
+    <div id="v6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">int</span> sumAll(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="ty">int</span> total = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        total += v[i];
+    }
+    <span class="kw">return</span> total;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Start with total = 0, loop over every element using its index, and add each one to total. The shorthand <code>total += v[i]</code> is the same as <code>total = total + v[i]</code>.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 5: LOOPS ============ -->
+<div class="tab-content" id="loops">
+<div class="panel">
+  <h2>5. Loops</h2>
+  <div class="lead">For loops, while loops, and the nested loop pattern.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">5.1</span> How many times does this loop run?<br><code>for (int i = 0; i &lt; 5; i++)</code></div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'i goes from 0 to 4, that is 5 values, not 4.')">4 times</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. i takes values 0, 1, 2, 3, 4 before the condition fails. That is 5 iterations.')">5 times</button>
+      <button class="opt" onclick="answer(this, false, 'The loop stops when i reaches 5, so it does not run with i = 5.')">6 times</button>
+      <button class="opt" onclick="answer(this, false, 'The condition does eventually become false.')">Forever</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">5.2</span> In a nested loop comparing every pair of elements, what should the inner loop start at?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Starting at 0 means you compare each item to itself, which always gives a false match.')">j = 0</button>
+      <button class="opt" onclick="answer(this, false, 'Starting at i means the first comparison is i to i, an item to itself.')">j = i</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Starting at i + 1 skips the self-comparison and avoids checking the same pair twice.')">j = i + 1</button>
+      <button class="opt" onclick="answer(this, false, 'Starting at 1 always skips the first element which is wrong.')">j = 1</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">5.3</span> Which loop is better when you don't know in advance how many times to repeat?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'A for loop is best when you know the count in advance, like 100 iterations.')">for loop</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. A while loop runs as long as a condition is true, perfect for unknown counts.')">while loop</button>
+      <button class="opt" onclick="answer(this, false, 'do-while exists but is rarely used. The standard answer is while.')">do-while loop</button>
+      <button class="opt" onclick="answer(this, false, 'A nested loop is just two loops inside each other, not a loop type for unknown counts.')">nested loop</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">5.4</span> What does <code>i++</code> do?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'It does not double i.')">Multiplies i by 2</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. i++ adds 1 to i. It is the same as i = i + 1.')">Adds 1 to i</button>
+      <button class="opt" onclick="answer(this, false, 'It increases, not decreases.')">Subtracts 1 from i</button>
+      <button class="opt" onclick="answer(this, false, 'It does not reset i.')">Sets i back to 0</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">5.5</span> Write a for loop that prints the numbers 1 through 10, each on its own line.</div>
+    <textarea class="write" id="l5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('l5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('l5')">Clear</button>
+    </div>
+    <div id="l5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">1</span>; i &lt;= <span class="nu">10</span>; i++) {
+    cout &lt;&lt; i &lt;&lt; endl;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Start at 1, keep going while i is less than or equal to 10. Using <code>&lt;= 10</code> is what includes 10 in the output.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">5.6</span> Write a function <code>countMatches</code> that takes a <code>vector&lt;int&gt;</code> and an int <code>target</code>, and returns how many times <code>target</code> appears in the vector.</div>
+    <textarea class="write" id="l6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('l6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('l6')">Clear</button>
+    </div>
+    <div id="l6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">int</span> countMatches(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v, <span class="ty">int</span> target) {
+    <span class="ty">int</span> count = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">if</span> (v[i] == target) count++;
+    }
+    <span class="kw">return</span> count;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Start count at 0, loop over the vector, and increment count every time we find target. Use <code>==</code> for comparison, not <code>=</code> which is assignment.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 6: RANDOM ============ -->
+<div class="tab-content" id="random">
+<div class="panel">
+  <h2>6. Random Numbers</h2>
+  <div class="lead">Use rand() to get random values, with a simple formula for ranges.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">6.1</span> What range of numbers does <code>rand() % 6 + 1</code> produce?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Without the + 1, you would get 0 to 5, but the + 1 shifts it up.')">0 to 5</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Like rolling a die, this gives 1 through 6 inclusive.')">1 to 6</button>
+      <button class="opt" onclick="answer(this, false, 'The modulo of 6 means the result is at most 5, then we add 1, so the max is 6.')">0 to 6</button>
+      <button class="opt" onclick="answer(this, false, 'The result cannot reach 7.')">1 to 7</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">6.2</span> Where should <code>srand(time(0))</code> be called?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'That would re-seed many times and could give repeated values.')">Inside every function that uses rand</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Seed once, at the very start of main, before any rand calls.')">Once, at the top of main</button>
+      <button class="opt" onclick="answer(this, false, 'Re-seeding inside a loop can break randomness.')">Inside a loop, every iteration</button>
+      <button class="opt" onclick="answer(this, false, 'Seeding goes before rand calls, not after.')">After every call to rand</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">6.3</span> Which two includes do you need for <code>rand()</code> and <code>time()</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'iostream is for cout, string is for the string type. Neither has rand.')">iostream and string</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. cstdlib has rand and srand, ctime has time.')">cstdlib and ctime</button>
+      <button class="opt" onclick="answer(this, false, 'Those are not standard C++ include names.')">random and time</button>
+      <button class="opt" onclick="answer(this, false, 'cmath is for math functions like sqrt, not for rand.')">cmath and chrono</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">6.4</span> What happens if you forget to call <code>srand</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'The program still runs, it does not crash.')">The program crashes</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Without seeding, rand() produces the same exact sequence of numbers every run.')">You get the same random numbers every run</button>
+      <button class="opt" onclick="answer(this, false, 'rand() still works, just predictably.')">rand() always returns 0</button>
+      <button class="opt" onclick="answer(this, false, 'It is not a compile error.')">It will not compile</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">6.5</span> Write a single line that stores a random number from 1 to 100 in an int variable named <code>r</code>.</div>
+    <textarea class="write" id="r5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('r5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('r5')">Clear</button>
+    </div>
+    <div id="r5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">int</span> r = rand() % <span class="nu">100</span> + <span class="nu">1</span>;</code></pre>
+      <div class="explain"><strong>Explanation:</strong> The formula is <code>rand() % range + start</code>. For 1 to 100, range is 100 and start is 1.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">6.6</span> Write a function <code>rollDice</code> that takes an int <code>n</code> and returns a vector of <code>n</code> random dice rolls (each 1-6).</div>
+    <textarea class="write" id="r6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('r6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('r6')">Clear</button>
+    </div>
+    <div id="r6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; rollDice(<span class="ty">int</span> n) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; rolls;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; n; i++) {
+        rolls.push_back(rand() % <span class="nu">6</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> rolls;
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Make an empty vector, loop n times, push a random 1-6 each time, return the vector at the end.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 7: CASTING ============ -->
+<div class="tab-content" id="casting">
+<div class="panel">
+  <h2>7. Type Casting &amp; Probability Math</h2>
+  <div class="lead">Watch out for integer division, this is the #1 trap on this exam.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">7.1</span> What does <code>7 / 2</code> equal in C++ when both are ints?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'C++ does not store the decimal when dividing two ints.')">3.5</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Integer division throws away the decimal part. 3.5 becomes 3.')">3</button>
+      <button class="opt" onclick="answer(this, false, 'C++ does not round, it truncates. 3.5 truncated is 3.')">4</button>
+      <button class="opt" onclick="answer(this, false, '7 / 2 in int form gives an int, not a double like 3.0.')">3.0</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">7.2</span> What does <code>7 / 2.0</code> equal?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, true, 'Correct. Because 2.0 is a double, the division is done as double division.')">3.5</button>
+      <button class="opt" onclick="answer(this, false, 'The .0 forces the result to be a double, not just an int.')">3</button>
+      <button class="opt" onclick="answer(this, false, 'C++ does not round automatically.')">4</button>
+      <button class="opt" onclick="answer(this, false, 'This is valid C++ syntax.')">Compile error</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">7.3</span> If <code>count</code> is an int with value 50, what is the value of <code>count / 100</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'You would need at least one operand to be a double, like count / 100.0.')">0.5</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. Both are ints, so 50 / 100 truncates to 0. This is the trap on the exam.')">0</button>
+      <button class="opt" onclick="answer(this, false, 'C++ does not multiply, it divides.')">50</button>
+      <button class="opt" onclick="answer(this, false, 'You need 100.0 to get a decimal result.')">0.50</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">7.4</span> Which of these correctly calculates a probability when <code>count</code> is an int?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'Both are ints, so this gives integer division and truncates to 0.')">double p = count / 100;</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. 100.0 is a double, so the division produces a proper decimal result.')">double p = count / 100.0;</button>
+      <button class="opt" onclick="answer(this, false, 'count is an int, so adding .0 to it does not work this way.')">double p = count.0 / 100;</button>
+      <button class="opt" onclick="answer(this, false, 'You cannot use the decimal operator on an int variable like that.')">double p = count / 100..;</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">7.5</span> Given <code>int hits = 17;</code> and <code>int total = 50;</code>, write one line that stores the probability (as a decimal between 0 and 1) in a double variable named <code>p</code>.</div>
+    <textarea class="write" id="c5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('c5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('c5')">Clear</button>
+    </div>
+    <div id="c5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">double</span> p = hits / (<span class="ty">double</span>)total;</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Casting <code>total</code> to double forces double division. You could also write <code>(double)hits / total</code> or, if total were a literal, <code>hits / 50.0</code>.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">7.6</span> Write a function <code>average</code> that takes a <code>vector&lt;int&gt;</code> and returns the average value as a double.</div>
+    <textarea class="write" id="c6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('c6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('c6')">Clear</button>
+    </div>
+    <div id="c6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">double</span> average(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="ty">int</span> total = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        total += v[i];
+    }
+    <span class="kw">return</span> total / (<span class="ty">double</span>)v.size();
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Sum everything first into an int, then divide by the size, but cast to double so we get a proper decimal answer instead of integer division.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ TAB 8: FILE I/O ============ -->
+<div class="tab-content" id="fileio">
+<div class="panel">
+  <h2>8. File I/O</h2>
+  <div class="lead">The hardest topic. Take your time with these.</div>
+
+  <span class="section-label">Multiple Choice</span>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">8.1</span> Which include is needed for <code>ifstream</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'iostream covers cin and cout, not file streams.')">&lt;iostream&gt;</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. fstream covers ifstream (file in) and ofstream (file out).')">&lt;fstream&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'string is needed for the string type, not for files.')">&lt;string&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'That is not a real C++ include name.')">&lt;file&gt;</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">8.2</span> What does <code>getline(fin, name, ',')</code> do?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'It reads a string up to the comma, not just the comma itself.')">Reads exactly one comma into name</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. It reads characters into name until it hits a comma, then stops.')">Reads characters into name up to the comma</button>
+      <button class="opt" onclick="answer(this, false, 'It reads many characters, not just one.')">Reads only one character</button>
+      <button class="opt" onclick="answer(this, false, 'It stops at the comma, not at end of file.')">Reads until end of file</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">8.3</span> Why call <code>fin.ignore()</code> after reading numbers with <code>fin &gt;&gt; x</code>?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'It is not for skipping a number, it is for skipping a single character.')">To skip one of the numbers</button>
+      <button class="opt" onclick="answer(this, false, 'fin closes automatically. ignore is not for closing.')">To close the file</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. The newline is left in the stream after >> reads the number, and getline would otherwise read it as an empty string.')">To skip the leftover newline before the next getline</button>
+      <button class="opt" onclick="answer(this, false, 'It does matter, leaving it out causes the next getline to misbehave.')">It is optional and does not really do anything</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-q"><span class="qnum">8.4</span> Which operator reads the next whitespace-separated token from a file stream?</div>
+    <div class="options">
+      <button class="opt" onclick="answer(this, false, 'The double less-than is for output, like sending to cout.')">&lt;&lt;</button>
+      <button class="opt" onclick="answer(this, true, 'Correct. The double greater-than is the input/extraction operator.')">&gt;&gt;</button>
+      <button class="opt" onclick="answer(this, false, 'A single equals sign is assignment, not stream input.')">=</button>
+      <button class="opt" onclick="answer(this, false, 'A double equals is comparison, not stream input.')">==</button>
+    </div>
+    <div class="feedback"></div>
+  </div>
+
+  <span class="section-label code-tag">Code Writing</span>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">8.5</span> Write code that opens a file <code>data.txt</code> and reads one int from it into a variable named <code>x</code>. (Just the few lines for opening and reading.)</div>
+    <textarea class="write" id="i5" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('i5a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('i5')">Clear</button>
+    </div>
+    <div id="i5a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="ty">ifstream</span> fin(<span class="st">"data.txt"</span>);
+<span class="ty">int</span> x;
+fin &gt;&gt; x;</code></pre>
+      <div class="explain"><strong>Explanation:</strong> Open the file by passing the filename to ifstream. Declare an int. Use >> to extract the next whitespace-separated value into it.</div>
+    </div>
+  </div>
+
+  <div class="code-q">
+    <div class="code-q-text"><span class="qnum">8.6</span> Suppose you have a struct <code>Person { string name; int age; };</code>. Write a function <code>loadPeople</code> that takes a filename and a <code>vector&lt;Person&gt;&amp;</code>. Each line of the file looks like <code>"Alice, 25"</code>. Read every line into the vector.</div>
+    <textarea class="write" id="i6" placeholder="Type your code here..."></textarea>
+    <div class="btn-row">
+      <button class="toggle" onclick="toggleAns('i6a', this)">Show Answer</button>
+      <button class="toggle clear" onclick="clearBox('i6')">Clear</button>
+    </div>
+    <div id="i6a" class="answer hidden">
+      <h4>Solution</h4>
+<pre><code><span class="kw">void</span> loadPeople(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Person</span>&gt;&amp; people) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> name;
+    <span class="ty">int</span> age;
+    <span class="kw">while</span> (getline(fin, name, <span class="st">','</span>)) {
+        fin &gt;&gt; age;
+        fin.ignore();
+        <span class="ty">Person</span> p;
+        p.name = name;
+        p.age = age;
+        people.push_back(p);
+    }
+}</code></pre>
+      <div class="explain"><strong>Explanation:</strong> getline with comma reads up to the comma into name. Then >> reads the int. fin.ignore() skips the newline before looping back. Build a Person struct, set fields, push to the vector. The & on the vector parameter is critical, without it the data goes into a copy and disappears.</div>
+    </div>
+  </div>
+
+  <div class="progress-note">
+    Done with all 8 tabs! Send Vlad a message when you've finished so we can review your code together at the next session.
+  </div>
+</div>
+</div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector('[data-tab="' + id + '"]').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleAns(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+}
+
+function answer(btn, isCorrect, explanation) {
+  const mcq = btn.closest('.mcq');
+  const opts = mcq.querySelectorAll('.opt');
+  const fb = mcq.querySelector('.feedback');
+
+  opts.forEach(o => o.disabled = true);
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    fb.className = 'feedback show correct';
+    fb.innerHTML = '<strong>Correct.</strong> ' + explanation;
+  } else {
+    btn.classList.add('wrong');
+    opts.forEach(o => {
+      if (o.getAttribute('onclick').includes('true')) {
+        o.classList.add('correct');
+      }
+    });
+    fb.className = 'feedback show wrong';
+    fb.innerHTML = '<strong>Not quite.</strong> ' + explanation;
+  }
+}
+
+function clearBox(id) {
+  const el = document.getElementById(id);
+  el.value = '';
+  saveBox(id);
+}
+
+// Persist code answers across visits
+function saveBox(id) {
+  try { localStorage.setItem('travis_hw_' + id, document.getElementById(id).value); } catch(e) {}
+}
+function loadBoxes() {
+  document.querySelectorAll('textarea.write').forEach(t => {
+    try {
+      const v = localStorage.getItem('travis_hw_' + t.id);
+      if (v) t.value = v;
+      t.addEventListener('input', () => saveBox(t.id));
+    } catch(e) {}
+  });
+}
+loadBoxes();
+</script>
+
+</body>
+</html>
