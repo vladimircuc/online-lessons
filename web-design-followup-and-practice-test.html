@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Design Catch-Up Part 2: Filling the Gaps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E0F12;
+  --bg-elev: #16181D;
+  --bg-elev-2: #1D2026;
+  --border: #2A2E36;
+  --border-warm: #3A322A;
+  --text: #F2EFE8;
+  --text-dim: #A39E94;
+  --text-faint: #6E6A62;
+  --accent: #FF6B47;
+  --accent-warm: #FFA97A;
+  --accent-dim: #5B2917;
+  --teal: #7DD3C0;
+  --gold: #E8B964;
+  --green: #87C09A;
+  --red: #E5736B;
+  --code-bg: #0A0B0E;
+  --sidebar-w: 300px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; } }
+
+.sidebar {
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  padding: 36px 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+@media (max-width: 900px) {
+  .sidebar { position: static; height: auto; padding: 24px; }
+}
+
+.sidebar-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-brand::before { content: ''; width: 24px; height: 1px; background: var(--accent); }
+
+.sidebar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.25;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+
+.tab-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 32px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.35;
+  transition: background 0.15s, color 0.15s;
+  border-left: 2px solid transparent;
+}
+.tab-btn:hover { background: rgba(255, 107, 71, 0.06); color: var(--text); }
+.tab-btn.active {
+  background: rgba(255, 107, 71, 0.1);
+  color: var(--text);
+  border-left-color: var(--accent);
+}
+.tab-btn .tab-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  min-width: 22px;
+  flex-shrink: 0;
+}
+.tab-btn.active .tab-num { color: var(--accent); }
+
+/* Special styling for the practice test tab */
+.tab-btn[data-target="m7"] {
+  margin-top: 8px;
+  border-top: 1px dashed var(--border);
+  padding-top: 16px;
+}
+.tab-btn[data-target="m7"] .tab-num { color: var(--teal); }
+.tab-btn[data-target="m7"].active .tab-num { color: var(--teal); }
+.tab-btn[data-target="m7"].active { border-left-color: var(--teal); background: rgba(125, 211, 192, 0.08); }
+
+.sidebar-divider { border: 0; border-top: 1px dashed var(--border); margin: 24px 0; }
+.sidebar-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sidebar-note { font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+
+.mobile-dropdown { display: none; }
+@media (max-width: 900px) {
+  .tab-list { display: none; }
+  .mobile-dropdown {
+    display: block;
+    width: 100%;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+}
+
+.content {
+  padding: 56px 64px 120px;
+  max-width: 920px;
+  width: 100%;
+}
+@media (max-width: 900px) { .content { padding: 32px 24px 80px; } }
+@media (max-width: 720px) { .content { padding: 24px 20px 80px; } body { font-size: 16px; } }
+
+.tab-panel { display: none; animation: fadeIn 0.3s ease-out; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.module-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+h2.module-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin-bottom: 16px;
+}
+h2.module-title em { font-style: italic; color: var(--accent-warm); }
+
+.module-desc { font-size: 18px; color: var(--text-dim); margin-bottom: 40px; max-width: 720px; }
+
+h3.section-head {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 500;
+  margin: 48px 0 16px;
+  letter-spacing: -0.01em;
+}
+
+p { margin-bottom: 16px; }
+p.dim { color: var(--text-dim); }
+
+ul.bullets { margin: 16px 0 24px 0; padding-left: 24px; }
+ul.bullets li { margin-bottom: 8px; color: var(--text-dim); }
+ul.bullets li strong { color: var(--text); }
+
+code.inline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: var(--bg-elev-2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-warm);
+  border: 1px solid var(--border);
+}
+
+.talking-points {
+  background: linear-gradient(135deg, rgba(232, 185, 100, 0.06), rgba(232, 185, 100, 0.02));
+  border-left: 3px solid var(--gold);
+  padding: 22px 28px;
+  margin: 32px 0;
+  border-radius: 0 8px 8px 0;
+}
+.talking-points-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.talking-points-label::before { content: '◆'; font-size: 14px; }
+.talking-points p { font-size: 15.5px; margin-bottom: 10px; }
+.talking-points p:last-child { margin-bottom: 0; }
+
+.concept-box {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin: 28px 0;
+}
+.concept-box h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  color: var(--accent-warm);
+  font-style: italic;
+}
+
+.do-this {
+  background: rgba(255, 107, 71, 0.07);
+  border: 1px solid rgba(255, 107, 71, 0.25);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.do-this-icon {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.do-this-text { font-size: 16px; line-height: 1.55; padding-top: 4px; }
+.do-this-text strong { color: var(--accent-warm); }
+
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.code-filename {
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-filename::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.copy-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.copy-btn.copied { background: var(--green); color: var(--bg); border-color: var(--green); }
+.code-block pre { padding: 20px 22px; overflow-x: auto; margin: 0; }
+.code-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre;
+}
+
+.result-box {
+  background: linear-gradient(135deg, rgba(135, 192, 154, 0.06), rgba(135, 192, 154, 0.02));
+  border: 1px solid rgba(135, 192, 154, 0.25);
+  border-left: 3px solid var(--green);
+  padding: 22px 28px;
+  margin: 28px 0;
+  border-radius: 0 10px 10px 0;
+}
+.result-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(135, 192, 154, 0.6);
+}
+.result-box p { font-size: 15.5px; margin-bottom: 10px; }
+.result-box p:last-child { margin-bottom: 0; }
+
+/* ============ MCQ ============ */
+.mcq {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin: 36px 0;
+}
+.mcq-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mcq-label::before {
+  content: '?';
+  width: 20px;
+  height: 20px;
+  background: var(--teal);
+  color: var(--bg);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+.mcq-question {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  font-style: italic;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.mcq-options { display: flex; flex-direction: column; gap: 10px; }
+.mcq-option {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: all 0.15s;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.mcq-option:hover:not(:disabled) { border-color: var(--accent); transform: translateX(2px); }
+.mcq-option .opt-letter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--bg);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.mcq-option.correct { background: rgba(135, 192, 154, 0.1); border-color: var(--green); }
+.mcq-option.correct .opt-letter { background: var(--green); color: var(--bg); }
+.mcq-option.wrong { background: rgba(229, 115, 107, 0.08); border-color: var(--red); }
+.mcq-option.wrong .opt-letter { background: var(--red); color: var(--bg); }
+.mcq-feedback {
+  margin-top: 18px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+  display: none;
+}
+.mcq-feedback.show { display: block; }
+.mcq-feedback.correct { background: rgba(135, 192, 154, 0.08); border-left: 3px solid var(--green); }
+.mcq-feedback.wrong { background: rgba(229, 115, 107, 0.08); border-left: 3px solid var(--red); }
+.mcq-feedback strong { color: var(--accent-warm); }
+
+/* ============ PRACTICE MCQ ============ */
+.practice-mcq {
+  border-color: rgba(125, 211, 192, 0.2);
+}
+.practice-mcq .mcq-label { display: none; }
+.practice-q-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.practice-q-num::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--teal);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(125, 211, 192, 0.5);
+}
+
+/* Score tracker */
+.score-tracker {
+  background: linear-gradient(135deg, rgba(125, 211, 192, 0.08), rgba(125, 211, 192, 0.02));
+  border: 1px solid rgba(125, 211, 192, 0.3);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin: 8px 0 32px;
+  position: sticky;
+  top: 70px;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.score-tracker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.score-stat { text-align: center; }
+.score-stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+.score-stat-num.high { color: var(--green); }
+.score-stat-num.mid { color: var(--gold); }
+.score-stat-num.low { color: var(--red); }
+.score-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+.score-bar-wrap {
+  grid-column: 1 / -1;
+  height: 6px;
+  background: var(--bg-elev-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.score-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+  border-radius: 3px;
+  transition: width 0.4s ease, background 0.4s ease;
+}
+.score-bar.high { background: linear-gradient(90deg, var(--green), var(--teal)); }
+.score-bar.low { background: linear-gradient(90deg, var(--red), var(--accent)); }
+
+/* Results summary at the bottom of the practice test */
+.results-summary {
+  display: none;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(125, 211, 192, 0.1), rgba(232, 185, 100, 0.05));
+  border: 1px solid rgba(125, 211, 192, 0.3);
+  border-radius: 16px;
+  padding: 56px 32px;
+  margin: 60px 0 0;
+}
+.results-summary.show { display: block; }
+.results-headline {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  font-weight: 400;
+  font-style: italic;
+  margin-bottom: 16px;
+}
+.results-headline.high { color: var(--green); }
+.results-headline.mid { color: var(--gold); }
+.results-headline.low { color: var(--red); }
+.results-detail { font-size: 18px; color: var(--text-dim); margin-bottom: 28px; }
+.results-reset {
+  background: var(--accent);
+  color: var(--bg);
+  border: 0;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+}
+.results-reset:hover { background: var(--accent-warm); transform: translateY(-1px); }
+
+.pronunciation {
+  background: linear-gradient(135deg, rgba(125, 211, 192, 0.05), rgba(125, 211, 192, 0.01));
+  border: 1px solid rgba(125, 211, 192, 0.25);
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin: 24px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pronunciation-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.pronunciation-term { font-family: 'Fraunces', serif; font-size: 17px; font-style: italic; }
+.pronunciation-pron { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent-warm); }
+
+/* Comparison toggle */
+.comparison {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 28px 0;
+  overflow: hidden;
+}
+.comparison-tabs {
+  display: flex;
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border);
+}
+.cmp-tab {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 18px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+}
+.cmp-tab:hover { color: var(--text); }
+.cmp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.cmp-panel { display: none; background: var(--code-bg); padding: 0; }
+.cmp-panel.active { display: block; }
+.cmp-panel pre {
+  padding: 24px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre;
+}
+
+/* Step pattern */
+.step-pattern {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 28px 0;
+}
+.step-row {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.step-num {
+  background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+  color: var(--bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.step-detail { color: var(--text-dim); font-size: 14.5px; }
+
+/* Prev/next */
+.tab-nav {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 60px 0 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  min-width: 200px;
+}
+.nav-btn:hover { border-color: var(--accent); background: rgba(255, 107, 71, 0.05); }
+.nav-btn.next { text-align: right; align-items: flex-end; }
+.nav-btn-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.nav-btn-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; }
+
+/* Panel header pill */
+.panel-header {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, var(--bg) 80%, transparent);
+  z-index: 10;
+  margin: -56px -64px 32px;
+  padding: 24px 64px 24px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 900px) {
+  .panel-header { margin: -32px -24px 24px; padding: 20px 24px; }
+}
+.panel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.panel-pill .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+.panel-pill.practice .dot { background: var(--teal); box-shadow: 0 0 6px rgba(125, 211, 192, 0.6); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">Follow-up</div>
+    <h1 class="sidebar-title">Filling the<br>gaps + practice.</h1>
+    <select class="mobile-dropdown" id="mobile-tab-select"></select>
+    <ul class="tab-list" id="tab-list"></ul>
+    <hr class="sidebar-divider">
+    <div class="sidebar-meta">For Vlad</div>
+    <p class="sidebar-note">Same structure as the first lesson. The last tab is a 25-question practice test that tracks Jack's score live.</p>
+  </aside>
+
+  <main class="content" id="content">
+    <!-- MODULE 0: INTRO -->
+<section class="tab-panel module" id="m0">
+  <div class="module-num">Follow-up · The gaps</div>
+  <h2 class="module-title">What we <em>missed</em> last time.</h2>
+  <p class="module-desc">The first lesson covered all the hands-on coding for sessions 8 to 13. This one fills the gaps the prof's syllabus mentions but we didn't get to: the rest of JavaScript control flow, tables done right, CSS frameworks, canvas, usability, and the framework for your final presentation. Plus a 25-question practice test at the end.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Tell Jack: this builds directly on the first lesson. We're filling gaps, not starting over. Each module is shorter and more focused.</p>
+    <p>The last tab is a practice test, 25 questions covering everything from both lessons. His exam is fully MCQ so this is the closest simulation we can give him.</p>
+    <p>Suggest pacing: do modules 1 to 6 in order, then take the practice test fresh. Score under 20, go back and review weak areas.</p>
+  </div>
+
+  <h3 class="section-head">What's in this follow-up</h3>
+
+  <div class="step-pattern">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">JavaScript control flow</div>
+        <div class="step-detail">Operators, if/else, loops. The rest of Session 8's core concepts.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">HTML Tables, properly</div>
+        <div class="step-detail">Session 9's other half. thead, tbody, tfoot, real styling.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">CSS Frameworks</div>
+        <div class="step-detail">Bootstrap, Tailwind, Bulma. What they are and when to reach for one.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Canvas, the JS drawing surface</div>
+        <div class="step-detail">Session 11's third topic. How it differs from SVG.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">Usability and User Testing</div>
+        <div class="step-detail">Findability, discoverability, iterative testing. Concepts the prof emphasizes.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <div class="step-title">The final presentation framework</div>
+        <div class="step-detail">The 10-item Vision Document checklist your grade is built on.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <div class="step-title">Practice test, 25 MCQs</div>
+        <div class="step-detail">All topics from both lessons. Tracks your score as you go.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-head">Topics we're skipping (and why)</h3>
+  <p class="dim">The prof's syllabus mentions a few things we're intentionally leaving out:</p>
+  <ul class="bullets">
+    <li><strong>PHP.</strong> The prof's own syllabus says "NOT REQUIRED."</li>
+    <li><strong>JSON.</strong> Listed in a session title but never developed in his materials.</li>
+    <li><strong>The 12 Disney Animation Principles.</strong> Just a numbered list of conceptual names. Worth being able to name a few, not memorize all 12.</li>
+    <li><strong>jQuery <code class="inline">.animate()</code>.</strong> Legacy. CSS transitions and keyframes replaced it.</li>
+  </ul>
+
+</section>
+
+
+<!-- MODULE 1: JAVASCRIPT CONTROL FLOW -->
+<section class="tab-panel module" id="m1">
+  <div class="module-num">Module 01 · Session 08 continued</div>
+  <h2 class="module-title">JavaScript <em>control flow</em>.</h2>
+  <p class="module-desc">In the first lesson we covered variables and functions. The rest of Session 8 is about how to make decisions (operators, conditionals) and how to repeat actions (loops). Together these are the entire core of programming logic.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Three concepts, in order: operators (the verbs), conditionals (the decisions), loops (the repetition). Every program is some combination of these three plus variables and functions.</p>
+    <p>The one that catches everyone: <code class="inline">===</code> vs <code class="inline">==</code>. Always use triple equals in JavaScript. Double equals does sneaky type conversion that causes bugs.</p>
+  </div>
+
+  <h3 class="section-head">Operators: math, comparison, logic</h3>
+  <p>Operators are symbols that act on values. Three families to know.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · operators</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// MATH OPERATORS
+let a = 10 + 5;    // addition, a is 15
+let b = 10 - 5;    // subtraction, b is 5
+let c = 10 * 5;    // multiplication, c is 50
+let d = 10 / 5;    // division, d is 2
+let e = 10 % 3;    // modulo (remainder), e is 1
+
+
+// COMPARISON OPERATORS (always return true or false)
+5 === 5            // true  (strict equals)
+5 === "5"          // false (different types: number vs string)
+5 !== 6            // true  (not equals)
+10 > 5             // true  (greater than)
+10 < 5             // false (less than)
+10 >= 10           // true  (greater than or equal)
+
+
+// LOGICAL OPERATORS (combine true/false values)
+true && false      // false (AND, both must be true)
+true || false      // true  (OR, at least one must be true)
+!true              // false (NOT, flips the value)</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">5 === "5"</code> evaluate to?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>true</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>false</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>"5"</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>undefined</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Triple equals checks both value AND type. The number 5 is not the same type as the string "5", so the result is false. With double equals (<code class="inline">==</code>) it would be true because of automatic type conversion, which is exactly why we use triple equals.
+    </div>
+  </div>
+
+  <h3 class="section-head">Conditionals: if, else if, else</h3>
+  <p>Conditionals let your code take different paths based on a condition.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · if / else if / else</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>let score = 85;
+
+// IF / ELSE IF / ELSE chain
+// The browser checks each condition top to bottom.
+// First one that's true runs. The rest are skipped.
+if (score &gt;= 90) {
+  console.log("A");
+} else if (score &gt;= 80) {
+  console.log("B");           // this runs, since 85 &gt;= 80
+} else if (score &gt;= 70) {
+  console.log("C");
+} else {
+  console.log("F");           // default if nothing above matched
+}
+
+
+// SHORTHAND: the ternary operator
+// Read as: "if condition, return X, otherwise return Y"
+let pass = score &gt;= 70 ? "passed" : "failed";
+// pass is now "passed"</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">In an <code class="inline" style="font-size: 16px;">if / else if / else</code> chain, what happens if two conditions are both true?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>Only the first true one runs</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Both true branches run in sequence</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>The browser shows an error</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Only the last true one runs</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> JavaScript checks the conditions top to bottom and exits as soon as one is true. That's why order matters in a chain: put your most specific conditions first.
+    </div>
+  </div>
+
+  <h3 class="section-head">Loops: for and forEach</h3>
+  <p>Loops repeat a block of code. Two patterns cover 95% of what you'll do.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · for loop</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// The classic for loop has 3 parts inside the parentheses:
+// 1. let i = 0       initialize a counter
+// 2. i &lt; 5           keep going while this is true
+// 3. i++             after each pass, increase i by 1
+
+for (let i = 0; i &lt; 5; i++) {
+  console.log("Iteration " + i);
+}
+
+// Output:
+// Iteration 0
+// Iteration 1
+// Iteration 2
+// Iteration 3
+// Iteration 4
+// (note: counts start at 0 and stop BEFORE 5, so 5 iterations total)</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · forEach for arrays</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// forEach is the modern way to loop over an array.
+// Cleaner than a for loop when you have an array.
+
+const colors = ["red", "green", "blue"];
+
+// Run a function for each item in the array.
+// The function gets the current item as its argument.
+colors.forEach(function(color) {
+  console.log(color);
+});
+
+// Output:
+// red
+// green
+// blue
+
+
+// REAL EXAMPLE: turn every &lt;img&gt; on the page red-tinted
+const images = document.querySelectorAll("img");
+
+images.forEach(function(img) {
+  img.style.filter = "sepia(0.6)";
+});</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">In <code class="inline" style="font-size: 16px;">for (let i = 0; i &lt; 5; i++)</code>, how many times does the loop run?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>4 times</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>5 times</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>6 times</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Infinite</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> The loop runs while <code class="inline">i &lt; 5</code>. So i goes through 0, 1, 2, 3, 4, that's 5 iterations. When i becomes 5, the condition fails and the loop exits.
+    </div>
+  </div>
+
+  <h3 class="section-head">Putting it together</h3>
+  <p>A real example using all three concepts. We'll update the surprise button to count clicks and change its label based on the count.</p>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>index.html</strong>, replace your surprise button click handler with this.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · inside $(document).ready</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// Variable (counter) starts at 0
+let clickCount = 0;
+
+$("#surprise-btn").on("click", function() {
+
+  // OPERATOR: increment the counter by 1
+  clickCount = clickCount + 1;
+
+  // CONDITIONAL: change the label based on the count
+  if (clickCount === 1) {
+    $(this).text("Click me again");
+  } else if (clickCount &lt; 5) {
+    $(this).text("Click " + clickCount + " of 5");
+  } else {
+    $(this).text("OK that's enough");
+  }
+
+  // The original toggle still happens every click
+  $("#about").toggleClass("highlighted");
+
+});</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>First click: button label becomes "Click me again," About section turns yellow. Second click: label becomes "Click 2 of 5," About turns off. Third: "Click 3 of 5." Fourth: "Click 4 of 5." Fifth and beyond: "OK that's enough."</p>
+    <p>You used a variable to track state, an operator to update it, and a conditional to decide what to display. That's most of what programming is.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Which operator combines two conditions where BOTH must be true?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">||</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">!</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span><code class="inline">&amp;&amp;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">+</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Double ampersand is logical AND. Double pipe (<code class="inline">||</code>) is OR (at least one true). Exclamation (<code class="inline">!</code>) is NOT (flips the value). Plus is for addition or string joining.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 2: HTML TABLES -->
+<section class="tab-panel module" id="m2">
+  <div class="module-num">Module 02 · Session 09 continued</div>
+  <h2 class="module-title">HTML <em>tables</em>, properly.</h2>
+  <p class="module-desc">The first lesson gave you a quick table cheat sheet. Session 9 actually has more to it. Tables are for tabular data only (a logical presentation of rows and columns), never for page layout. CSS Grid replaced tables for layout 15 years ago.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Two things to drive home: tables are ONLY for spreadsheet-style data (schedule, price comparison, results), and the <code class="inline">thead/tbody/tfoot</code> grouping is what makes them semantic and accessible.</p>
+    <p>The styling defaults are ugly. <code class="inline">border-collapse: collapse</code> is the one CSS line that fixes 80% of it. The rest is just padding and color.</p>
+  </div>
+
+  <h3 class="section-head">The table structure</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">HTML · tables fully structured</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;table&gt;
+
+  &lt;!-- caption: a title for the table, shown above it.
+       Required for accessibility. Screen readers announce it. --&gt;
+  &lt;caption&gt;Project schedule&lt;/caption&gt;
+
+  &lt;!-- thead: groups the header rows together --&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;!-- th = "table header" cell. Browser bolds these by default. --&gt;
+      &lt;th&gt;Week&lt;/th&gt;
+      &lt;th&gt;Topic&lt;/th&gt;
+      &lt;th&gt;Due&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+
+  &lt;!-- tbody: groups the data rows --&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;!-- td = "table data" cell, the normal cell --&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;Setup&lt;/td&gt;
+      &lt;td&gt;Sept 5&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;Wireframes&lt;/td&gt;
+      &lt;td&gt;Sept 12&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+
+  &lt;!-- tfoot: groups footer rows (totals, summaries) --&gt;
+  &lt;tfoot&gt;
+    &lt;tr&gt;
+      &lt;td colspan="2"&gt;Total weeks&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tfoot&gt;
+
+&lt;/table&gt;</code></pre>
+  </div>
+
+  <p class="dim">Important attribute: <code class="inline">colspan="2"</code> makes a cell span 2 columns. There's also <code class="inline">rowspan</code> for spanning rows.</p>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the difference between <code class="inline" style="font-size: 16px;">&lt;th&gt;</code> and <code class="inline" style="font-size: 16px;">&lt;td&gt;</code>?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>th is for header cells, td is for data cells</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>th is for text, td is for numbers</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>td is for header cells, th is for data cells</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>They are exactly the same</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> <code class="inline">th</code> stands for "table header." Browsers style it differently (bold, centered) and screen readers announce it as a header. Use it for the first row, or first column if your table has row headers.
+    </div>
+  </div>
+
+  <h3 class="section-head">Make it not look like 1998</h3>
+
+  <div class="do-this">
+    <div class="do-this-icon">→</div>
+    <div class="do-this-text">In <strong>styles.css</strong>, add this to the bottom.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">styles.css · table styles</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>table {
+  /* THE ONE LINE that fixes ugly table borders.
+     By default, each cell has its own border with a gap between them.
+     "collapse" merges adjacent borders into one clean line. */
+  border-collapse: collapse;
+
+  width: 100%;                    /* fill the container */
+  margin: 24px 0;
+}
+
+caption {
+  text-align: left;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+/* Style header AND data cells together, then override below if needed */
+th, td {
+  padding: 12px 16px;             /* breathing room inside each cell */
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Alternating row colors using :nth-child.
+   "even" matches the 2nd, 4th, 6th rows. Much easier to read. */
+tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+/* Hover effect (optional but nice) */
+tbody tr:hover {
+  background: #f5f5e8;
+}</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What happens after save and refresh</div>
+    <p>A clean table with a bold header row, alternating zebra-stripe backgrounds on the data rows, and a subtle hover effect. Every row has consistent padding so the columns line up. The caption sits above as a label.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">border-collapse: collapse</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Hides all the borders</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Merges adjacent cell borders into one</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Makes the whole table fold up</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Removes padding from cells</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Without it, each cell has its own border and you see a double line at every boundary. With it, adjacent borders merge into a single clean line. This is one of those CSS one-liners that immediately makes a table look modern.
+    </div>
+  </div>
+
+  <h3 class="section-head">Spanning cells with colspan and rowspan</h3>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">HTML · spanning attributes</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Item&lt;/th&gt;
+    &lt;th&gt;Q1&lt;/th&gt;
+    &lt;th&gt;Q2&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Sales&lt;/td&gt;
+    &lt;!-- This cell spans 2 columns instead of 1.
+         The next row will only need 2 cells (1 + 1 spanned = 3 columns). --&gt;
+    &lt;td colspan="2"&gt;Combined Q1 + Q2: $50k&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">When should you use an HTML table?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>For any multi-column layout on the page</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>To position a navigation menu</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>For data with rows and columns</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Whenever you want a border around something</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Tables are for tabular data: schedules, comparisons, results, spreadsheet-style information. Using tables for page layout is a 1990s practice that screen readers can't handle properly. Use CSS Grid or Flexbox for layout.
+    </div>
+  </div>
+
+</section>
+
+<!-- MODULE 3: CSS FRAMEWORKS -->
+<section class="tab-panel module" id="m3">
+  <div class="module-num">Module 03 · Session 12</div>
+  <h2 class="module-title">CSS <em>frameworks</em>, a quick tour.</h2>
+  <p class="module-desc">A CSS framework is a pre-written stylesheet (sometimes with JavaScript) that gives you ready-made components and utilities. Instead of writing your own button styles, grid system, and navigation, you use the framework's. Saves time, costs you some uniqueness.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>You don't need to know how to USE every framework. You need to know what frameworks ARE, the two main styles, and the trade-offs. That's the level of question the prof's exam will ask.</p>
+    <p>Two flavors to know: component-based (Bootstrap, Bulma, Foundation) gives you pre-styled chunks like "card" or "navbar". Utility-based (Tailwind) gives you tiny atomic classes you combine. Both have their place.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">Bulma</span>
+    <span class="pronunciation-pron">"BUHL-muh"</span>
+    <span class="pronunciation-term">Tailwind</span>
+    <span class="pronunciation-pron">"TAIL-wind"</span>
+  </div>
+
+  <h3 class="section-head">Two flavors</h3>
+
+  <div class="concept-box">
+    <h4>Component-based (Bootstrap, Bulma, Foundation)</h4>
+    <p>You add a class like <code class="inline">btn btn-primary</code> and get a fully styled button. The framework decided what a button looks like. Faster to start, harder to make it look unique.</p>
+    <pre style="background: #0A0B0E; padding: 14px; border-radius: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EFE8; overflow-x: auto;"><code>&lt;!-- Bootstrap example --&gt;
+&lt;button class="btn btn-primary"&gt;Save&lt;/button&gt;
+&lt;div class="card"&gt;
+  &lt;div class="card-body"&gt;Pre-styled card&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </div>
+
+  <div class="concept-box">
+    <h4>Utility-based (Tailwind CSS)</h4>
+    <p>You add many small classes like <code class="inline">px-4 py-2 bg-blue-500 text-white rounded</code>. Each class does one thing. More verbose in HTML, but you control every detail.</p>
+    <pre style="background: #0A0B0E; padding: 14px; border-radius: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EFE8; overflow-x: auto;"><code>&lt;!-- Tailwind example --&gt;
+&lt;button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"&gt;
+  Save
+&lt;/button&gt;</code></pre>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the main difference between Bootstrap and Tailwind CSS?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Bootstrap is newer than Tailwind</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Tailwind only works with JavaScript</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Bootstrap gives pre-styled components, Tailwind gives utility classes</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Bootstrap is free, Tailwind costs money</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Bootstrap hands you finished components and you accept its design choices. Tailwind hands you tiny building blocks and you assemble your own design. Both are free and modern.
+    </div>
+  </div>
+
+  <h3 class="section-head">Pros and cons</h3>
+
+  <div class="comparison" id="cmp-fw">
+    <div class="comparison-tabs">
+      <button class="cmp-tab active" data-target="pros">Pros</button>
+      <button class="cmp-tab" data-target="cons">Cons</button>
+    </div>
+    <div class="cmp-panel active" data-name="pros">
+      <pre><code>+ Speed: get a working UI in minutes, not days
++ Consistency: every button looks like every other button
++ Mobile-first: responsive breakpoints are built in
++ Community: huge ecosystem, templates, tutorials, plugins
++ Accessibility: most modern frameworks have it baked in
++ Browser compatibility: tested across browsers for you
++ Documentation: every class and component is documented</code></pre>
+    </div>
+    <div class="cmp-panel" data-name="cons">
+      <pre><code>- Bloat: you load CSS for components you'll never use
+- Sameness: lots of sites look like the framework's template
+- Learning curve: you trade learning CSS for learning class names
+- Customization: changing the look feels like fighting the framework
+- HTML clutter: utility frameworks fill your markup with classes
+- Version churn: major version upgrades can break your site
+- Overkill: a small site rarely needs a full framework</code></pre>
+    </div>
+  </div>
+
+  <h3 class="section-head">When to reach for a framework</h3>
+  <ul class="bullets">
+    <li><strong>Yes:</strong> rapid prototyping, internal admin tools, hackathons, time-pressure projects</li>
+    <li><strong>Yes:</strong> teams without a designer where consistency matters more than uniqueness</li>
+    <li><strong>Maybe:</strong> mid-size projects where you'll customize a lot, lean toward Tailwind</li>
+    <li><strong>No:</strong> brand-driven sites where visual identity is the point (a portfolio, an agency, a brand)</li>
+    <li><strong>No:</strong> small static sites where the framework would be larger than your site</li>
+  </ul>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Which is a typical downside of using a CSS framework?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Slower development time</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Worse mobile responsiveness</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Sites can look generic</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Less browser support</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> When everyone uses the same framework without customizing it, sites start to look alike. The "Bootstrap look" was a real thing in the mid 2010s. The other options are actually upsides of frameworks, not downsides.
+    </div>
+  </div>
+
+  <h3 class="section-head">Frameworks you'll see named</h3>
+  <ul class="bullets">
+    <li><strong>Bootstrap.</strong> The original. Component-based. Still the most popular for traditional websites.</li>
+    <li><strong>Tailwind CSS.</strong> Utility-based. The trendy choice for the last few years. Lots of marketing sites use it.</li>
+    <li><strong>Bulma.</strong> Component-based, pure CSS (no JavaScript required). Cleaner-looking defaults than Bootstrap.</li>
+    <li><strong>Foundation.</strong> By Zurb. Old, enterprise-leaning. Less common in 2026.</li>
+    <li><strong>Spectre.</strong> Lightweight component framework. Niche.</li>
+  </ul>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Which approach does Tailwind CSS use?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Component-based</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Utility-based</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>JavaScript-based</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Template-based</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Tailwind is the headline utility-based framework. Bootstrap, Bulma, and Foundation are component-based.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 4: CANVAS -->
+<section class="tab-panel module" id="m4">
+  <div class="module-num">Module 04 · Session 11</div>
+  <h2 class="module-title">Canvas, the <em>drawing</em> surface.</h2>
+  <p class="module-desc">The <code class="inline" style="font-size: 16px;">&lt;canvas&gt;</code> element is a transparent rectangle on the page that you draw on using JavaScript. The browser doesn't draw anything by itself, you have to issue drawing commands in JS. Used for games, data viz, interactive graphics, anything dynamic.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>The key distinction Jack needs to know: SVG is vectors (you describe shapes once, browser keeps them sharp). Canvas is pixels (you paint on a bitmap, faster for lots of moving things, but doesn't scale).</p>
+    <p>The big four rules of canvas: 1) without JS, canvas does nothing, 2) canvas drawings are pixels, not DOM elements, so you can't style them with CSS or grab them with jQuery, 3) you must get the "2d context" to draw, 4) once drawn, it stays until you clear or overdraw it.</p>
+    <p>p5.js is a friendlier wrapper that the prof links. Worth mentioning, not deep-diving.</p>
+  </div>
+
+  <div class="pronunciation">
+    <span class="pronunciation-label">Pronunciation</span>
+    <span class="pronunciation-term">canvas</span>
+    <span class="pronunciation-pron">"KAN-vuhs"</span>
+    <span class="pronunciation-term">context</span>
+    <span class="pronunciation-pron">"KON-text"</span>
+  </div>
+
+  <h3 class="section-head">Canvas vs SVG</h3>
+
+  <div class="comparison" id="cmp-cv">
+    <div class="comparison-tabs">
+      <button class="cmp-tab active" data-target="svg">SVG (vectors)</button>
+      <button class="cmp-tab" data-target="canvas">Canvas (pixels)</button>
+    </div>
+    <div class="cmp-panel active" data-name="svg">
+      <pre><code>+ Stays sharp at any zoom level
++ Each shape is a DOM element you can style with CSS
++ Easy to make accessible
++ Good for icons, logos, charts, diagrams
+
+- Slow with thousands of moving shapes
+- Files can get large for complex art</code></pre>
+    </div>
+    <div class="cmp-panel" data-name="canvas">
+      <pre><code>+ Fast even with thousands of moving things
++ Good for games, particle effects, video filters
++ Lower memory for big complex scenes
++ Pixel-level control
+
+- Blurry when scaled up
+- Drawings are not DOM elements (no CSS, no jQuery)
+- Harder to make accessible</code></pre>
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the main difference between SVG and Canvas?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>SVG is older than Canvas</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>SVG is vector-based, Canvas is pixel-based</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Canvas only works in modern browsers</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>SVG requires JavaScript, Canvas does not</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> SVG describes shapes (a circle has a center and radius, scales perfectly). Canvas paints pixels (you draw a circle once, and the result is just colored pixels, no longer a "circle" the browser tracks). The other options are backward: Canvas needs JavaScript to do anything, both work in all browsers, and SVG predates Canvas.
+    </div>
+  </div>
+
+  <h3 class="section-head">The canvas pattern</h3>
+  <p>Every canvas drawing follows the same three steps: add the element, get its 2D context, issue drawing commands.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">index.html · add a canvas anywhere</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>&lt;!-- The canvas element. width and height are in pixels.
+     Text inside is fallback for browsers that don't support canvas.
+     The id lets JavaScript find it. --&gt;
+&lt;canvas id="my-canvas" width="400" height="200"&gt;
+  Your browser does not support canvas.
+&lt;/canvas&gt;</code></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · the three-step drawing pattern</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// STEP 1: find the canvas element
+const canvas = document.getElementById("my-canvas");
+
+// STEP 2: get the 2D drawing context.
+// "2d" is the most common. WebGL ("webgl") is for 3D graphics.
+// The context is the object you call drawing commands on.
+const ctx = canvas.getContext("2d");
+
+// STEP 3: draw things.
+
+// Set the fill color (used by fill commands below)
+ctx.fillStyle = "tomato";
+
+// Draw a filled rectangle: x, y, width, height.
+// Coordinates start at top-left (0, 0).
+ctx.fillRect(10, 10, 100, 50);
+
+
+// Switch fill color, draw text
+ctx.fillStyle = "black";
+ctx.font = "20px Georgia";
+ctx.fillText("Hello canvas", 130, 45);
+
+
+// Draw a circle. Canvas circles are made with arc().
+// arc(x, y, radius, startAngle, endAngle) where angles are in radians.
+// 0 to Math.PI * 2 is a full circle.
+ctx.beginPath();                       // start a new shape
+ctx.arc(300, 100, 40, 0, Math.PI * 2);
+ctx.fillStyle = "steelblue";
+ctx.fill();                            // fill the path with the current color</code></pre>
+  </div>
+
+  <div class="result-box">
+    <div class="result-label">What this draws</div>
+    <p>A 400 by 200 pixel rectangular area with: a tomato-colored rectangle in the top-left, the text "Hello canvas" in black next to it, and a blue circle to the right. Once drawn, those pixels just sit there. They're not DOM elements, so right-clicking on the circle and choosing "Inspect" won't show you a <code class="inline">&lt;circle&gt;</code> tag.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What method do you call to get the drawing context for a canvas?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">canvas.draw()</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span><code class="inline">canvas.getContext("2d")</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">canvas.context</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">canvas.start()</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> <code class="inline">getContext("2d")</code> returns the object you call all your drawing methods on (<code class="inline">fillRect</code>, <code class="inline">arc</code>, <code class="inline">fillText</code>, etc). For 3D graphics you'd use <code class="inline">getContext("webgl")</code> instead.
+    </div>
+  </div>
+
+  <h3 class="section-head">p5.js, the friendlier wrapper</h3>
+  <p>p5.js is a JavaScript library built on top of canvas. It gives you a simpler API designed for artists and beginners. The prof's syllabus calls it out specifically.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename">JavaScript · same circle, in p5.js</span>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <pre><code>// Two functions: setup() runs once, draw() runs 60 times per second.
+function setup() {
+  createCanvas(400, 200);     // creates and sizes the canvas for you
+  background(240);            // light gray background
+}
+
+function draw() {
+  fill("steelblue");
+  noStroke();
+  circle(300, 100, 80);       // x, y, diameter, no Math.PI nonsense
+}</code></pre>
+  </div>
+
+  <p class="dim">You won't need p5 for the exam, just recognize the name and know it's an easier way to use canvas for creative coding.</p>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Why CAN'T you grab shapes drawn on a canvas with jQuery?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>jQuery doesn't support canvas</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>The shapes are stored on the server</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Canvas drawings are pixels, not DOM elements</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Shapes only exist for one frame</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Once you draw on a canvas, the result is just colored pixels in a bitmap. The browser doesn't remember "there's a circle here" or "there's text here." Compare to SVG, where every shape is a real DOM element you can target with CSS, jQuery, or <code class="inline">document.getElementById</code>.
+    </div>
+  </div>
+
+</section>
+
+<!-- MODULE 5: USABILITY & USER TESTING -->
+<section class="tab-panel module" id="m5">
+  <div class="module-num">Module 05 · Session 11</div>
+  <h2 class="module-title">Usability and <em>user testing</em>.</h2>
+  <p class="module-desc">Usability is a quality attribute that assesses how easy a user interface is to use. The prof leans heavily on this in Session 11. He runs an in-class user testing exercise. Your Vision Document is supposed to address it. This module is the vocabulary you need.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Usability has a real academic source: the Nielsen Norman Group (NNG). The prof links them directly. If you ever see "NN/g" cited on a quiz, that's them.</p>
+    <p>The key distinction the prof emphasizes: <strong>Findability vs Discoverability</strong>. Findability is "I'm looking for X, can I find it?" Discoverability is "I didn't know X existed, did I stumble onto it?" Both matter. They require different test methods.</p>
+    <p>The principle to remember: iterative testing. You don't test once at the end. You test small things often, fix, retest.</p>
+  </div>
+
+  <h3 class="section-head">What usability means</h3>
+  <p>The classic NNG definition: usability is how easy a user interface is to use, AND the methods for improving ease-of-use during the design process. So it's both a property of the design AND the practice of making it better.</p>
+
+  <p>Five dimensions NNG uses:</p>
+  <ul class="bullets">
+    <li><strong>Learnability.</strong> How easy is it for first-time users?</li>
+    <li><strong>Efficiency.</strong> Once learned, how fast can users do tasks?</li>
+    <li><strong>Memorability.</strong> If they come back later, do they remember how?</li>
+    <li><strong>Errors.</strong> How often, how severe, and how easily can they recover?</li>
+    <li><strong>Satisfaction.</strong> How pleasant is it to use?</li>
+  </ul>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">Which group is associated with the formal definition of usability the prof references?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>W3C</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Smashing Magazine</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Nielsen Norman Group</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Adobe</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> The Nielsen Norman Group (NN/g) defined usability in this academic sense. The prof links directly to their site for the canonical definition.
+    </div>
+  </div>
+
+  <h3 class="section-head">Findability vs Discoverability</h3>
+
+  <div class="concept-box">
+    <h4>Findability</h4>
+    <p>The user is actively looking for something. Can they find it? Test by giving them a task ("find the contact form") and watching how long it takes.</p>
+    <p>Improved by: clear navigation, search, consistent labels, logical hierarchy.</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>Discoverability</h4>
+    <p>The user doesn't know a feature exists. Will they come across it? Test by NOT telling them about features and seeing which ones they find on their own.</p>
+    <p>Improved by: visual prompts, onboarding hints, smart defaults, features placed where users already are.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">A user knows they want to email customer support and looks for the contact link. This is a test of:</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>Findability</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Discoverability</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Memorability</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Satisfaction</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> The user is actively searching for a known thing. Findability is "I'm looking for X, can I find it?" If you were testing whether they noticed a feature they didn't know about, that would be discoverability.
+    </div>
+  </div>
+
+  <h3 class="section-head">How to run a basic user test</h3>
+  <p>The prof's in-class exercise follows this rough pattern. You'll be expected to know the structure.</p>
+
+  <div class="step-pattern">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Pick tasks tied to your user stories</div>
+        <div class="step-detail">"Sign up for the newsletter" and "Find the lead designer's bio" beat "Look around and tell me what you think."</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Sit with the tester, ask them to think aloud</div>
+        <div class="step-detail">You want their reasoning. "I'm clicking this because I expect a menu." Catches assumption mismatches.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Don't lead them, don't rescue them</div>
+        <div class="step-detail">If they get stuck, that's data. Let them fail unless they're truly suffering. Resist the urge to explain.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Note where they hesitate, click wrong, or backtrack</div>
+        <div class="step-detail">Those are your fix-list. Fast clicks mean the design is working.</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">Fix one thing, test again with a new person</div>
+        <div class="step-detail">This is "iterative testing." Tiny rounds, often. The opposite of one big test at the end.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What does "iterative testing" mean?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Testing only after launch</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Running the same test repeatedly until perfect</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Small rounds of test, fix, retest</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Testing on many devices in parallel</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> The iterative part is the cycle: test something small, learn what's broken, fix it, test again with someone fresh. Beats one big test at the end where you find ten problems and can't fix them all.
+    </div>
+  </div>
+
+  <h3 class="section-head">User-centered design principles</h3>
+  <p>From the article the prof links (Maze). These four values guide the whole process:</p>
+  <ul class="bullets">
+    <li><strong>Value 1:</strong> Early and frequent user involvement minimizes costly mistakes.</li>
+    <li><strong>Value 2:</strong> Empathizing with users helps solve real problems.</li>
+    <li><strong>Value 3:</strong> Clarity and consistency are key for intuitive designs.</li>
+    <li><strong>Value 4:</strong> User data and insights drive decisions.</li>
+  </ul>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What should you do when a user gets stuck during a usability test?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Tell them where the feature is</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Restart the test from the beginning</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Move them to a different task</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span>Wait and note what they try</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> The moment a user gets stuck is the most valuable data in the test. Rescuing them hides the real problem. Let them struggle, write down what they try, and ask them what they expected to happen.
+    </div>
+  </div>
+
+</section>
+
+
+<!-- MODULE 6: FINAL PRESENTATION -->
+<section class="tab-panel module" id="m6">
+  <div class="module-num">Module 06 · The Final</div>
+  <h2 class="module-title">The final <em>presentation</em>.</h2>
+  <p class="module-desc">Your final is a 10-minute (max) presentation plus a Vision Document PDF. The prof gave the exact rubric in Session 11. This module is that checklist, translated into what you actually need to prepare and say.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>This is the most important module of the follow-up. Not code, structure. Jack's grade is built on this checklist. Read it with him slowly.</p>
+    <p>Frame each item as a question he should answer in 30 to 60 seconds during the presentation. Practice each one out loud with him if there's time.</p>
+    <p>Two physical deliverables: the live site link and the Vision Document PDF. Both must be sent before or during the presentation. Confirm he has both ready.</p>
+  </div>
+
+  <h3 class="section-head">The 10-item Vision Document checklist</h3>
+  <p>Each item below is a section your Vision Document and presentation should cover. The bold question is what your section should answer. The dim text is what to actually say in your 30 to 60 seconds.</p>
+
+  <div class="concept-box">
+    <h4>1. The Big Idea: Concept, User Personas, User Stories</h4>
+    <p><strong>What is this project and who is it for?</strong></p>
+    <p class="dim">State the project in one sentence. Then identify 1 to 3 user types ("personas"). For each, write a user story in the form: "As a [persona], I want to [do something] so that [outcome]." Example: "As a prospective client, I want to see Jack's past work so I can decide whether to hire him."</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>2. Organizing Content / Sitemaps</h4>
+    <p><strong>How is the content organized?</strong></p>
+    <p class="dim">Show a simple tree or list of pages and sections. Explain why you grouped things the way you did. "Gallery is at the top because clients care about work samples first. Contact is at the bottom because they only need it after they've decided."</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>3. Typography</h4>
+    <p><strong>What fonts did you pick and why?</strong></p>
+    <p class="dim">Name your fonts. Explain the choice. "I'm using Georgia for body because it reads well in long blocks and feels established. The serif sets a tone of craft and seriousness."</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>4. Composition / Layout</h4>
+    <p><strong>What device are you designing for first?</strong></p>
+    <p class="dim">Mobile-first, tablet-first, or desktop-first. Why. Mention specific layout decisions: max-width, where things stack on small screens, etc.</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>5. Design Principles</h4>
+    <p><strong>Which principles are you leveraging?</strong></p>
+    <p class="dim">Pick 2 to 3 from the prof's list and point to where you used each one:</p>
+    <ul class="bullets" style="margin-top: 8px;">
+      <li><strong>Dominance.</strong> One element clearly the most important.</li>
+      <li><strong>Similarity.</strong> Related items look alike.</li>
+      <li><strong>Rhythm.</strong> Repetition creates pacing.</li>
+      <li><strong>Texture.</strong> Surface variety adds depth.</li>
+      <li><strong>Direction.</strong> Visual flow guides the eye.</li>
+      <li><strong>Contrast.</strong> Differences create emphasis.</li>
+    </ul>
+  </div>
+
+  <div class="concept-box">
+    <h4>6. Sketches and Layout</h4>
+    <p><strong>What did you sketch, what was your moodboard?</strong></p>
+    <p class="dim">Include early sketches, wireframes, or any moodboard/inspiration images in the PDF. Even rough notebook scribbles work. Shows your process.</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>7. Color</h4>
+    <p><strong>What color scheme did you choose and why?</strong></p>
+    <p class="dim">Name the palette (3 to 5 colors usually). Explain the mood it sets. "Warm neutrals with a single accent in burnt orange. Friendly, designer-y, doesn't compete with the work samples."</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>8. JavaScript, Interactivity, Forms</h4>
+    <p><strong>How is interactivity helping your users?</strong></p>
+    <p class="dim">For each interactive feature on your site (gallery slider, theme toggle, contact form, hover effects), explain WHY it's there. "The slider lets users browse work without scrolling. The form has validation so they don't submit blank messages." Don't just list, justify.</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>9. User Testing and Usability</h4>
+    <p><strong>What did testing reveal, what did you change?</strong></p>
+    <p class="dim">Summarize the test you ran in Session 11 and the changes that came from it. "My partner couldn't find the contact link on mobile. I moved it to a sticky button at the bottom. Retested with another classmate, fixed."</p>
+  </div>
+
+  <div class="concept-box">
+    <h4>10. The Final Outcome</h4>
+    <p><strong>What did you learn, what would you do next?</strong></p>
+    <p class="dim">Reflection. What was harder than expected. What you'd add with more time. What you're proud of. Closes the loop.</p>
+  </div>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What is the maximum length of the final presentation?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>5 minutes</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>10 minutes</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>15 minutes</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>20 minutes</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> The syllabus says "Max 10 min." Plan for 8 to 9 so you have buffer. Going over is worse than going under.
+    </div>
+  </div>
+
+  <h3 class="section-head">What to physically deliver</h3>
+  <ul class="bullets">
+    <li><strong>Vision Document PDF.</strong> Emailed to the prof AND used as your presentation slides. Same document.</li>
+    <li><strong>Live site link.</strong> URL to your hosted site (GitHub Pages, Netlify, or wherever you put it).</li>
+    <li><strong>Changelog link.</strong> Running log of what you've added each week.</li>
+  </ul>
+
+  <div class="mcq">
+    <div class="mcq-label">Quick check</div>
+    <div class="mcq-question">What format does the prof want for the Vision Document?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Word document</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>PDF</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Google Slides link</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Printed handout</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> The syllabus repeatedly says "Vision Document PDF" and "current Vision document PDF ready to share." PDF guarantees your formatting survives whatever computer he opens it on.
+    </div>
+  </div>
+
+  <h3 class="section-head">Two final tips</h3>
+  <ul class="bullets">
+    <li><strong>Open with the live site, not your slides.</strong> Show what you built first, then explain why. People judge the work, then listen to the reasoning.</li>
+    <li><strong>Have a fallback.</strong> If the live site won't load (Wi-Fi, hosting glitch, whatever), have screenshots in the PDF. The presentation can't depend on the internet working.</li>
+  </ul>
+
+</section>
+
+<!-- MODULE 7: PRACTICE TEST -->
+<section class="tab-panel module" id="m7">
+  <div class="module-num">Practice Test · 25 Questions</div>
+  <h2 class="module-title">Practice <em>test</em>.</h2>
+  <p class="module-desc">All topics from both lessons. Pick an answer, get instant feedback. Your score updates at the top as you go. Aim for 20 out of 25 or better before the real exam.</p>
+
+  <div class="talking-points">
+    <div class="talking-points-label">Talking points</div>
+    <p>Have Jack take it without looking back at the lessons. Score below 20, identify the weak areas, go review those modules, retake.</p>
+    <p>The questions mirror the prof's MCQ style: scenario-based, not memorize-the-syntax. Don't worry if the wording feels different from the slides, the exam will too.</p>
+  </div>
+
+  <!-- SCORE TRACKER -->
+  <div class="score-tracker" id="scoreTracker">
+    <div class="score-stat">
+      <div class="score-stat-num" id="answeredCount">0</div>
+      <div class="score-stat-label">Answered</div>
+    </div>
+    <div class="score-stat">
+      <div class="score-stat-num" id="correctCount">0</div>
+      <div class="score-stat-label">Correct</div>
+    </div>
+    <div class="score-stat">
+      <div class="score-stat-num" id="scorePct">—</div>
+      <div class="score-stat-label">Score</div>
+    </div>
+    <div class="score-bar-wrap">
+      <div class="score-bar" id="scoreBar"></div>
+    </div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="mcq practice-mcq" data-q="1">
+    <div class="practice-q-num">Question 1 of 25</div>
+    <div class="mcq-question">What does the <code class="inline" style="font-size: 16px;">$(document).ready()</code> function do in jQuery?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Loads the jQuery library</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Runs code after the HTML has loaded</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Triggers a page refresh</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Submits a form to the server</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> It waits for the DOM to be fully built before running its callback. Without it, your code might try to grab elements that don't exist yet.
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="mcq practice-mcq" data-q="2">
+    <div class="practice-q-num">Question 2 of 25</div>
+    <div class="mcq-question">Which CSS property creates a Grid Container?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">grid-template</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">layout: grid</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">display: flex</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span><code class="inline">display: grid</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> <code class="inline">display: grid</code> turns the element into a Grid Container and its direct children become Grid Items. <code class="inline">grid-template-columns</code> is a follow-up property, not the trigger.
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="mcq practice-mcq" data-q="3">
+    <div class="practice-q-num">Question 3 of 25</div>
+    <div class="mcq-question">In CSS, what does the <code class="inline" style="font-size: 16px;">fr</code> unit represent?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>A fraction of available space</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Frame rate of the browser</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>A fixed pixel ratio</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Font reference size</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> <code class="inline">fr</code> stands for "fraction." <code class="inline">1fr 1fr 1fr</code> means three equal-share columns. <code class="inline">2fr 1fr</code> means the first column gets twice the leftover space as the second.
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="mcq practice-mcq" data-q="4">
+    <div class="practice-q-num">Question 4 of 25</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">event.preventDefault()</code> do inside a form submit handler?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Validates the form fields</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Clears the input values</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Stops the browser from submitting normally</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Sends data to the server</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> Without it, the browser tries to reload the page and send data. With it, you stop that behavior and handle the submit in your own JavaScript (show a message, send AJAX, animate, etc).
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="mcq practice-mcq" data-q="5">
+    <div class="practice-q-num">Question 5 of 25</div>
+    <div class="mcq-question">Which is the correct way to declare a CSS Custom Property?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">$accent: #FF6B47;</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span><code class="inline">--accent: #FF6B47;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">@accent: #FF6B47;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">var accent = #FF6B47;</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Two hyphens, name, colon, value. You then use it elsewhere with <code class="inline">var(--accent)</code>. Option A is Sass syntax. Option C is Less. Option D is JavaScript.
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="mcq practice-mcq" data-q="6">
+    <div class="practice-q-num">Question 6 of 25</div>
+    <div class="mcq-question">In SVG, what does the <code class="inline" style="font-size: 16px;">viewBox</code> attribute control?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>The internal coordinate system</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>The actual rendered pixel size</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>The background color</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Which browsers can render it</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> viewBox defines the virtual coordinate space the shapes are drawn in. The actual rendered size comes from <code class="inline">width</code>/<code class="inline">height</code> attributes or CSS. This is why SVGs stay sharp at any size.
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="mcq practice-mcq" data-q="7">
+    <div class="practice-q-num">Question 7 of 25</div>
+    <div class="mcq-question">What does a CSS <code class="inline" style="font-size: 16px;">transition</code> do?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Plays a video clip between two states</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Adds a fade-in to page loads</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Defines a multi-step keyframe sequence</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span>Smooths a change between two property values</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> Transitions interpolate between the current property value and the new one over time. They need a trigger (hover, class change, etc) to fire. Keyframes are for multi-step animations.
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="mcq practice-mcq" data-q="8">
+    <div class="practice-q-num">Question 8 of 25</div>
+    <div class="mcq-question">A user knows a help center exists and is searching for it. This is a test of:</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Memorability</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Discoverability</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Findability</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Efficiency</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> The user knows what they want and is looking for it. Discoverability would be if they didn't know the feature existed and stumbled onto it.
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="mcq practice-mcq" data-q="9">
+    <div class="practice-q-num">Question 9 of 25</div>
+    <div class="mcq-question">In JavaScript, what does <code class="inline" style="font-size: 16px;">5 === "5"</code> return?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>true</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>false</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>"5"</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>An error</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Triple equals checks value AND type. Number 5 is not the same type as string "5", so it's false. The looser <code class="inline">==</code> would say true, which is exactly why we avoid it.
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="mcq practice-mcq" data-q="10">
+    <div class="practice-q-num">Question 10 of 25</div>
+    <div class="mcq-question">Which HTML element groups data rows in a table?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span><code class="inline">&lt;tbody&gt;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">&lt;thead&gt;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">&lt;tfoot&gt;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">&lt;tr&gt;</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> <code class="inline">tbody</code> wraps the main data rows. <code class="inline">thead</code> wraps headers, <code class="inline">tfoot</code> wraps the footer rows. <code class="inline">tr</code> is a single row.
+    </div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="mcq practice-mcq" data-q="11">
+    <div class="practice-q-num">Question 11 of 25</div>
+    <div class="mcq-question">What is a jQuery plugin?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>A browser extension that adds jQuery</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>A built-in jQuery method</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Pre-written jQuery code you drop into your site</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>An official Anthropic library</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> A plugin is jQuery code someone else wrote and packaged so you can use it without writing it yourself. Swiper, Slick, Lightbox, etc.
+    </div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="mcq practice-mcq" data-q="12">
+    <div class="practice-q-num">Question 12 of 25</div>
+    <div class="mcq-question">Which loop runs while a condition stays true?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">forEach</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">repeat</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">do</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span><code class="inline">while</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> <code class="inline">while (condition) { ... }</code> keeps repeating as long as the condition is true. <code class="inline">forEach</code> loops through arrays. <code class="inline">repeat</code> isn't a JS loop.
+    </div>
+  </div>
+
+  <!-- Q13 -->
+  <div class="mcq practice-mcq" data-q="13">
+    <div class="practice-q-num">Question 13 of 25</div>
+    <div class="mcq-question">What kind of framework is Tailwind CSS?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Component-based</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Utility-based</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>JavaScript-based</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Template-based</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Tailwind gives you tiny single-purpose utility classes (<code class="inline">px-4</code>, <code class="inline">bg-blue-500</code>, <code class="inline">rounded</code>) that you combine. Bootstrap and Bulma are component-based.
+    </div>
+  </div>
+
+  <!-- Q14 -->
+  <div class="mcq practice-mcq" data-q="14">
+    <div class="practice-q-num">Question 14 of 25</div>
+    <div class="mcq-question">Which method on a canvas returns the drawing context?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span><code class="inline">getContext("2d")</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">getDrawing()</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">canvas.draw()</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">openContext()</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> <code class="inline">getContext("2d")</code> returns the 2D drawing context object you call drawing methods on. For 3D graphics it's <code class="inline">getContext("webgl")</code>.
+    </div>
+  </div>
+
+  <!-- Q15 -->
+  <div class="mcq practice-mcq" data-q="15">
+    <div class="practice-q-num">Question 15 of 25</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">repeat(auto-fit, minmax(180px, 1fr))</code> create?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Three fixed columns of 180px each</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>A single column that wraps</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>As many columns as fit, each at least 180px</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Equal columns of unlimited width</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> auto-fit decides how many columns fit in the available space. minmax says each column is at least 180px but can grow up to 1fr. The combo gives you a responsive grid without media queries.
+    </div>
+  </div>
+
+  <!-- Q16 -->
+  <div class="mcq practice-mcq" data-q="16">
+    <div class="practice-q-num">Question 16 of 25</div>
+    <div class="mcq-question">Which CSS feature lets you respect users who don't want motion?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">@media print</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">@supports</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">@keyframes none</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span><code class="inline">@media (prefers-reduced-motion)</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> Browsers expose the user's OS preference through this media query. If they've enabled "Reduce motion" in their system settings, you can use this to disable or shorten your animations.
+    </div>
+  </div>
+
+  <!-- Q17 -->
+  <div class="mcq practice-mcq" data-q="17">
+    <div class="practice-q-num">Question 17 of 25</div>
+    <div class="mcq-question">What is the maximum length of the final presentation?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>5 minutes</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>10 minutes</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>15 minutes</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>20 minutes</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Straight from the syllabus: "Max 10 min." Plan for less so you have buffer.
+    </div>
+  </div>
+
+  <!-- Q18 -->
+  <div class="mcq practice-mcq" data-q="18">
+    <div class="practice-q-num">Question 18 of 25</div>
+    <div class="mcq-question">Which jQuery method adds a class if missing and removes it if present?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span><code class="inline">.toggleClass()</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">.flipClass()</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span><code class="inline">.switchClass()</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">.swapClass()</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> <code class="inline">.toggleClass()</code> is the on/off switch for a class. Useful for theme toggles, expanding menus, showing/hiding panels.
+    </div>
+  </div>
+
+  <!-- Q19 -->
+  <div class="mcq practice-mcq" data-q="19">
+    <div class="practice-q-num">Question 19 of 25</div>
+    <div class="mcq-question">Why is SVG better than Canvas for an icon you might scale up to 4x size?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>SVG loads faster from the network</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Canvas is blocked by ad blockers</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>SVG can be animated and Canvas cannot</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span>SVG stays sharp at any zoom, Canvas pixelates</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> SVG describes shapes mathematically, so the browser redraws them at whatever size. Canvas is just colored pixels, so scaling up shows the individual pixels (blocky/blurry).
+    </div>
+  </div>
+
+  <!-- Q20 -->
+  <div class="mcq practice-mcq" data-q="20">
+    <div class="practice-q-num">Question 20 of 25</div>
+    <div class="mcq-question">What is the correct way to use a CSS Custom Property in a rule?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span><code class="inline">color: $accent;</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span><code class="inline">color: --accent;</code></span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span><code class="inline">color: var(--accent);</code></span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span><code class="inline">color: get(accent);</code></span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> You define a variable with <code class="inline">--name: value</code> and you use it with <code class="inline">var(--name)</code>. Easy to mix up at first.
+    </div>
+  </div>
+
+  <!-- Q21 -->
+  <div class="mcq practice-mcq" data-q="21">
+    <div class="practice-q-num">Question 21 of 25</div>
+    <div class="mcq-question">What does <code class="inline" style="font-size: 16px;">colspan="2"</code> do in a table cell?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Makes the cell 2px wider</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Makes the cell span 2 columns</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Creates 2 copies of the cell</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Sets the column index to 2</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> <code class="inline">colspan</code> merges that many columns horizontally for a single cell. <code class="inline">rowspan</code> does the same vertically across rows.
+    </div>
+  </div>
+
+  <!-- Q22 -->
+  <div class="mcq practice-mcq" data-q="22">
+    <div class="practice-q-num">Question 22 of 25</div>
+    <div class="mcq-question">What should you do when a user gets stuck during a usability test?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">A</span><span>Wait and note what they try</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Show them where to click</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Restart the test from scratch</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Move them to the next task</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: A.</strong> A user getting stuck is the most valuable data in the test. Rescuing them hides the actual problem. Watch, note, ask them what they expected to happen.
+    </div>
+  </div>
+
+  <!-- Q23 -->
+  <div class="mcq practice-mcq" data-q="23">
+    <div class="practice-q-num">Question 23 of 25</div>
+    <div class="mcq-question">Why do we link a label and input using <code class="inline" style="font-size: 16px;">for</code> and <code class="inline" style="font-size: 16px;">id</code>?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>To prevent form submission</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>It is required by HTML to render</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>To style the label in bold</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">D</span><span>For accessibility and click-to-focus</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: D.</strong> Matching <code class="inline">for</code> on the label to <code class="inline">id</code> on the input ties them together. Screen readers announce the label when the input is focused, and clicking the label moves focus into the input.
+    </div>
+  </div>
+
+  <!-- Q24 -->
+  <div class="mcq practice-mcq" data-q="24">
+    <div class="practice-q-num">Question 24 of 25</div>
+    <div class="mcq-question">What is the typical pattern for using a jQuery plugin?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Install via npm, build, deploy</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">B</span><span>Write the plugin code yourself first</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">C</span><span>Link CSS, link JS, add HTML, activate</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Configure server, then run the plugin</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: C.</strong> The four-step pattern that works for almost every plugin: link the plugin's CSS in head, link its JS before body close, add the HTML structure it expects, then activate it with one line of JS.
+    </div>
+  </div>
+
+  <!-- Q25 -->
+  <div class="mcq practice-mcq" data-q="25">
+    <div class="practice-q-num">Question 25 of 25</div>
+    <div class="mcq-question">Which of these is NOT one of the design principles the prof lists?</div>
+    <div class="mcq-options">
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">A</span><span>Dominance</span></button>
+      <button class="mcq-option" data-correct="true"><span class="opt-letter">B</span><span>Gravity</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">C</span><span>Rhythm</span></button>
+      <button class="mcq-option" data-correct="false"><span class="opt-letter">D</span><span>Contrast</span></button>
+    </div>
+    <div class="mcq-feedback">
+      <strong>Right answer: B.</strong> Gravity isn't on his list. The six he calls out are Dominance, Similarity, Rhythm, Texture, Direction, and Contrast. You'll want to be able to name a few of these in the presentation.
+    </div>
+  </div>
+
+  <!-- Results summary, hidden until all answered -->
+  <div class="results-summary" id="resultsSummary">
+    <h3 class="results-headline" id="resultsHeadline">Complete!</h3>
+    <p class="results-detail" id="resultsDetail">You scored X out of 25.</p>
+    <button class="results-reset" id="resultsReset">Retake practice test</button>
+  </div>
+
+</section>
+  </main>
+</div>
+
+<script>
+const TABS = [
+  { id: 'm0', label: 'Intro · what we missed' },
+  { id: 'm1', label: 'JavaScript control flow' },
+  { id: 'm2', label: 'HTML Tables, properly' },
+  { id: 'm3', label: 'CSS Frameworks' },
+  { id: 'm4', label: 'Canvas, JS drawing' },
+  { id: 'm5', label: 'Usability & user testing' },
+  { id: 'm6', label: 'Final presentation' },
+  { id: 'm7', label: 'Practice test (25 Q)' },
+];
+
+const tabList = document.getElementById('tab-list');
+TABS.forEach((tab, i) => {
+  const li = document.createElement('li');
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn';
+  btn.dataset.target = tab.id;
+  btn.innerHTML = `<span class="tab-num">${String(i).padStart(2, '0')}</span><span>${tab.label}</span>`;
+  btn.addEventListener('click', () => switchTab(tab.id));
+  li.appendChild(btn);
+  tabList.appendChild(li);
+});
+
+const mobileSel = document.getElementById('mobile-tab-select');
+TABS.forEach((tab, i) => {
+  const opt = document.createElement('option');
+  opt.value = tab.id;
+  opt.textContent = `${String(i).padStart(2, '0')}  ·  ${tab.label}`;
+  mobileSel.appendChild(opt);
+});
+mobileSel.addEventListener('change', (e) => switchTab(e.target.value));
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById(id);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector(`.tab-btn[data-target="${id}"]`);
+  if (btn) btn.classList.add('active');
+  if (mobileSel.value !== id) mobileSel.value = id;
+  history.replaceState(null, '', `#${id}`);
+  window.scrollTo(0, 0);
+}
+
+function buildPanelNav() {
+  TABS.forEach((tab, i) => {
+    const panel = document.getElementById(tab.id);
+    if (!panel) return;
+    const nav = document.createElement('div');
+    nav.className = 'tab-nav';
+    if (i > 0) {
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'nav-btn prev';
+      prevBtn.innerHTML = `<span class="nav-btn-label">← Previous</span><span class="nav-btn-title">${TABS[i-1].label}</span>`;
+      prevBtn.addEventListener('click', () => switchTab(TABS[i-1].id));
+      nav.appendChild(prevBtn);
+    } else {
+      nav.appendChild(document.createElement('div'));
+    }
+    if (i < TABS.length - 1) {
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'nav-btn next';
+      nextBtn.innerHTML = `<span class="nav-btn-label">Next →</span><span class="nav-btn-title">${TABS[i+1].label}</span>`;
+      nextBtn.addEventListener('click', () => switchTab(TABS[i+1].id));
+      nav.appendChild(nextBtn);
+    }
+    panel.appendChild(nav);
+  });
+}
+
+function addPanelHeaders() {
+  TABS.forEach((tab, i) => {
+    const panel = document.getElementById(tab.id);
+    if (!panel) return;
+    const header = document.createElement('div');
+    header.className = 'panel-header';
+    const isPractice = tab.id === 'm7';
+    const pillClass = isPractice ? 'panel-pill practice' : 'panel-pill';
+    const moduleText = isPractice ? `Practice test · 25 questions` : `Module ${String(i).padStart(2, '0')} of 06 · ${tab.label}`;
+    header.innerHTML = `<span class="${pillClass}"><span class="dot"></span>${moduleText}</span>`;
+    panel.insertBefore(header, panel.firstChild);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  addPanelHeaders();
+  buildPanelNav();
+  initInteractiveDemos();
+  initPracticeTest();
+  const hash = window.location.hash.slice(1);
+  const validTab = TABS.find(t => t.id === hash);
+  switchTab(validTab ? hash : 'm0');
+});
+
+// Copy buttons
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('copy-btn')) {
+    const block = e.target.closest('.code-block');
+    const code = block.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      e.target.classList.add('copied');
+      const orig = e.target.innerText;
+      e.target.innerText = 'Copied';
+      setTimeout(() => { e.target.classList.remove('copied'); e.target.innerText = orig; }, 1400);
+    });
+  }
+});
+
+// MCQ logic (works for both regular and practice MCQs)
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.mcq-option')) {
+    const btn = e.target.closest('.mcq-option');
+    const mcq = btn.closest('.mcq');
+    if (mcq.dataset.answered === 'true') return;
+    const correct = btn.dataset.correct === 'true';
+    mcq.querySelectorAll('.mcq-option').forEach(opt => {
+      opt.disabled = true;
+      if (opt.dataset.correct === 'true') opt.classList.add('correct');
+    });
+    if (!correct) btn.classList.add('wrong');
+    const feedback = mcq.querySelector('.mcq-feedback');
+    feedback.classList.add('show');
+    feedback.classList.add(correct ? 'correct' : 'wrong');
+    mcq.dataset.answered = 'true';
+    mcq.dataset.wasCorrect = correct ? 'true' : 'false';
+
+    // If this was a practice MCQ, update the score tracker
+    if (mcq.classList.contains('practice-mcq')) {
+      updatePracticeScore();
+    }
+  }
+});
+
+// Keyboard arrow nav
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const activePanel = document.querySelector('.tab-panel.active');
+  if (!activePanel) return;
+  const currentIdx = TABS.findIndex(t => t.id === activePanel.id);
+  if (e.key === 'ArrowRight' && currentIdx < TABS.length - 1) switchTab(TABS[currentIdx + 1].id);
+  else if (e.key === 'ArrowLeft' && currentIdx > 0) switchTab(TABS[currentIdx - 1].id);
+});
+
+// ============== PRACTICE TEST ==============
+function initPracticeTest() {
+  const resetBtn = document.getElementById('resultsReset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      // Reset all practice MCQs
+      document.querySelectorAll('.practice-mcq').forEach(mcq => {
+        delete mcq.dataset.answered;
+        delete mcq.dataset.wasCorrect;
+        mcq.querySelectorAll('.mcq-option').forEach(opt => {
+          opt.disabled = false;
+          opt.classList.remove('correct', 'wrong');
+        });
+        const fb = mcq.querySelector('.mcq-feedback');
+        fb.classList.remove('show', 'correct', 'wrong');
+      });
+      document.getElementById('resultsSummary').classList.remove('show');
+      updatePracticeScore();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  updatePracticeScore();
+}
+
+function updatePracticeScore() {
+  const all = document.querySelectorAll('.practice-mcq');
+  const total = all.length;
+  const answered = document.querySelectorAll('.practice-mcq[data-answered="true"]').length;
+  const correct = document.querySelectorAll('.practice-mcq[data-was-correct="true"]').length;
+
+  const answeredEl = document.getElementById('answeredCount');
+  const correctEl = document.getElementById('correctCount');
+  const pctEl = document.getElementById('scorePct');
+  const bar = document.getElementById('scoreBar');
+
+  if (!answeredEl) return;
+
+  answeredEl.textContent = `${answered}/${total}`;
+  correctEl.textContent = `${correct}/${total}`;
+
+  if (answered === 0) {
+    pctEl.textContent = '—';
+    pctEl.className = 'score-stat-num';
+  } else {
+    const pct = Math.round((correct / answered) * 100);
+    pctEl.textContent = `${pct}%`;
+    pctEl.className = 'score-stat-num ' + (pct >= 80 ? 'high' : pct >= 60 ? 'mid' : 'low');
+  }
+
+  const barPct = (answered / total) * 100;
+  bar.style.width = barPct + '%';
+  if (answered === total) {
+    const finalPct = Math.round((correct / total) * 100);
+    bar.className = 'score-bar ' + (finalPct >= 80 ? 'high' : finalPct >= 60 ? '' : 'low');
+    showResultsSummary(correct, total);
+  } else {
+    bar.className = 'score-bar';
+  }
+}
+
+function showResultsSummary(correct, total) {
+  const summary = document.getElementById('resultsSummary');
+  const headline = document.getElementById('resultsHeadline');
+  const detail = document.getElementById('resultsDetail');
+  const pct = Math.round((correct / total) * 100);
+
+  let msg, cls;
+  if (pct >= 80) {
+    msg = 'Excellent.';
+    cls = 'high';
+    detail.textContent = `You scored ${correct} out of ${total}. That's exam-ready.`;
+  } else if (pct >= 60) {
+    msg = 'Solid start.';
+    cls = 'mid';
+    detail.textContent = `You scored ${correct} out of ${total}. Review the modules covering the questions you missed, then retake.`;
+  } else {
+    msg = 'Keep studying.';
+    cls = 'low';
+    detail.textContent = `You scored ${correct} out of ${total}. Go back through the lessons and try again, you'll see the same patterns.`;
+  }
+
+  headline.textContent = msg;
+  headline.className = 'results-headline ' + cls;
+  summary.classList.add('show');
+}
+
+// =============== INTERACTIVE DEMOS ===============
+function initInteractiveDemos() {
+  // Comparison toggles
+  document.querySelectorAll('.comparison').forEach(cmp => {
+    const tabs = cmp.querySelectorAll('.cmp-tab');
+    const panels = cmp.querySelectorAll('.cmp-panel');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        panels.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const target = t.dataset.target;
+        cmp.querySelector(`.cmp-panel[data-name="${target}"]`).classList.add('active');
+      });
+    });
+  });
+}
+</script>
+
+</body>
+</html>
