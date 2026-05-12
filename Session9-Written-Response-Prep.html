@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 9: Written Response Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--accent:#e879f9;--accent2:#f0abfc;--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--purple:#a855f7;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px 16px;max-width:860px;margin:0 auto;line-height:1.7}
+h1{font-size:28px;font-weight:800;margin-bottom:4px}
+h2{font-size:22px;font-weight:800;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px;color:var(--accent2)}
+p{margin-bottom:12px;font-size:15px;color:var(--dim)}
+strong{color:var(--text)}
+.tag{display:inline-block;padding:3px 10px;background:rgba(232,121,249,0.12);border:1px solid rgba(232,121,249,0.25);border-radius:16px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px}
+.concept{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.concept h3{margin-top:0}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--accent2)}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;font-size:13px;line-height:1.8;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.key{color:var(--accent);font-weight:600}.val{color:var(--green)}.cmt{color:rgba(255,255,255,0.25);font-style:italic}
+.tip{padding:14px 16px;background:rgba(232,121,249,0.06);border:1px solid rgba(232,121,249,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(240,171,252,0.85)}
+.tip::before{content:'💡 '}
+.trap{padding:14px 16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:10px;margin:14px 0;font-size:14px;color:rgba(252,165,165,0.85)}
+.trap::before{content:'⚠️ '}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0}
+.toc a{display:block;color:var(--accent2);text-decoration:none;padding:4px 0;font-size:14px;font-weight:500}
+.toc a:hover{color:var(--accent)}
+.exam-box{background:rgba(232,121,249,0.04);border:2px solid rgba(232,121,249,0.15);border-radius:14px;padding:24px;margin:20px 0}
+.exam-box h3{color:var(--accent);margin-top:0}
+.points{display:inline-block;padding:2px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);border-radius:6px;font-size:11px;font-weight:700;color:var(--green);margin-left:8px}
+.prompt-box{background:rgba(255,255,255,0.04);border:1px solid rgba(232,121,249,0.2);border-radius:10px;padding:16px;margin:14px 0}
+.prompt-label{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.prompt-text{font-size:14px;color:var(--text);line-height:1.7}
+.code-ref{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+.code-ref h4{font-size:13px;color:var(--orange);margin-bottom:8px}
+.code-ref pre{margin:0;font-size:12px;line-height:1.7}
+.practice-zone{background:rgba(168,85,247,0.04);border:2px solid rgba(168,85,247,0.15);border-radius:14px;padding:24px;margin:20px 0}
+.practice-zone h3{color:var(--purple);margin-top:0}
+.write-area{width:100%;min-height:120px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;resize:vertical;margin:10px 0}
+.write-area:focus{outline:none;border-color:rgba(232,121,249,0.4)}
+.write-area::placeholder{color:rgba(255,255,255,0.2)}
+.reveal-btn{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:rgba(192,132,252,0.9);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.reveal-btn.on{background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--dim)}
+.model-answer{display:none;margin-top:14px;padding:18px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.12);border-radius:10px}
+.model-answer.show{display:block}
+.model-answer h4{font-size:13px;color:var(--green);margin-bottom:8px}
+.model-answer p{font-size:14px;color:rgba(134,239,172,0.9);margin-bottom:8px;line-height:1.7}
+.model-answer .why{font-size:12px;color:rgba(134,239,172,0.6);font-style:italic;margin-top:10px;padding-top:10px;border-top:1px solid rgba(34,197,94,0.1)}
+.score-card{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;margin:4px 4px 4px 0}
+.sc-easy{background:rgba(34,197,94,0.1);color:var(--green)}
+.sc-hard{background:rgba(239,68,68,0.1);color:var(--red)}
+.sc-med{background:rgba(245,158,11,0.1);color:var(--orange)}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:999;transition:width 0.2s}
+.divider{height:2px;background:linear-gradient(90deg,transparent,rgba(232,121,249,0.3),transparent);margin:40px 0;border:none}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="tag">Session 9 / Written Response Prep</div>
+<h1>Written Response: Your Code, Your Words</h1>
+<p>This is worth <strong>30% of your total exam score</strong>. You answer 4 prompts about YOUR OWN code in 60 minutes. If you prepare, these are the easiest points on the entire exam.</p>
+
+<div class="toc">
+<strong style="font-size:14px;display:block;margin-bottom:8px">In this session:</strong>
+<a href="#how">1. How It Works on Exam Day</a>
+<a href="#ppr">2. Your PPR Code (Pull It Up Now)</a>
+<a href="#prompts">3. The 4 Prompts Explained</a>
+<a href="#p1">4. Practice: Written Response 1 (Purpose)</a>
+<a href="#p2a">5. Practice: Written Response 2(a) (Algorithm)</a>
+<a href="#p2b">6. Practice: Written Response 2(b) (Testing)</a>
+<a href="#p2c">7. Practice: Written Response 2(c) (Abstraction)</a>
+<a href="#mistakes">8. Top Mistakes to Avoid</a>
+</div>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<h2 id="how">1. How It Works on Exam Day</h2>
+
+<div class="concept">
+<h3>The Setup</h3>
+<pre><span class="val">STEP 1:</span> You finish the 70 MCQ (Section I, 120 min)
+
+<span class="val">STEP 2:</span> You move to Section II (60 minutes)
+
+<span class="val">STEP 3:</span> Your PPR code screenshots appear on screen
+         (the exact screenshots you submitted to AP Digital Portfolio)
+
+<span class="val">STEP 4:</span> You see 2 questions with 4 total prompts:
+         - Written Response 1 (1 point)
+         - Written Response 2(a) (1 point)
+         - Written Response 2(b) (1 point)
+         - Written Response 2(c) (1 point)
+         PLUS: Video point (1 pt) and Program Requirements (1 pt)
+         = 6 points total for the Create Task
+
+<span class="val">STEP 5:</span> You TYPE your answers into text boxes in Bluebook.
+         No handwriting. No coding. Just explaining your code
+         in plain English.</pre>
+</div>
+
+<div class="concept">
+<h3>Scoring Breakdown</h3>
+<pre>The Written Response is 4 of the 6 Create Task points.
+Each prompt = 1 point. You either get it or you don't.
+
+<span class="key">2025 stats (how hard each prompt was):</span>
+  Written Response 1 (Purpose):       <span class="val">78-84% earned it</span> ← easiest
+  Written Response 2(a) (Algorithm):  <span class="key">43-45% earned it</span> ← hardest
+  Written Response 2(b) (Testing):    <span class="val">57-62% earned it</span>
+  Written Response 2(c) (Abstraction):<span class="key">40-57% earned it</span> ← hardest
+
+<span class="val">What this means:</span>
+  Prompt 1 is free if you prepare.
+  Prompts 2(a) and 2(c) are where most students fail.
+  That's where we'll spend the most time today.</pre>
+</div>
+
+<div class="tip"><strong>Time management:</strong> You have 60 minutes for 4 prompts. That's about 15 minutes each. Written Response 1 should take less than 10 minutes if you've practiced, leaving extra time for the harder prompts.</div>
+
+<!-- ==================== PPR ==================== -->
+<h2 id="ppr">2. Your PPR Code</h2>
+<p><strong>Pull up your PPR screenshots now.</strong> You should have 4 screenshots submitted: two for the Procedure segment and two for the List segment. Let's identify what's in each.</p>
+
+<div class="code-ref">
+<h4>PPR Procedure Segment 1: Your Student-Developed Procedure</h4>
+<pre>def <span class="key">process_and_display_tasks</span>(<span class="val">tasks</span>, <span class="val">current_day</span>):
+    tasks.sort()                    <span class="cmt">← SEQUENCING</span>
+    y_position = 150
+
+    <span class="key">for</span> item in tasks:              <span class="cmt">← ITERATION</span>
+        year, month, day, task_name = item
+        display_string = str(year)+"/"+str(month)+"/"+str(day)+" - "+task_name
+        task_display = Text(display_string)
+        task_display.set_position(70, y_position)
+
+        is_correct_time = (year == today_year and month == today_month)
+        days_left = day - current_day
+
+        <span class="key">if</span> is_correct_time and 0 <= days_left <= 3:  <span class="cmt">← SELECTION</span>
+            task_display.set_color("#F54927")    <span class="cmt">← urgent (red)</span>
+        <span class="key">else</span>:
+            task_display.set_color("#00334d")    <span class="cmt">← not urgent (blue)</span>
+
+        task_display.set_font("11pt Monospace")
+        add(task_display)
+        y_position += 35</pre>
+</div>
+
+<div class="code-ref">
+<h4>PPR Procedure Segment 2: Where It's Called</h4>
+<pre><span class="cmt">← Inside the callback function, after collecting tasks:</span>
+process_and_display_tasks(<span class="val">homework_list</span>, <span class="val">today_day</span>)</pre>
+</div>
+
+<div class="code-ref">
+<h4>PPR List Segment 1: How Data Is Stored in the List</h4>
+<pre>homework_list = []
+
+while add_more == "yes":
+    due_year = int(input("Enter the due year (YYYY): "))
+    due_month = int(input("Enter the due month (1-12): "))
+    due_day = int(input("Enter the due day (1-31): "))
+    task_description = input("What is the homework task? ")
+
+    homework_list.append((due_year, due_month, due_day, task_description))</pre>
+</div>
+
+<div class="code-ref">
+<h4>PPR List Segment 2: How Data in the List Is Used</h4>
+<pre>def process_and_display_tasks(tasks, current_day):
+    tasks.sort()
+    y_position = 150
+
+    for item in tasks:
+        year, month, day, task_name = item
+        display_string = str(year)+"/"+str(month)+"/"+str(day)+" - "+task_name
+        <span class="cmt">... (sorts, unpacks, formats, and displays each task)</span></pre>
+</div>
+
+<div class="tip"><strong>Know these code segments cold.</strong> You won't need to write code on the exam, but you need to explain every line's PURPOSE. If someone pointed to any line and asked "what does this do and why?", you should be able to answer instantly.</div>
+
+<!-- ==================== THE 4 PROMPTS ==================== -->
+<h2 id="prompts">3. The 4 Prompts Explained</h2>
+<p>The exact wording changes each year, but the categories are always the same. Here's what each one is really asking.</p>
+
+<div class="exam-box">
+<h3>Written Response 1: Program Design, Function & Purpose <span class="points">1 PT</span></h3>
+<span class="score-card sc-easy">78-84% earned this in 2025</span>
+<p>This asks about the BIG PICTURE of your program. Not how the code works, but WHY it exists and WHO it helps.</p>
+<div class="prompt-box">
+<div class="prompt-label">What They're Really Asking</div>
+<div class="prompt-text">Describe your program's <strong>purpose</strong> (what problem does it solve?), the <strong>functionality</strong> (what does it do?), and the <strong>input/output</strong> (what goes in and what comes out?).</div>
+</div>
+<pre><span class="key">Purpose</span> = the problem it solves (helping students organize homework)
+<span class="key">Function</span> = what it actually does (collects tasks, sorts by date, shows them)
+<span class="key">Input</span>   = what the user provides (task names, due dates, today's date)
+<span class="key">Output</span>  = what the user sees (sorted list with urgent items in red)</pre>
+</div>
+
+<div class="exam-box">
+<h3>Written Response 2(a): Algorithm Development <span class="points">1 PT</span></h3>
+<span class="score-card sc-hard">43-45% earned this in 2025</span>
+<p>This asks you to WALK THROUGH your procedure's algorithm, identifying <strong>sequencing, selection, and iteration</strong> and explaining how they work TOGETHER.</p>
+<div class="prompt-box">
+<div class="prompt-label">What They're Really Asking</div>
+<div class="prompt-text">Using your procedure code, explain the algorithm. Point to specific lines that show sequencing, selection, and iteration. Explain what each part DOES and how it contributes to the procedure's overall functionality.</div>
+</div>
+<div class="trap"><strong>#1 reason students lose this point:</strong> Just listing "my code has sequencing, selection, and iteration" WITHOUT walking through how each one works in the code. You must explain the MECHANICS, not just name the concepts.</div>
+</div>
+
+<div class="exam-box">
+<h3>Written Response 2(b): Errors and Testing <span class="points">1 PT</span></h3>
+<span class="score-card sc-med">57-62% earned this in 2025</span>
+<p>This asks about how you tested your code OR asks you to identify/describe errors. You need SPECIFIC test cases with ACTUAL VALUES.</p>
+<div class="prompt-box">
+<div class="prompt-label">What They're Really Asking</div>
+<div class="prompt-text">Describe two calls to your procedure with <strong>different arguments</strong> that test different behavior. For each call, state the <strong>specific argument values</strong> and the <strong>expected result</strong>.</div>
+</div>
+<div class="trap"><strong>#1 reason students lose this point:</strong> Writing vague answers like "I tested with different inputs and it worked." You MUST give exact values and exact expected results.</div>
+</div>
+
+<div class="exam-box">
+<h3>Written Response 2(c): Data & Procedural Abstraction <span class="points">1 PT</span></h3>
+<span class="score-card sc-hard">40-57% earned this in 2025</span>
+<p>This asks how your <strong>list manages complexity</strong> and/or how your <strong>procedure provides abstraction</strong>. The key phrase is "manages complexity."</p>
+<div class="prompt-box">
+<div class="prompt-label">What They're Really Asking</div>
+<div class="prompt-text">Explain how the list stores data AND how it's used. Then explain what your code would look like WITHOUT the list and why that would be worse. This is the "manages complexity" argument.</div>
+</div>
+<div class="trap"><strong>#1 reason students lose this point:</strong> Explaining WHAT the list stores but NOT explaining HOW it manages complexity. You need the comparison: "Without the list, I would need..." to earn the point.</div>
+</div>
+
+<hr class="divider">
+
+<!-- ==================== PRACTICE 1 ==================== -->
+<h2 id="p1">4. Practice: Written Response 1</h2>
+<div class="practice-zone">
+<h3>Write Your Response (Purpose, Function, Input/Output)</h3>
+<p style="color:var(--dim);font-size:14px">Prompt: Describe the overall purpose of your program, what problem it solves, and identify the program's input(s) and output(s).</p>
+<p style="color:var(--purple);font-size:13px;font-weight:600">Write your answer first, THEN reveal the model answer to compare.</p>
+<textarea class="write-area" placeholder="Type your response here. Describe the purpose, what the program does, and its inputs and outputs..."></textarea>
+<button class="reveal-btn" onclick="toggleModel(this)">Show Model Answer</button>
+<div class="model-answer">
+<h4>Model Answer (Full Credit)</h4>
+<p>My program is a Homework Planner designed to help students organize and keep track of their assignments. The purpose is to solve the problem of students forgetting or missing homework deadlines by providing a visual, sorted display of upcoming tasks with urgency indicators.</p>
+<p>The program takes several inputs from the user: their name, the current date (day, month, year), and for each homework task, the due date (year, month, day) and a description of the assignment. Users can add as many tasks as they want through a loop that asks if they want to add another.</p>
+<p>The program outputs a sorted homework planner displayed on a graphical canvas. Tasks are sorted chronologically by due date. Tasks that are due within 3 days of the current date are displayed in red to indicate urgency, while other tasks are displayed in dark blue. This visual distinction helps students quickly identify which assignments need immediate attention.</p>
+<div class="why">WHY THIS EARNS THE POINT: It clearly states the purpose (organizing homework, preventing missed deadlines), identifies specific inputs (name, date, task details) and outputs (sorted color-coded list), and explains the functionality (sorting, urgency coloring). It goes beyond just describing what the code does and explains the real-world problem it solves.</div>
+</div>
+</div>
+
+<!-- ==================== PRACTICE 2a ==================== -->
+<h2 id="p2a">5. Practice: Written Response 2(a)</h2>
+<div class="practice-zone">
+<h3>Write Your Response (Algorithm: Sequencing, Selection, Iteration)</h3>
+<p style="color:var(--dim);font-size:14px">Prompt: Refer to your Personalized Project Reference. Describe the algorithm implemented in your procedure. Identify where sequencing, selection, and iteration are used and explain how they work together to achieve the procedure's functionality.</p>
+<p style="color:var(--purple);font-size:13px;font-weight:600">Refer to your procedure screenshot. Write your answer first, THEN reveal.</p>
+<textarea class="write-area" placeholder="Walk through your procedure step by step. Point out where sequencing, selection, and iteration happen and explain what each part does..."></textarea>
+<button class="reveal-btn" onclick="toggleModel(this)">Show Model Answer</button>
+<div class="model-answer">
+<h4>Model Answer (Full Credit)</h4>
+<p>My procedure <code>process_and_display_tasks(tasks, current_day)</code> implements an algorithm that sorts homework tasks and displays them with urgency-based color coding.</p>
+<p><strong>Sequencing</strong> is used at the beginning of the procedure where <code>tasks.sort()</code> sorts the entire list chronologically, and then <code>y_position = 150</code> initializes the vertical position for displaying tasks on the canvas. These steps must happen in this order because the list must be sorted before it is displayed.</p>
+<p><strong>Iteration</strong> is used with the <code>for item in tasks</code> loop, which processes every task in the list one at a time. For each task, it unpacks the year, month, day, and task name from the tuple, builds a display string, and positions it on the canvas. The loop also increments <code>y_position</code> by 35 each time so tasks appear stacked vertically.</p>
+<p><strong>Selection</strong> is used inside the loop with the <code>if/else</code> statement. It checks whether the task is due within the current month and within 3 days of the current date using <code>is_correct_time and 0 <= days_left <= 3</code>. If true, the task is displayed in red to show urgency. Otherwise, it is displayed in dark blue. This creates two different code paths depending on the due date.</p>
+<p>These three work together: sequencing sets up the sorted data, iteration processes each task, and selection determines the color for each individual task within that loop.</p>
+<div class="why">WHY THIS EARNS THE POINT: It doesn't just list the three concepts, it walks through each one with specific code references (tasks.sort(), for item in tasks, if/else), explains what each part DOES, and ties them together with a closing sentence about how they work as a system. This is what the 55% of students who lost this point in 2025 failed to do.</div>
+</div>
+</div>
+
+<!-- ==================== PRACTICE 2b ==================== -->
+<h2 id="p2b">6. Practice: Written Response 2(b)</h2>
+<div class="practice-zone">
+<h3>Write Your Response (Testing with Specific Values)</h3>
+<p style="color:var(--dim);font-size:14px">Prompt: Describe two calls to your procedure with different arguments that produce different results. For each call, describe the arguments used and the expected result.</p>
+<p style="color:var(--purple);font-size:13px;font-weight:600">Give SPECIFIC values for each test. Write your answer first, THEN reveal.</p>
+<textarea class="write-area" placeholder="Describe two specific test cases with exact argument values and expected results..."></textarea>
+<button class="reveal-btn" onclick="toggleModel(this)">Show Model Answer</button>
+<div class="model-answer">
+<h4>Model Answer (Full Credit)</h4>
+<p><strong>Test Call 1 (Urgent task):</strong> I call <code>process_and_display_tasks([(2026, 5, 15, "Math HW")], 13)</code> where the tasks list contains one task due May 15, 2026, and current_day is 13. Since today_month matches the task's month and <code>days_left = 15 - 13 = 2</code>, which is between 0 and 3, the condition <code>is_correct_time and 0 <= days_left <= 3</code> is true. The expected result is that "2026/5/15 - Math HW" is displayed in red (#F54927), indicating it is urgent.</p>
+<p><strong>Test Call 2 (Non-urgent task):</strong> I call <code>process_and_display_tasks([(2026, 6, 20, "Science Project")], 13)</code> where the tasks list contains one task due June 20, 2026, and current_day is 13. Since the task's month (6) does not match today_month (5), <code>is_correct_time</code> is false. The condition fails, so the else branch runs. The expected result is that "2026/6/20 - Science Project" is displayed in dark blue (#00334d), indicating it is not urgent.</p>
+<div class="why">WHY THIS EARNS THE POINT: Each test has SPECIFIC argument values (exact list contents, exact current_day), traces the logic (which condition is true/false and why), and states the SPECIFIC expected output (text displayed in which color). Compare this to a weak answer: "I tested with an urgent task and a non-urgent task and both worked correctly." That vague answer earns 0 points.</div>
+</div>
+</div>
+
+<!-- ==================== PRACTICE 2c ==================== -->
+<h2 id="p2c">7. Practice: Written Response 2(c)</h2>
+<div class="practice-zone">
+<h3>Write Your Response (List Manages Complexity / Abstraction)</h3>
+<p style="color:var(--dim);font-size:14px">Prompt: Refer to your Personalized Project Reference. Explain how the list in your code manages complexity in your program. Explain what your program would look like without the list and why that would be more complex.</p>
+<p style="color:var(--purple);font-size:13px;font-weight:600">Explain what the list stores, how it's used, and what you'd need WITHOUT it. Write first, THEN reveal.</p>
+<textarea class="write-area" placeholder="Explain how homework_list manages complexity. What would you need without it?..."></textarea>
+<button class="reveal-btn" onclick="toggleModel(this)">Show Model Answer</button>
+<div class="model-answer">
+<h4>Model Answer (Full Credit)</h4>
+<p>My program uses <code>homework_list</code>, a list that stores tuples of (due_year, due_month, due_day, task_description) for every homework assignment the user enters. The list manages complexity because it allows the program to handle any number of tasks using the same code.</p>
+<p>In the storage segment, a while loop appends each new task as a tuple to <code>homework_list</code>. In the usage segment, <code>process_and_display_tasks</code> iterates over the entire list with a for loop, unpacking each tuple to build the display string and check urgency for every task.</p>
+<p>Without the list, I would need separate variables for each task, like <code>task1_year</code>, <code>task1_month</code>, <code>task1_day</code>, <code>task1_name</code>, then <code>task2_year</code>, <code>task2_month</code>, <code>task2_day</code>, <code>task2_name</code>, and so on. I would also need to duplicate the sorting and display code for each individual task. If a student had 10 homework assignments, I would need 40 separate variables and 10 copies of the display logic. The program would be unable to handle a flexible number of tasks because the number of variables would be fixed at the time the code was written. The list solves this by storing all tasks in one structure that grows dynamically and can be processed with a single loop.</p>
+<div class="why">WHY THIS EARNS THE POINT: It explains what's stored (tuples with date + description), how it's used (iteration, unpacking, sorting), and critically, what the code would look like WITHOUT the list (40 separate variables for 10 tasks, duplicated logic, fixed capacity). That "without the list" comparison is what most students forget, and it's what the rubric means by "manages complexity."</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ==================== MISTAKES ==================== -->
+<h2 id="mistakes">8. Top Mistakes to Avoid</h2>
+
+<div class="concept">
+<h3>From the College Board Chief Reader Reports</h3>
+<pre><span class="key">MISTAKE 1: Naming without explaining</span>
+  ❌ "My procedure uses sequencing, selection, and iteration."
+  ✅ Walk through EACH one with specific code references.
+
+<span class="key">MISTAKE 2: Vague testing</span>
+  ❌ "I tested with different inputs and it worked."
+  ✅ "I called process_and_display_tasks with [(2026,5,15,'Math')], 13
+      and the task displayed in red because days_left = 2."
+
+<span class="key">MISTAKE 3: Describing the list without the "manages complexity" argument</span>
+  ❌ "My list stores homework tasks as tuples."
+  ✅ "Without the list, I would need 40 separate variables for 10 tasks
+      and duplicate display code for each one. The list lets me handle
+      any number of tasks with one loop."
+
+<span class="key">MISTAKE 4: Confusing purpose and function</span>
+  ❌ Purpose: "My program sorts a list and displays text."
+  ✅ Purpose: "My program helps students organize homework so they
+      don't miss deadlines."
+  (Purpose = WHY it exists. Function = WHAT it does technically.)
+
+<span class="key">MISTAKE 5: Not referencing your actual code</span>
+  ❌ Generic answers that could apply to any program.
+  ✅ Reference YOUR variables (homework_list, tasks, current_day),
+      YOUR functions (process_and_display_tasks), and YOUR logic
+      (the urgency color check).</pre>
+</div>
+
+<div class="tip"><strong>Final tip:</strong> Your answers don't need to be long. They need to be SPECIFIC. A 4-sentence answer that names exact variables, exact values, and exact behavior beats a 10-sentence vague paragraph every time. Quality of detail, not quantity of words.</div>
+
+<div class="concept">
+<h3>60-Second Exam Day Checklist</h3>
+<pre>Before submitting each response, ask yourself:
+
+☐ Did I reference MY specific code (variable names, line behavior)?
+☐ For 2(a): Did I EXPLAIN (not just name) sequencing, selection, iteration?
+☐ For 2(b): Did I give EXACT argument values and EXACT expected results?
+☐ For 2(c): Did I explain what the code would look like WITHOUT the list?
+☐ Did I distinguish purpose (WHY) from function (WHAT)?
+
+If you can check all boxes, you're earning the points.</pre>
+</div>
+
+<script>
+function toggleModel(btn){const m=btn.nextElementSibling;const s=m.classList.contains('show');m.classList.toggle('show');btn.textContent=s?'Show Model Answer':'Hide Model Answer';btn.classList.toggle('on',!s);}
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('prog').style.width=(window.scrollY/h*100)+'%';});
+</script>
+</body>
+</html>

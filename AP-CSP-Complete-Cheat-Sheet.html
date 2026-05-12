@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP CSP Complete Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0e;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);--text:#e2e2e8;--dim:rgba(255,255,255,0.4);--green:#22c55e;--red:#ef4444;--orange:#f97316;--blue:#3b82f6;--purple:#a855f7;--pink:#e879f9;--amber:#f59e0b;--emerald:#10b981;--code-bg:rgba(255,255,255,0.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6}
+.header{padding:20px 16px 0;max-width:900px;margin:0 auto}
+.header h1{font-size:24px;font-weight:800}
+.header p{font-size:13px;color:var(--dim);margin-top:4px}
+.tabs{display:flex;gap:0;overflow-x:auto;border-bottom:1px solid var(--border);padding:16px 16px 0;max-width:900px;margin:0 auto;-webkit-overflow-scrolling:touch}
+.tab{padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:none;color:var(--dim);white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.tab:hover{color:var(--text)}
+.tab.active{border-bottom-color:var(--accent-color);color:var(--accent-color)}
+.tab[data-tab="bi3"]{--accent-color:var(--orange)}.tab[data-tab="bi2"]{--accent-color:var(--blue)}.tab[data-tab="bi5"]{--accent-color:var(--emerald)}.tab[data-tab="bi4"]{--accent-color:var(--amber)}.tab[data-tab="bi1"]{--accent-color:var(--purple)}.tab[data-tab="wr"]{--accent-color:var(--pink)}
+.panel{display:none;padding:20px 16px 60px;max-width:900px;margin:0 auto}
+.panel.active{display:block}
+.section{margin-bottom:24px}
+.section h2{font-size:18px;font-weight:800;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.section h3{font-size:14px;font-weight:700;margin:16px 0 6px}
+.row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.02);font-size:13px}
+.row:last-child{border:none}
+.rl{min-width:140px;color:var(--orange);font-weight:600;font-family:'Fira Code',monospace;font-size:12px;flex-shrink:0}
+.rv{color:var(--dim);flex:1}
+pre{font-family:'Fira Code',monospace;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0;font-size:12px;line-height:1.7;color:#d4d4d8;overflow-x:auto;white-space:pre-wrap}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin:10px 0}
+.card h3{margin-top:0;font-size:14px}
+.vs{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.vs th{padding:6px 8px;text-align:center;font-weight:700;border:1px solid var(--border);font-size:11px}
+.vs td{padding:6px 8px;text-align:center;border:1px solid rgba(255,255,255,0.03);color:var(--dim);font-size:12px}
+.vs td:first-child{text-align:left;color:var(--text);font-weight:600}
+.trap{padding:10px 12px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.1);border-radius:8px;margin:8px 0;font-size:12px;color:rgba(252,165,165,0.8)}
+.trap::before{content:'⚠️ '}
+.tip{padding:10px 12px;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.1);border-radius:8px;margin:8px 0;font-size:12px;color:rgba(147,197,253,0.8)}
+.tip::before{content:'💡 '}
+.bi3 h2{color:var(--orange)}.bi2 h2{color:var(--blue)}.bi5 h2{color:var(--emerald)}.bi4 h2{color:var(--amber)}.bi1 h2{color:var(--purple)}.wr h2{color:var(--pink)}
+.bi3 .rl{color:var(--orange)}.bi2 .rl{color:var(--blue)}.bi5 .rl{color:var(--emerald)}.bi4 .rl{color:var(--amber)}.bi1 .rl{color:var(--purple)}.wr .rl{color:var(--pink)}
+.bi3 .vs th{background:rgba(249,115,22,0.08);color:var(--orange)}.bi2 .vs th{background:rgba(59,130,246,0.08);color:var(--blue)}.bi5 .vs th{background:rgba(16,185,129,0.08);color:var(--emerald)}.bi4 .vs th{background:rgba(245,158,11,0.08);color:var(--amber)}.bi1 .vs th{background:rgba(168,85,247,0.08);color:var(--purple)}
+code{font-family:'Fira Code',monospace;background:var(--code-bg);padding:1px 4px;border-radius:3px;font-size:12px}
+.pct{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:6px}
+.pct-high{background:rgba(249,115,22,0.12);color:var(--orange)}
+.pct-med{background:rgba(59,130,246,0.12);color:var(--blue)}
+.pct-low{background:rgba(168,85,247,0.12);color:var(--purple)}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>AP CSP Complete Cheat Sheet</h1>
+<p>All 5 Big Ideas + Written Response. Tap a tab to jump to that section. Study this before the exam.</p>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-tab="bi3" onclick="switchTab('bi3')">BI3: Algorithms <span class="pct pct-high">30-35%</span></button>
+<button class="tab" data-tab="bi2" onclick="switchTab('bi2')">BI2: Data <span class="pct pct-med">17-22%</span></button>
+<button class="tab" data-tab="bi5" onclick="switchTab('bi5')">BI5: Impact <span class="pct pct-med">21-26%</span></button>
+<button class="tab" data-tab="bi4" onclick="switchTab('bi4')">BI4: Networks <span class="pct pct-low">11-15%</span></button>
+<button class="tab" data-tab="bi1" onclick="switchTab('bi1')">BI1: Creative Dev <span class="pct pct-low">10-13%</span></button>
+<button class="tab" data-tab="wr" onclick="switchTab('wr')">Written Response</button>
+</div>
+
+<!-- ==================== BI3 ==================== -->
+<div class="panel active bi3" id="bi3">
+<div class="section"><h2>Variables, Math & Strings</h2>
+<div class="row"><span class="rl">a ← 5</span><span class="rv">Assignment. Arrow, not equals sign.</span></div>
+<div class="row"><span class="rl">a ← a + 1</span><span class="rv">Increment. Right side evaluates first, then assigns.</span></div>
+<div class="row"><span class="rl">+ - * /</span><span class="rv">Standard math. Division gives decimals (7/2 = 3.5).</span></div>
+<div class="row"><span class="rl">a MOD b</span><span class="rv">Remainder. 17 MOD 5 = 2. Even check: n MOD 2 = 0.</span></div>
+<div class="row"><span class="rl">"3" + "5"</span><span class="rv">String concatenation = "35" (NOT 8). Quotes = strings.</span></div>
+<div class="row"><span class="rl">Swap a, b</span><span class="rv">Need temp: temp←a, a←b, b←temp. Three steps.</span></div>
+</div>
+
+<div class="section"><h2>Booleans & Logic</h2>
+<div class="row"><span class="rl">= ≠ > < ≥ ≤</span><span class="rv">Comparison. = checks equality (not assignment).</span></div>
+<div class="row"><span class="rl">AND</span><span class="rv">Both true → true. Anything else → false.</span></div>
+<div class="row"><span class="rl">OR</span><span class="rv">At least one true → true. Both false → false.</span></div>
+<div class="row"><span class="rl">NOT</span><span class="rv">Flips. NOT true = false.</span></div>
+<div class="row"><span class="rl">De Morgan's</span><span class="rv">NOT(A AND B) = NOT A OR NOT B. NOT(A OR B) = NOT A AND NOT B.</span></div>
+<div class="trap">Separate IFs vs IF/ELSE: Two IFs both execute independently. IF/ELSE stops at first match. The exam tests this with a first IF that changes a variable, making the second IF see the new value.</div>
+</div>
+
+<div class="section"><h2>Loops</h2>
+<div class="row"><span class="rl">REPEAT n TIMES</span><span class="rv">Fixed count. No counter variable. Runs exactly n times.</span></div>
+<div class="row"><span class="rl">REPEAT UNTIL(cond)</span><span class="rv">Checks BEFORE each run. Stops when condition becomes true.</span></div>
+<div class="row"><span class="rl">FOR EACH x IN list</span><span class="rv">x = the VALUE, not index. Use for reading, not modifying.</span></div>
+<div class="trap">REPEAT UNTIL checks before running. If already true, body never executes. If variable never changes inside, infinite loop.</div>
+<div class="tip">Trace every loop with a table: columns for variables, rows for iterations. Fastest way to avoid mistakes.</div>
+</div>
+
+<div class="section"><h2>Lists (1-Based!)</h2>
+<div class="row"><span class="rl">list[i]</span><span class="rv">Access element at index i. FIRST element = index 1, NOT 0.</span></div>
+<div class="row"><span class="rl">LENGTH(list)</span><span class="rv">Number of elements. Last element at list[LENGTH(list)].</span></div>
+<div class="row"><span class="rl">APPEND(list, val)</span><span class="rv">Add to END. List grows by 1.</span></div>
+<div class="row"><span class="rl">INSERT(list, i, val)</span><span class="rv">Insert at i. Everything at i and after shifts RIGHT.</span></div>
+<div class="row"><span class="rl">REMOVE(list, i)</span><span class="rv">Delete at i. Everything after shifts LEFT.</span></div>
+<div class="row"><span class="rl">b ← a (lists)</span><span class="rv">Creates a COPY. Modifying b does NOT affect a.</span></div>
+<div class="trap">Index shift after REMOVE is the #1 list trap. After removing index 2, old index 3 becomes new index 2.</div>
+</div>
+
+<div class="section"><h2>5 Core Patterns</h2>
+<div class="row"><span class="rl">Sum</span><span class="rv">sum←0, FOR EACH: sum←sum+n</span></div>
+<div class="row"><span class="rl">Count</span><span class="rv">count←0, FOR EACH: IF(cond) count←count+1</span></div>
+<div class="row"><span class="rl">Max</span><span class="rv">max←list[1], FOR EACH: IF(n>max) max←n</span></div>
+<div class="row"><span class="rl">Min</span><span class="rv">min←list[1], FOR EACH: IF(n<min) min←n</span></div>
+<div class="row"><span class="rl">Filter</span><span class="rv">result←[], FOR EACH: IF(cond) APPEND(result,n)</span></div>
+<div class="trap">Don't initialize max/min to 0. If all values are negative, max stays 0 (wrong). Use list[1].</div>
+</div>
+
+<div class="section"><h2>Procedures & RETURN</h2>
+<div class="row"><span class="rl">PROCEDURE f(x)</span><span class="rv">Define. x = parameter (local). Called with f(5), 5 = argument.</span></div>
+<div class="row"><span class="rl">RETURN(val)</span><span class="rv">Sends val back. Exits IMMEDIATELY. Code after = dead.</span></div>
+<div class="row"><span class="rl">DISPLAY vs RETURN</span><span class="rv">DISPLAY prints to screen, returns nothing. RETURN sends back, prints nothing.</span></div>
+<div class="row"><span class="rl">Abstraction</span><span class="rv">Use procedure by name/params/return only. Don't need internals.</span></div>
+<div class="row"><span class="rl">Library / API</span><span class="rv">Pre-built procedures. Use without knowing how they work.</span></div>
+</div>
+
+<div class="section"><h2>Search & Efficiency</h2>
+<table class="vs">
+<tr><th></th><th>Linear Search</th><th>Binary Search</th></tr>
+<tr><td>Unsorted list?</td><td style="color:var(--green)">Yes</td><td style="color:var(--red)">No, must be sorted</td></tr>
+<tr><td>Worst case</td><td>n checks</td><td>log₂(n) checks</td></tr>
+<tr><td>n = 1,000,000</td><td>1,000,000</td><td>~20</td></tr>
+</table>
+<div class="row"><span class="rl">Reasonable</span><span class="rv">n, n², n³, n log n = polynomial. Finishable.</span></div>
+<div class="row"><span class="rl">Unreasonable</span><span class="rv">2ⁿ, n! = exponential/factorial. Explodes.</span></div>
+<div class="row"><span class="rl">Doubles input →</span><span class="rv">Runtime doubles = n. Quadruples = n². Explodes = 2ⁿ.</span></div>
+<div class="row"><span class="rl">Heuristic</span><span class="rv">Good-enough answer in reasonable time. Not guaranteed optimal.</span></div>
+</div>
+
+<div class="section"><h2>Random, Simulations, Undecidable</h2>
+<div class="row"><span class="rl">RANDOM(a, b)</span><span class="rv">Random integer a to b INCLUSIVE. Count = b-a+1.</span></div>
+<div class="row"><span class="rl">Simulations</span><span class="rv">Model real-world. Cheaper, safer, faster, repeatable. NOT exact.</span></div>
+<div class="row"><span class="rl">Limitation</span><span class="rv">Simplifies reality. Different runs → different results.</span></div>
+<div class="row"><span class="rl">Undecidable</span><span class="rv">No algorithm solves it for ALL inputs. Proven impossible.</span></div>
+<div class="row"><span class="rl">Halting Problem</span><span class="rv">"Will program P halt on input X?" Cannot be answered in general.</span></div>
+</div>
+</div>
+
+<!-- ==================== BI2 ==================== -->
+<div class="panel bi2" id="bi2">
+<div class="section"><h2>Binary & Number Systems</h2>
+<div class="row"><span class="rl">Place values</span><span class="rv">...128, 64, 32, 16, 8, 4, 2, 1 (right to left, each double)</span></div>
+<div class="row"><span class="rl">Binary → Decimal</span><span class="rv">Add place values where bit = 1. E.g., 1011 = 8+2+1 = 11</span></div>
+<div class="row"><span class="rl">Decimal → Binary</span><span class="rv">Subtract largest power of 2 that fits, repeat. Mark those positions as 1.</span></div>
+<div class="row"><span class="rl">n bits → values</span><span class="rv">2ⁿ values. Range: 0 to 2ⁿ-1. E.g., 8 bits = 256 values (0-255).</span></div>
+<div class="row"><span class="rl">Need N values?</span><span class="rv">Find smallest n where 2ⁿ ≥ N. E.g., 1000 values → 10 bits (1024).</span></div>
+<div class="row"><span class="rl">+1 bit</span><span class="rv">DOUBLES the number of representable values.</span></div>
+</div>
+
+<div class="section"><h2>Overflow & Roundoff</h2>
+<div class="row"><span class="rl">Overflow</span><span class="rv">Number too LARGE for available bits. 256 in 8-bit (max 255) = overflow.</span></div>
+<div class="row"><span class="rl">Roundoff</span><span class="rv">Some decimals infinite in binary. 0.1+0.2 = 0.30000000004. Tiny imprecision.</span></div>
+<div class="trap">Overflow = too big. Roundoff = imprecise decimal. Know the difference.</div>
+</div>
+
+<div class="section"><h2>Analog vs Digital</h2>
+<div class="row"><span class="rl">Analog</span><span class="rv">Continuous. Infinite values. Sound waves, temperature.</span></div>
+<div class="row"><span class="rl">Digital</span><span class="rv">Discrete. Finite values. MP3, JPEG, text files.</span></div>
+<div class="row"><span class="rl">Sampling rate</span><span class="rv">How often you sample. Higher = better quality = larger file.</span></div>
+<div class="row"><span class="rl">Bit depth</span><span class="rv">Bits per sample. More bits = more precise = larger file.</span></div>
+<div class="tip">Higher quality ALWAYS means larger file. This trade-off is tested constantly.</div>
+</div>
+
+<div class="section"><h2>Compression</h2>
+<table class="vs">
+<tr><th></th><th>Lossless</th><th>Lossy</th></tr>
+<tr><td>Data preserved?</td><td style="color:var(--green)">100%</td><td style="color:var(--red)">Some permanently lost</td></tr>
+<tr><td>Reversible?</td><td style="color:var(--green)">Yes</td><td style="color:var(--red)">No, data gone forever</td></tr>
+<tr><td>Size reduction</td><td>Moderate</td><td>Dramatic</td></tr>
+<tr><td>Use for</td><td>Text, code, legal, medical</td><td>Photos, music, video</td></tr>
+<tr><td>Examples</td><td>PNG, ZIP, FLAC</td><td>JPEG, MP3, MP4</td></tr>
+</table>
+<div class="trap">Re-compressing lossy files degrades quality further each time. Generation loss.</div>
+</div>
+
+<div class="section"><h2>Data Analysis & Visualization</h2>
+<div class="row"><span class="rl">Data → Information</span><span class="rv">Raw values → processed/interpreted meaning.</span></div>
+<div class="row"><span class="rl">Correlation</span><span class="rv">Two variables move together. Does NOT mean one causes the other.</span></div>
+<div class="row"><span class="rl">Causation</span><span class="rv">One directly causes the other. Requires controlled experiment to prove.</span></div>
+<div class="row"><span class="rl">Confounding var</span><span class="rv">Hidden 3rd factor driving both. Ice cream + drowning ← hot weather.</span></div>
+<div class="row"><span class="rl">Truncated y-axis</span><span class="rv">#1 misleading graph trick. Small change looks huge.</span></div>
+<div class="row"><span class="rl">Metadata</span><span class="rv">Data ABOUT data: file size, date, GPS, device. NOT the content itself.</span></div>
+<div class="trap">CORRELATION ≠ CAUSATION. This is the most tested concept in BI2. If a question says "data shows X and Y are related," the valid conclusion is correlation, NOT causation.</div>
+</div>
+</div>
+
+<!-- ==================== BI5 ==================== -->
+<div class="panel bi5" id="bi5">
+<div class="section"><h2>Effects of Computing</h2>
+<div class="row"><span class="rl">Every innovation</span><span class="rv">Has BOTH beneficial AND harmful effects. Always both sides.</span></div>
+<div class="row"><span class="rl">Intended</span><span class="rv">What the technology was designed to do.</span></div>
+<div class="row"><span class="rl">Unintended</span><span class="rv">Side effects nobody planned. Echo chambers, job loss, etc.</span></div>
+</div>
+
+<div class="section"><h2>Digital Divide</h2>
+<div class="row"><span class="rl">Definition</span><span class="rv">Gap between those with and without access to computing/internet.</span></div>
+<div class="row"><span class="rl">Causes</span><span class="rv">Income, geography (rural), age, disability, developing nations.</span></div>
+<div class="row"><span class="rl">Consequence</span><span class="rv">Reinforces existing inequalities. Those behind fall further behind.</span></div>
+<div class="row"><span class="rl">Solutions</span><span class="rv">Public Wi-Fi, device programs, broadband subsidies, accessibility design.</span></div>
+</div>
+
+<div class="section"><h2>Computing Bias</h2>
+<div class="row"><span class="rl">Source</span><span class="rv">Biased training data, biased programmers, exclusion from datasets.</span></div>
+<div class="row"><span class="rl">Examples</span><span class="rv">Facial recognition (race), hiring algorithms (gender), predictive policing.</span></div>
+<div class="row"><span class="rl">Proxy discrimination</span><span class="rv">Zip code as proxy for race/income. Algorithm isn't "racist," data reflects bias.</span></div>
+<div class="row"><span class="rl">Fix</span><span class="rv">Audit for disparate impact, diversify data, human oversight.</span></div>
+</div>
+
+<div class="section"><h2>Crowdsourcing</h2>
+<div class="row"><span class="rl">Definition</span><span class="rv">Large group contributions online. Wikipedia, Waze, Kickstarter, reCAPTCHA.</span></div>
+<div class="row"><span class="rl">Benefits</span><span class="rv">Scale, diverse perspectives, low cost per contributor.</span></div>
+<div class="row"><span class="rl">Limits</span><span class="rv">Quality varies, can be manipulated, not representative of all groups.</span></div>
+</div>
+
+<div class="section"><h2>Legal & Ethical</h2>
+<div class="row"><span class="rl">Copyright</span><span class="rv">Automatic on creation. All rights reserved. Can't use without permission.</span></div>
+<div class="row"><span class="rl">Creative Commons</span><span class="rv">Some rights reserved. BY=credit, SA=share-alike, NC=non-commercial, ND=no derivatives.</span></div>
+<div class="row"><span class="rl">Open Source</span><span class="rv">Source code public. Still has license (MIT, GPL). Not "no copyright."</span></div>
+<div class="row"><span class="rl">Public Domain</span><span class="rv">No copyright. Completely free to use. Old works, explicit dedication.</span></div>
+</div>
+
+<div class="section"><h2>PII & Security</h2>
+<div class="row"><span class="rl">PII</span><span class="rv">Name, email, SSN, IP address, GPS, biometrics, browsing history.</span></div>
+<div class="row"><span class="rl">Symmetric encryption</span><span class="rv">One key for encrypt + decrypt. Fast. Problem: sharing the key securely.</span></div>
+<div class="row"><span class="rl">Public key</span><span class="rv">Two keys: public encrypts, private decrypts. Solves key-sharing problem.</span></div>
+<div class="row"><span class="rl">Phishing</span><span class="rv">Fake messages to steal credentials. Targets HUMANS, not technology.</span></div>
+<div class="row"><span class="rl">Ransomware</span><span class="rv">Encrypts your files, demands payment. Paying doesn't guarantee recovery.</span></div>
+<div class="row"><span class="rl">MFA</span><span class="rv">Two+ factors from DIFFERENT categories: know (password), have (phone), are (fingerprint).</span></div>
+<div class="trap">Two passwords = NOT MFA (both "something you know"). Password + SMS code = MFA (know + have).</div>
+<div class="row"><span class="rl">Digital footprint</span><span class="rv">Active: you post it. Passive: collected without your action (IP logs, cookies).</span></div>
+<div class="row"><span class="rl">Permanence</span><span class="rv">Essentially permanent. Deleted ≠ gone (screenshots, caches, backups).</span></div>
+</div>
+</div>
+
+<!-- ==================== BI4 ==================== -->
+<div class="panel bi4" id="bi4">
+<div class="section"><h2>The Internet</h2>
+<div class="row"><span class="rl">Internet</span><span class="rv">Network of networks. Physical infrastructure. Decentralized, no single owner.</span></div>
+<div class="row"><span class="rl">WWW</span><span class="rv">Web pages via HTTP. Runs ON the internet but is NOT the internet.</span></div>
+<div class="row"><span class="rl">Open protocols</span><span class="rv">Non-proprietary standards. Any device from any manufacturer can connect.</span></div>
+</div>
+
+<div class="section"><h2>Protocols</h2>
+<table class="vs">
+<tr><th>Protocol</th><th>What It Does</th></tr>
+<tr><td>IP</td><td>Addresses devices, routes packets. IPv4=32-bit (~4.3B), IPv6=128-bit (unlimited).</td></tr>
+<tr><td>TCP</td><td>Reliable delivery. Numbers packets, checks arrival, resends lost ones, reassembles in order.</td></tr>
+<tr><td>HTTP/HTTPS</td><td>Web page requests. HTTPS adds encryption (TLS/SSL). S = Secure.</td></tr>
+<tr><td>DNS</td><td>Translates domain names → IP addresses. "Phone book" of the internet.</td></tr>
+</table>
+<div class="tip">IP = where to send it (addressing). TCP = making sure it all arrives (reliability). DNS = looking up the address. HTTPS = keeping it private (encryption).</div>
+</div>
+
+<div class="section"><h2>Packets & Routing</h2>
+<div class="row"><span class="rl">Packets</span><span class="rv">Data broken into small pieces. Each has: data + source IP + dest IP + sequence #.</span></div>
+<div class="row"><span class="rl">Independent routing</span><span class="rv">Packets travel independently, may take different paths, may arrive out of order.</span></div>
+<div class="row"><span class="rl">Reassembly</span><span class="rv">TCP uses sequence numbers to put packets back in correct order at destination.</span></div>
+</div>
+
+<div class="section"><h2>Fault Tolerance</h2>
+<div class="row"><span class="rl">Definition</span><span class="rv">System keeps working even when part fails. Through REDUNDANCY.</span></div>
+<div class="row"><span class="rl">Redundancy</span><span class="rv">Multiple paths between points. If one fails, data reroutes.</span></div>
+<div class="row"><span class="rl">Single point of failure</span><span class="rv">Remove one thing and part of the network is disconnected. NOT fault-tolerant.</span></div>
+<div class="tip">For network diagrams: trace alternate paths. If NO alternate path exists after removing a connection, it's not fault-tolerant for that failure.</div>
+</div>
+
+<div class="section"><h2>Parallel & Distributed Computing</h2>
+<div class="row"><span class="rl">Sequential</span><span class="rv">Tasks one after another. Total = sum of all task times.</span></div>
+<div class="row"><span class="rl">Parallel</span><span class="rv">Independent tasks simultaneously. Limited by sequential portions.</span></div>
+<div class="row"><span class="rl">Speedup</span><span class="rv">Sequential time / Parallel time. Can't go below sequential portion's time.</span></div>
+<div class="row"><span class="rl">Distributed</span><span class="rv">Multiple machines via network. Solves problems too large for one machine.</span></div>
+<div class="trap">Even with infinite processors, sequential parts take the same time. That's the hard limit on speedup.</div>
+</div>
+</div>
+
+<!-- ==================== BI1 ==================== -->
+<div class="panel bi1" id="bi1">
+<div class="section"><h2>Program Design</h2>
+<div class="row"><span class="rl">Purpose</span><span class="rv">WHY the program exists. What problem it solves. Who it helps.</span></div>
+<div class="row"><span class="rl">Function</span><span class="rv">WHAT the program does technically. The specific behavior.</span></div>
+<div class="row"><span class="rl">Collaboration</span><span class="rv">Diverse perspectives, code review, pair programming. Catches more bugs.</span></div>
+<div class="row"><span class="rl">Version control</span><span class="rv">Git. Tracks changes, allows simultaneous work, prevents overwriting.</span></div>
+</div>
+
+<div class="section"><h2>Error Types</h2>
+<table class="vs">
+<tr><th>Type</th><th>When</th><th>Symptom</th><th>Example</th></tr>
+<tr><td>Syntax</td><td>Before running</td><td>Won't run at all</td><td>Missing parenthesis, misspelled keyword</td></tr>
+<tr><td>Logic</td><td>During running</td><td>Wrong output, no crash</td><td>Using + instead of *, off-by-one loop</td></tr>
+<tr><td>Runtime</td><td>During running</td><td>Crashes midway</td><td>Divide by zero, index out of bounds</td></tr>
+</table>
+<div class="trap">Logic errors are the hardest to find because the program runs fine, no error message, just quietly gives wrong results. Only caught by testing.</div>
+</div>
+
+<div class="section"><h2>Development & Testing</h2>
+<div class="row"><span class="rl">Iterative</span><span class="rv">Plan → Code → Test → Evaluate → Repeat. Small cycles, not all at once.</span></div>
+<div class="row"><span class="rl">Boundary testing</span><span class="rv">Test at edges. For 1-100: test 0, 1, 50, 100, 101.</span></div>
+<div class="row"><span class="rl">Edge cases</span><span class="rv">Empty list, single element, negative numbers, very large values.</span></div>
+<div class="row"><span class="rl">Documentation</span><span class="rv">Comments explain WHY, not just WHAT. Helps future you and others.</span></div>
+</div>
+</div>
+
+<!-- ==================== WRITTEN RESPONSE ==================== -->
+<div class="panel wr" id="wr">
+<div class="section"><h2>Exam Day Setup</h2>
+<div class="row"><span class="rl">When</span><span class="rv">After 70 MCQ. 60 minutes for 4 prompts. ~15 min each.</span></div>
+<div class="row"><span class="rl">What you see</span><span class="rv">Your PPR screenshots (procedure + list code) on screen in Bluebook.</span></div>
+<div class="row"><span class="rl">What you type</span><span class="rv">Plain English explanations of your code. No coding required.</span></div>
+<div class="row"><span class="rl">Total points</span><span class="rv">6 points (4 written + video + program requirements) = 30% of total score.</span></div>
+</div>
+
+<div class="section"><h2>The 4 Prompts</h2>
+<div class="card"><h3>WR 1: Purpose, Function & Input/Output (1 pt, ~84% earn it)</h3>
+<p style="font-size:13px;color:var(--dim)">Describe: purpose (WHY), function (WHAT), inputs, outputs. Purpose = problem solved, not code behavior.</p></div>
+<div class="card"><h3>WR 2(a): Algorithm Development (1 pt, ~44% earn it)</h3>
+<p style="font-size:13px;color:var(--dim)">Walk through procedure showing sequencing, selection, iteration. EXPLAIN each, don't just name them. Reference specific code lines.</p></div>
+<div class="card"><h3>WR 2(b): Errors & Testing (1 pt, ~60% earn it)</h3>
+<p style="font-size:13px;color:var(--dim)">Two test calls with EXACT argument values and EXACT expected results. "I tested with different inputs" = 0 points.</p></div>
+<div class="card"><h3>WR 2(c): Data & Procedural Abstraction (1 pt, ~49% earn it)</h3>
+<p style="font-size:13px;color:var(--dim)">How list manages complexity. MUST include: "Without the list, I would need..." comparison. Explain storage AND usage.</p></div>
+</div>
+
+<div class="section"><h2>Your Code Quick Reference</h2>
+<div class="row"><span class="rl">Procedure</span><span class="rv">process_and_display_tasks(tasks, current_day)</span></div>
+<div class="row"><span class="rl">Parameters</span><span class="rv">tasks (list of tuples), current_day (integer)</span></div>
+<div class="row"><span class="rl">Sequencing</span><span class="rv">tasks.sort() then y_position = 150 (must be in this order)</span></div>
+<div class="row"><span class="rl">Iteration</span><span class="rv">for item in tasks: processes every task, unpacks tuple, builds display</span></div>
+<div class="row"><span class="rl">Selection</span><span class="rv">if is_correct_time and 0<=days_left<=3: red, else: blue</span></div>
+<div class="row"><span class="rl">List</span><span class="rv">homework_list = []. Stores (year,month,day,description) tuples.</span></div>
+<div class="row"><span class="rl">Storage</span><span class="rv">while loop: homework_list.append((year,month,day,task))</span></div>
+<div class="row"><span class="rl">Usage</span><span class="rv">for item in tasks: unpacks, sorts, formats display string, checks urgency</span></div>
+</div>
+
+<div class="section"><h2>Common Mistakes (From Chief Reader)</h2>
+<div class="trap">Naming without explaining: "My code has sequencing, selection, and iteration." WALK THROUGH each one with specific code.</div>
+<div class="trap">Vague testing: "I tested with different inputs." Give EXACT argument values and EXACT expected results.</div>
+<div class="trap">Missing complexity argument: Explain what the list stores, but also what your code would look like WITHOUT it (separate variables, duplicated logic).</div>
+<div class="trap">Confusing purpose and function: Purpose = help students organize homework. Function = sorts list and displays colored text.</div>
+</div>
+</div>
+
+<script>
+function switchTab(id){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
