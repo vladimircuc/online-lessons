@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP-165 Practice Exam #3, Travis</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0891b2;
+    --accent-hover: #0e7490;
+    --accent-soft: #ecfeff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #f472b6;
+    --string: #86efac;
+    --comment: #94a3b8;
+    --type: #7dd3fc;
+    --num: #fbbf24;
+    --good: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    color: var(--text);
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .legend {
+    background: var(--accent-soft);
+    border: 1px solid #a5f3fc;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #155e75;
+  }
+  .program-divider {
+    text-align: center;
+    margin: 32px 0 22px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+  }
+  .program-divider::before, .program-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 28%;
+    height: 1px;
+    background: var(--border);
+  }
+  .program-divider::before { left: 0; }
+  .program-divider::after { right: 0; }
+  .exercise {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .ex-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .ex-num {
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  h2 {
+    margin: 0;
+    font-size: 19px;
+  }
+  .problem {
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+    padding: 12px 16px;
+    margin: 12px 0 16px;
+    border-radius: 4px;
+    font-size: 14.5px;
+  }
+  .problem ul { margin: 6px 0 0; padding-left: 22px; }
+  .problem li { margin-bottom: 3px; }
+  .problem code {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  .example {
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .example b {
+    display: block;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  button.toggle {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  button.toggle:hover { background: var(--accent-hover); }
+  .answer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .answer.hidden { display: none; }
+  .answer h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .answer h3:not(:first-child) { margin-top: 16px; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  code { font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--num); }
+  .explain {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .explain strong { color: #854d0e; }
+  .gotcha {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 13.5px;
+  }
+  .gotcha strong { color: #b91c1c; }
+  .meta {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>ITP-165 Practice Exam #3</h1>
+  <div class="sub">Travis, third mock final. Same 9-part shape, different problem types. Exam: May 8, 2026.</div>
+</header>
+
+<div class="legend">
+  <strong>What's different here:</strong> the filter in Part 4 tracks a <em>running maximum</em> (records) instead of non-overlapping intervals, and Part 7 looks for pairs whose <em>sum</em> exceeds a threshold instead of pairs that are equal. Same overall structure, just twisted to test the same concepts in fresh ways.
+</div>
+
+<div class="program-divider">Program 1, Daily Step Tracker (Parts 1-5)</div>
+
+<p style="font-size: 14.5px; color: var(--muted); margin-bottom: 18px;">A program that reads step-count logs from a file and prints only the days that set new step records.</p>
+
+<!-- ============ PART 1 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 1</span>
+    <h2>Define a struct called StepDay</h2>
+  </div>
+  <div class="problem">
+    Define a struct called <code>StepDay</code> that contains:
+    <ul>
+      <li>the user's name</li>
+      <li>a number 1-365 for the day of the year</li>
+      <li>an integer for the number of steps taken that day</li>
+    </ul>
+  </div>
+  <button class="toggle" onclick="toggleAns('a1', this)">Show Answer</button>
+  <div id="a1" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">struct</span> <span class="ty">StepDay</span> {
+    <span class="ty">string</span> user;
+    <span class="ty">int</span> day;
+    <span class="ty">int</span> steps;
+};</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Three fields, one string and two ints. The semicolon after the closing brace is required, that is the most common bug. Field names should be descriptive so the rest of your code reads cleanly.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 2 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 2</span>
+    <h2>Function to read step logs from a file</h2>
+  </div>
+  <div class="problem">
+    Function name <code>load</code>. Parameters: filename and a vector of StepDays. Each line is: user name, comma, then 2 numbers (day and steps). Build a StepDay for each line and add it to the vector.
+  </div>
+  <div class="example">
+    <b>Example steps.txt</b>
+    Alice, 12 6200<br>
+    Bob, 13 8400<br>
+    Alice, 15 7800<br>
+    Carol, 18 9500<br>
+    Bob, 20 9100<br>
+    Alice, 22 11000
+  </div>
+  <button class="toggle" onclick="toggleAns('a2', this)">Show Answer</button>
+  <div id="a2" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> load(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">StepDay</span>&gt;&amp; logs) {
+    <span class="ty">ifstream</span> fin(filename);
+    <span class="ty">string</span> user;
+    <span class="ty">int</span> day, steps;
+    <span class="kw">while</span> (getline(fin, user, <span class="st">','</span>)) {
+        fin &gt;&gt; day &gt;&gt; steps;
+        fin.ignore();  <span class="cm">// skip the newline before next getline</span>
+        <span class="ty">StepDay</span> s;
+        s.user = user;
+        s.day = day;
+        s.steps = steps;
+        logs.push_back(s);
+    }
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      The vector parameter must have the <code>&amp;</code> so we modify the original. <code>getline(fin, user, ',')</code> reads everything up to the comma into <code>user</code>. Then <code>fin &gt;&gt; day &gt;&gt; steps</code> grabs the two numbers (the leading space after the comma is automatically skipped by <code>&gt;&gt;</code>). <code>fin.ignore()</code> swallows the leftover newline so the next <code>getline</code> starts cleanly.
+    </div>
+    <div class="gotcha">
+      <strong>Common bug:</strong> Forgetting the <code>&amp;</code> on the vector parameter, then wondering why the vector is empty back in main. The data went into a local copy that got thrown away.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 3 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 3</span>
+    <h2>Function to print one step log</h2>
+  </div>
+  <div class="problem">
+    Function name <code>print</code>. One parameter: a StepDay. Print like <code>"Alice day 12: 6200 steps"</code>.
+  </div>
+  <button class="toggle" onclick="toggleAns('a3', this)">Show Answer</button>
+  <div id="a3" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> print(<span class="ty">StepDay</span> s) {
+    cout &lt;&lt; s.user &lt;&lt; <span class="st">" day "</span> &lt;&lt; s.day &lt;&lt; <span class="st">": "</span> &lt;&lt; s.steps &lt;&lt; <span class="st">" steps"</span> &lt;&lt; endl;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Use the dot operator to access struct fields. Chain pieces with <code>&lt;&lt;</code>. Notice the spaces inside the literal strings so the words don't run into each other, like <code>" day "</code> (space, day, space) and <code>": "</code> (colon, space).
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 4 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 4</span>
+    <h2>Function to print record-setting days</h2>
+  </div>
+  <div class="problem">
+    Function name <code>records</code>. Parameter: vector of StepDays. Print each log only if its step count is strictly greater than every step count we have already printed. The logs are already in date order.
+  </div>
+  <div class="example">
+    <b>Expected output for the example file</b>
+    Alice day 12: 6200 steps<br>
+    Bob day 13: 8400 steps<br>
+    Carol day 18: 9500 steps<br>
+    Alice day 22: 11000 steps
+  </div>
+  <button class="toggle" onclick="toggleAns('a4', this)">Show Answer</button>
+  <div id="a4" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">void</span> records(<span class="ty">vector</span>&lt;<span class="ty">StepDay</span>&gt;&amp; logs) {
+    <span class="ty">int</span> best = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; logs.size(); i++) {
+        <span class="kw">if</span> (logs[i].steps &gt; best) {
+            print(logs[i]);
+            best = logs[i].steps;
+        }
+    }
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Track the highest step count we have seen so far in a variable called <code>best</code>. For each log entry, only print it if its steps beat the current best. After printing, update <code>best</code> to this new high. Initializing to 0 means the very first log always prints, since step counts are positive.
+    </div>
+    <div class="gotcha">
+      <strong>Watch the comparison:</strong> The problem says "strictly greater," so use <code>&gt;</code>, not <code>&gt;=</code>. A day that ties the current best doesn't count as a new record. (Bob day 20 with 9100 steps gets skipped because 9100 is less than the current best of 9500.)
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 5 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 5</span>
+    <h2>Main program</h2>
+  </div>
+  <div class="problem">
+    Put it all together. Includes at top, call <code>load</code> with <code>"steps.txt"</code>, then call <code>records</code>.
+  </div>
+  <button class="toggle" onclick="toggleAns('a5', this)">Show Answer</button>
+  <div id="a5" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;string&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// struct StepDay { ... };</span>
+<span class="cm">// void load(...) { ... }</span>
+<span class="cm">// void print(...) { ... }</span>
+<span class="cm">// void records(...) { ... }</span>
+
+<span class="ty">int</span> main() {
+    <span class="ty">vector</span>&lt;<span class="ty">StepDay</span>&gt; logs;
+    load(<span class="st">"steps.txt"</span>, logs);
+    records(logs);
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Four standard includes: <code>iostream</code> for cout, <code>fstream</code> for ifstream, <code>vector</code> and <code>string</code> for the data types. Declare an empty vector, fill it with load, print the record-setting days. <code>return 0</code> at the end signals success.
+    </div>
+  </div>
+</div>
+
+<div class="program-divider">Program 2, Lottery Pair Sum Coincidence (Parts 6-9)</div>
+
+<p style="font-size: 14.5px; color: var(--muted); margin-bottom: 18px;">A program to find out how big a lottery pool needs to be before two players' picks (each 1-50) probably sum to more than 80.</p>
+
+<!-- ============ PART 6 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 6</span>
+    <h2>Function to make random lottery picks</h2>
+  </div>
+  <div class="problem">
+    Function name <code>makePicks</code>. Parameter: pool size (number of picks to make). Put that many random ints (1-50) into a vector. Return the vector.
+  </div>
+  <button class="toggle" onclick="toggleAns('a6', this)">Show Answer</button>
+  <div id="a6" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; makePicks(<span class="ty">int</span> size) {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; picks;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; size; i++) {
+        picks.push_back(rand() % <span class="nu">50</span> + <span class="nu">1</span>);
+    }
+    <span class="kw">return</span> picks;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      <code>rand() % 50</code> gives a number from 0 to 49. Adding 1 shifts it to 1-50. Loop <code>size</code> times, push each random number, return the vector.
+    </div>
+    <div class="gotcha">
+      <strong>Setup matters:</strong> <code>srand(time(0))</code> must be called once in main, otherwise <code>rand()</code> gives the same sequence every run. Also need <code>#include &lt;cstdlib&gt;</code> for rand and <code>#include &lt;ctime&gt;</code> for time.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 7 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 7</span>
+    <h2>Function to detect a big-sum pair</h2>
+  </div>
+  <div class="problem">
+    Function name <code>bigSum</code>. Parameter: vector of ints. Check every pair of numbers in the vector. Return true if any pair adds up to more than 80, false otherwise.
+  </div>
+  <button class="toggle" onclick="toggleAns('a7', this)">Show Answer</button>
+  <div id="a7" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">bool</span> bigSum(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+        <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+            <span class="kw">if</span> (v[i] + v[j] &gt; <span class="nu">80</span>) <span class="kw">return</span> <span class="kw">true</span>;
+        }
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Same nested loop pattern as the duplicate-check problem, just with a different condition inside. The outer loop picks the first number, the inner loop picks every later number (starting at <code>i + 1</code>). For each pair, check if their sum is greater than 80. As soon as one qualifies, return true. If both loops finish without finding one, return false.
+    </div>
+    <div class="gotcha">
+      <strong>Don't write</strong> <code>j = 0</code> in the inner loop. That would let <code>j</code> equal <code>i</code>, meaning we add a number to itself, which doubles it. A single number of 41+ would always trigger the check incorrectly.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 8 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 8</span>
+    <h2>Function to run 100 trials and return the rate</h2>
+  </div>
+  <div class="problem">
+    Function name <code>trial</code>. Parameter: pool size. Call <code>makePicks</code> and <code>bigSum</code> 100 times. Count how many times bigSum returned true. Probability is count / 100. Print pool size and probability. Return the probability.
+  </div>
+  <button class="toggle" onclick="toggleAns('a8', this)">Show Answer</button>
+  <div id="a8" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="ty">double</span> trial(<span class="ty">int</span> size) {
+    <span class="ty">int</span> count = <span class="nu">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++) {
+        <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; picks = makePicks(size);
+        <span class="kw">if</span> (bigSum(picks)) count++;
+    }
+    <span class="ty">double</span> prob = count / <span class="nu">100.0</span>;
+    cout &lt;&lt; <span class="st">"size="</span> &lt;&lt; size &lt;&lt; <span class="st">" prob="</span> &lt;&lt; prob &lt;&lt; endl;
+    <span class="kw">return</span> prob;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      Loop 100 times. Each iteration: get a fresh random vector, check for a big-sum pair, increment count if found. Compute the probability as a double, print, return.
+    </div>
+    <div class="gotcha">
+      <strong>The classic trap:</strong> <code>count / 100</code> is integer division, so 47 / 100 gives you 0, not 0.47. Use <code>count / 100.0</code> with the .0 to force double division.
+    </div>
+  </div>
+</div>
+
+<!-- ============ PART 9 ============ -->
+<div class="exercise">
+  <div class="ex-header">
+    <span class="ex-num">PART 9</span>
+    <h2>Main program: find smallest pool with probable big sum</h2>
+  </div>
+  <div class="problem">
+    Don't forget the includes. Call <code>trial(2)</code>, <code>trial(3)</code>, etc. in a loop. Stop when the return value is greater than 0.5.
+  </div>
+  <button class="toggle" onclick="toggleAns('a9', this)">Show Answer</button>
+  <div id="a9" class="answer hidden">
+    <h3>Solution</h3>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;cstdlib&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;ctime&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// vector&lt;int&gt; makePicks(int size) { ... }</span>
+<span class="cm">// bool bigSum(vector&lt;int&gt; v) { ... }</span>
+<span class="cm">// double trial(int size) { ... }</span>
+
+<span class="ty">int</span> main() {
+    srand(time(<span class="nu">0</span>));
+    <span class="ty">int</span> size = <span class="nu">2</span>;
+    <span class="kw">while</span> (trial(size) &lt;= <span class="nu">0.5</span>) {
+        size++;
+    }
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    <h3>Explanation</h3>
+    <div class="explain">
+      <code>srand(time(0))</code> seeds the random generator once at program start. The while loop calls <code>trial(size)</code>, and as long as it returns 0.5 or less, we increment size and try again. As soon as <code>trial</code> returns more than 0.5, the loop exits. With this setup, the threshold typically hits around size 4 or 5, since each pick averages around 25 and only takes two slightly above-average picks to clear 80.
+    </div>
+    <div class="gotcha">
+      <strong>Don't put srand inside the loop.</strong> Seed once, at the top of main. Seeding repeatedly resets the sequence.
+    </div>
+  </div>
+</div>
+
+<div class="meta">End of practice exam #3, 9 exercises</div>
+
+</div>
+
+<script>
+function toggleAns(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+  btn.textContent = el.classList.contains('hidden') ? 'Show Answer' : 'Hide Answer';
+}
+</script>
+
+</body>
+</html>
