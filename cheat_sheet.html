@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP-165 Cheat Sheet, Travis</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0891b2;
+    --accent-soft: #ecfeff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --keyword: #f472b6;
+    --string: #86efac;
+    --comment: #94a3b8;
+    --type: #7dd3fc;
+    --num: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .sub { color: var(--muted); font-size: 14.5px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 850px) {
+    .grid, .grid.three { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .card.full { grid-column: 1 / -1; }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .badge {
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .card .desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin: -4px 0 10px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 12px 14px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  pre.small { font-size: 11.5px; padding: 10px 12px; }
+  code { font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nu { color: var(--num); }
+
+  .inline {
+    background: #e2e8f0;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+  }
+
+  .gotcha {
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 12.5px;
+  }
+  .gotcha strong { color: #b91c1c; }
+
+  .tip {
+    background: #f0fdf4;
+    border-left: 3px solid #16a34a;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 12.5px;
+  }
+  .tip strong { color: #15803d; }
+
+  table.includes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 6px 0 0;
+  }
+  table.includes td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.includes td:first-child {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: var(--accent);
+    width: 32%;
+    white-space: nowrap;
+  }
+  table.includes tr:last-child td { border-bottom: none; }
+
+  .checklist {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #facc15;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 24px;
+  }
+  .checklist h2 {
+    margin: 0 0 12px;
+    color: #854d0e;
+    font-size: 18px;
+  }
+  .checklist ol {
+    margin: 0;
+    padding-left: 22px;
+    font-size: 14px;
+    color: #713f12;
+  }
+  .checklist li {
+    margin-bottom: 6px;
+  }
+
+  .formulas {
+    background: var(--accent-soft);
+    border: 1px solid #a5f3fc;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .formulas h2 {
+    margin: 0 0 10px;
+    color: #155e75;
+    font-size: 17px;
+  }
+  .formula-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    font-size: 13px;
+  }
+  @media (max-width: 700px) {
+    .formula-grid { grid-template-columns: 1fr; }
+  }
+  .formula-item {
+    background: white;
+    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1px solid #cffafe;
+  }
+  .formula-item .label {
+    color: var(--muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+  }
+  .formula-item code {
+    color: var(--accent);
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>ITP-165 C++ Cheat Sheet</h1>
+  <div class="sub">Travis, one-page reference for the final. Exam: May 8, 2026.</div>
+</header>
+
+<!-- ============ QUICK FORMULAS ============ -->
+<div class="formulas">
+  <h2>Memorize these formulas</h2>
+  <div class="formula-grid">
+    <div class="formula-item">
+      <div class="label">Random 1 to N</div>
+      <code>rand() % N + 1</code>
+    </div>
+    <div class="formula-item">
+      <div class="label">Seed random (in main, once)</div>
+      <code>srand(time(0))</code>
+    </div>
+    <div class="formula-item">
+      <div class="label">Probability (avoid int division)</div>
+      <code>count / 100.0</code>
+    </div>
+    <div class="formula-item">
+      <div class="label">Compare every pair</div>
+      <code>for j = i + 1</code>
+    </div>
+    <div class="formula-item">
+      <div class="label">Read after &gt;&gt; then getline</div>
+      <code>fin.ignore()</code>
+    </div>
+    <div class="formula-item">
+      <div class="label">Modify a vector inside a function</div>
+      <code>vector&lt;T&gt;&amp; v</code>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SKELETON & INCLUDES ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">1</span> Program skeleton</h2>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> main() {
+    <span class="cm">// code here</span>
+    <span class="kw">return</span> <span class="nu">0</span>;
+}</code></pre>
+    <div class="tip"><strong>Every program</strong> needs <code class="inline">int main()</code> and <code class="inline">return 0;</code></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">2</span> Which include do I need?</h2>
+    <table class="includes">
+      <tr><td>&lt;iostream&gt;</td><td>cout, cin, endl</td></tr>
+      <tr><td>&lt;fstream&gt;</td><td>ifstream (read files)</td></tr>
+      <tr><td>&lt;vector&gt;</td><td>vector type</td></tr>
+      <tr><td>&lt;string&gt;</td><td>string type</td></tr>
+      <tr><td>&lt;cstdlib&gt;</td><td>rand, srand</td></tr>
+      <tr><td>&lt;ctime&gt;</td><td>time</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============ OUTPUT & VARIABLES ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">3</span> Output with cout</h2>
+<pre><code><span class="ty">int</span> age = <span class="nu">25</span>;
+cout &lt;&lt; <span class="st">"I am "</span> &lt;&lt; age &lt;&lt; <span class="st">" years old"</span> &lt;&lt; endl;</code></pre>
+    <div class="tip"><strong>Chain</strong> as many <code class="inline">&lt;&lt;</code> as you want. Use <code class="inline">endl</code> at the end for a new line.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">4</span> Variable types</h2>
+<pre><code><span class="ty">int</span> count = <span class="nu">10</span>;        <span class="cm">// whole number</span>
+<span class="ty">double</span> rate = <span class="nu">0.47</span>;    <span class="cm">// decimal</span>
+<span class="ty">string</span> name = <span class="st">"Travis"</span>;
+<span class="ty">bool</span> done = <span class="kw">true</span>;     <span class="cm">// true or false</span></code></pre>
+  </div>
+</div>
+
+<!-- ============ FUNCTIONS ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">5</span> Functions, basic shape</h2>
+<pre><code><span class="ty">return_type</span> name(<span class="ty">type</span> param) {
+    <span class="kw">return</span> something;
+}
+
+<span class="cm">// Examples:</span>
+<span class="ty">int</span> add(<span class="ty">int</span> a, <span class="ty">int</span> b) { <span class="kw">return</span> a + b; }
+<span class="kw">void</span> greet(<span class="ty">string</span> n) { cout &lt;&lt; n; }</code></pre>
+    <div class="tip"><strong>void</strong> means returns nothing. Use it for print functions.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">6</span> Pass by reference (&amp;)</h2>
+<pre><code><span class="cm">// Without &amp;, function gets a copy:</span>
+<span class="kw">void</span> fill(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) { ... }
+
+<span class="cm">// With &amp;, modifies the original:</span>
+<span class="kw">void</span> fill(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v) { ... }</code></pre>
+    <div class="gotcha"><strong>Always use &amp;</strong> when passing a vector you want to modify, like in the <code class="inline">load</code> function.</div>
+  </div>
+</div>
+
+<!-- ============ STRUCTS ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">7</span> Define a struct</h2>
+<pre><code><span class="kw">struct</span> <span class="ty">Trip</span> {
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave;
+    <span class="ty">int</span> back;
+};   <span class="cm">// don't forget the ;</span></code></pre>
+    <div class="gotcha"><strong>The semicolon</strong> after the closing brace is required. Forgetting it is the #1 struct bug.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">8</span> Use a struct</h2>
+<pre><code><span class="ty">Trip</span> t;
+t.city = <span class="st">"Denver"</span>;
+t.leave = <span class="nu">100</span>;
+t.back = <span class="nu">110</span>;
+cout &lt;&lt; t.city &lt;&lt; endl;</code></pre>
+    <div class="tip"><strong>Dot operator (.)</strong> reads and writes struct fields.</div>
+  </div>
+</div>
+
+<!-- ============ VECTORS ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">9</span> Vectors, basics</h2>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; nums;       <span class="cm">// empty</span>
+nums.push_back(<span class="nu">10</span>);     <span class="cm">// add to end</span>
+nums.push_back(<span class="nu">20</span>);
+
+cout &lt;&lt; nums[<span class="nu">0</span>];        <span class="cm">// 10</span>
+cout &lt;&lt; nums.size();    <span class="cm">// 2</span></code></pre>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">10</span> Vector of structs</h2>
+<pre><code><span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt; trips;
+<span class="ty">Trip</span> t;
+t.city = <span class="st">"Paris"</span>;
+t.leave = <span class="nu">50</span>;
+t.back = <span class="nu">60</span>;
+trips.push_back(t);
+
+cout &lt;&lt; trips[<span class="nu">0</span>].city;  <span class="cm">// Paris</span></code></pre>
+  </div>
+</div>
+
+<!-- ============ LOOPS ============ -->
+<div class="grid three">
+  <div class="card">
+    <h2><span class="badge">11</span> For loop</h2>
+<pre class="small"><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">10</span>; i++) {
+    cout &lt;&lt; i &lt;&lt; endl;
+}</code></pre>
+    <div class="tip" style="font-size: 12px;"><strong>Use when</strong> you know how many times.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">12</span> While loop</h2>
+<pre class="small"><code><span class="ty">int</span> size = <span class="nu">2</span>;
+<span class="kw">while</span> (trial(size) &lt;= <span class="nu">0.5</span>) {
+    size++;
+}</code></pre>
+    <div class="tip" style="font-size: 12px;"><strong>Use when</strong> you don't know the count yet.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">13</span> Loop over vector</h2>
+<pre class="small"><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+    cout &lt;&lt; v[i] &lt;&lt; endl;
+}</code></pre>
+  </div>
+</div>
+
+<!-- ============ NESTED LOOPS + STATE TRACKING ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">14</span> Nested loop, every pair</h2>
+<pre><code><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; v.size(); i++) {
+    <span class="kw">for</span> (<span class="ty">int</span> j = i + <span class="nu">1</span>; j &lt; v.size(); j++) {
+        <span class="kw">if</span> (v[i] == v[j]) <span class="kw">return</span> <span class="kw">true</span>;
+    }
+}
+<span class="kw">return</span> <span class="kw">false</span>;</code></pre>
+    <div class="gotcha"><strong>j = i + 1</strong>, NOT j = 0. Otherwise you compare items to themselves.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">15</span> State tracking in a loop</h2>
+<pre><code><span class="ty">int</span> last = <span class="nu">0</span>;   <span class="cm">// declare BEFORE the loop</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; trips.size(); i++) {
+    <span class="kw">if</span> (trips[i].leave &gt; last) {
+        print(trips[i]);
+        last = trips[i].back;   <span class="cm">// update</span>
+    }
+}</code></pre>
+    <div class="tip"><strong>Pattern:</strong> declare a tracker variable above the loop, update it inside.</div>
+  </div>
+</div>
+
+<!-- ============ RANDOM + CASTING ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">16</span> Random numbers</h2>
+<pre><code><span class="cm">// In main, once:</span>
+srand(time(<span class="nu">0</span>));
+
+<span class="cm">// To get random 1 to N:</span>
+<span class="ty">int</span> x = rand() % N + <span class="nu">1</span>;
+
+<span class="cm">// Examples:</span>
+rand() % <span class="nu">6</span> + <span class="nu">1</span>      <span class="cm">// dice roll, 1 to 6</span>
+rand() % <span class="nu">365</span> + <span class="nu">1</span>    <span class="cm">// day, 1 to 365</span>
+rand() % <span class="nu">100</span> + <span class="nu">1</span>    <span class="cm">// 1 to 100</span></code></pre>
+    <div class="gotcha"><strong>srand goes ONCE</strong> at the top of main, never inside a loop or function.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">17</span> Integer division TRAP</h2>
+<pre><code><span class="ty">int</span> count = <span class="nu">47</span>;
+<span class="ty">double</span> p = count / <span class="nu">100</span>;     <span class="cm">// 0 (WRONG)</span>
+<span class="ty">double</span> p = count / <span class="nu">100.0</span>;   <span class="cm">// 0.47 (CORRECT)</span>
+
+<span class="cm">// When dividing two int variables:</span>
+<span class="ty">double</span> avg = total / (<span class="ty">double</span>)v.size();</code></pre>
+    <div class="gotcha"><strong>int / int = int</strong>, decimals get thrown away. Always put a <code class="inline">.0</code> or cast to double when computing probabilities.</div>
+  </div>
+</div>
+
+<!-- ============ FILE I/O ============ -->
+<div class="card full">
+  <h2><span class="badge">18</span> File I/O, reading from a file</h2>
+  <div class="desc">The hardest topic on the exam. This is the exact pattern for reading "name, num num" lines.</div>
+<pre><code><span class="kw">#include</span> <span class="st">&lt;fstream&gt;</span>
+
+<span class="kw">void</span> load(<span class="ty">string</span> filename, <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp; trips) {
+    <span class="ty">ifstream</span> fin(filename);              <span class="cm">// open file</span>
+    <span class="ty">string</span> city;
+    <span class="ty">int</span> leave, back;
+    <span class="kw">while</span> (getline(fin, city, <span class="st">','</span>)) {     <span class="cm">// read up to comma</span>
+        fin &gt;&gt; leave &gt;&gt; back;             <span class="cm">// read the two numbers</span>
+        fin.ignore();                     <span class="cm">// skip leftover newline</span>
+        <span class="ty">Trip</span> t;
+        t.city = city;
+        t.leave = leave;
+        t.back = back;
+        trips.push_back(t);
+    }
+}</code></pre>
+  <div class="gotcha"><strong>Three rules for mixed reading:</strong> getline with comma for the string part, <code class="inline">&gt;&gt;</code> for the numbers, <code class="inline">fin.ignore()</code> after the numbers so the next getline starts on a fresh line.</div>
+</div>
+
+<!-- ============ THE TWO EXAM PROGRAMS, AT A GLANCE ============ -->
+<div class="grid">
+  <div class="card">
+    <h2><span class="badge">P1</span> Trip scheduler (parts 1-5)</h2>
+<pre class="small"><code><span class="cm">// 1. Struct</span>
+<span class="kw">struct</span> <span class="ty">Trip</span> { ... };
+
+<span class="cm">// 2. Read file into vector</span>
+<span class="kw">void</span> load(<span class="ty">string</span>, <span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp;);
+
+<span class="cm">// 3. Print one trip</span>
+<span class="kw">void</span> print(<span class="ty">Trip</span>);
+
+<span class="cm">// 4. Print non-overlapping</span>
+<span class="kw">void</span> skej(<span class="ty">vector</span>&lt;<span class="ty">Trip</span>&gt;&amp;);
+
+<span class="cm">// 5. Main wires it together</span>
+<span class="ty">int</span> main() { ... }</code></pre>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">P2</span> Birthday paradox (parts 6-9)</h2>
+<pre class="small"><code><span class="cm">// 6. Make random vector</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; makeDays(<span class="ty">int</span>);
+
+<span class="cm">// 7. Find duplicate pair</span>
+<span class="ty">bool</span> match(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;);
+
+<span class="cm">// 8. Run 100 trials</span>
+<span class="ty">double</span> trial(<span class="ty">int</span>);   <span class="cm">// use / 100.0</span>
+
+<span class="cm">// 9. Loop until prob &gt; 0.5</span>
+<span class="ty">int</span> main() {
+    srand(time(<span class="nu">0</span>));
+    ...
+}</code></pre>
+  </div>
+</div>
+
+<!-- ============ EXAM CHECKLIST ============ -->
+<div class="checklist">
+  <h2>Final exam checklist</h2>
+  <ol>
+    <li><strong>Includes at the top.</strong> iostream, fstream, vector, string, cstdlib, ctime as needed. Add <code class="inline">using namespace std;</code></li>
+    <li><strong>Semicolon after every struct.</strong> <code class="inline">struct Trip { ... };</code></li>
+    <li><strong>Vector parameters get an &amp;</strong> when the function modifies them.</li>
+    <li><strong>Nested loops use j = i + 1</strong> for the inner loop, never j = 0.</li>
+    <li><strong>Divide by 100.0, not 100</strong> when calculating a probability.</li>
+    <li><strong>srand(time(0)) goes once at the top of main</strong>, never inside loops or other functions.</li>
+    <li><strong>File reading order:</strong> getline (string with comma), then &gt;&gt; (numbers), then fin.ignore().</li>
+    <li><strong>return 0;</strong> at the end of main.</li>
+  </ol>
+</div>
+
+</div>
+</body>
+</html>
