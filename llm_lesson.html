@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM internals, prompting, and pipelines, a structural walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0c;
+  --bg-elev: #151513;
+  --bg-elev-2: #1c1c19;
+  --border: #2a2a26;
+  --border-strong: #3a3a34;
+  --text: #e8e5dd;
+  --text-muted: #9a978c;
+  --text-dim: #6b6862;
+  --accent: #e9a358;
+  --accent-dim: #8a5e2a;
+  --cool: #6ea8c4;
+  --cool-dim: #3a5d72;
+  --warm: #c97862;
+  --good: #7ab36a;
+  --bad: #c66a6a;
+  --display: 'Newsreader', Georgia, serif;
+  --body: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'JetBrains Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Sidebar */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 32px 24px;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.sidebar-header {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-title {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.sidebar-subtitle {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.nav-section {
+  margin-bottom: 4px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+
+.nav-link:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.nav-link.active {
+  color: var(--accent);
+  background: var(--bg-elev);
+}
+
+.nav-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 18px;
+}
+
+.nav-link.active .nav-num {
+  color: var(--accent);
+}
+
+.sidebar-footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Main content */
+.main {
+  padding: 60px 80px 120px;
+  max-width: 920px;
+}
+
+.section {
+  margin-bottom: 100px;
+  scroll-margin-top: 40px;
+}
+
+.section-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+h1.section-title {
+  font-family: var(--display);
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 28px;
+  color: var(--text);
+}
+
+h2 {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.25;
+  margin: 56px 0 20px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-family: var(--body);
+  font-size: 17px;
+  font-weight: 500;
+  margin: 32px 0 14px;
+  color: var(--text);
+  letter-spacing: 0;
+}
+
+p {
+  margin: 0 0 18px;
+  color: var(--text);
+}
+
+p.lead {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-family: var(--display);
+  font-weight: 400;
+}
+
+em { color: var(--accent); font-style: italic; }
+strong { color: var(--text); font-weight: 500; }
+
+code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg-elev);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+pre {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px 20px;
+  margin: 20px 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.callout {
+  margin: 24px 0;
+  padding: 18px 22px;
+  background: var(--bg-elev);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.callout strong { color: var(--accent); }
+
+.callout-cool { border-left-color: var(--cool); }
+.callout-cool strong { color: var(--cool); }
+
+.callout-warm { border-left-color: var(--warm); }
+.callout-warm strong { color: var(--warm); }
+
+/* Interactive widget container */
+.widget {
+  margin: 32px 0;
+  padding: 24px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.widget-title {
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-title::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.widget-caption {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Section 0 roadmap */
+.roadmap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 32px 0;
+}
+
+.roadmap-item {
+  padding: 18px 20px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.15s ease;
+  cursor: default;
+}
+
+.roadmap-item:hover {
+  border-color: var(--border-strong);
+}
+
+.roadmap-item .rnum {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.roadmap-item .rtitle {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.roadmap-item .rdesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Progress bar (top) */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  z-index: 100;
+  width: 0%;
+  transition: width 0.1s ease;
+}
+
+/* Tokenization widget */
+.token-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.token-input:focus { border-color: var(--accent); }
+
+.token-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 50px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.token {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: default;
+  transition: transform 0.1s;
+}
+
+.token:hover { transform: translateY(-1px); }
+
+.token-text { font-weight: 500; }
+.token-id { font-size: 10px; color: rgba(0,0,0,0.5); margin-top: 2px; }
+
+.token-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.token-stat strong { color: var(--accent); font-family: var(--mono); }
+
+/* Sliders and controls */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.control-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 120px;
+}
+
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.control-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: right;
+}
+
+button.btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: var(--body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+button.btn:hover { border-color: var(--accent); color: var(--accent); }
+button.btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+.btn-row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+
+/* Attention widget */
+.attention-tokens {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.att-token {
+  padding: 10px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.att-token:hover { border-color: var(--accent); }
+.att-token.query { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+.att-svg-wrap { margin: 16px 0; }
+
+/* Pipeline patterns */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.pattern-card {
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pattern-card:hover { border-color: var(--accent); }
+.pattern-card.active { border-color: var(--accent); background: var(--bg-elev-2); }
+
+.pattern-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.pattern-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.pattern-detail {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-height: 200px;
+}
+
+/* Reliability calculator */
+.calc-display {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.calc-label { font-size: 13px; color: var(--text-muted); }
+.calc-value {
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.calc-value.warn { color: var(--bad); }
+.calc-value.ok { color: var(--good); }
+
+/* CoT comparison */
+.cot-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.cot-col {
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.cot-col-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.cot-line {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.cot-line:last-child { border: none; }
+.cot-line.answer { color: var(--accent); font-weight: 500; }
+.cot-line.error { color: var(--bad); }
+
+/* Drift timeline */
+.drift-timeline {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.commit-card {
+  min-width: 160px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.commit-card:hover { border-color: var(--accent); }
+.commit-card.active { border-color: var(--accent); background: var(--bg-elev-2); }
+.commit-card.drift { border-left: 3px solid var(--bad); }
+
+.commit-hash {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.commit-msg {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--text);
+}
+
+.commit-fields {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  line-height: 1.4;
+}
+
+.drift-flag {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--bad);
+  font-weight: 500;
+}
+
+/* Pipeline spectrum slider */
+.spectrum-track {
+  position: relative;
+  height: 60px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 20px 0;
+}
+
+.spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.spectrum-stops {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+.spectrum-stop {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.spectrum-stop:hover { border-color: var(--accent); }
+.spectrum-stop.active { background: var(--accent); border-color: var(--accent); }
+
+.spectrum-stop-label {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.spectrum-detail {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-height: 80px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.spectrum-detail strong { color: var(--text); }
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 14px;
+}
+
+table th, table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+table th {
+  font-weight: 500;
+  color: var(--text-dim);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+table td { color: var(--text-muted); }
+table td:first-child { color: var(--text); font-weight: 500; }
+
+/* Lists */
+ul, ol {
+  margin: 18px 0 18px 24px;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+li::marker { color: var(--accent); }
+
+/* End-of-section */
+.section-end {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .main { padding: 40px 24px 80px; }
+  .pattern-grid, .roadmap, .cot-compare { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">LLM internals, prompting, and pipelines</div>
+    <div class="sidebar-subtitle">a structural walkthrough</div>
+  </div>
+
+  <nav id="nav">
+    <div class="nav-section"><a class="nav-link" href="#section-0"><span class="nav-num">00</span>Orientation</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-1"><span class="nav-num">01</span>The substrate</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-2"><span class="nav-num">02</span>Prompting as conditioning</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-3"><span class="nav-num">03</span>Chain of thought</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-4"><span class="nav-num">04</span>Reflection</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-5"><span class="nav-num">05</span>Pipelines and agents</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-6"><span class="nav-num">06</span>Drift detection</a></div>
+    <div class="nav-section"><a class="nav-link" href="#section-7"><span class="nav-num">07</span>Recap and next steps</a></div>
+  </nav>
+
+  <div class="sidebar-footer">
+    Lesson prepared for Alexander.<br>
+    May 22, 2026.
+  </div>
+</aside>
+
+<main class="main" id="main">
+
+<!-- ============================================================
+     SECTION 0: ORIENTATION
+     ============================================================ -->
+<section class="section" id="section-0">
+  <div class="section-num">Section 00</div>
+  <h1 class="section-title">Orientation</h1>
+
+  <p class="lead">Alright Alexander, before we get into anything, let me lay out what we're doing here and why.</p>
+
+  <p>You came in with a clear goal. You're not trying to learn how to use an LLM API. You already do that. You're trying to build a structural, mechanical model of what's happening inside these systems, so that when you build things like your codebase knowledge system, you can reason about why your chains work or fail rather than treating them as black boxes that sometimes do the right thing.</p>
+
+  <p>That's the right instinct, and that's what this lesson is built around. By the end, you should be able to look at a multi-step LLM pipeline and predict, mechanically, what's going to be reliable about it and what's going to drift, where attention is doing real work and where it's just absorbing noise, why chain of thought helps for some problems and not others, and how reflection patterns actually work under the hood.</p>
+
+  <p>The structure is six content sections plus a recap. Each section builds on the previous one, but the site is also designed so you can jump back to any section as a reference later. Here's the map:</p>
+
+  <div class="roadmap">
+    <div class="roadmap-item">
+      <div class="rnum">01</div>
+      <div class="rtitle">The substrate</div>
+      <div class="rdesc">Tokens, embeddings, attention, generation. The mechanical foundation. This is the heaviest section, and everything else builds on it.</div>
+    </div>
+    <div class="roadmap-item">
+      <div class="rnum">02</div>
+      <div class="rtitle">Prompting as conditioning</div>
+      <div class="rdesc">The mindset shift from "asking questions" to "shaping a probability distribution." The frame that makes prompting techniques predictable.</div>
+    </div>
+    <div class="roadmap-item">
+      <div class="rnum">03</div>
+      <div class="rtitle">Chain of thought</div>
+      <div class="rdesc">Why writing reasoning as text gives the model more compute and external memory. Where CoT shines and where it fails.</div>
+    </div>
+    <div class="roadmap-item">
+      <div class="rnum">04</div>
+      <div class="rtitle">Reflection</div>
+      <div class="rdesc">The generate-critique-revise pattern. Why it works mechanically, and the failure mode where models defend their own wrong answers.</div>
+    </div>
+    <div class="roadmap-item">
+      <div class="rnum">05</div>
+      <div class="rtitle">Pipelines and agents</div>
+      <div class="rdesc">Multi-call architectures. The standard patterns. The methodology for stability. Why error amplification is the silent killer.</div>
+    </div>
+    <div class="roadmap-item">
+      <div class="rnum">06</div>
+      <div class="rtitle">Drift detection</div>
+      <div class="rdesc">Semantic and behavior drift. Applying everything to your codebase knowledge system. The architecture I'd actually recommend.</div>
+    </div>
+  </div>
+
+  <p>A few things to keep in mind as we go.</p>
+
+  <p>This is genuinely a lot of material. We have an hour, and I'd rather we go deep on the parts that matter most to you than rush through everything at a surface level. So if a section is clicking, we can move fast. If something doesn't land, we slow down. We probably won't finish all six sections in one sitting, and that's fine. The site is here, you can come back to it.</p>
+
+  <p>Second, every concept I introduce will eventually reduce to one of two things: what's happening mechanically with vectors and probabilities inside the model, or how text in the context window shapes those probabilities. If at any point something feels like magic, that's the signal to come back to those two things.</p>
+
+  <p>Third, I'll use your projects as recurring examples. You built a home assistant with persona routing. You're working on a codebase knowledge system with semantic and behavior drift tracking. Those are great working examples, so I'll lean on them throughout rather than inventing generic chatbot scenarios.</p>
+
+  <p>Let's start.</p>
+</section>
+
+<!-- ============================================================
+     SECTION 1: THE SUBSTRATE
+     ============================================================ -->
+<section class="section" id="section-1">
+  <div class="section-num">Section 01</div>
+  <h1 class="section-title">The substrate</h1>
+
+  <p class="lead">Before we can talk about prompting, chains, or any of the things you actually asked about, we need a working mechanical picture of what an LLM does when it takes your input and produces output. This section is that picture.</p>
+
+  <p>I want to flag up front: this is the hardest section in the lesson. Once you have this, everything else follows pretty naturally. So we'll take our time here.</p>
+
+  <h2>Tokens: what the model actually sees</h2>
+
+  <p>The first thing to understand is that the model does not read text. It cannot. Neural networks operate on numbers, not letters or words. So the first thing that happens to any input is a process called <strong>tokenization</strong>, which chops your text into chunks called tokens and assigns each one an integer ID.</p>
+
+  <p>A token is usually not a word and not a character. It's somewhere in between. Common words tend to be a single token. Rare or compound words get broken into pieces. Whitespace usually attaches to the next token, so the token for <code>"hello"</code> is different from the token for <code>" hello"</code> (with a leading space). The model has a fixed <strong>vocabulary</strong>, typically somewhere between 50,000 and 200,000 tokens, and every possible input has to be expressible as a sequence of token IDs drawn from that vocabulary.</p>
+
+  <p>So when you send the model a prompt like <code>"What is attention?"</code>, what actually arrives at the model is something like the integer sequence <code>[2061, 318, 3241, 30]</code>. Four numbers. That's it.</p>
+
+  <p>Play with this. Type any sentence into the box below and you'll see how it gets chopped up. These aren't the actual token IDs any specific model uses, but the chopping behavior is representative of how real tokenizers (BPE, SentencePiece, etc.) work.</p>
+
+  <div class="widget">
+    <div class="widget-title">Tokenization explorer</div>
+    <input type="text" class="token-input" id="tokenInput" value="The cat sat on the mat." placeholder="Type something to tokenize...">
+    <div class="token-display" id="tokenDisplay"></div>
+    <div class="token-stats">
+      <div class="token-stat">Characters: <strong id="charCount">0</strong></div>
+      <div class="token-stat">Tokens: <strong id="tokenCount">0</strong></div>
+      <div class="token-stat">Ratio: <strong id="ratio">0</strong></div>
+    </div>
+    <div class="widget-caption">Try things like "tokenization," "antidisestablishmentarianism," numbers, emoji, code. Notice that common words become one token while rare or compound ones split into pieces.</div>
+  </div>
+
+  <p>This matters for a few practical reasons. Context windows are measured in tokens, not characters or words. Costs are billed per token. And critically: when we talk about "the model paying attention to tokens" later, we mean these integer-indexed chunks, not words.</p>
+
+  <h2>Embeddings: tokens become vectors</h2>
+
+  <p>Now we have integer IDs. But integers are useless for a neural network. The number 2061 has no meaningful relationship to 2062 just because they're consecutive. So the very first thing the model does internally is convert each token ID into a vector, using a giant lookup table called the <strong>embedding matrix</strong>.</p>
+
+  <p>The embedding matrix is just a table. Rows equal vocabulary size (say 100,000), columns equal embedding dimension (say 4,096 for a large model). So it's a 100,000 by 4,096 grid of learned numbers. To get the embedding for token ID 2061, you grab row 2061. That gives you a 4,096-dimensional vector.</p>
+
+  <p>You already understand vectors as searchable, comparable points in space. Here's the magic: during training, the model learned to place tokens in this 4,096-dimensional space such that <strong>tokens with similar meanings end up near each other</strong>. The word "king" and the word "queen" land close together. "Paris" and "France" land close together. "running" and "ran" land close together. The vector for a token isn't arbitrary, it captures the token's meaning in a way the math can work with.</p>
+
+  <p>So at this point in the process, your text has been transformed from a sequence of integers into a sequence of vectors, one per token, each vector being a rich 4,096-dimensional representation of that token's meaning.</p>
+
+  <p>One last detail: word order matters. <code>"dog bites man"</code> and <code>"man bites dog"</code> use the same tokens but mean opposite things. So the model also adds <strong>positional information</strong> to each embedding, so it knows token 1 came before token 2. The mechanism (rotary, sinusoidal, etc.) doesn't matter for our purposes. Just hold the idea: each token's vector encodes both meaning and position in the sequence.</p>
+
+  <h2>Attention: the heart of the transformer</h2>
+
+  <p>This is the central mechanism. Everything else in the lesson sits on top of this. If you only walk away understanding one thing from this section, make it this.</p>
+
+  <p>After embedding, we have a stack of vectors, one per token. The model's job is to transform this stack, layer by layer, into a better stack of vectors. "Better" means: each token's vector becomes more aware of the other tokens around it, more contextually informed. That transformation is what attention does.</p>
+
+  <p>Here's the core intuition: <em>attention is a mechanism that lets each token look at every other token in the sequence and pull in information from the ones it cares about.</em></p>
+
+  <p>Take the sentence "The cat sat on the mat." Focus on the token "sat." Its initial embedding is generic. It just means "sat" in isolation. But to understand "sat" in this sentence, the model needs to know: who sat, and where. That information is in "cat" (the subject) and "mat" (the location).</p>
+
+  <p>Attention is the mechanism that lets "sat" reach out, grab information from "cat" and "mat", and update its own vector to be more like "sat, specifically the act of a cat sitting on a mat." After attention runs, the vector at the "sat" position is no longer generic. It's contextualized.</p>
+
+  <p>This happens for every token simultaneously. Every token updates itself by pulling relevant information from every other token.</p>
+
+  <h3>How attention decides what to look at: Q, K, V</h3>
+
+  <p>Now for the mechanism. This is where the Q, K, V (Query, Key, Value) thing comes up. Don't let the jargon scare you. The intuition is a search engine.</p>
+
+  <p>Each token produces three things from its current vector:</p>
+
+  <ol>
+    <li>A <strong>Query</strong> vector: "Here's what I'm looking for."</li>
+    <li>A <strong>Key</strong> vector: "Here's what I have to offer."</li>
+    <li>A <strong>Value</strong> vector: "Here's the actual content I'd share if you wanted it."</li>
+  </ol>
+
+  <p>Then for each token, the model computes how well that token's Query matches every other token's Key. A high match means "this other token has something I want." A low match means "ignore it."</p>
+
+  <p>Concretely for "sat": its Query encodes something like "I'm an action verb, I need a subject and a location." It compares its Query to the Key of "cat", strong match, cat is a subject. Compares to the Key of "mat", strong match, mat is a location. Compares to the Key of "the", weak match, "the" is just an article. Each comparison produces an attention weight.</p>
+
+  <p>Once the model has these weights, it takes a <strong>weighted average of all the Value vectors</strong> in the sequence, using those attention weights. That weighted average gets mixed into "sat"'s updated vector. So "sat" ends up with a vector that's mostly its original meaning, plus a strong dose of "cat"'s value, plus a strong dose of "mat"'s value, plus tiny amounts from the other tokens.</p>
+
+  <p>Q, K, and V each come from multiplying the token's current vector by a separate learned weight matrix (W_Q, W_K, W_V). Those matrices are part of what the model learned during training. So the model literally learned how to ask good questions, advertise its content, and share its content.</p>
+
+  <div class="widget">
+    <div class="widget-title">Attention visualization</div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Click any token below to make it the query. The lines show how strongly that token attends to every other token. Line thickness = attention weight.</p>
+    <div class="attention-tokens" id="attTokens"></div>
+    <div class="att-svg-wrap">
+      <svg width="100%" viewBox="0 0 680 200" id="attSvg" style="max-height: 200px;">
+        <defs>
+          <marker id="arrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <g id="attLines"></g>
+        <g id="attLabels"></g>
+      </svg>
+    </div>
+    <div class="widget-caption">Notice how "sat" attends most strongly to "cat" (its subject) and "mat" (its location). The articles "the" and "the" get very little attention. This is a simulated pattern, but real attention heads learn relationships like this.</div>
+  </div>
+
+  <h3>Multi-head attention</h3>
+
+  <p>In practice, the model doesn't run attention just once per layer. It runs it many times in parallel, across what are called <strong>attention heads</strong>. A typical large model has 32 or more heads per layer. Each head has its own W_Q, W_K, W_V matrices, so each head learns to attend to a different kind of relationship.</p>
+
+  <p>One head might learn to attend to subject-verb relationships. Another might attend to long-range references like pronouns and their antecedents. Another might pick up syntactic structure. Another might attend to coreference. Nobody tells them what to specialize in. They figure it out during training based on what helps the model predict tokens better.</p>
+
+  <p>After all heads run, their outputs get concatenated and projected back down to the original vector size. So the token's updated vector now contains information aggregated through many different attention "lenses" simultaneously. That's multi-head attention.</p>
+
+  <h3>Causal masking: a critical detail</h3>
+
+  <p>I glossed over something earlier and now's the time to come back to it. I said every token attends to every other token. That's true for some architectures (encoder-style), but for decoder-only LLMs like GPT, Claude, Llama, etc., attention is <strong>causal</strong>. That means each token can only attend to itself and tokens that came before it. Never to tokens that come after.</p>
+
+  <p>So token 6 can attend to tokens 1, 2, 3, 4, 5, and itself. Token 3 can attend to tokens 1, 2, and itself, but not 4, 5, or 6. This is enforced by literally zeroing out the forward-looking attention weights in the math, before the softmax that normalizes them.</p>
+
+  <p>Why? Because during training, the model is being taught to predict the next token. If token 3 could see token 4, predicting token 4 would be trivial cheating. So the architecture structurally prevents looking at future tokens, which forces the model to learn to actually predict.</p>
+
+  <p>This is why the <em>last position</em> in the sequence is the privileged one for prediction. It's the only position whose vector has seen everything. Earlier positions have only seen their own past.</p>
+
+  <h2>Layer stacking: why depth matters</h2>
+
+  <p>Everything I just described, attention plus a feed-forward neural network step, that's <strong>one layer</strong> of a transformer. Modern LLMs stack 30 to 100+ of these layers. The output of one layer becomes the input to the next.</p>
+
+  <p>This stacking is huge. Here's why.</p>
+
+  <p>After layer 1, each token's vector knows about its immediate neighbors and obvious relationships. After layer 2, each token's vector knows about the relationships <em>between</em> its neighbors, because layer 2 is attending to vectors that already aggregated some context in layer 1. After layer 10, vectors encode richer syntactic and semantic structure. After layer 50, vectors encode abstract concepts, logical relationships, world knowledge, intent, tone.</p>
+
+  <p>By the time you reach the top of the stack, the vector at each position is an extraordinarily rich representation that knows about the entire context around it and what role this token plays in it.</p>
+
+  <p>This is critical for answering a question you might have: "if attention happens once, how does the last vector know about everything?" The answer is: attention happens 50+ times. Each layer is another opportunity to mix information across positions. By the top layer, the last position has absorbed deep, distilled information from every previous position, through dozens of rounds of progressively richer attention.</p>
+
+  <div class="widget">
+    <div class="widget-title">Information flow through layers</div>
+    <svg width="100%" viewBox="0 0 680 280" style="max-height: 320px;">
+      <defs>
+        <marker id="arrowL" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.2" stroke-linecap="round"/>
+        </marker>
+      </defs>
+      <!-- Layer rows -->
+      <text x="40" y="36" fill="#9a978c" font-size="11" font-family="JetBrains Mono">layer 50</text>
+      <text x="40" y="86" fill="#9a978c" font-size="11" font-family="JetBrains Mono">layer 25</text>
+      <text x="40" y="136" fill="#9a978c" font-size="11" font-family="JetBrains Mono">layer 1</text>
+      <text x="40" y="186" fill="#9a978c" font-size="11" font-family="JetBrains Mono">embed</text>
+      <text x="40" y="236" fill="#9a978c" font-size="11" font-family="JetBrains Mono">tokens</text>
+
+      <!-- Token row at bottom -->
+      <g font-family="JetBrains Mono" font-size="11">
+        <rect x="120" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="150" y="235" text-anchor="middle" fill="#e8e5dd">the</text>
+        <rect x="200" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="230" y="235" text-anchor="middle" fill="#e8e5dd">cat</text>
+        <rect x="280" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="310" y="235" text-anchor="middle" fill="#e8e5dd">sat</text>
+        <rect x="360" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="390" y="235" text-anchor="middle" fill="#e8e5dd">on</text>
+        <rect x="440" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="470" y="235" text-anchor="middle" fill="#e8e5dd">the</text>
+        <rect x="520" y="220" width="60" height="22" rx="3" fill="#1c1c19" stroke="#3a3a34"/>
+        <text x="550" y="235" text-anchor="middle" fill="#e8e5dd">mat</text>
+      </g>
+
+      <!-- Embedding row -->
+      <g>
+        <circle cx="150" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+        <circle cx="230" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+        <circle cx="310" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+        <circle cx="390" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+        <circle cx="470" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+        <circle cx="550" cy="180" r="6" fill="#6ea8c4" opacity="0.4"/>
+      </g>
+
+      <!-- Layer 1 -->
+      <g>
+        <circle cx="150" cy="130" r="7" fill="#e9a358" opacity="0.5"/>
+        <circle cx="230" cy="130" r="7" fill="#e9a358" opacity="0.5"/>
+        <circle cx="310" cy="130" r="8" fill="#e9a358" opacity="0.7"/>
+        <circle cx="390" cy="130" r="7" fill="#e9a358" opacity="0.5"/>
+        <circle cx="470" cy="130" r="7" fill="#e9a358" opacity="0.5"/>
+        <circle cx="550" cy="130" r="7" fill="#e9a358" opacity="0.5"/>
+        <!-- Local attention lines -->
+        <line x1="310" y1="130" x2="230" y2="130" stroke="#e9a358" stroke-width="0.8" opacity="0.4"/>
+        <line x1="310" y1="130" x2="390" y2="130" stroke="#e9a358" stroke-width="0.8" opacity="0.4"/>
+      </g>
+
+      <!-- Layer 25 -->
+      <g>
+        <circle cx="150" cy="80" r="7" fill="#e9a358" opacity="0.7"/>
+        <circle cx="230" cy="80" r="8" fill="#e9a358" opacity="0.8"/>
+        <circle cx="310" cy="80" r="9" fill="#e9a358" opacity="0.95"/>
+        <circle cx="390" cy="80" r="7" fill="#e9a358" opacity="0.6"/>
+        <circle cx="470" cy="80" r="7" fill="#e9a358" opacity="0.6"/>
+        <circle cx="550" cy="80" r="8" fill="#e9a358" opacity="0.8"/>
+        <line x1="310" y1="80" x2="230" y2="80" stroke="#e9a358" stroke-width="1.5" opacity="0.6"/>
+        <line x1="310" y1="80" x2="550" y2="80" stroke="#e9a358" stroke-width="1.5" opacity="0.6"/>
+        <line x1="310" y1="80" x2="150" y2="80" stroke="#e9a358" stroke-width="0.6" opacity="0.3"/>
+      </g>
+
+      <!-- Layer 50 -->
+      <g>
+        <circle cx="150" cy="30" r="7" fill="#e9a358" opacity="0.85"/>
+        <circle cx="230" cy="30" r="9" fill="#e9a358" opacity="0.95"/>
+        <circle cx="310" cy="30" r="9" fill="#e9a358" opacity="0.95"/>
+        <circle cx="390" cy="30" r="7" fill="#e9a358" opacity="0.7"/>
+        <circle cx="470" cy="30" r="7" fill="#e9a358" opacity="0.7"/>
+        <circle cx="550" cy="30" r="11" fill="#e9a358" opacity="1"/>
+        <!-- Long range -->
+        <line x1="550" y1="30" x2="150" y2="30" stroke="#e9a358" stroke-width="1.2" opacity="0.5"/>
+        <line x1="550" y1="30" x2="230" y2="30" stroke="#e9a358" stroke-width="2" opacity="0.7"/>
+        <line x1="550" y1="30" x2="310" y2="30" stroke="#e9a358" stroke-width="2" opacity="0.7"/>
+        <line x1="550" y1="30" x2="390" y2="30" stroke="#e9a358" stroke-width="1" opacity="0.4"/>
+        <line x1="550" y1="30" x2="470" y2="30" stroke="#e9a358" stroke-width="1" opacity="0.4"/>
+      </g>
+
+      <!-- Vertical flow arrows -->
+      <line x1="640" y1="220" x2="640" y2="40" stroke="#3a3a34" stroke-width="1" stroke-dasharray="2 3" marker-end="url(#arrowL)"/>
+      <text x="650" y="135" fill="#9a978c" font-size="11" font-family="JetBrains Mono">depth</text>
+    </svg>
+    <div class="widget-caption">Each circle is a token's vector at that layer. Lines are attention. Notice how at layer 1 attention is mostly local, at layer 25 longer-range relationships form, and at layer 50 the last position has integrated information from everywhere. The last vector is not just "the last word", it is a deeply contextualized summary.</div>
+  </div>
+
+  <h2>Autoregressive generation: the loop</h2>
+
+  <p>Now we put it all together to see how the model actually generates output. This part you mostly had right when we were chatting, I just want to formalize it.</p>
+
+  <p>The model is, fundamentally, a next-token predictor. It does one thing: takes a sequence of tokens, returns a probability distribution over what the next token should be. To generate a full response, this gets wrapped in a loop.</p>
+
+  <pre><code>1. Take the current sequence of tokens (the prompt).
+2. Run it through the model (embed → 50 layers of attention → final vector at last position).
+3. Convert that final vector into a probability distribution over the vocabulary.
+4. Sample one token from that distribution.
+5. Append that token to the sequence.
+6. Go back to step 1.
+7. Stop when the model samples a special "end of response" token, or hits max length.</code></pre>
+
+  <p>That's the entire generation process. There's no "the model writes an answer." There's only "the model picks one token, then picks the next, then picks the next, hundreds of times, until it picks a token that means stop."</p>
+
+  <p>This is what <strong>autoregressive</strong> means. "Auto" is self, "regressive" is depending on previous values. The model regresses on its own previous outputs. Each token it generates becomes part of the input for predicting the next one.</p>
+
+  <div class="widget">
+    <div class="widget-title">The autoregressive loop</div>
+    <svg width="100%" viewBox="0 0 680 280" style="max-height: 320px;">
+      <defs>
+        <marker id="arrowAR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Box: context -->
+      <rect x="40" y="40" width="180" height="60" rx="6" fill="#151513" stroke="#3a3a34"/>
+      <text x="130" y="68" text-anchor="middle" fill="#e8e5dd" font-size="13" font-weight="500" font-family="Geist">Token sequence</text>
+      <text x="130" y="86" text-anchor="middle" fill="#9a978c" font-size="11" font-family="JetBrains Mono">[t1, t2, t3, ...]</text>
+
+      <!-- Box: model -->
+      <rect x="270" y="40" width="180" height="60" rx="6" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="360" y="68" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">Model forward pass</text>
+      <text x="360" y="86" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">embed → layers → out</text>
+
+      <!-- Box: distribution -->
+      <rect x="500" y="40" width="140" height="60" rx="6" fill="#151513" stroke="#3a3a34"/>
+      <text x="570" y="68" text-anchor="middle" fill="#e8e5dd" font-size="13" font-weight="500" font-family="Geist">Probability dist.</text>
+      <text x="570" y="86" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">over vocabulary</text>
+
+      <!-- Arrows top row -->
+      <line x1="220" y1="70" x2="265" y2="70" stroke="#9a978c" stroke-width="1.2" marker-end="url(#arrowAR)"/>
+      <line x1="450" y1="70" x2="495" y2="70" stroke="#9a978c" stroke-width="1.2" marker-end="url(#arrowAR)"/>
+
+      <!-- Sample -->
+      <line x1="570" y1="100" x2="570" y2="140" stroke="#9a978c" stroke-width="1.2" marker-end="url(#arrowAR)"/>
+      <text x="585" y="125" fill="#9a978c" font-size="11" font-family="Geist">sample</text>
+
+      <!-- New token -->
+      <rect x="500" y="140" width="140" height="40" rx="6" fill="#151513" stroke="#e9a358"/>
+      <text x="570" y="166" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="JetBrains Mono">t_n+1</text>
+
+      <!-- Loop back -->
+      <path d="M 500 160 Q 350 160 350 200 Q 350 240 130 240 Q 50 240 50 160 Q 50 110 90 100" 
+            stroke="#e9a358" stroke-width="1.5" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowAR)"/>
+      <text x="320" y="232" fill="#e9a358" font-size="11" font-family="Geist">append to sequence, repeat</text>
+    </svg>
+    <div class="widget-caption">Every generated token requires a full forward pass through all 50+ layers. If the model produces 500 tokens, that's 500 forward passes. Each pass sees all previously generated tokens as additional context.</div>
+  </div>
+
+  <h2>Sampling and stopping</h2>
+
+  <p>Step 4 above said "sample one token from that distribution." Let's unpack that.</p>
+
+  <p>The model's output isn't a single token, it's a probability over the entire vocabulary. For a given input, it might say <code>"mat"</code> at 42%, <code>"floor"</code> at 18%, <code>"chair"</code> at 11%, <code>"rug"</code> at 8%, and thousands of other tokens with smaller probabilities. We have to choose one. There are different strategies.</p>
+
+  <p><strong>Greedy</strong> always picks the highest-probability token. Deterministic, but often repetitive and boring.</p>
+
+  <p><strong>Temperature sampling</strong> samples randomly from the distribution, but first reshapes it using a temperature parameter. Temperature 0 is equivalent to greedy. Temperature 1 samples from the distribution as given. Temperature greater than 1 flattens the distribution (more randomness, more weirdness). Temperature less than 1 sharpens it (safer choices, less variety).</p>
+
+  <p><strong>Top-p</strong> (also called nucleus sampling) only samples from the smallest set of tokens whose cumulative probability exceeds some threshold like 0.9. This cuts off the long tail of very unlikely tokens, used in combination with temperature.</p>
+
+  <p><strong>Top-k</strong> only samples from the top k tokens. Similar idea, slightly different mechanism.</p>
+
+  <p>For your purposes building stable systems, the practical takeaway is this: if you want reproducible, deterministic output, use temperature near 0. If you want creative exploration, raise temperature. Most production pipelines run at very low temperatures because predictability matters more than variety.</p>
+
+  <p>How does the model know when to stop generating? It produces a special <strong>end-of-sequence</strong> token, often something like <code>&lt;|im_end|&gt;</code> or equivalent. This token is in the vocabulary like any other, and during training the model learned to generate it when its response is "done." So the loop ends when the sampled token is this stop token. The model decides for itself when it's finished. There's also a hard max-token limit, set by the API, that forcibly stops generation if needed.</p>
+
+  <h2>Putting it all together</h2>
+
+  <p>Now combining everything in this section:</p>
+
+  <ol>
+    <li>Your text becomes tokens (integers from a vocabulary).</li>
+    <li>Tokens become vectors via the embedding matrix, plus positional info.</li>
+    <li>The vectors get refined through 50+ layers of multi-head causal attention plus feed-forward networks.</li>
+    <li>Throughout the layers, each token attends only to itself and previous tokens, but information flows upward in depth so that by the top, the last position has absorbed everything relevant from the whole context.</li>
+    <li>The vector at the last position produces a probability distribution over the vocabulary.</li>
+    <li>One token gets sampled from that distribution.</li>
+    <li>That token gets appended to the text. The whole loop runs again.</li>
+    <li>The loop continues, one token per pass, until the model produces a stop token.</li>
+  </ol>
+
+  <div class="callout callout-cool">
+    <strong>Single most important takeaway from this section.</strong> The model has no memory of its computation across forward passes. Each pass produces exactly one token. Everything the model "figured out" in its 50 layers of internal computation is thrown away after that token is generated. The only thing that persists is the token itself, which becomes part of the input next time. This is why text in the context is everything. It is the model's only memory.
+  </div>
+
+  <p>That's section 1. Take a breath. The rest of the lesson is going to feel much more manageable, because it all sits on top of what we just built.</p>
+
+  <div class="section-end">End of section 1. Section 2 covers prompting as conditioning, which is the conceptual shift that ties this mechanical picture to how you actually use the model.</div>
+</section>
+
+<script>
+// =========================================================
+// Tokenization widget
+// =========================================================
+function simpleTokenize(text) {
+  if (!text) return [];
+  const tokens = [];
+  let i = 0;
+  // Common short words get one token
+  const common = ['the','a','an','is','are','was','were','it','of','to','in','on','at','for','and','or','but','not','my','your','his','her','its','our','their','this','that','these','those','I','you','he','she','we','they','will','can','do','does','did','have','has','had','be','been','being','what','when','where','who','why','how'];
+  const tokenColors = ['#e9a358','#6ea8c4','#c97862','#7ab36a','#b39ddb','#f0b974'];
+  
+  // Split by whitespace but keep delimiters
+  const parts = text.match(/\s+|\S+/g) || [];
+  let id = 1000;
+  for (const part of parts) {
+    if (/^\s+$/.test(part)) continue;
+    let word = part;
+    let prefix = '';
+    if (part.length > 0 && /\s/.test(text[Math.max(0, text.indexOf(part) - 1)])) {
+      prefix = ' ';
+    }
+    // Strip leading/trailing punctuation as own tokens
+    const punctMatch = word.match(/^([\.,!?;:'"\(\)\[\]\-]+)?(.*?)([\.,!?;:'"\(\)\[\]\-]+)?$/);
+    if (punctMatch) {
+      if (punctMatch[1]) { tokens.push({text: punctMatch[1], id: id++ % 50000, color: '#6b6862'}); }
+      word = punctMatch[2];
+      var trailPunct = punctMatch[3];
+    }
+    if (word) {
+      const lower = word.toLowerCase();
+      if (common.includes(lower)) {
+        tokens.push({text: (prefix + word), id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+      } else if (word.length <= 5) {
+        tokens.push({text: (prefix + word), id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+      } else {
+        // Split longer words into 2-3 pieces
+        const splitPoint = Math.ceil(word.length / 2);
+        const piece1 = word.slice(0, splitPoint);
+        const piece2 = word.slice(splitPoint);
+        tokens.push({text: (prefix + piece1), id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+        if (piece2.length > 4) {
+          const sp2 = Math.ceil(piece2.length / 2);
+          tokens.push({text: piece2.slice(0, sp2), id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+          tokens.push({text: piece2.slice(sp2), id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+        } else if (piece2) {
+          tokens.push({text: piece2, id: id++ % 50000, color: tokenColors[tokens.length % tokenColors.length]});
+        }
+      }
+    }
+    if (trailPunct) { tokens.push({text: trailPunct, id: id++ % 50000, color: '#6b6862'}); }
+  }
+  return tokens;
+}
+
+function renderTokens() {
+  const input = document.getElementById('tokenInput');
+  const display = document.getElementById('tokenDisplay');
+  if (!input || !display) return;
+  const text = input.value;
+  const tokens = simpleTokenize(text);
+  display.innerHTML = '';
+  tokens.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'token';
+    el.style.background = t.color;
+    el.style.color = '#0c0c0c';
+    const txt = document.createElement('div');
+    txt.className = 'token-text';
+    txt.textContent = t.text.replace(/ /g, '·');
+    const idEl = document.createElement('div');
+    idEl.className = 'token-id';
+    idEl.textContent = t.id;
+    el.appendChild(txt);
+    el.appendChild(idEl);
+    display.appendChild(el);
+  });
+  document.getElementById('charCount').textContent = text.length;
+  document.getElementById('tokenCount').textContent = tokens.length;
+  document.getElementById('ratio').textContent = tokens.length > 0 ? (text.length / tokens.length).toFixed(1) : '0';
+}
+
+document.getElementById('tokenInput').addEventListener('input', renderTokens);
+renderTokens();
+
+// =========================================================
+// Attention widget
+// =========================================================
+const attSentence = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
+// Pre-computed attention patterns for each query token (rough approximations)
+const attentionMap = {
+  0: [1.0, 0.1, 0.05, 0.05, 0.05, 0.05],   // "The" attends to self mostly
+  1: [0.3, 1.0, 0.1, 0.05, 0.05, 0.1],     // "cat" attends to "The" + self
+  2: [0.1, 0.85, 1.0, 0.15, 0.1, 0.75],    // "sat" attends to "cat" and "mat"
+  3: [0.05, 0.2, 0.4, 1.0, 0.1, 0.8],      // "on" attends to "sat" and "mat"
+  4: [0.4, 0.15, 0.1, 0.2, 1.0, 0.5],      // "the" attends to "mat"
+  5: [0.05, 0.6, 0.85, 0.7, 0.3, 1.0]      // "mat" attends to "sat", "on", "cat"
+};
+
+let currentQuery = 2;
+
+function renderAttention() {
+  const tokensEl = document.getElementById('attTokens');
+  if (!tokensEl) return;
+  tokensEl.innerHTML = '';
+  attSentence.forEach((tok, i) => {
+    const el = document.createElement('div');
+    el.className = 'att-token' + (i === currentQuery ? ' query' : '');
+    el.textContent = tok;
+    el.addEventListener('click', () => { currentQuery = i; renderAttention(); });
+    tokensEl.appendChild(el);
+  });
+
+  const svg = document.getElementById('attSvg');
+  const linesG = document.getElementById('attLines');
+  const labelsG = document.getElementById('attLabels');
+  if (!linesG || !labelsG) return;
+  linesG.innerHTML = '';
+  labelsG.innerHTML = '';
+
+  // Token x positions
+  const positions = [80, 180, 280, 380, 480, 580];
+  const weights = attentionMap[currentQuery];
+  const qx = positions[currentQuery];
+
+  // Draw lines from query down to each target along the top row
+  weights.forEach((w, i) => {
+    if (i === currentQuery) return;
+    const tx = positions[i];
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    // Curved path from bottom to top
+    const midY = 100;
+    line.setAttribute('d', `M ${qx} 160 Q ${(qx + tx) / 2} ${midY} ${tx} 40`);
+    line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', '#e9a358');
+    line.setAttribute('stroke-width', (w * 5).toFixed(2));
+    line.setAttribute('opacity', (0.15 + w * 0.7).toFixed(2));
+    line.setAttribute('stroke-linecap', 'round');
+    linesG.appendChild(line);
+
+    // Weight label near target
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    lbl.setAttribute('x', tx);
+    lbl.setAttribute('y', 28);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('fill', '#9a978c');
+    lbl.setAttribute('font-size', '10');
+    lbl.setAttribute('font-family', 'JetBrains Mono');
+    lbl.textContent = w.toFixed(2);
+    labelsG.appendChild(lbl);
+  });
+
+  // Top row tokens (keys)
+  positions.forEach((px, i) => {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', px - 32);
+    rect.setAttribute('y', 40);
+    rect.setAttribute('width', 64);
+    rect.setAttribute('height', 30);
+    rect.setAttribute('rx', 4);
+    rect.setAttribute('fill', '#1c1c19');
+    rect.setAttribute('stroke', '#3a3a34');
+    labelsG.appendChild(rect);
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', px);
+    t.setAttribute('y', 60);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('fill', '#e8e5dd');
+    t.setAttribute('font-size', '13');
+    t.setAttribute('font-family', 'JetBrains Mono');
+    t.textContent = attSentence[i];
+    labelsG.appendChild(t);
+  });
+
+  // Query token at bottom (highlighted)
+  const qrect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  qrect.setAttribute('x', qx - 36);
+  qrect.setAttribute('y', 160);
+  qrect.setAttribute('width', 72);
+  qrect.setAttribute('height', 32);
+  qrect.setAttribute('rx', 4);
+  qrect.setAttribute('fill', '#e9a358');
+  qrect.setAttribute('stroke', '#e9a358');
+  labelsG.appendChild(qrect);
+  const qt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  qt.setAttribute('x', qx);
+  qt.setAttribute('y', 181);
+  qt.setAttribute('text-anchor', 'middle');
+  qt.setAttribute('fill', '#0c0c0c');
+  qt.setAttribute('font-size', '13');
+  qt.setAttribute('font-weight', '500');
+  qt.setAttribute('font-family', 'JetBrains Mono');
+  qt.textContent = attSentence[currentQuery];
+  labelsG.appendChild(qt);
+
+  // "query" label
+  const ql = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  ql.setAttribute('x', qx);
+  ql.setAttribute('y', 198);
+  ql.setAttribute('text-anchor', 'middle');
+  ql.setAttribute('fill', '#9a978c');
+  ql.setAttribute('font-size', '10');
+  ql.setAttribute('font-family', 'Geist');
+  ql.textContent = 'query';
+  labelsG.appendChild(ql);
+}
+
+renderAttention();
+</script>
+
+<!-- ============================================================
+     SECTION 2: PROMPTING AS CONDITIONING
+     ============================================================ -->
+<section class="section" id="section-2">
+  <div class="section-num">Section 02</div>
+  <h1 class="section-title">Prompting as conditioning</h1>
+
+  <p class="lead">This section is mostly a mindset shift. There's not much new mechanically. But once this shift clicks, prompting stops feeling like a bag of tricks and starts feeling like a single coherent skill.</p>
+
+  <h2>The shift</h2>
+
+  <p>Most people think about prompting like this: "I'm asking the model a question, and it gives me an answer." This is the wrong mental model. Here's the right one.</p>
+
+  <div class="callout">
+    <strong>The frame.</strong> The model is always doing the same thing: predicting the next token given the previous tokens. Prompting is just choosing the previous tokens in a way that shapes which next tokens become likely.
+  </div>
+
+  <p>You're not asking. You're <em>conditioning the probability distribution</em>. Everything in the context, your prompt, the system message, any examples, anything the model itself has already generated, all of it is shaping the probabilities that determine the next token, and the token after that, and the token after that.</p>
+
+  <p>This means the question "what's the best prompt?" becomes "what context will produce the probability distribution that makes the right next tokens likely?" That reframe is what unlocks everything in this lesson.</p>
+
+  <h2>Why this reframe matters</h2>
+
+  <p>Once you see prompting as conditioning, a bunch of things stop being mysterious tricks and start being predictable consequences of how the architecture works.</p>
+
+  <p><strong>Few-shot examples work</strong> because when the context contains several examples of the pattern "input X → output Y," the model's attention picks up on that pattern. When it sees a new X, the probability distribution heavily favors continuing the pattern with a matching Y. You're not teaching the model anything. You're putting it in a region of probability space where the right answer is the natural next thing to say.</p>
+
+  <p><strong>System prompts work</strong> because they sit at the very start of the context, which means every single generated token attends back to them through every layer. The instructions in a system prompt aren't being "obeyed". They're shaping the vector for every subsequent token, biasing the model toward outputs consistent with those instructions.</p>
+
+  <p><strong>"Let me think step by step" works</strong> because once those tokens are in the context, the most probable continuation is more structured reasoning rather than a snap answer. You've conditioned the model into a region where step-by-step responses are more likely.</p>
+
+  <p><strong>Role-playing prompts work</strong> because if the context establishes "You are a senior security engineer reviewing code," then the next-token distribution becomes biased toward the kinds of sequences that appear after such setups in training data. The model isn't pretending. It's generating probable continuations of the context you constructed.</p>
+
+  <p><strong>Bad context produces bad output</strong> because if your prompt is vague, contradictory, or polluted with irrelevant detail, the attention mechanism has to do too much work to figure out what's actually relevant, and the resulting probability distribution becomes noisier. Garbage in, garbage out, but now you can see exactly why.</p>
+
+  <h2>Visualizing the effect of conditioning</h2>
+
+  <p>To make this concrete: imagine the same question being asked under three different conditioning setups. The mechanical answer to "what's the next token after the user's question" is determined by everything that came before it. Here's a rough visualization of how the probability distribution shifts:</p>
+
+  <div class="widget">
+    <div class="widget-title">Conditioning shifts the distribution</div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Click each context to see how the model's next-token probabilities change for the same query: "How do I handle errors in this function?"</p>
+
+    <div class="btn-row">
+      <button class="btn active" onclick="showCond(0, this)">No context</button>
+      <button class="btn" onclick="showCond(1, this)">+ system: "Be concise"</button>
+      <button class="btn" onclick="showCond(2, this)">+ "You're a senior eng"</button>
+      <button class="btn" onclick="showCond(3, this)">+ few-shot examples</button>
+    </div>
+
+    <svg width="100%" viewBox="0 0 680 220" id="condSvg" style="max-height: 240px;">
+      <g id="condBars"></g>
+    </svg>
+    <div class="widget-caption" id="condCaption">With no surrounding context, the model's next-token distribution is broad. As you add conditioning, the distribution sharpens around tokens consistent with that context.</div>
+  </div>
+
+  <h2>Position matters</h2>
+
+  <p>Not all positions in the context are equal. There are predictable effects based on where information sits.</p>
+
+  <p><strong>Tokens at the start of the context have outsized influence</strong> because every subsequent token attends back to them through every layer. This is why system prompts go at the top. The model has hundreds of opportunities (one per generated token, each going through 50+ attention operations) to pull information from the top of the context.</p>
+
+  <p><strong>Tokens at the very end also get strong attention</strong>, because the most recent context is freshest and the model's positional encoding tends to highlight recency.</p>
+
+  <p><strong>Things buried in the middle of long contexts get attended to less reliably.</strong> This is the famous "lost in the middle" effect. If you bury a critical instruction or fact in the middle of a 50-page document, the model often glosses over it. The same fact at the start or end gets much more attention.</p>
+
+  <div class="widget">
+    <div class="widget-title">Attention by position in a long context</div>
+    <svg width="100%" viewBox="0 0 680 180" style="max-height: 200px;">
+      <!-- X axis -->
+      <line x1="60" y1="140" x2="640" y2="140" stroke="#3a3a34" stroke-width="1"/>
+      <text x="60" y="160" fill="#9a978c" font-size="11" font-family="Geist">start</text>
+      <text x="350" y="160" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">middle of context</text>
+      <text x="640" y="160" text-anchor="end" fill="#9a978c" font-size="11" font-family="Geist">end (most recent)</text>
+      
+      <!-- Y axis label -->
+      <text x="20" y="80" fill="#9a978c" font-size="11" font-family="Geist" transform="rotate(-90 20 80)">attention strength</text>
+      
+      <!-- U-shaped curve -->
+      <path d="M 60 50 Q 80 35 100 45 Q 150 90 250 120 Q 350 130 450 120 Q 550 90 600 45 Q 620 35 640 50" 
+            fill="none" stroke="#e9a358" stroke-width="2"/>
+      
+      <!-- Fill under curve -->
+      <path d="M 60 50 Q 80 35 100 45 Q 150 90 250 120 Q 350 130 450 120 Q 550 90 600 45 Q 620 35 640 50 L 640 140 L 60 140 Z" 
+            fill="#e9a358" opacity="0.1"/>
+      
+      <!-- Markers -->
+      <circle cx="80" cy="40" r="3" fill="#e9a358"/>
+      <text x="80" y="28" text-anchor="middle" fill="#e8e5dd" font-size="10" font-family="Geist">system prompt</text>
+      
+      <circle cx="350" cy="128" r="3" fill="#c66a6a"/>
+      <text x="350" y="115" text-anchor="middle" fill="#c66a6a" font-size="10" font-family="Geist">lost in the middle</text>
+      
+      <circle cx="620" cy="40" r="3" fill="#e9a358"/>
+      <text x="620" y="28" text-anchor="middle" fill="#e8e5dd" font-size="10" font-family="Geist">recent context</text>
+    </svg>
+    <div class="widget-caption">A typical attention-by-position curve in long contexts. Critical information should sit at the start or near the end, not buried in the middle. For your codebase system, this means commit metadata and instructions belong at the top of each prompt, not interleaved with the diff content.</div>
+  </div>
+
+  <h2>Why structure helps attention</h2>
+
+  <p>You mentioned earlier that exam-style Q&amp;A format felt good for the attention mechanism. You were half right, and now I can give you the precise version.</p>
+
+  <p>When information is organized, with clear headers, labeled sections, structured fields, consistent formatting, attention can route to the relevant pieces more cleanly. When information is an unstructured wall of text, attention has to work harder to figure out what's relevant, and the quality of its routing drops.</p>
+
+  <p>It's not literally that "attention focuses better" in some mystical sense. It's that structured input gives the model strong, learnable signals about what role each piece of information plays. The model has seen millions of Q&amp;A documents in training, and it knows that text after "Question:" is a question and text after "Answer:" is an answer. So when you format your prompt that way, the attention heads can quickly identify which tokens to treat as the question and which to treat as known facts.</p>
+
+  <p>Same principle for JSON output, XML tags, numbered lists, code blocks, markdown headers. These aren't aesthetic choices. They're attention guides.</p>
+
+  <p>For your codebase system, this is concrete advice: when you build prompts that include code diffs, commit metadata, file paths, and instructions, use clear structural markers. Something like:</p>
+
+  <pre><code>&lt;commit_metadata&gt;
+  hash: a1b2c3d
+  files: [src/auth.py, tests/test_auth.py]
+  message: "Add rate limiting to login endpoint"
+&lt;/commit_metadata&gt;
+
+&lt;diff&gt;
+... actual diff ...
+&lt;/diff&gt;
+
+&lt;task&gt;
+Extract: changes, intent, risk areas.
+Output: JSON with fields [changes, intent, risk].
+&lt;/task&gt;</code></pre>
+
+  <p>This routes attention cleanly: the model sees clearly delineated regions of "input data" vs. "what you want me to do" vs. "expected output shape." That's significantly more reliable than a paragraph that mixes all of these.</p>
+
+  <h2>The deepest version: the model has no goals</h2>
+
+  <p>Here's the version of the conditioning frame that, if you really internalize it, changes how you think about everything.</p>
+
+  <div class="callout callout-warm">
+    <strong>The model has no goals, no understanding, no intent.</strong> It only has a probability distribution over the next token, shaped entirely by what's currently in its context. Prompting is the act of curating that context. There is no "trying" or "wanting" anywhere in the system.
+  </div>
+
+  <p>When the model writes "I think the best approach is...", it didn't think. It generated tokens that, given the context, were the most probable continuation. The output looks like thinking because the training data contains lots of writing that looks like thinking, and the model has learned to produce text that follows those patterns.</p>
+
+  <p>This isn't a philosophical point about consciousness. It's a practical engineering point. When you understand that the model is purely a context-to-distribution function, you stop asking questions like "does the model understand my instructions" and start asking "is my context structured in a way that makes the right next tokens probable." That second question has answers. The first one is a distraction.</p>
+
+  <h2>Three practical consequences</h2>
+
+  <p>This frame has immediate consequences that matter when you're building pipelines.</p>
+
+  <p><strong>Position your most important content at the top or end.</strong> Don't bury critical instructions in the middle. If you have a system prompt with rules and a user message with a question, the system prompt's influence is strong because it's at the start. If you append important constraints at the very end ("Respond in JSON only"), they get strong attention too.</p>
+
+  <p><strong>Use structure liberally.</strong> Headers, tags, labeled fields, code blocks. These cost almost nothing and significantly improve reliability. The model has seen enough structured prompts in training that it responds well to them.</p>
+
+  <p><strong>The model can be steered by what it has already generated.</strong> If you can get the model to start its response with a useful structure, an outline, a "Let me think step by step", a JSON opening brace, that structure becomes part of the context and shapes the rest. This is why prompting tricks like "Begin your response with..." work, and it's the foundation for chain of thought, which we'll get to next.</p>
+
+  <div class="section-end">End of section 2. The mindset shift is in place. Section 3 applies it to chain of thought, which will now feel mechanical rather than magical.</div>
+</section>
+
+<script>
+// =========================================================
+// Conditioning widget
+// =========================================================
+const condData = [
+  {
+    label: "No conditioning",
+    bars: [
+      { tok: 'You', p: 0.08 },
+      { tok: 'There', p: 0.07 },
+      { tok: 'Error', p: 0.06 },
+      { tok: 'It', p: 0.05 },
+      { tok: 'Try', p: 0.04 },
+      { tok: 'I', p: 0.04 },
+      { tok: '(other)', p: 0.66 }
+    ],
+    caption: "Without specific context, the next-token distribution is wide. The model could plausibly continue many ways. Quality is unpredictable because the distribution is unfocused."
+  },
+  {
+    label: "+ system: \"Be concise\"",
+    bars: [
+      { tok: 'Use', p: 0.18 },
+      { tok: 'Wrap', p: 0.14 },
+      { tok: 'Add', p: 0.12 },
+      { tok: 'Check', p: 0.10 },
+      { tok: 'Return', p: 0.08 },
+      { tok: 'You', p: 0.04 },
+      { tok: '(other)', p: 0.34 }
+    ],
+    caption: "Adding 'be concise' shifts the distribution toward terse, action-oriented openings. 'Use', 'Wrap', 'Add' are now far more likely than verbose constructions."
+  },
+  {
+    label: "+ \"You're a senior engineer\"",
+    bars: [
+      { tok: 'Wrap', p: 0.22 },
+      { tok: 'I\'d', p: 0.18 },
+      { tok: 'Consider', p: 0.14 },
+      { tok: 'For', p: 0.10 },
+      { tok: 'The', p: 0.08 },
+      { tok: 'You', p: 0.05 },
+      { tok: '(other)', p: 0.23 }
+    ],
+    caption: "Adding a senior-engineer persona shifts the distribution toward measured, advisory openings that frame trade-offs. 'I'd', 'Consider', 'For' all carry that tone."
+  },
+  {
+    label: "+ few-shot Q&A examples",
+    bars: [
+      { tok: 'Wrap', p: 0.38 },
+      { tok: 'Use', p: 0.22 },
+      { tok: 'The', p: 0.12 },
+      { tok: 'Add', p: 0.08 },
+      { tok: 'For', p: 0.06 },
+      { tok: 'You', p: 0.03 },
+      { tok: '(other)', p: 0.11 }
+    ],
+    caption: "Adding 2-3 examples of well-formatted answers sharpens the distribution dramatically. The model now strongly prefers continuations that match the pattern from your examples."
+  }
+];
+
+function showCond(idx, btn) {
+  document.querySelectorAll('#section-2 .btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const data = condData[idx];
+  const svg = document.getElementById('condBars');
+  if (!svg) return;
+  svg.innerHTML = '';
+  const maxP = Math.max(...data.bars.map(b => b.p));
+  const w = 60;
+  const gap = 14;
+  const totalW = data.bars.length * (w + gap) - gap;
+  const startX = (680 - totalW) / 2;
+  
+  data.bars.forEach((b, i) => {
+    const x = startX + i * (w + gap);
+    const h = (b.p / maxP) * 140;
+    const y = 170 - h;
+    
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x);
+    rect.setAttribute('y', y);
+    rect.setAttribute('width', w);
+    rect.setAttribute('height', h);
+    rect.setAttribute('rx', 2);
+    rect.setAttribute('fill', i === 0 ? '#e9a358' : (b.tok === '(other)' ? '#3a3a34' : '#6ea8c4'));
+    rect.setAttribute('opacity', i === 0 ? 1 : 0.7);
+    svg.appendChild(rect);
+    
+    // Probability label
+    const pLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    pLbl.setAttribute('x', x + w/2);
+    pLbl.setAttribute('y', y - 6);
+    pLbl.setAttribute('text-anchor', 'middle');
+    pLbl.setAttribute('fill', '#9a978c');
+    pLbl.setAttribute('font-size', '11');
+    pLbl.setAttribute('font-family', 'JetBrains Mono');
+    pLbl.textContent = (b.p * 100).toFixed(0) + '%';
+    svg.appendChild(pLbl);
+    
+    // Token label
+    const tLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tLbl.setAttribute('x', x + w/2);
+    tLbl.setAttribute('y', 188);
+    tLbl.setAttribute('text-anchor', 'middle');
+    tLbl.setAttribute('fill', '#e8e5dd');
+    tLbl.setAttribute('font-size', '12');
+    tLbl.setAttribute('font-family', 'JetBrains Mono');
+    tLbl.textContent = b.tok;
+    svg.appendChild(tLbl);
+  });
+  
+  // Title
+  const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  title.setAttribute('x', 340);
+  title.setAttribute('y', 20);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('fill', '#9a978c');
+  title.setAttribute('font-size', '12');
+  title.setAttribute('font-family', 'Geist');
+  title.textContent = 'Probability of being the next token: ' + data.label;
+  svg.appendChild(title);
+  
+  document.getElementById('condCaption').textContent = data.caption;
+}
+
+showCond(0, null);
+</script>
+
+<!-- ============================================================
+     SECTION 3: CHAIN OF THOUGHT
+     ============================================================ -->
+<section class="section" id="section-3">
+  <div class="section-num">Section 03</div>
+  <h1 class="section-title">Chain of thought</h1>
+
+  <p class="lead">You asked specifically about chain of thought. Here it is. Mechanically. No hand-waving.</p>
+
+  <h2>What CoT is</h2>
+
+  <p>Chain of thought is the practice of getting the model to generate intermediate reasoning steps as text before committing to a final answer. That's it. The "chain" in chain of thought is just: the model writes one thought, then writes another thought conditioned on the first, then another conditioned on the previous two, and so on, until it arrives at an answer.</p>
+
+  <p>Concretely, instead of asking "What's 17 × 24?" and getting "408" (or worse, a wrong answer), you ask "What's 17 × 24? Let me think step by step." And the model writes something like:</p>
+
+  <pre><code>Let me think step by step.
+17 × 24 = 17 × (20 + 4)
+       = 17 × 20 + 17 × 4
+       = 340 + 68
+       = 408</code></pre>
+
+  <p>The intermediate work is text. The model wrote it out. And that text became context for predicting the next token. By the time the model is generating the final "408", the steps "340 + 68" are sitting in the context, available to attention, and the model is effectively just reading them off and producing the sum.</p>
+
+  <h2>Why it works (mechanically)</h2>
+
+  <p>You already have all the pieces for this. Let me assemble them.</p>
+
+  <p>Recall the most important point from Section 1: the model has no internal scratchpad that persists between forward passes. Each forward pass produces exactly one token. Whatever rich computation happened in the 50 layers of attention is thrown away after that token is generated, except for the token itself, which becomes part of the input for the next pass.</p>
+
+  <p>So if you ask the model a hard question and demand an immediate answer, the model has to do all the reasoning in a single forward pass. The attention mechanism in those 50 layers has to: parse the question, retrieve relevant knowledge, perform the logical steps, and arrive at the answer, all in one shot, with the final-position vector encoding all of it.</p>
+
+  <p>For easy questions this works fine. For hard questions, it often fails. There's a limit to how much sequential reasoning can be packed into a fixed number of layers, especially when those layers are doing many other things simultaneously.</p>
+
+  <p>Now contrast that with CoT. Every intermediate reasoning token becomes part of the context. When the model generates the final answer, the attention mechanism in every layer can look at "340 + 68 = 408" directly. It doesn't have to recompute it from scratch. The work is already done and sitting in the context as text.</p>
+
+  <div class="callout">
+    <strong>CoT in one sentence.</strong> The model uses text as external memory. It offloads intermediate state into the token stream so attention can reach back to it during the final answer.
+  </div>
+
+  <h2>The "more compute" framing</h2>
+
+  <p>Here's the deeper version. Each generated token requires a full forward pass through the entire stack. If the model generates 200 reasoning tokens before producing the final answer, that's 200 forward passes worth of computation. Each pass involves attention over the full context (which keeps growing as more reasoning gets written), so each new token is doing meaningful work that can build on all previous tokens.</p>
+
+  <p>Compare that to one forward pass for an immediate answer. CoT effectively gives the model 200x more compute per question, with each round of computation able to build on the results of all previous rounds.</p>
+
+  <p>This is why CoT often turns "the model can't do this" into "the model can do this reliably." It's not that the model got smarter. It's that you gave it more compute and external memory.</p>
+
+  <div class="widget">
+    <div class="widget-title">Single forward pass vs. chain of thought</div>
+    <svg width="100%" viewBox="0 0 680 280" style="max-height: 320px;">
+      <defs>
+        <marker id="arrowCoT" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.2"/>
+        </marker>
+      </defs>
+      
+      <!-- Top: single pass -->
+      <text x="40" y="30" fill="#9a978c" font-size="12" font-family="Geist" font-weight="500">Without CoT: one forward pass to answer</text>
+      <rect x="40" y="50" width="120" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/>
+      <text x="100" y="73" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="JetBrains Mono">question</text>
+      
+      <line x1="160" y1="70" x2="195" y2="70" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      
+      <rect x="200" y="50" width="160" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="280" y="68" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">1 forward pass</text>
+      <text x="280" y="83" text-anchor="middle" fill="#9a978c" font-size="10" font-family="Geist">50 layers, 1 token output</text>
+      
+      <line x1="360" y1="70" x2="395" y2="70" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      
+      <rect x="400" y="50" width="100" height="40" rx="4" fill="#1c1c19" stroke="#c66a6a"/>
+      <text x="450" y="73" text-anchor="middle" fill="#c66a6a" font-size="12" font-family="JetBrains Mono">answer?</text>
+      
+      <text x="280" y="115" text-anchor="middle" fill="#c66a6a" font-size="11" font-family="Geist" font-style="italic">all reasoning compressed into a single pass, often fails for hard problems</text>
+      
+      <!-- Divider -->
+      <line x1="40" y1="140" x2="640" y2="140" stroke="#2a2a26" stroke-dasharray="3 4"/>
+      
+      <!-- Bottom: CoT -->
+      <text x="40" y="170" fill="#9a978c" font-size="12" font-family="Geist" font-weight="500">With CoT: many forward passes, each one adds reasoning to context</text>
+      <rect x="40" y="190" width="120" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/>
+      <text x="100" y="213" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="JetBrains Mono">question</text>
+      
+      <line x1="160" y1="210" x2="180" y2="210" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      
+      <!-- Multiple steps -->
+      <g>
+        <rect x="183" y="195" width="80" height="30" rx="3" fill="#151513" stroke="#e9a358" stroke-width="0.8"/>
+        <text x="223" y="214" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">step 1</text>
+      </g>
+      <line x1="263" y1="210" x2="280" y2="210" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      <g>
+        <rect x="283" y="195" width="80" height="30" rx="3" fill="#151513" stroke="#e9a358" stroke-width="0.8"/>
+        <text x="323" y="214" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">step 2</text>
+      </g>
+      <line x1="363" y1="210" x2="380" y2="210" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      <g>
+        <rect x="383" y="195" width="80" height="30" rx="3" fill="#151513" stroke="#e9a358" stroke-width="0.8"/>
+        <text x="423" y="214" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">step 3</text>
+      </g>
+      <line x1="463" y1="210" x2="480" y2="210" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      <g>
+        <rect x="483" y="195" width="80" height="30" rx="3" fill="#151513" stroke="#e9a358" stroke-width="0.8"/>
+        <text x="523" y="214" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">...</text>
+      </g>
+      <line x1="563" y1="210" x2="580" y2="210" stroke="#9a978c" marker-end="url(#arrowCoT)"/>
+      <rect x="583" y="190" width="60" height="40" rx="4" fill="#1c1c19" stroke="#7ab36a"/>
+      <text x="613" y="213" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="JetBrains Mono">answer</text>
+      
+      <text x="340" y="258" text-anchor="middle" fill="#7ab36a" font-size="11" font-family="Geist" font-style="italic">each step token = another forward pass; reasoning accumulates in the context</text>
+    </svg>
+    <div class="widget-caption">The bottom path uses 5-10x more forward passes than the top, and the final answer is conditioned on all the intermediate reasoning. The model isn't smarter, it just has more compute and a place to store its work.</div>
+  </div>
+
+  <h2>How to invoke CoT</h2>
+
+  <p>There are several ways to get the model to use chain of thought, each with slightly different trade-offs.</p>
+
+  <p><strong>The simple instruction.</strong> Append "Let me think step by step" or "Show your reasoning before answering." The model has seen enough examples of this pattern in training that it knows to produce structured reasoning when invoked this way. This is the cheapest method and often surprisingly effective.</p>
+
+  <p><strong>Few-shot CoT.</strong> Include 1-3 examples in the prompt where you show the input, the reasoning, and the final answer in a consistent format. The model picks up the pattern and continues it. This is more reliable than the simple instruction because it shows the exact shape of reasoning you want.</p>
+
+  <p><strong>Structured CoT.</strong> Explicitly request specific reasoning steps with labels: "First, identify X. Then compute Y. Finally, conclude Z." This biases the model into a specific reasoning shape, which is good for pipelines where you need predictable structure.</p>
+
+  <p><strong>Built-in reasoning modes.</strong> Some models (Claude with extended thinking, OpenAI's o-series, others) have explicit "thinking" modes where the reasoning happens in dedicated tokens that may be hidden from the user. Mechanically it's the same thing, the reasoning tokens are still part of the model's working context. It's just productized differently.</p>
+
+  <h2>What good CoT looks like</h2>
+
+  <p>Not all chains are equal. The quality of the reasoning chain heavily influences the quality of the final answer, because the chain <em>is</em> the context the final answer gets generated from. If the chain is wrong or vague, the final answer will be wrong or vague.</p>
+
+  <div class="widget">
+    <div class="widget-title">Good CoT vs bad CoT, same problem, different chains</div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Question: "A store has 12 apples. They sell 3/4 of them, then receive a shipment of 8 more. How many do they have now?"</p>
+
+    <div class="cot-compare">
+      <div class="cot-col">
+        <div class="cot-col-title">❌ Bad chain</div>
+        <div class="cot-line">Let me think.</div>
+        <div class="cot-line">They had some apples.</div>
+        <div class="cot-line">They sold most of them.</div>
+        <div class="cot-line">Then they got more.</div>
+        <div class="cot-line answer">So they have around 10 now.</div>
+      </div>
+      <div class="cot-col">
+        <div class="cot-col-title">✓ Good chain</div>
+        <div class="cot-line">Step 1: Start = 12 apples.</div>
+        <div class="cot-line">Step 2: Sold = 12 × 3/4 = 9.</div>
+        <div class="cot-line">Step 3: Remaining = 12 − 9 = 3.</div>
+        <div class="cot-line">Step 4: After shipment = 3 + 8 = 11.</div>
+        <div class="cot-line answer">Answer: 11 apples.</div>
+      </div>
+    </div>
+    <div class="widget-caption">The good chain has labeled steps, explicit numbers, and each step produces a small concrete result that the next step uses. The bad chain has vague middle steps, so attention has nothing concrete to retrieve when generating the final answer, and the answer is wrong.</div>
+  </div>
+
+  <p>Good chains tend to break the problem into explicit sub-steps, state assumptions and intermediate results clearly, avoid jumping (if the model writes "therefore the answer is X" without showing how X follows, attention had to do the real work invisibly and you've lost most of the benefit), and use a form attention can route to easily (short labeled steps beat long winding paragraphs).</p>
+
+  <h2>Failure modes</h2>
+
+  <p>CoT isn't a magic fix. It has predictable failure modes that matter for production systems, which is what you're building.</p>
+
+  <p><strong>Plausible-sounding wrong reasoning.</strong> The model can generate a chain that <em>looks</em> logical but contains a subtle error. Once that error is in the context, every subsequent token is conditioned on it. The model will confidently continue from the wrong premise. This is why CoT can sometimes produce confidently wrong answers with detailed-looking justifications. The reasoning makes the wrong answer feel more credible, not less.</p>
+
+  <p><strong>Unfaithful CoT.</strong> Research has shown that sometimes the model generates plausible-looking reasoning that's actually disconnected from how it picks the final answer. The reasoning is decoration; the final answer was determined by something else (maybe associative patterns, or biases in the data). This is harder to detect because the chain looks fine.</p>
+
+  <p><strong>Length-induced drift.</strong> Very long chains can drift off-topic, repeat themselves, or lose sight of the original question. The model's attention has to span a longer context, and noise accumulates. There's an optimal length for any given problem; longer is not always better.</p>
+
+  <p><strong>Sensitivity to phrasing.</strong> Tiny changes in how you invoke CoT, the exact words, the position in the prompt, the format, can change the result substantially. CoT is not robust to all phrasings equally. For production, you need to actually test different invocations rather than assume "step by step" always works.</p>
+
+  <p>For your codebase knowledge system, these matter because you'll have many similar prompts running in parallel. If CoT works on 80% of inputs and fails subtly on 20%, you'll have a long tail of confidently-wrong outputs that look fine until you audit them carefully.</p>
+
+  <h2>When to use CoT (and when not to)</h2>
+
+  <table>
+    <tr><th>Use CoT when</th><th>Skip CoT when</th></tr>
+    <tr><td>Multi-step reasoning required</td><td>Simple lookup or classification</td></tr>
+    <tr><td>Math, logic, or calculation</td><td>Output should be a single token or short phrase</td></tr>
+    <tr><td>Complex code analysis</td><td>You need very low latency</td></tr>
+    <tr><td>Structured decision-making</td><td>You need very predictable structured output (sometimes CoT makes structured output harder)</td></tr>
+    <tr><td>The model gets it wrong without it</td><td>You're already running a strong reasoning-mode model that does CoT internally</td></tr>
+  </table>
+
+  <h2>CoT inside a call vs. across calls</h2>
+
+  <p>This was the second half of your original question, you asked about "chains" and confirmed you meant both CoT inside a single LLM call <em>and</em> multi-step pipelines where outputs feed forward. The thing I just described in this section is the first kind: single-call CoT, where reasoning happens within one generation.</p>
+
+  <p>The second kind, multi-step pipelines, is mechanically different, even though it shares the same conceptual goal (more reasoning, more reliable output). We'll cover that in section 5 because the design considerations diverge once you cross the call boundary. But the foundational insight transfers: whether reasoning happens in one call or across many, you're using text as memory and conditioning the next prediction on what came before.</p>
+
+  <div class="section-end">End of section 3. Reflection is next, which is a specific kind of CoT pattern that builds directly on what we just covered.</div>
+</section>
+
+<!-- ============================================================
+     SECTION 4: REFLECTION
+     ============================================================ -->
+<section class="section" id="section-4">
+  <div class="section-num">Section 04</div>
+  <h1 class="section-title">Reflection</h1>
+
+  <p class="lead">You asked specifically what "reflection in md" means. My read is that you were referring to reflection patterns documented or implemented via markdown prompts. The format doesn't really matter, what matters is the pattern. Let's go through it.</p>
+
+  <h2>What reflection is</h2>
+
+  <p>Reflection is a prompting pattern where the model is asked to evaluate, critique, or revise its own previous output. The model produces something, then in a subsequent step (either within the same generation or in a separate call), it looks at what it produced and either confirms it, finds problems with it, or rewrites it.</p>
+
+  <p>The simplest form looks like this:</p>
+
+  <pre><code>[Model produces initial answer]
+
+Now critique your answer. Are there any errors, missing details,
+or weak reasoning? If so, produce a revised answer.
+
+[Model produces critique + revised answer]</code></pre>
+
+  <p>That's the pattern. The model is generating a response, then generating a response <em>about</em> its own response.</p>
+
+  <div class="widget">
+    <div class="widget-title">The reflection cycle</div>
+    <svg width="100%" viewBox="0 0 680 220" style="max-height: 240px;">
+      <defs>
+        <marker id="arrowR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.2"/>
+        </marker>
+      </defs>
+      
+      <!-- 1: Prompt -->
+      <rect x="40" y="80" width="120" height="60" rx="6" fill="#1c1c19" stroke="#3a3a34"/>
+      <text x="100" y="105" text-anchor="middle" fill="#e8e5dd" font-size="13" font-weight="500" font-family="Geist">User prompt</text>
+      <text x="100" y="123" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">the question</text>
+      
+      <line x1="160" y1="110" x2="195" y2="110" stroke="#9a978c" marker-end="url(#arrowR)"/>
+      
+      <!-- 2: First answer -->
+      <rect x="200" y="80" width="120" height="60" rx="6" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="260" y="105" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">Initial answer</text>
+      <text x="260" y="123" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">first generation</text>
+      
+      <line x1="320" y1="110" x2="355" y2="110" stroke="#9a978c" marker-end="url(#arrowR)"/>
+      
+      <!-- 3: Critique -->
+      <rect x="360" y="80" width="140" height="60" rx="6" fill="#1c1c19" stroke="#6ea8c4"/>
+      <text x="430" y="100" text-anchor="middle" fill="#6ea8c4" font-size="13" font-weight="500" font-family="Geist">Critique</text>
+      <text x="430" y="118" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">"now evaluate</text>
+      <text x="430" y="131" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">what you wrote"</text>
+      
+      <line x1="500" y1="110" x2="535" y2="110" stroke="#9a978c" marker-end="url(#arrowR)"/>
+      
+      <!-- 4: Revised answer -->
+      <rect x="540" y="80" width="120" height="60" rx="6" fill="#1c1c19" stroke="#7ab36a"/>
+      <text x="600" y="105" text-anchor="middle" fill="#7ab36a" font-size="13" font-weight="500" font-family="Geist">Revised answer</text>
+      <text x="600" y="123" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">final output</text>
+      
+      <!-- Context line below -->
+      <line x1="40" y1="170" x2="660" y2="170" stroke="#3a3a34" stroke-dasharray="3 4"/>
+      <text x="350" y="190" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist" font-style="italic">all of this accumulates in the context, the critique sees the answer; the revision sees both</text>
+    </svg>
+    <div class="widget-caption">The key mechanical fact: when the model generates the critique, the initial answer is part of its context as concrete text. When the revision generates, both the answer and the critique are in context. Each step has more to work with than the previous one.</div>
+  </div>
+
+  <h2>Why it works (and what it actually is)</h2>
+
+  <p>The model is not "reflecting" in any conscious sense. There's no introspection happening. What's happening is mechanically identical to everything else we've covered: the model is generating the most probable continuation of the context.</p>
+
+  <p>The context now contains the original question, the model's initial answer, and an instruction to critique that answer. Given that context, the most probable continuation is a critique. The model has seen, in training, countless examples of "answer → critique" patterns. So when it generates next tokens conditioned on this setup, those tokens naturally take the shape of evaluative commentary, and then revisions.</p>
+
+  <p>This is important because it tells you both what reflection can do and what it can't.</p>
+
+  <p><strong>What reflection can do.</strong> Catch errors that become visible in the output once you look at it carefully. The critique pass operates on the answer-as-text, so anything that becomes obvious upon re-reading can be caught. Inconsistencies, missing requirements, awkward phrasing, unsupported claims, format violations, things like that.</p>
+
+  <p><strong>What reflection can't do.</strong> Catch errors that require knowledge or reasoning the model didn't have in the first place. If the model confidently wrote something factually wrong in the initial answer, it will often confidently confirm it during the critique. Reflection doesn't add knowledge. It just adds another pass of computation over the same knowledge.</p>
+
+  <h2>Two mechanical reasons it works</h2>
+
+  <p>If we want to be precise about why reflection helps at all, there are two reasons.</p>
+
+  <p><strong>First, the new instruction shifts the probability distribution.</strong> When the context goes from "answer this question" to "critique this answer," the relevant region of the model's training distribution changes. The model has seen many examples of careful critiques, and the tokens generated under the critique prompt are drawn from that distribution. This often surfaces issues that wouldn't have been caught under the "produce an answer" distribution.</p>
+
+  <p><strong>Second, the answer becomes data the critique gets to inspect.</strong> In the initial generation, the model was conditioning on the prompt only. In the critique, the model is conditioning on the prompt <em>plus</em> the answer as concrete text. The attention mechanism can now look at specific phrases of the answer and evaluate them. Things that were implicit during generation become explicit text that can be re-attended to. That's actually useful.</p>
+
+  <h2>Common reflection patterns</h2>
+
+  <p>There are several flavors in practice.</p>
+
+  <p><strong>Self-critique.</strong> "Here's my answer. Now critique it." The plain version.</p>
+
+  <p><strong>Self-revision.</strong> "Here's my answer. Now produce a revised version that addresses any issues." Combines critique with rewrite in one step.</p>
+
+  <p><strong>Verifier-style.</strong> "Here's my answer. Check whether it satisfies the following criteria: [list]. For each criterion, state whether it's met and why." More structured, often more reliable than open-ended critique because the criteria define what counts as a problem.</p>
+
+  <p><strong>Multi-round.</strong> Repeat the cycle. Generate, critique, revise, critique the revision, revise again. Diminishing returns kick in fast. Usually 1-2 rounds is the sweet spot. Beyond that you're often just churning.</p>
+
+  <p><strong>Adversarial.</strong> Use a separate LLM call with a critic-role prompt ("You are a strict reviewer. Find every flaw in this answer.") to produce the critique, then feed that critique back to the original model for revision. This decouples the produce and critique prompts so each can be tuned independently. This is also where reflection starts blurring into multi-call pipelines (Section 5).</p>
+
+  <h2>The big failure mode: sycophantic reflection</h2>
+
+  <p>This is the failure mode you need to know about. It's the silent killer of naive reflection systems.</p>
+
+  <div class="callout callout-warm">
+    <strong>Sycophantic reflection.</strong> When the model's initial answer is wrong, the most probable continuation under a vague critique prompt is often to <em>defend</em> the answer, not find the error. The model has just confidently written something, and the next-token distribution is influenced by that confidence. The model will frequently write "Upon reflection, my answer is correct because..." and then re-state the wrong answer with more justification.
+  </div>
+
+  <div class="widget">
+    <div class="widget-title">Sycophantic vs. adversarial reflection, same wrong answer</div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Question: "What is 17 × 24?", model's initial (wrong) answer: "17 × 24 = 388"</p>
+
+    <div class="cot-compare">
+      <div class="cot-col">
+        <div class="cot-col-title">❌ Vague self-critique</div>
+        <div class="cot-line">Prompt: "Now review your answer."</div>
+        <div class="cot-line">Upon review, my answer is correct.</div>
+        <div class="cot-line">17 × 24 can be broken into</div>
+        <div class="cot-line">17 × 20 + 17 × 4...</div>
+        <div class="cot-line error">Therefore 388 is correct. ✗</div>
+        <div class="cot-line" style="color: var(--bad); font-style: italic; padding-top: 8px;">Model defended the wrong answer.</div>
+      </div>
+      <div class="cot-col">
+        <div class="cot-col-title">✓ Adversarial critique</div>
+        <div class="cot-line">Prompt: "You are a strict math grader.</div>
+        <div class="cot-line">Verify the calculation step-by-step.</div>
+        <div class="cot-line">If wrong, identify the error."</div>
+        <div class="cot-line">Re-computing: 17×20=340, 17×4=68</div>
+        <div class="cot-line">340 + 68 = 408. The answer 388 is wrong.</div>
+        <div class="cot-line answer">Correct answer: 408. ✓</div>
+      </div>
+    </div>
+    <div class="widget-caption">Same flawed initial answer, different critique framing, opposite outcomes. The adversarial framing puts the model in a "find errors" distribution; the vague self-critique leaves it in a "confirm what I said" distribution.</div>
+  </div>
+
+  <p>This is sometimes called sycophantic reflection or self-confirmation bias. It's a real and well-documented problem.</p>
+
+  <h2>Mitigations</h2>
+
+  <p>If you want reflection to actually catch errors, you have to fight the sycophancy explicitly. Here's how.</p>
+
+  <p><strong>Use adversarial framing.</strong> Don't say "review your answer." Say "You are a strict reviewer who is skeptical of the answer below. Find every flaw." This shifts the distribution toward critical evaluation. Specific personas (skeptical professor, code reviewer, security auditor) work better than abstract framings.</p>
+
+  <p><strong>Provide explicit criteria.</strong> Instead of open-ended critique, give a checklist: "Does the answer use the correct units? Does it address all parts of the question? Are the cited facts accurate? Is the calculation correct?" The model is much more reliable when checking against specific criteria than when freely evaluating.</p>
+
+  <p><strong>Use a different model for the critique.</strong> A different model (even the same model with a very different prompt or persona) doesn't have the same investment in defending the initial answer. This is often the biggest single improvement you can make.</p>
+
+  <p><strong>Don't rely on reflection for high-stakes correctness.</strong> Reflection is good for catching surface problems. It's not a substitute for external verification. If the output must be correct (running code, querying a database, comparing against ground truth), do the external check.</p>
+
+  <h2>When reflection genuinely helps</h2>
+
+  <p>Despite the failure modes, reflection is useful in specific cases. Knowing when to reach for it matters.</p>
+
+  <p><strong>Catching constraint violations.</strong> "Does my answer follow all the formatting requirements?" The model is good at checking against explicit constraints, especially with criteria-based prompts.</p>
+
+  <p><strong>Improving structure and clarity.</strong> "Is my answer well-organized? Is anything unclear?" Stylistic and structural improvements are easy for the model to catch.</p>
+
+  <p><strong>Verifying coverage.</strong> "Did I address all parts of the question?" Useful when the question has multiple parts and the initial answer might have skipped one.</p>
+
+  <p><strong>Code review.</strong> "Are there bugs, edge cases, or security issues in this code?" Often catches real issues, especially obvious ones. (Subtle correctness bugs still elude it.)</p>
+
+  <p>When reflection is <em>not</em> useful: factual verification (the model can't fact-check itself reliably), deep correctness (if the reasoning was wrong, the model often won't catch it), and anything that requires information that wasn't in the original context.</p>
+
+  <h2>Reflection in your codebase system</h2>
+
+  <p>To make this concrete for what you're building. In a codebase knowledge system, useful applications of reflection include:</p>
+
+  <ul>
+    <li>Checking whether a generated summary of a commit actually captures the commit's intent (criteria-based: "does the summary mention every modified file? does it describe the change type?").</li>
+    <li>Verifying that a Q&amp;A pair is faithful to the code it claims to describe (use the diff as ground truth in the critique step).</li>
+    <li>Catching format violations in structured outputs (does the JSON have all required fields? are types correct?).</li>
+    <li>Catching summaries that contradict themselves or drift off-topic.</li>
+  </ul>
+
+  <p>What reflection won't do for you: catch a wrong factual claim about what the code does, because if the model misunderstood the code initially, it will likely re-misunderstand it under critique. For those, you need external verification (running tests, comparing to type signatures, etc.), which we'll discuss in section 6.</p>
+
+  <div class="section-end">End of section 4. We've now covered both major prompting patterns inside single calls. Section 5 moves to multi-call pipelines, where you architect the flow yourself.</div>
+</section>
+
+<!-- ============================================================
+     SECTION 5: PIPELINES AND AGENTS
+     ============================================================ -->
+<section class="section" id="section-5">
+  <div class="section-num">Section 05</div>
+  <h1 class="section-title">Pipelines and agents</h1>
+
+  <p class="lead">This is the methodological section. Everything before this was about what happens inside a single LLM call. From here on we're talking about how multiple calls get composed into systems that do real work.</p>
+
+  <h2>The core idea</h2>
+
+  <p>A pipeline is a sequence of LLM calls where the output of one call becomes input to the next (sometimes after transformation). You decide what each call sees, what it produces, and how its output flows downstream.</p>
+
+  <p>Each call has its own fresh context. Nothing persists between calls except what you, the engineer, explicitly pass through. The model has no memory of previous calls. You're constructing the memory by what you include in each call's prompt.</p>
+
+  <p>This is a critical shift from single-call thinking. In a single call, the model's context is whatever you wrote plus whatever it has generated so far. In a pipeline, the context of call N is whatever you, the engineer, decide to feed in, which can be a curated subset, summary, or transformation of the outputs from calls 1 through N-1.</p>
+
+  <h2>Why pipelines exist</h2>
+
+  <p>A few reasons.</p>
+
+  <p><strong>Specialization.</strong> Different calls can be tuned for different tasks. One call extracts facts from a document. Another summarizes them. Another evaluates the summary. Each call gets a prompt optimized for its narrow job, instead of one giant prompt trying to do everything.</p>
+
+  <p><strong>Reliability.</strong> Each step has a narrower task with a narrower output distribution, so each step is more predictable. Errors in one step can be caught or recovered from before they propagate.</p>
+
+  <p><strong>Context window management.</strong> A long document might be too big to process all at once. Pipelines let you chunk, summarize, and combine across multiple calls.</p>
+
+  <p><strong>External integration.</strong> Between calls, you can run code, query databases, call APIs, validate outputs, retrieve documents. The pipeline isn't just LLM calls, it's LLM calls with non-LLM steps between them. This is also the foundation of agentic systems.</p>
+
+  <p><strong>Different models.</strong> You can route different steps to different models. A fast cheap model for extraction, a strong model for synthesis, a small model for classification.</p>
+
+  <h2>The standard pipeline patterns</h2>
+
+  <p>There are a handful of shapes that show up over and over. Click each to see how it works.</p>
+
+  <div class="widget">
+    <div class="widget-title">Pipeline patterns gallery</div>
+    <div class="pattern-grid">
+      <div class="pattern-card active" onclick="showPattern(0, this)">
+        <div class="pattern-name">Sequential chain</div>
+        <div class="pattern-desc">Linear A → B → C</div>
+      </div>
+      <div class="pattern-card" onclick="showPattern(1, this)">
+        <div class="pattern-name">Map-reduce</div>
+        <div class="pattern-desc">Parallel, then combine</div>
+      </div>
+      <div class="pattern-card" onclick="showPattern(2, this)">
+        <div class="pattern-name">Router</div>
+        <div class="pattern-desc">Classify, then dispatch</div>
+      </div>
+      <div class="pattern-card" onclick="showPattern(3, this)">
+        <div class="pattern-name">Verifier loop</div>
+        <div class="pattern-desc">Produce, check, retry</div>
+      </div>
+      <div class="pattern-card" onclick="showPattern(4, this)">
+        <div class="pattern-name">RAG</div>
+        <div class="pattern-desc">Retrieve, then generate</div>
+      </div>
+      <div class="pattern-card" onclick="showPattern(5, this)">
+        <div class="pattern-name">Tool-use loop</div>
+        <div class="pattern-desc">Model picks next action</div>
+      </div>
+    </div>
+    <div class="pattern-detail" id="patternDetail"></div>
+  </div>
+
+  <h2>Pipelines vs. agents</h2>
+
+  <p>You asked me earlier if pipelines are basically agents. The honest answer is: agents are a kind of pipeline. Specifically, agents are pipelines where the model itself decides what the next step should be.</p>
+
+  <p>Here's the spectrum from rigid to autonomous. Click each stop to see what changes.</p>
+
+  <div class="widget">
+    <div class="widget-title">Rigid → autonomous: the spectrum</div>
+    <div class="spectrum-labels">
+      <span>Most rigid</span>
+      <span>Most autonomous</span>
+    </div>
+    <div class="spectrum-track">
+      <div class="spectrum-stops"></div>
+      <div class="spectrum-stop active" style="left: 8%;" onclick="showSpectrum(0, this)">
+        <div class="spectrum-stop-label">Hardcoded</div>
+      </div>
+      <div class="spectrum-stop" style="left: 30%;" onclick="showSpectrum(1, this)">
+        <div class="spectrum-stop-label">Conditional</div>
+      </div>
+      <div class="spectrum-stop" style="left: 52%;" onclick="showSpectrum(2, this)">
+        <div class="spectrum-stop-label">Router</div>
+      </div>
+      <div class="spectrum-stop" style="left: 74%;" onclick="showSpectrum(3, this)">
+        <div class="spectrum-stop-label">Constrained agent</div>
+      </div>
+      <div class="spectrum-stop" style="left: 92%;" onclick="showSpectrum(4, this)">
+        <div class="spectrum-stop-label">Full agent</div>
+      </div>
+    </div>
+    <div class="spectrum-detail" id="spectrumDetail"></div>
+  </div>
+
+  <p>The only meaningful distinction across this spectrum is: <em>who decides the next step?</em> In a hardcoded pipeline, the engineer decides at build time. In a full agent, the model decides at runtime. Everything else (tools, memory, multi-step reasoning) appears at every point in the spectrum, just configured differently.</p>
+
+  <div class="callout">
+    <strong>Default to the most rigid pipeline that solves your problem.</strong> Reach for agentic flexibility only when you actually need it. Open-ended research, complex multi-step tool use, situations where the right next step depends on intermediate results in ways you can't enumerate ahead of time, those genuinely benefit from agents. Most production systems don't need this. Your codebase indexing pipeline is probably 80% rigid and 20% agentic (only the user-facing query interface, if any, benefits from agent-style flow).
+  </div>
+
+  <h2>How tool use works mechanically</h2>
+
+  <p>Since tools came up implicitly, let me explain how they work under the hood, because it ties back to everything we've covered.</p>
+
+  <p>A tool-using LLM call works like this:</p>
+
+  <ol>
+    <li>The system prompt describes the available tools, their parameters, and when to use them.</li>
+    <li>The model, given a user query, generates either a final answer OR a structured tool-call (typically JSON with tool name and arguments).</li>
+    <li>If the model produced a tool call, your code parses the JSON, executes the tool (runs a function, queries a database, calls an API), and gets a result.</li>
+    <li>The tool result gets appended to the conversation context.</li>
+    <li>The model is called again with the updated context, and either produces a final answer or another tool call.</li>
+  </ol>
+
+  <p>Mechanically, this is just structured generation plus a loop. The model isn't doing anything special. It's emitting next tokens conditioned on a prompt that includes tool descriptions. The "tool calling" is just engineer code parsing those tokens and executing real code based on them. Everything from sections 1-4 applies: tool descriptions in the system prompt condition the model toward generating tool-call-shaped outputs, each loop iteration is a fresh forward pass with updated context, validation between iterations protects against malformed tool calls, etc.</p>
+
+  <h2>The methodology for stable pipelines</h2>
+
+  <p>This is the meat of what you came here for. You explicitly said you want "structural, methodological understanding" of how to build stable chains. Here it is.</p>
+
+  <h3>1. Make each step's job narrow and explicit</h3>
+
+  <p>A step that does one thing reliably beats a step that does three things sometimes. Resist the urge to combine. If you're tempted to ask one call to "extract facts and summarize and generate Q&amp;A," split it into three calls. Single-purpose steps have narrower output distributions, which means more predictability.</p>
+
+  <h3>2. Constrain output format aggressively</h3>
+
+  <p>Use structured outputs: JSON schema, XML tags, fixed templates. The narrower the output distribution, the more predictable each step is. Models are much more reliable when generating into a constrained format than when generating freeform prose. The structure also makes downstream parsing trivial instead of error-prone.</p>
+
+  <h3>3. Validate between steps</h3>
+
+  <p>After each call, validate the output before passing it downstream. Did it return valid JSON? Does it have the required fields? Are the values in the expected ranges? If validation fails, you have two options: retry the call (possibly with an adjusted prompt that points out the problem), or fail loudly. Either is better than passing bad data forward.</p>
+
+  <h3>4. Keep context windows tight</h3>
+
+  <p>Each step should see exactly what it needs and nothing more. Extra context dilutes attention and degrades reliability. If step 5 only needs the output of step 4, don't pass the outputs of steps 1, 2, and 3 along just because you have them. Context hygiene is real.</p>
+
+  <h3>5. Use temperature deliberately</h3>
+
+  <p>Low temperature (near 0) for steps that need to be reproducible and rule-following: extraction, classification, validation, format conversion. Higher temperature for steps that benefit from creativity: ideation, brainstorming, exploring alternatives. Most pipeline steps should be at low temperature. If your pipeline isn't reproducible across runs, check your temperatures.</p>
+
+  <h3>6. Design for failure cases, not the happy path</h3>
+
+  <p>What happens if a step returns nothing? Returns malformed output? Returns a refusal? Each step needs a defined behavior for failure, not just success. Production pipelines fail constantly in small ways; the question is whether your system handles those failures gracefully.</p>
+
+  <h3>7. Log everything</h3>
+
+  <p>For any non-trivial pipeline, you need to be able to inspect what every call saw as input and what it produced as output. Without this, debugging is impossible. You're staring at a black box guessing why step 4 produced garbage.</p>
+
+  <h3>8. Test with diverse inputs</h3>
+
+  <p>A pipeline that works on three example inputs probably doesn't work on the long tail. Build out a test set of inputs that cover edge cases, ambiguous cases, and adversarial cases. Run the pipeline against them repeatedly and measure consistency. This is how you find the failure modes before production does.</p>
+
+  <h2>Error amplification: the silent killer</h2>
+
+  <p>This is the most important thing in this section. If you remember nothing else from section 5, remember this.</p>
+
+  <p>If each step in your pipeline has 90% reliability, which sounds great, a 5-step pipeline has 0.9^5 = 59% reliability end-to-end. A 10-step pipeline is 35%. Errors don't add. They compound.</p>
+
+  <p>And it's worse than that. Often, errors don't stay the same size, they grow. A small ambiguity in step 1 becomes a vague interpretation in step 2, which becomes a confident wrong answer in step 3, which gets elaborated into a detailed wrong document in step 4. The model is good at producing confident-sounding text from any input, including bad input. So errors get amplified through the pipeline, not dampened.</p>
+
+  <div class="widget">
+    <div class="widget-title">Error amplification calculator</div>
+    <div class="control-row">
+      <span class="control-label">Per-step reliability</span>
+      <input type="range" id="reliInput" min="50" max="99" value="90" step="1">
+      <span class="control-value" id="reliOut">90%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">Number of steps</span>
+      <input type="range" id="stepsInput" min="1" max="20" value="5" step="1">
+      <span class="control-value" id="stepsOut">5</span>
+    </div>
+    <div class="calc-display">
+      <span class="calc-label">End-to-end reliability:</span>
+      <span class="calc-value" id="reliResult">59%</span>
+    </div>
+    
+    <svg width="100%" viewBox="0 0 680 180" style="max-height: 200px; margin-top: 16px;">
+      <!-- Axes -->
+      <line x1="50" y1="20" x2="50" y2="150" stroke="#3a3a34"/>
+      <line x1="50" y1="150" x2="640" y2="150" stroke="#3a3a34"/>
+      <text x="35" y="25" text-anchor="end" fill="#9a978c" font-size="10" font-family="Geist">100%</text>
+      <text x="35" y="155" text-anchor="end" fill="#9a978c" font-size="10" font-family="Geist">0%</text>
+      <text x="50" y="170" fill="#9a978c" font-size="10" font-family="Geist">1 step</text>
+      <text x="640" y="170" text-anchor="end" fill="#9a978c" font-size="10" font-family="Geist">20 steps</text>
+      <!-- Curves rendered by JS -->
+      <g id="reliCurves"></g>
+    </svg>
+    <div class="widget-caption">Solid line: your current pipeline reliability vs. steps. Faint lines: comparison curves for other per-step reliabilities. Notice how getting from 90% to 99% per step transforms a 5-step pipeline from 59% to 95%. The biggest win is making each step more reliable, not shortening the pipeline.</div>
+  </div>
+
+  <h3>How to fight error amplification</h3>
+
+  <p><strong>Make each step more reliable.</strong> Constrained outputs, narrow tasks, low temperature, validation. Getting each step from 90% to 99% transforms a 5-step pipeline from 59% to 95%. That's the single biggest lever you have.</p>
+
+  <p><strong>Reduce the number of steps.</strong> Every step is a multiplicative factor on overall reliability. Fewer steps = better. Combine steps when you can do so without sacrificing the "one thing per step" principle. The trade-off here is real: combining can hurt step reliability, so test both versions.</p>
+
+  <p><strong>Add checkpoints.</strong> Validators, critics, retrieval-based fact checks. A bad output caught at step 3 and corrected is much better than a bad output that propagates to step 7.</p>
+
+  <p><strong>Use ground truth where you can.</strong> If a step's output can be verified against external truth (running code, checking a database, comparing to a reference), do it. Ground truth breaks the error amplification chain because you're no longer dependent on the model's self-consistency.</p>
+
+  <h2>A concrete example pipeline for your case</h2>
+
+  <p>Here's a sketch of what a stable codebase knowledge pipeline might look like, applying everything above.</p>
+
+  <pre><code>Input: a new commit (diff + commit message)
+
+Step 1 (extraction, temp=0, JSON output):
+  Extract: files changed, type of change, symbols affected.
+  Return structured JSON with explicit schema.
+[Validate JSON structure. Retry once if malformed. Fail loud otherwise.]
+
+Step 2 (summarization, temp=0.1, constrained format):
+  Given the extracted structure + the diff, produce a
+  one-paragraph summary of what the commit does and why.
+[Validate: length within bounds, mentions every changed file.]
+
+Step 3 (Q&amp;A generation, temp=0.2, JSON list):
+  Given the summary + the diff, generate 3-5 Q&amp;A pairs
+  that test understanding of this commit's changes.
+[Validate: each Q&amp;A references the diff; answers don't
+contradict the summary.]
+
+Step 4 (semantic drift check, separate call, temp=0):
+  Compare this commit's structured description against
+  descriptions of the previous N commits affecting the
+  same files. Output: list of drift flags with severity.
+
+Step 5 (storage):
+  Persist all outputs to the knowledge store, indexed by
+  commit hash + symbol.
+
+Optional Step 6 (adversarial review, temp=0, different model):
+  For commits flagged as risky, run a critic call that
+  re-checks the summary against the diff.</code></pre>
+
+  <p>Each step does one thing. Output formats are constrained. Validation between steps. Low temperature throughout. Drift detection is a dedicated step rather than something hoped for as a side effect. The adversarial reviewer is optional and only runs when triggered, balancing cost against reliability.</p>
+
+  <div class="section-end">End of section 5. The methodology is in place. Section 6 applies all of this to your specific use case: drift detection in a codebase knowledge system.</div>
+</section>
+
+<script>
+// =========================================================
+// Pipeline patterns
+// =========================================================
+const patterns = [
+  {
+    title: "Sequential chain",
+    description: "The simplest pattern. Each step transforms the output of the previous one in a linear flow. Use when the task naturally decomposes into ordered phases.",
+    example: "Extract facts → Summarize → Generate Q&A pairs",
+    svg: `<svg width="100%" viewBox="0 0 600 80">
+      <defs><marker id="ap1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="20" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="70" y="44" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">Extract</text>
+      <line x1="125" y1="40" x2="155" y2="40" stroke="#9a978c" marker-end="url(#ap1)"/>
+      <rect x="160" y="20" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="210" y="44" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">Summarize</text>
+      <line x1="265" y1="40" x2="295" y2="40" stroke="#9a978c" marker-end="url(#ap1)"/>
+      <rect x="300" y="20" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="350" y="44" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">Q&A</text>
+      <line x1="405" y1="40" x2="435" y2="40" stroke="#9a978c" marker-end="url(#ap1)"/>
+      <rect x="440" y="20" width="100" height="40" rx="4" fill="#1c1c19" stroke="#7ab36a"/><text x="490" y="44" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="Geist">Store</text>
+    </svg>`
+  },
+  {
+    title: "Map-reduce",
+    description: "Apply the same call to many inputs in parallel (map), then combine results in a single call (reduce). Use for processing large collections.",
+    example: "Summarize each commit (map) → synthesize overall narrative (reduce)",
+    svg: `<svg width="100%" viewBox="0 0 600 200">
+      <defs><marker id="ap2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="80" width="80" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/><text x="60" y="104" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="Geist">inputs</text>
+      <!-- Map -->
+      <line x1="105" y1="100" x2="155" y2="40" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <line x1="105" y1="100" x2="155" y2="100" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <line x1="105" y1="100" x2="155" y2="160" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <rect x="160" y="20" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="210" y="44" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">map call</text>
+      <rect x="160" y="80" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="210" y="104" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">map call</text>
+      <rect x="160" y="140" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="210" y="164" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">map call</text>
+      <!-- Reduce -->
+      <line x1="265" y1="40" x2="345" y2="95" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <line x1="265" y1="100" x2="345" y2="100" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <line x1="265" y1="160" x2="345" y2="105" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <rect x="350" y="80" width="100" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="400" y="104" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">reduce</text>
+      <line x1="455" y1="100" x2="485" y2="100" stroke="#9a978c" marker-end="url(#ap2)"/>
+      <rect x="490" y="80" width="90" height="40" rx="4" fill="#1c1c19" stroke="#7ab36a"/><text x="535" y="104" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="Geist">output</text>
+    </svg>`
+  },
+  {
+    title: "Router",
+    description: "A first call classifies the input and decides which downstream call to invoke. The model influences flow, but the set of possible branches is fixed by you.",
+    example: "Classify question type → route to code lookup, history lookup, or Q&A handler",
+    svg: `<svg width="100%" viewBox="0 0 600 180">
+      <defs><marker id="ap3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="70" width="100" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/><text x="70" y="94" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="Geist">input</text>
+      <line x1="125" y1="90" x2="160" y2="90" stroke="#9a978c" marker-end="url(#ap3)"/>
+      <polygon points="165,70 220,90 165,110" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="180" y="94" text-anchor="middle" fill="#e9a358" font-size="11" font-family="Geist">route</text>
+      <line x1="225" y1="80" x2="290" y2="30" stroke="#9a978c" marker-end="url(#ap3)"/>
+      <line x1="225" y1="90" x2="290" y2="90" stroke="#9a978c" marker-end="url(#ap3)"/>
+      <line x1="225" y1="100" x2="290" y2="150" stroke="#9a978c" marker-end="url(#ap3)"/>
+      <rect x="295" y="10" width="140" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="365" y="34" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">code handler</text>
+      <rect x="295" y="70" width="140" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="365" y="94" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">history handler</text>
+      <rect x="295" y="130" width="140" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="365" y="154" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">Q&A handler</text>
+    </svg>`
+  },
+  {
+    title: "Verifier loop",
+    description: "One call produces, another evaluates, and control flow decides whether to accept or retry. This is reflection across calls. The critic can be a different model or prompt.",
+    example: "Generate answer → critic checks → if fails, regenerate with feedback",
+    svg: `<svg width="100%" viewBox="0 0 600 180">
+      <defs><marker id="ap4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="70" width="80" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/><text x="60" y="94" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="Geist">input</text>
+      <line x1="105" y1="90" x2="135" y2="90" stroke="#9a978c" marker-end="url(#ap4)"/>
+      <rect x="140" y="70" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="190" y="94" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">generate</text>
+      <line x1="245" y1="90" x2="275" y2="90" stroke="#9a978c" marker-end="url(#ap4)"/>
+      <rect x="280" y="70" width="100" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="330" y="94" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">critic</text>
+      <line x1="385" y1="90" x2="415" y2="90" stroke="#9a978c" marker-end="url(#ap4)"/>
+      <polygon points="420,75 460,90 420,105" fill="#1c1c19" stroke="#9a978c"/>
+      <text x="435" y="94" text-anchor="middle" fill="#e8e5dd" font-size="11" font-family="Geist">ok?</text>
+      <line x1="465" y1="90" x2="490" y2="90" stroke="#9a978c" marker-end="url(#ap4)"/>
+      <rect x="495" y="70" width="80" height="40" rx="4" fill="#1c1c19" stroke="#7ab36a"/><text x="535" y="94" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="Geist">output</text>
+      <!-- Retry loop -->
+      <path d="M 440 105 Q 440 150 190 150 Q 140 150 140 110" stroke="#c66a6a" stroke-width="1.2" fill="none" stroke-dasharray="3 3" marker-end="url(#ap4)"/>
+      <text x="290" y="167" text-anchor="middle" fill="#c66a6a" font-size="11" font-family="Geist">retry with feedback</text>
+    </svg>`
+  },
+  {
+    title: "RAG (retrieval-augmented generation)",
+    description: "A non-LLM step retrieves relevant context (from a vector DB, document store, or other source), then an LLM call generates using that retrieved context. Dominant pattern for knowledge systems.",
+    example: "Query → retrieve relevant commits → LLM generates answer using them",
+    svg: `<svg width="100%" viewBox="0 0 600 180">
+      <defs><marker id="ap5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="70" width="80" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/><text x="60" y="94" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="Geist">query</text>
+      <line x1="105" y1="90" x2="135" y2="90" stroke="#9a978c" marker-end="url(#ap5)"/>
+      <rect x="140" y="70" width="100" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="190" y="94" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">retrieve</text>
+      <text x="190" y="60" text-anchor="middle" fill="#9a978c" font-size="10" font-family="Geist">(vector DB)</text>
+      <line x1="245" y1="90" x2="275" y2="90" stroke="#9a978c" marker-end="url(#ap5)"/>
+      <rect x="280" y="60" width="120" height="60" rx="4" fill="#1c1c19" stroke="#3a3a34" stroke-dasharray="3 3"/><text x="340" y="84" text-anchor="middle" fill="#e8e5dd" font-size="11" font-family="Geist">query +</text><text x="340" y="100" text-anchor="middle" fill="#e8e5dd" font-size="11" font-family="Geist">retrieved docs</text>
+      <line x1="405" y1="90" x2="435" y2="90" stroke="#9a978c" marker-end="url(#ap5)"/>
+      <rect x="440" y="70" width="100" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="490" y="94" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">generate</text>
+      <line x1="490" y1="115" x2="490" y2="140" stroke="#9a978c" marker-end="url(#ap5)"/>
+      <rect x="450" y="140" width="80" height="30" rx="4" fill="#1c1c19" stroke="#7ab36a"/><text x="490" y="160" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="Geist">answer</text>
+    </svg>`
+  },
+  {
+    title: "Tool-use loop (agent)",
+    description: "Model generates tool calls instead of final answers. Tool runs externally. Result feeds back. Model decides next action. Repeats until done. This is how agents work.",
+    example: "Model decides: read file → look up symbol → search history → answer",
+    svg: `<svg width="100%" viewBox="0 0 600 180">
+      <defs><marker id="ap6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a978c" stroke-width="1.2"/></marker></defs>
+      <rect x="20" y="70" width="80" height="40" rx="4" fill="#1c1c19" stroke="#3a3a34"/><text x="60" y="94" text-anchor="middle" fill="#e8e5dd" font-size="12" font-family="Geist">goal</text>
+      <line x1="105" y1="90" x2="135" y2="90" stroke="#9a978c" marker-end="url(#ap6)"/>
+      <rect x="140" y="70" width="120" height="40" rx="4" fill="#1c1c19" stroke="#e9a358"/><text x="200" y="94" text-anchor="middle" fill="#e9a358" font-size="12" font-family="Geist">model decides</text>
+      <line x1="265" y1="90" x2="295" y2="90" stroke="#9a978c" marker-end="url(#ap6)"/>
+      <polygon points="300,75 340,90 300,105" fill="#1c1c19" stroke="#9a978c"/>
+      <text x="315" y="94" text-anchor="middle" fill="#e8e5dd" font-size="10" font-family="Geist">type?</text>
+      <line x1="345" y1="80" x2="380" y2="40" stroke="#9a978c" marker-end="url(#ap6)"/>
+      <line x1="345" y1="100" x2="380" y2="140" stroke="#9a978c" marker-end="url(#ap6)"/>
+      <rect x="385" y="20" width="120" height="40" rx="4" fill="#1c1c19" stroke="#6ea8c4"/><text x="445" y="44" text-anchor="middle" fill="#6ea8c4" font-size="12" font-family="Geist">tool call</text>
+      <rect x="385" y="120" width="120" height="40" rx="4" fill="#1c1c19" stroke="#7ab36a"/><text x="445" y="144" text-anchor="middle" fill="#7ab36a" font-size="12" font-family="Geist">final answer</text>
+      <!-- Loop back from tool call -->
+      <path d="M 445 60 Q 445 90 200 90" stroke="#6ea8c4" stroke-width="1.2" fill="none" stroke-dasharray="3 3" marker-end="url(#ap6)"/>
+      <text x="490" y="80" fill="#6ea8c4" font-size="10" font-family="Geist">result back</text>
+    </svg>`
+  }
+];
+
+function showPattern(idx, btn) {
+  document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const p = patterns[idx];
+  const detail = document.getElementById('patternDetail');
+  if (!detail) return;
+  detail.innerHTML = `
+    <div style="font-family: var(--display); font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 6px;">${p.title}</div>
+    <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">${p.description}</div>
+    <div style="font-size: 12px; color: var(--text-dim); font-style: italic; margin-bottom: 14px;">Example: ${p.example}</div>
+    ${p.svg}
+  `;
+}
+showPattern(0, document.querySelector('.pattern-card.active'));
+
+// =========================================================
+// Spectrum
+// =========================================================
+const spectrumData = [
+  {
+    title: "Hardcoded pipeline",
+    body: "You write code that defines the exact sequence: call A runs, then B, then C. The model has no say in the structure. <strong>Most stable</strong>, but only handles cases you anticipated.",
+    code: "extract = llm(prompt_a, input)<br>summary = llm(prompt_b, extract)<br>qa = llm(prompt_c, summary)<br>save(extract, summary, qa)"
+  },
+  {
+    title: "Conditional pipeline",
+    body: "Same as hardcoded but with branching based on outputs. The model emits a classification that selects a branch you defined. Still you deciding the structure.",
+    code: "extract = llm(extract_prompt, input)<br>if extract['type'] == 'refactor':<br>&nbsp;&nbsp;summary = llm(refactor_prompt, extract)<br>else:<br>&nbsp;&nbsp;summary = llm(feature_prompt, extract)"
+  },
+  {
+    title: "Router",
+    body: "The first LLM call's job is explicitly to decide which downstream call to invoke. The model influences flow, but the set of possible next steps is still defined by you. <em>This is what your home assistant does with persona routing by language.</em>",
+    code: "route = llm(router_prompt, query)<br># e.g. 'code_lookup', 'history', 'qa'<br>result = ROUTES[route](query)"
+  },
+  {
+    title: "Constrained agent",
+    body: "The model has a small, well-defined set of tools and a tight loop. It can pick its next action from the toolset, but the toolset is limited and you've capped iterations. Reasonable middle ground for many real systems.",
+    code: "tools = [search_code, run_test]  # small set<br>for i in range(MAX_ITERS):  # capped<br>&nbsp;&nbsp;step = llm(ctx, tools)<br>&nbsp;&nbsp;if step.is_final: return step<br>&nbsp;&nbsp;ctx += execute_tool(step)"
+  },
+  {
+    title: "Full agent",
+    body: "Goal in, arbitrary tools, unbounded iterations. Model decides everything: which tools to call, in what order, when to stop. <strong>Most flexible</strong>, but error amplification is severe and debugging is hard. Use only when the flow genuinely can't be predetermined.",
+    code: "ctx = [system, goal]<br>while True:<br>&nbsp;&nbsp;step = llm(ctx, all_tools)<br>&nbsp;&nbsp;if step.is_final_answer: return<br>&nbsp;&nbsp;ctx += execute(step.tool_call)"
+  }
+];
+
+function showSpectrum(idx, el) {
+  document.querySelectorAll('.spectrum-stop').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const d = spectrumData[idx];
+  document.getElementById('spectrumDetail').innerHTML = `
+    <div style="font-family: var(--display); font-size: 17px; font-weight: 500; color: var(--text); margin-bottom: 8px;">${d.title}</div>
+    <div style="margin-bottom: 12px;">${d.body}</div>
+    <div style="font-family: var(--mono); font-size: 12px; color: var(--text-muted); background: var(--bg-elev); padding: 10px 12px; border-radius: 4px;">${d.code}</div>
+  `;
+}
+showSpectrum(0, document.querySelector('.spectrum-stop.active'));
+
+// =========================================================
+// Reliability calculator
+// =========================================================
+function updateReli() {
+  const r = parseInt(document.getElementById('reliInput').value);
+  const s = parseInt(document.getElementById('stepsInput').value);
+  document.getElementById('reliOut').textContent = r + '%';
+  document.getElementById('stepsOut').textContent = s;
+  
+  const result = Math.pow(r/100, s) * 100;
+  const out = document.getElementById('reliResult');
+  out.textContent = result.toFixed(1) + '%';
+  out.classList.remove('warn', 'ok');
+  if (result < 50) out.classList.add('warn');
+  else if (result > 90) out.classList.add('ok');
+  
+  // Draw curves
+  const curves = document.getElementById('reliCurves');
+  curves.innerHTML = '';
+  
+  // Faint comparison curves
+  [70, 80, 90, 95, 99].forEach(reli => {
+    const isCurrent = reli === r;
+    let path = 'M ';
+    for (let steps = 1; steps <= 20; steps++) {
+      const x = 50 + (steps - 1) * (590 / 19);
+      const y = 20 + (1 - Math.pow(reli/100, steps)) * 130;
+      path += `${x.toFixed(1)} ${y.toFixed(1)} ${steps < 20 ? 'L ' : ''}`;
+    }
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', path);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', isCurrent ? '#e9a358' : '#3a3a34');
+    p.setAttribute('stroke-width', isCurrent ? '2' : '1');
+    p.setAttribute('opacity', isCurrent ? '1' : '0.4');
+    curves.appendChild(p);
+    
+    // Label
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    lbl.setAttribute('x', '645');
+    lbl.setAttribute('y', (20 + (1 - Math.pow(reli/100, 20)) * 130 + 4).toFixed(1));
+    lbl.setAttribute('fill', isCurrent ? '#e9a358' : '#6b6862');
+    lbl.setAttribute('font-size', '10');
+    lbl.setAttribute('font-family', 'JetBrains Mono');
+    lbl.textContent = reli + '%';
+    curves.appendChild(lbl);
+  });
+  
+  // Current point
+  const cx = 50 + (s - 1) * (590 / 19);
+  const cy = 20 + (1 - Math.pow(r/100, s)) * 130;
+  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  dot.setAttribute('cx', cx);
+  dot.setAttribute('cy', cy);
+  dot.setAttribute('r', '4');
+  dot.setAttribute('fill', '#e9a358');
+  curves.appendChild(dot);
+}
+document.getElementById('reliInput').addEventListener('input', updateReli);
+document.getElementById('stepsInput').addEventListener('input', updateReli);
+updateReli();
+</script>
+
+<!-- ============================================================
+     SECTION 6: DRIFT DETECTION
+     ============================================================ -->
+<section class="section" id="section-6">
+  <div class="section-num">Section 06</div>
+  <h1 class="section-title">Drift detection</h1>
+
+  <p class="lead">This is your section. You mentioned you're already tracking semantic and behavior drift across commits in your codebase knowledge system. Let me give you the structural picture I'd actually recommend, and explain why it composes everything we've built up to this point.</p>
+
+  <h2>The two kinds of drift</h2>
+
+  <p>You named them yourself but let me pin down the definitions, because the distinction shapes how you detect each one.</p>
+
+  <p><strong>Semantic drift</strong> is when the <em>meaning</em> of a function, class, module, or component changes over time, even if the name stays the same. The thing called <code>validate_user</code> in commit A is not really the same thing as <code>validate_user</code> in commit Z, because somewhere along the way it accumulated authentication, rate limiting, audit logging, and feature gating. The label is stable. The semantics moved.</p>
+
+  <p><strong>Behavior drift</strong> is when the <em>runtime behavior</em> changes, even if the meaning seems unchanged. The function still claims to "compute the user's discount," but the discount it returns is now a decimal instead of an integer, or it returns null in cases where it used to return zero, or it now makes a network call where it used to be pure. The intent stayed put. The behavior moved.</p>
+
+  <p>These look similar from the outside, but they fail in different ways and require different detection approaches. Here's the difference made concrete.</p>
+
+  <table>
+    <tr><th></th><th>Semantic drift</th><th>Behavior drift</th></tr>
+    <tr><td>What changed</td><td>The role, scope, or meaning</td><td>The actual runtime output or effects</td></tr>
+    <tr><td>Detectable from</td><td>Code structure + descriptions</td><td>Tests, types, telemetry, runtime</td></tr>
+    <tr><td>Typical cause</td><td>Gradual feature accretion</td><td>Refactor, bug fix, dep upgrade</td></tr>
+    <tr><td>Example</td><td><code>get_user</code> now also logs and emails</td><td><code>get_user</code> now returns dict instead of object</td></tr>
+    <tr><td>Best signal</td><td>LLM-generated structured descriptions</td><td>Type signatures, test outputs, runtime traces</td></tr>
+  </table>
+
+  <p>You can have one without the other. A clean refactor changes behavior representation (decimal vs. int) without changing semantics. A pile of "small additions" can drift semantics enormously while every individual commit still passes all tests. Tracking both matters because they cover blind spots in each other.</p>
+
+  <h2>Why drift is hard</h2>
+
+  <p>If drift were a single big jump, you wouldn't need a system to detect it. It's hard for three reasons that are worth being explicit about.</p>
+
+  <p><strong>It's gradual.</strong> No individual commit looks suspicious. Each one is a small reasonable change. The drift only becomes visible when you compare the state today against the state six months ago. Commit-by-commit review will never catch it.</p>
+
+  <p><strong>It's trajectory-dependent.</strong> The same function with the same final behavior, reached by two different paths, has different drift profiles. One path went straight there. Another path went through three role changes and a near-rewrite. The history matters, not just the endpoint.</p>
+
+  <p><strong>It's invisible in single-snapshot review.</strong> Looking at the current code, everything seems fine. The drift only exists in the comparison across time. Detection requires you to be tracking the right things <em>before</em> drift happens, not noticing it after the fact.</p>
+
+  <h2>Where LLMs help, and where they don't</h2>
+
+  <p>This is the part where I get to invoke everything from sections 1-5.</p>
+
+  <p>LLMs are well-suited to producing structured descriptions of what code does at the level of <em>intent and meaning</em>. Give a model a function and ask "what does this do, what's its role, what are its responsibilities," and you get a useful description. Do this repeatedly over time and you have a trace of how the model's understanding of that function evolved.</p>
+
+  <p>That's good for semantic drift. The model is acting as a stable observer producing comparable descriptions across snapshots.</p>
+
+  <p>But LLMs are <em>not</em> well-suited to predicting actual runtime behavior. "Will this code work?" is not a question the model answers reliably. It can read code and tell you what it <em>looks like</em> it should do, but it can't tell you whether a bug exists, whether a database call will succeed, whether the function correctly handles every input. Those questions require running the code or analyzing it with tools that have ground truth.</p>
+
+  <div class="callout">
+    <strong>The split that matters.</strong> Use LLMs for descriptions of meaning and intent. Use runtime signals (tests, types, telemetry, traces, type checkers) for behavior. Cross-reference them. When the LLM-generated meaning of a function disagrees with what the runtime says it does, that's a high-signal red flag worth surfacing to a human.
+  </div>
+
+  <h2>The drift timeline: how a function moves</h2>
+
+  <p>To make this concrete, here's a synthetic example showing how a single function's structured description evolves across commits. Click any commit to see the description at that snapshot, with field-level diffs from the previous commit highlighted.</p>
+
+  <div class="widget">
+    <div class="widget-title">Drift timeline: validate_user across commits</div>
+    <div class="drift-timeline" id="driftTimeline"></div>
+    <div id="driftDetail" style="margin-top: 16px; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;"></div>
+    <div class="widget-caption">Each card is a snapshot's structured description, generated by an LLM call at commit time. Notice how the function looks innocuous in any single commit, but by commit 5 the role has drifted significantly from "validate input" to "validate, authenticate, audit, and gate." That's semantic drift in action.</div>
+  </div>
+
+  <h2>Architecture: the drift detection pipeline</h2>
+
+  <p>Here's the pipeline I'd build, applying the methodology from section 5.</p>
+
+  <div class="widget">
+    <div class="widget-title">End-to-end drift detector</div>
+    <svg width="100%" viewBox="0 0 680 360" style="max-height: 380px;">
+      <defs>
+        <marker id="arrD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.2"/>
+        </marker>
+      </defs>
+      
+      <!-- Input row -->
+      <rect x="40" y="20" width="160" height="50" rx="4" fill="#1c1c19" stroke="#3a3a34"/>
+      <text x="120" y="42" text-anchor="middle" fill="#e8e5dd" font-size="13" font-weight="500" font-family="Geist">New commit</text>
+      <text x="120" y="58" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">diff + metadata</text>
+      
+      <line x1="120" y1="73" x2="120" y2="95" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <!-- Step 1: Extract -->
+      <rect x="40" y="100" width="160" height="50" rx="4" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="120" y="122" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">1. Extract structure</text>
+      <text x="120" y="138" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">files, symbols, intent</text>
+      
+      <line x1="120" y1="153" x2="120" y2="175" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <!-- Step 2: Semantic description -->
+      <rect x="40" y="180" width="160" height="50" rx="4" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="120" y="202" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">2. Semantic profile</text>
+      <text x="120" y="218" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">role, responsibilities, deps</text>
+      
+      <!-- Step 3 parallel: Behavioral profile -->
+      <rect x="220" y="180" width="160" height="50" rx="4" fill="#1c1c19" stroke="#6ea8c4"/>
+      <text x="300" y="202" text-anchor="middle" fill="#6ea8c4" font-size="13" font-weight="500" font-family="Geist">3. Behavioral profile</text>
+      <text x="300" y="218" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">types, tests, telemetry</text>
+      
+      <line x1="200" y1="125" x2="300" y2="175" stroke="#9a978c" stroke-dasharray="3 3" marker-end="url(#arrD)"/>
+      
+      <!-- Step 4: Versioned store -->
+      <line x1="120" y1="233" x2="120" y2="255" stroke="#9a978c" marker-end="url(#arrD)"/>
+      <line x1="300" y1="233" x2="220" y2="255" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <rect x="40" y="260" width="340" height="50" rx="4" fill="#1c1c19" stroke="#3a3a34"/>
+      <text x="210" y="282" text-anchor="middle" fill="#e8e5dd" font-size="13" font-weight="500" font-family="Geist">4. Versioned store</text>
+      <text x="210" y="298" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">indexed by symbol + commit, all snapshots preserved</text>
+      
+      <!-- Right side: diff and classify -->
+      <line x1="380" y1="285" x2="430" y2="285" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <rect x="440" y="180" width="200" height="50" rx="4" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="540" y="202" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">5. Field-level diff</text>
+      <text x="540" y="218" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">vs. baselines</text>
+      
+      <line x1="440" y1="260" x2="540" y2="235" stroke="#9a978c" stroke-dasharray="3 3" marker-end="url(#arrD)"/>
+      <line x1="540" y1="180" x2="540" y2="155" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <rect x="440" y="100" width="200" height="50" rx="4" fill="#1c1c19" stroke="#e9a358"/>
+      <text x="540" y="122" text-anchor="middle" fill="#e9a358" font-size="13" font-weight="500" font-family="Geist">6. Classify drift</text>
+      <text x="540" y="138" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">type, severity, mitigation</text>
+      
+      <line x1="540" y1="100" x2="540" y2="75" stroke="#9a978c" marker-end="url(#arrD)"/>
+      
+      <rect x="440" y="20" width="200" height="50" rx="4" fill="#1c1c19" stroke="#7ab36a"/>
+      <text x="540" y="42" text-anchor="middle" fill="#7ab36a" font-size="13" font-weight="500" font-family="Geist">7. Surface to human</text>
+      <text x="540" y="58" text-anchor="middle" fill="#9a978c" font-size="11" font-family="Geist">dashboard, alert, review</text>
+      
+      <!-- Note: baselines feeding diff -->
+      <path d="M 380 285 Q 410 285 410 220 Q 410 200 440 200" stroke="#3a3a34" stroke-dasharray="3 3" fill="none" marker-end="url(#arrD)"/>
+      <text x="395" y="335" fill="#9a978c" font-size="11" font-family="Geist" font-style="italic">baselines: previous commit, N commits ago, golden release</text>
+    </svg>
+    <div class="widget-caption">The architecture splits LLM work (steps 1, 2, 5, 6) from non-LLM signals (step 3). Storage preserves every snapshot so historical comparisons stay possible. Field-level diffs compare structured outputs rather than freeform prose, which is what makes the comparisons reliable.</div>
+  </div>
+
+  <p>Let me walk you through each step and why it's shaped the way it is.</p>
+
+  <p><strong>Step 1: extract structure.</strong> A single LLM call with a constrained JSON output schema. Input: the diff plus commit metadata. Output: explicit list of changed files, changed symbols, type of change (feature, refactor, bugfix, etc), and one-sentence intent. Low temperature. Validation on output schema. This is your sequential-chain starting point from section 5.</p>
+
+  <p><strong>Step 2: semantic profile.</strong> For each changed symbol, an LLM call that produces a structured description: role of this symbol in the system, responsibilities it carries, dependencies it relies on, who depends on it, what kinds of inputs and outputs it handles, side effects it has. JSON schema with named fields. Low temperature. This is the LLM acting as a stable observer.</p>
+
+  <p><strong>Step 3: behavioral profile.</strong> This is the non-LLM step. For each changed symbol, gather actual runtime signals: current type signature, the set of tests that exercise it (and whether they pass), telemetry data if available (call counts, error rates, latencies). This is your ground truth. The LLM never writes this. Your code reads it from your existing infrastructure.</p>
+
+  <p><strong>Step 4: versioned store.</strong> Persist both profiles, indexed by symbol and commit. Do not overwrite. The whole point of drift detection is comparing to history, which means history has to be preserved. This is a database problem, not an LLM problem.</p>
+
+  <p><strong>Step 5: field-level diff.</strong> For each symbol that changed, diff the new structured profile against several baseline snapshots from the store. The diff is field-by-field, not freeform text. "Role changed from X to Y. Dependencies added: [list]. Side effects changed: [list]." Structured diffs are what make drift detection robust, because you're comparing in a space where comparison has clear semantics, rather than comparing prose paragraphs that might describe the same thing in different words.</p>
+
+  <p><strong>Step 6: classify drift.</strong> An LLM call that looks at the structured diff and classifies it: is this drift? What kind (semantic / behavioral / both)? Severity (cosmetic, meaningful, critical)? Possible mitigations? This is where the model's judgment is valuable, because diff classification is exactly the kind of "structured input, structured output" task LLMs handle well.</p>
+
+  <p><strong>Step 7: surface to human.</strong> Critical or unclear cases go to a human. The pipeline doesn't try to be the final word, it tries to be a high-signal filter that elevates real issues to engineer attention. This is your existence guarantee: when something matters, a human sees it.</p>
+
+  <h2>Multiple baselines, not just one</h2>
+
+  <p>A common mistake is comparing only to the previous commit. That misses gradual drift entirely, because each commit looks fine compared to the one before it.</p>
+
+  <p>Instead, diff against several baselines simultaneously:</p>
+
+  <ul>
+    <li><strong>Previous commit.</strong> Catches immediate regressions and obvious unintended changes.</li>
+    <li><strong>N commits ago</strong> (where N is, say, 20 or 50, depending on your commit frequency). Catches medium-term drift that small commits hide.</li>
+    <li><strong>Last "golden" release.</strong> Catches long-term drift from a known-good baseline. The drift across this window often reveals the most.</li>
+    <li><strong>Optionally: original commit that created the symbol.</strong> Catches the full lifetime of drift from inception.</li>
+  </ul>
+
+  <p>A function that looks fine vs. the previous commit but looks dramatically different vs. the last release version is the smoking gun for accumulating drift. This is exactly the pattern that one-baseline systems miss.</p>
+
+  <h2>Q&amp;A pairs as drift fingerprints</h2>
+
+  <p>You had a specific intuition about Q&amp;A-style "exam" prompting being good for the attention mechanism. I've been validating that throughout this lesson at the prompt-design level. Now I want to validate it at the system-design level, because it has a real role in drift detection.</p>
+
+  <p>Here's the idea: at each snapshot, generate a fixed set of canonical Q&amp;A pairs about each symbol. "What does this function do? What does it return for input X? What side effects does it have? What does it assume about its caller?" Same questions, every snapshot.</p>
+
+  <p>Now you have a fingerprint. The model's answers to these questions, captured at each commit, are a stable signal of how the model understands the symbol. Drift shows up as the answers to the same questions changing over time.</p>
+
+  <p>This has a few nice properties. First, Q&amp;A pairs are easy for the LLM to produce reliably under low-temperature, structured-output conditions. Second, they're directly comparable across snapshots because the questions are fixed. Third, if you ever want to verify the model's claims, you can ask the same questions of the actual code and compare. The Q&amp;A structure is itself the test harness.</p>
+
+  <p>So your intuition was right, and it scales from "good way to prompt the model" to "good way to fingerprint code across time." It's the same property of structured-input attention routing, applied at two different levels.</p>
+
+  <h2>Grounding behavioral claims in runtime signals</h2>
+
+  <p>This is the most important "what the LLM can't do" point, and it deserves its own subsection.</p>
+
+  <p>When the LLM-generated semantic profile says "this function returns the user's discount as a percentage," that's a claim about behavior that the model derived from reading the code. The model could be wrong. Maybe the function actually returns a fraction. Maybe it returns a discount in some cases and null in others.</p>
+
+  <p>For behavior, the LLM is a guess. The runtime is the truth.</p>
+
+  <p>So in practice, you want to cross-reference. The semantic profile says X. The type signature says Y. The actual test outputs say Z. If all three agree, great. If they disagree, you have either a documentation problem, a type problem, or a test problem, and that's exactly the kind of misalignment worth knowing about.</p>
+
+  <p>Concrete examples of runtime signals worth feeding into the behavioral profile:</p>
+
+  <ul>
+    <li>Type signatures (from your type checker, not the LLM's reading of the code).</li>
+    <li>Test cases that exercise the symbol, with their pass/fail status.</li>
+    <li>Telemetry like call counts, latency percentiles, error rates, error types.</li>
+    <li>Traces of actual production calls if you have them, showing the shape of real inputs and outputs.</li>
+    <li>Static analysis output: lint warnings, dead code analysis, dependency graphs.</li>
+  </ul>
+
+  <p>None of these involve the LLM. All of them give you ground truth that the LLM's semantic claims can be checked against. The combination is what makes the system robust.</p>
+
+  <h2>Why noise is real, and how to handle it</h2>
+
+  <p>One thing that will bite you if you don't account for it: LLM-generated descriptions are not perfectly deterministic. Even at temperature 0, the same input can produce slightly different outputs (due to numerical precision in the sampling step, or to whatever non-determinism is in the serving infrastructure). Same code, different runs, you'll get descriptions that differ in their phrasing even though they describe the same thing.</p>
+
+  <p>If your drift detector compares prose, you'll get false positives from this noise alone. The function didn't change, but the description got worded differently, and now your diff system says "drift detected."</p>
+
+  <div class="widget">
+    <div class="widget-title">Same code, different runs, noise in unstructured descriptions</div>
+    <div class="cot-compare">
+      <div class="cot-col">
+        <div class="cot-col-title">Run 1 (freeform)</div>
+        <div class="cot-line" style="color: var(--text-muted);">This function validates user credentials by checking the password hash and confirming the account is active. It returns a User object on success.</div>
+      </div>
+      <div class="cot-col">
+        <div class="cot-col-title">Run 2 (freeform)</div>
+        <div class="cot-line" style="color: var(--text-muted);">Validates a user's login by comparing password hashes and ensuring the account hasn't been disabled. Returns the authenticated User instance.</div>
+      </div>
+    </div>
+    <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted);">Same function. Same prompt. Two runs. The prose differs in phrasing while saying the same thing. A naive text diff would flag this as drift. It is not drift.</p>
+    
+    <div class="cot-compare" style="margin-top: 16px;">
+      <div class="cot-col">
+        <div class="cot-col-title">Run 1 (structured)</div>
+        <div class="cot-line" style="color: var(--text-muted);">role: <span style="color:var(--accent)">"authentication"</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">side_effects: <span style="color:var(--accent)">[]</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">returns: <span style="color:var(--accent)">"User | null"</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">deps: <span style="color:var(--accent)">["hash_check", "user_db"]</span></div>
+      </div>
+      <div class="cot-col">
+        <div class="cot-col-title">Run 2 (structured)</div>
+        <div class="cot-line" style="color: var(--text-muted);">role: <span style="color:var(--accent)">"authentication"</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">side_effects: <span style="color:var(--accent)">[]</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">returns: <span style="color:var(--accent)">"User | null"</span></div>
+        <div class="cot-line" style="color: var(--text-muted);">deps: <span style="color:var(--accent)">["hash_check", "user_db"]</span></div>
+      </div>
+    </div>
+    <div class="widget-caption">Structured outputs are far more deterministic because the output distribution is narrowed. The field-level diff is now meaningful: if any field changes, that's a real signal worth investigating. This is why structured outputs aren't just a nice-to-have, they're the foundation of reliable drift detection.</div>
+  </div>
+
+  <p>This is one more reason structured outputs matter at every step. The field-level diff is meaningful precisely because the space of legal outputs is narrowed. When a structured field actually changes, that's real signal. When prose phrasing changes, that's noise.</p>
+
+  <h2>Drift detection is just composed prior sections</h2>
+
+  <p>Now look back at what we built. Every part of the drift detection architecture is something we covered earlier:</p>
+
+  <ul>
+    <li><strong>From section 1 (the substrate):</strong> the model is a context-to-distribution function with no persistent memory. We rely on this by storing snapshots externally instead of expecting the model to "remember" past versions.</li>
+    <li><strong>From section 2 (conditioning):</strong> structured prompts with explicit fields make outputs more stable. We use this everywhere we ask the model for a description, classification, or diff judgment.</li>
+    <li><strong>From section 3 (CoT):</strong> for the classify-drift step, we let the model reason about the structured diff before emitting a classification. The reasoning is text we can audit.</li>
+    <li><strong>From section 4 (reflection):</strong> for critical drift flags, we run an adversarial second-model pass to check whether the classification holds up under skeptical scrutiny.</li>
+    <li><strong>From section 5 (pipelines):</strong> the whole architecture is a sequential chain with validators between steps, ground-truth checkpoints (the runtime signals), and tight context per step. It's also the place where error amplification math determines whether your system is reliable at scale.</li>
+  </ul>
+
+  <p>You're not building something exotic. You're composing primitives. Once you see drift detection as "structured semantic descriptions, stored versioned, diffed field-by-field, cross-referenced with runtime ground truth, classified by an LLM under low temperature," it's just an instance of the same methodology we built up across the prior sections.</p>
+
+  <h2>What I'd build first</h2>
+
+  <p>If I were starting from scratch today, this would be my order.</p>
+
+  <ol>
+    <li>Define the structured JSON schema for the semantic profile. Just a handful of fields: role, responsibilities, dependencies, side effects, contract. Iterate on the schema by running it against five or ten real symbols in your codebase and asking "is this capturing what I'd want to track over time?" Lock the schema before building anything else.</li>
+    <li>Build steps 1, 2, and 4 (extract, semantic profile, versioned store). Run them across your existing commit history if you can. You now have a versioned trace of semantic descriptions.</li>
+    <li>Build step 5 (field-level diff) and look at the output for a few symbols you know well. Does it surface drift you recognize? Does it produce false positives? Tune the schema or the diff rules based on what you see.</li>
+    <li>Add step 6 (LLM classification of diffs). Validate on the same symbols.</li>
+    <li>Add step 3 (behavioral profile from runtime signals). This is independent and can land in parallel; integrating it makes everything more robust.</li>
+    <li>Step 7 is the dashboard. Build it last, once the upstream pipeline is producing real signal.</li>
+  </ol>
+
+  <p>Start narrow. One repo, a handful of symbols, one type of drift. Make that reliable. Expand from there. The classic mistake with systems like this is trying to build everything at once and ending up with a pipeline where every step is 70% reliable, which means end-to-end you're at 70%^7 = 8%. Reliability beats completeness, every time.</p>
+
+  <div class="section-end">End of section 6. Everything we covered in the lesson now sits in one applied architecture. Section 7 is a brief recap and pointers for further reading.</div>
+</section>
+
+<script>
+// =========================================================
+// Drift timeline widget
+// =========================================================
+const driftCommits = [
+  {
+    hash: "a1b2c3d",
+    msg: "initial validate_user",
+    profile: {
+      role: "input_validation",
+      responsibilities: ["check email format", "check password length"],
+      dependencies: ["regex"],
+      side_effects: [],
+      returns: "bool"
+    },
+    diff: null
+  },
+  {
+    hash: "f4e5d6c",
+    msg: "add password hash check",
+    profile: {
+      role: "input_validation",
+      responsibilities: ["check email format", "check password length", "verify password hash"],
+      dependencies: ["regex", "bcrypt"],
+      side_effects: [],
+      returns: "bool"
+    },
+    diff: {
+      responsibilities: { added: ["verify password hash"], removed: [] },
+      dependencies: { added: ["bcrypt"], removed: [] }
+    }
+  },
+  {
+    hash: "8b9c0d1",
+    msg: "fetch user record",
+    profile: {
+      role: "authentication",
+      responsibilities: ["check format", "verify password", "fetch user record"],
+      dependencies: ["regex", "bcrypt", "user_db"],
+      side_effects: ["db_read"],
+      returns: "User | null"
+    },
+    diff: {
+      role: { from: "input_validation", to: "authentication" },
+      responsibilities: { added: ["fetch user record"], removed: [] },
+      dependencies: { added: ["user_db"], removed: [] },
+      side_effects: { added: ["db_read"], removed: [] },
+      returns: { from: "bool", to: "User | null" },
+      isDrift: true
+    }
+  },
+  {
+    hash: "2e3f4a5",
+    msg: "add audit logging",
+    profile: {
+      role: "authentication",
+      responsibilities: ["check format", "verify password", "fetch user", "log attempt"],
+      dependencies: ["regex", "bcrypt", "user_db", "audit_logger"],
+      side_effects: ["db_read", "log_write"],
+      returns: "User | null"
+    },
+    diff: {
+      responsibilities: { added: ["log attempt"], removed: [] },
+      dependencies: { added: ["audit_logger"], removed: [] },
+      side_effects: { added: ["log_write"], removed: [] }
+    }
+  },
+  {
+    hash: "6b7c8d9",
+    msg: "add rate limiting",
+    profile: {
+      role: "authentication",
+      responsibilities: ["check format", "verify password", "fetch user", "log", "rate limit"],
+      dependencies: ["regex", "bcrypt", "user_db", "audit_logger", "rate_limiter"],
+      side_effects: ["db_read", "log_write", "cache_read", "cache_write"],
+      returns: "User | null"
+    },
+    diff: {
+      responsibilities: { added: ["rate limit"], removed: [] },
+      dependencies: { added: ["rate_limiter"], removed: [] },
+      side_effects: { added: ["cache_read", "cache_write"], removed: [] }
+    }
+  },
+  {
+    hash: "ef01234",
+    msg: "add feature gating",
+    profile: {
+      role: "auth_and_gating",
+      responsibilities: ["validate", "authenticate", "audit", "rate limit", "feature gate"],
+      dependencies: ["regex", "bcrypt", "user_db", "audit_logger", "rate_limiter", "feature_flags"],
+      side_effects: ["db_read", "log_write", "cache_read", "cache_write", "flag_read"],
+      returns: "User | null"
+    },
+    diff: {
+      role: { from: "authentication", to: "auth_and_gating" },
+      responsibilities: { added: ["feature gate"], removed: [] },
+      dependencies: { added: ["feature_flags"], removed: [] },
+      side_effects: { added: ["flag_read"], removed: [] },
+      isDrift: true
+    }
+  }
+];
+
+function renderDriftTimeline() {
+  const tl = document.getElementById('driftTimeline');
+  if (!tl) return;
+  tl.innerHTML = '';
+  driftCommits.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'commit-card' + (c.diff && c.diff.isDrift ? ' drift' : '') + (i === 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="commit-hash">${c.hash}</div>
+      <div class="commit-msg">${c.msg}</div>
+      <div class="commit-fields">
+        role: ${c.profile.role}<br>
+        deps: ${c.profile.dependencies.length}<br>
+        effects: ${c.profile.side_effects.length}
+      </div>
+      ${c.diff && c.diff.isDrift ? '<div class="drift-flag">⚠ drift</div>' : ''}
+    `;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#driftTimeline .commit-card').forEach(x => x.classList.remove('active'));
+      card.classList.add('active');
+      showCommitDetail(i);
+    });
+    tl.appendChild(card);
+  });
+  showCommitDetail(0);
+}
+
+function showCommitDetail(i) {
+  const c = driftCommits[i];
+  const detail = document.getElementById('driftDetail');
+  if (!detail) return;
+  
+  let diffHTML = '';
+  if (c.diff && i > 0) {
+    diffHTML = `<div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border);">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 8px;">Field-level diff vs. previous commit</div>`;
+    
+    if (c.diff.role) {
+      diffHTML += `<div style="font-family: var(--mono); font-size: 12px; margin: 4px 0;"><span style="color: var(--text-dim);">role:</span> <span style="color: var(--bad); text-decoration: line-through;">${c.diff.role.from}</span> → <span style="color: var(--good);">${c.diff.role.to}</span></div>`;
+    }
+    if (c.diff.responsibilities && c.diff.responsibilities.added.length) {
+      diffHTML += `<div style="font-family: var(--mono); font-size: 12px; margin: 4px 0;"><span style="color: var(--text-dim);">responsibilities added:</span> <span style="color: var(--good);">${c.diff.responsibilities.added.join(', ')}</span></div>`;
+    }
+    if (c.diff.dependencies && c.diff.dependencies.added.length) {
+      diffHTML += `<div style="font-family: var(--mono); font-size: 12px; margin: 4px 0;"><span style="color: var(--text-dim);">dependencies added:</span> <span style="color: var(--good);">${c.diff.dependencies.added.join(', ')}</span></div>`;
+    }
+    if (c.diff.side_effects && c.diff.side_effects.added.length) {
+      diffHTML += `<div style="font-family: var(--mono); font-size: 12px; margin: 4px 0;"><span style="color: var(--text-dim);">side effects added:</span> <span style="color: var(--good);">${c.diff.side_effects.added.join(', ')}</span></div>`;
+    }
+    if (c.diff.returns) {
+      diffHTML += `<div style="font-family: var(--mono); font-size: 12px; margin: 4px 0;"><span style="color: var(--text-dim);">returns:</span> <span style="color: var(--bad); text-decoration: line-through;">${c.diff.returns.from}</span> → <span style="color: var(--good);">${c.diff.returns.to}</span></div>`;
+    }
+    if (c.diff.isDrift) {
+      diffHTML += `<div style="margin-top: 10px; color: var(--bad); font-size: 12px; font-weight: 500;">⚠ Drift flagged: this commit changes the meaning or contract of the symbol, not just its implementation.</div>`;
+    }
+    diffHTML += `</div>`;
+  }
+  
+  detail.innerHTML = `
+    <div style="font-family: var(--mono); font-size: 11px; color: var(--text-dim);">${c.hash}</div>
+    <div style="font-family: var(--display); font-size: 16px; color: var(--text); margin: 4px 0 14px;">${c.msg}</div>
+    <div style="font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--text-muted);">
+      <div><span style="color: var(--text-dim);">role:</span> <span style="color: var(--accent);">${c.profile.role}</span></div>
+      <div><span style="color: var(--text-dim);">responsibilities:</span> [${c.profile.responsibilities.map(r => `"${r}"`).join(', ')}]</div>
+      <div><span style="color: var(--text-dim);">dependencies:</span> [${c.profile.dependencies.map(r => `"${r}"`).join(', ')}]</div>
+      <div><span style="color: var(--text-dim);">side_effects:</span> [${c.profile.side_effects.map(r => `"${r}"`).join(', ')}]</div>
+      <div><span style="color: var(--text-dim);">returns:</span> <span style="color: var(--accent);">${c.profile.returns}</span></div>
+    </div>
+    ${diffHTML}
+  `;
+}
+renderDriftTimeline();
+</script>
+
+<!-- ============================================================
+     SECTION 7: RECAP AND NEXT STEPS
+     ============================================================ -->
+<section class="section" id="section-7">
+  <div class="section-num">Section 07</div>
+  <h1 class="section-title">Recap and next steps</h1>
+
+  <p class="lead">If you ever come back to this site weeks from now and need to re-anchor yourself in a few minutes, this section is for you. Each subsection below compresses one earlier section into its core idea. Then I've left some pointers for what to read or build next.</p>
+
+  <h2>The six core ideas, compressed</h2>
+
+  <h3>1. The substrate</h3>
+  <p>Text becomes tokens becomes vectors. Each transformer layer lets every token attend to every other token (causally, only to itself and prior tokens) and pull information from the ones it cares about, using a Q/K/V mechanism that's basically a search engine. Many layers stacked means information mixes across positions progressively. The model generates one token at a time by sampling from a probability distribution that's a function of the entire context so far. Between tokens, the model has no memory except the text itself.</p>
+
+  <h3>2. Prompting as conditioning</h3>
+  <p>Prompting is not asking. It's shaping the next-token probability distribution by constructing the context the distribution is conditioned on. Once you see it this way, system prompts, few-shot examples, persona prompts, and step-by-step instructions all become predictable consequences of how the model uses context, not a bag of tricks. Position matters (start and end are stronger). Structure matters (headers, tags, named fields route attention more reliably than unstructured prose).</p>
+
+  <h3>3. Chain of thought</h3>
+  <p>CoT is using text as external memory and giving the model more compute per question. Each reasoning token is another full forward pass, and each new token gets to attend to all the previous reasoning. Good chains have explicit labeled steps and concrete intermediate results that attention can route to. Bad chains have vague middle steps and produce confidently wrong final answers. CoT fails through plausible-wrong reasoning, unfaithfulness (decoration that's not actually how the answer was chosen), and sensitivity to phrasing.</p>
+
+  <h3>4. Reflection</h3>
+  <p>The generate-critique-revise pattern. Works because critique-shaped prompts shift the distribution toward evaluation, and because the initial answer becomes inspectable text in the context. Fails sycophantically when vague critiques cause the model to defend its own wrong answers. Mitigations: adversarial framing, explicit criteria, different model or persona for the critique, external verification for high-stakes correctness.</p>
+
+  <h3>5. Pipelines and agents</h3>
+  <p>Multi-call architectures where outputs feed forward. Standard patterns: sequential, map-reduce, router, verifier loop, RAG, tool-use loop. Agents are pipelines where the model decides the next step. Methodology: narrow steps, structured outputs, validation between steps, tight context per step, deliberate temperature, log everything, test diverse inputs. Error amplification is the silent killer: 90% per step over 5 steps is 59% end-to-end. The biggest lever is making each step more reliable, not shortening the pipeline.</p>
+
+  <h3>6. Drift detection</h3>
+  <p>Two kinds of drift: semantic (meaning changes) and behavioral (runtime changes). LLMs are good at semantic descriptions, not behavioral predictions. The architecture: extract structure, generate structured semantic profile, separately gather behavioral signals from runtime, store everything versioned, field-level diffs against multiple baselines, LLM classification of diffs, surface to humans. Structured outputs (not prose) are what makes the comparisons reliable. Q&amp;A pairs work as drift fingerprints. Everything in this lesson composes into this one applied architecture.</p>
+
+  <h2>What to read next</h2>
+
+  <p>Sorted from most foundational to most applied. Pick based on what you want to push deeper on.</p>
+
+  <h3>To go deeper on the substrate</h3>
+
+  <ul>
+    <li><strong>"Attention Is All You Need" (Vaswani et al., 2017).</strong> The original transformer paper. Dense, but worth reading once you have the intuition we built in section 1. The math is more readable than people think once the picture is in your head. <a href="https://arxiv.org/abs/1706.03762" style="color: var(--accent);">arxiv.org/abs/1706.03762</a></li>
+    <li><strong>"The Illustrated Transformer" by Jay Alammar.</strong> The classic visual walkthrough. If you ever want to refresh on the mechanics with diagrams, this is the most-recommended resource for a reason. <a href="https://jalammar.github.io/illustrated-transformer/" style="color: var(--accent);">jalammar.github.io/illustrated-transformer</a></li>
+    <li><strong>3Blue1Brown's neural network and transformer videos.</strong> Visual, intuitive, paced. The "But what is a GPT" video is exceptionally good. <a href="https://www.youtube.com/@3blue1brown" style="color: var(--accent);">youtube.com/@3blue1brown</a></li>
+  </ul>
+
+  <h3>To go deeper on prompting and CoT</h3>
+
+  <ul>
+    <li><strong>"Chain-of-Thought Prompting Elicits Reasoning in Large Language Models" (Wei et al., 2022).</strong> The paper that put CoT on the map. Worth reading specifically for how experiments were structured. <a href="https://arxiv.org/abs/2201.11903" style="color: var(--accent);">arxiv.org/abs/2201.11903</a></li>
+    <li><strong>Anthropic's prompt engineering documentation.</strong> Concrete, structured, recently updated. Good for the practical side. <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" style="color: var(--accent);">docs.claude.com/.../prompt-engineering</a></li>
+    <li><strong>"Lost in the Middle: How Language Models Use Long Contexts" (Liu et al., 2023).</strong> The paper behind the position-matters claim in section 2. Empirical and clarifying. <a href="https://arxiv.org/abs/2307.03172" style="color: var(--accent);">arxiv.org/abs/2307.03172</a></li>
+  </ul>
+
+  <h3>To go deeper on reflection</h3>
+
+  <ul>
+    <li><strong>"Self-Refine: Iterative Refinement with Self-Feedback" (Madaan et al., 2023).</strong> The reflection-as-iteration paper. Good baseline for the pattern. <a href="https://arxiv.org/abs/2303.17651" style="color: var(--accent);">arxiv.org/abs/2303.17651</a></li>
+    <li><strong>"Large Language Models Cannot Self-Correct Reasoning Yet" (Huang et al., 2023).</strong> The counterpoint. Important for understanding the sycophantic failure mode at a research level rather than just folklore. <a href="https://arxiv.org/abs/2310.01798" style="color: var(--accent);">arxiv.org/abs/2310.01798</a></li>
+  </ul>
+
+  <h3>To go deeper on pipelines and agents</h3>
+
+  <ul>
+    <li><strong>Anthropic's "Building Effective Agents" post.</strong> The conceptual map for the patterns we covered. The vocabulary for the spectrum (workflow vs. agent) comes from this and adjacent thinking. <a href="https://www.anthropic.com/research/building-effective-agents" style="color: var(--accent);">anthropic.com/research/building-effective-agents</a></li>
+    <li><strong>ReAct: "Synergizing Reasoning and Acting in Language Models" (Yao et al., 2022).</strong> The tool-use-with-reasoning pattern that underlies many modern agents. <a href="https://arxiv.org/abs/2210.03629" style="color: var(--accent);">arxiv.org/abs/2210.03629</a></li>
+    <li><strong>The DSPy framework documentation.</strong> If you ever want to take pipeline construction seriously and treat prompts as something you compile rather than write, DSPy is worth knowing about even if you don't adopt it. <a href="https://dspy.ai" style="color: var(--accent);">dspy.ai</a></li>
+  </ul>
+
+  <h3>For your codebase system specifically</h3>
+
+  <ul>
+    <li><strong>The "ast-grep" tool and tree-sitter.</strong> If you're not already using tree-sitter to walk code structure, it pairs extremely well with LLM-based analysis. You get cheap reliable structural facts from tree-sitter and reserve the LLM for meaning.</li>
+    <li><strong>"Code as Policies" and the broader literature on code-understanding LLMs.</strong> A lot of recent research is directly relevant to what you're building. Anthropic, GitHub, and Sourcegraph all publish in this space.</li>
+    <li><strong>Property-based testing tools (Hypothesis for Python, fast-check for JS).</strong> A good source of runtime signals for the behavioral profile. Property tests give you a much richer behavioral fingerprint than example-based tests.</li>
+  </ul>
+
+  <h2>One last thing</h2>
+
+  <p>Everything in this lesson sits on a single observation: the model is a function from context to probability distribution. Everything you build, every prompt you write, every pipeline you architect, they all reduce to "construct the right context." Once that view is internalized, things stop being magic.</p>
+
+  <p>If you want, when you're working on your codebase system and run into a part of the LLM behavior that feels weird, walk it back to that question. "What's in the context at this point, and what next-token distribution does that produce?" The answer is almost always there.</p>
+
+  <p>Good luck with the system. Send me follow-ups when things break in unexpected ways. The interesting failure modes are how you learn the rest.</p>
+
+  <div class="section-end">End of lesson. Quick navigation: <a href="#section-0" style="color: var(--accent);">back to top</a></div>
+</section>
+
+</main>
+</div>
+
+<script>
+// Progress bar
+const progress = document.getElementById('progress');
+const main = document.getElementById('main');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  progress.style.width = pct + '%';
+});
+
+// Active nav link
+const links = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('.section');
+
+function updateActiveNav() {
+  let current = '';
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top <= 120) current = s.id;
+  });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', updateActiveNav);
+updateActiveNav();
+</script>
+
+</body>
+</html>
