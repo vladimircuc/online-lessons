@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subagents · How They Work and When to Use Them</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0d11;
+    --bg-2:#090a0d;
+    --surface:#15161c;
+    --surface-2:#1b1d25;
+    --border:#2a2c36;
+    --border-soft:#23252e;
+    --text:#ece9e3;
+    --muted:#9a9ca7;
+    --faint:#666771;
+    --amber:#edaa44;
+    --amber-2:#f0b85e;
+    --amber-soft:rgba(237,170,68,0.13);
+    --amber-line:rgba(237,170,68,0.45);
+    --teal:#45c4bd;
+    --teal-2:#62d2cb;
+    --teal-soft:rgba(69,196,189,0.13);
+    --teal-line:rgba(69,196,189,0.45);
+    --danger:#e3735e;
+    --danger-soft:rgba(227,115,94,0.12);
+    --font-display:'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+    --font-body:'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --col:760px;
+    --col-wide:1040px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:18px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* atmosphere */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:
+      radial-gradient(820px 620px at 12% -8%, rgba(237,170,68,0.10), transparent 60%),
+      radial-gradient(760px 680px at 92% 108%, rgba(69,196,189,0.09), transparent 60%),
+      var(--bg);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background-image:radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size:30px 30px;
+    mask-image:radial-gradient(ellipse 100% 100% at 50% 30%, #000 35%, transparent 90%);
+    -webkit-mask-image:radial-gradient(ellipse 100% 100% at 50% 30%, #000 35%, transparent 90%);
+  }
+
+  /* progress bar */
+  .progress{
+    position:fixed;top:0;left:0;height:3px;width:0%;
+    background:linear-gradient(90deg, var(--amber), var(--teal));
+    z-index:50;transition:width .12s linear;
+  }
+
+  /* top bar */
+  .topbar{
+    position:sticky;top:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px clamp(20px,5vw,56px);
+    backdrop-filter:blur(10px);
+    background:linear-gradient(180deg, rgba(12,13,17,0.86), rgba(12,13,17,0.55));
+    border-bottom:1px solid var(--border-soft);
+  }
+  .topbar .brand{
+    font-family:var(--font-mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
+  }
+  .topbar .brand b{color:var(--text);font-weight:600;}
+  .topbar .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:9px;vertical-align:middle;box-shadow:0 0 12px var(--amber);}
+
+  .wrap{max-width:var(--col);margin:0 auto;padding:0 clamp(20px,5vw,32px);}
+  .wide{max-width:var(--col-wide);}
+
+  /* hero */
+  header.hero{padding:clamp(64px,11vw,128px) 0 clamp(40px,7vw,72px);}
+  .eyebrow{
+    font-family:var(--font-mono);font-size:12.5px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--amber);margin:0 0 22px;
+    display:inline-flex;align-items:center;gap:11px;
+  }
+  .eyebrow::before{content:"";width:30px;height:1px;background:var(--amber-line);}
+  h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(52px,9vw,108px);
+    line-height:.95;
+    letter-spacing:-.03em;
+    margin:0 0 26px;
+  }
+  h1 .em{
+    background:linear-gradient(110deg, var(--amber), var(--teal));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .sub{
+    font-size:clamp(20px,2.7vw,27px);
+    line-height:1.4;
+    color:var(--text);
+    max-width:30ch;
+    margin:0 0 30px;
+    font-weight:500;
+  }
+  .hero .lead{color:var(--muted);font-size:18px;max-width:62ch;margin:0;}
+  .hero .lead b{color:var(--text);font-weight:600;}
+
+  /* contents */
+  .toc{
+    margin:46px 0 0;padding:24px 26px;border:1px solid var(--border);border-radius:16px;
+    background:linear-gradient(180deg, var(--surface), rgba(21,22,28,0.5));
+  }
+  .toc h4{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:0 0 14px;font-weight:500;}
+  .toc ol{margin:0;padding:0;list-style:none;counter-reset:toc;display:grid;grid-template-columns:1fr 1fr;gap:7px 30px;}
+  .toc li{counter-increment:toc;}
+  .toc a{
+    color:var(--text);text-decoration:none;font-size:15.5px;display:flex;gap:12px;align-items:baseline;
+    padding:5px 0;border-bottom:1px solid transparent;transition:color .15s, border-color .15s;
+  }
+  .toc a::before{content:counter(toc,decimal-leading-zero);font-family:var(--font-mono);font-size:12px;color:var(--faint);}
+  .toc a:hover{color:var(--amber);}
+
+  /* sections */
+  section{padding:clamp(48px,8vw,86px) 0;}
+  .sec-num{font-family:var(--font-mono);font-size:13px;letter-spacing:.2em;color:var(--teal);text-transform:uppercase;margin:0 0 14px;display:flex;align-items:center;gap:11px;}
+  .sec-num::before{content:"";width:26px;height:1px;background:var(--teal-line);}
+  h2{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(31px,5vw,48px);line-height:1.04;letter-spacing:-.02em;
+    margin:0 0 22px;
+  }
+  h3{
+    font-family:var(--font-display);font-weight:600;
+    font-size:clamp(20px,3vw,25px);letter-spacing:-.01em;margin:36px 0 12px;
+  }
+  p{margin:0 0 20px;}
+  strong{color:#fff;font-weight:600;}
+  .muted{color:var(--muted);}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-2);border:1px solid var(--border-soft);padding:1px 7px;border-radius:6px;color:var(--amber-2);}
+
+  /* key insight callout */
+  .insight{
+    position:relative;margin:38px 0;padding:30px 32px 30px 36px;
+    border-radius:18px;
+    background:linear-gradient(135deg, rgba(237,170,68,0.10), rgba(69,196,189,0.06));
+    border:1px solid var(--border);
+    overflow:hidden;
+  }
+  .insight::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--amber), var(--teal));}
+  .insight .tag{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin:0 0 10px;}
+  .insight p{font-family:var(--font-display);font-weight:500;font-size:clamp(20px,3vw,26px);line-height:1.34;color:var(--text);margin:0;letter-spacing:-.01em;}
+
+  /* diagrams */
+  .diagram{margin:40px auto;}
+  .diagram svg{width:100%;height:auto;display:block;}
+  .figcap{font-family:var(--font-mono);font-size:13px;color:var(--muted);text-align:center;margin:16px auto 0;max-width:64ch;line-height:1.6;}
+  .figcap b{color:var(--text);font-weight:500;}
+
+  /* svg theming classes */
+  .d-card{fill:var(--surface);stroke:var(--border);}
+  .d-card-2{fill:var(--surface-2);stroke:var(--border-soft);}
+  .d-main{fill:var(--amber);}
+  .d-main-soft{fill:var(--amber-soft);}
+  .d-main-s{stroke:var(--amber);}
+  .d-sub{fill:var(--teal);}
+  .d-sub-soft{fill:var(--teal-soft);}
+  .d-sub-s{stroke:var(--teal);}
+  .d-line{stroke:var(--faint);}
+  .d-noise{fill:#33353f;}
+  .d-ink{fill:#0b0c0f;}
+  text.lbl{font-family:var(--font-body);fill:var(--text);}
+  text.mono{font-family:var(--font-mono);fill:var(--muted);}
+  text.mono-a{font-family:var(--font-mono);fill:var(--amber);}
+  text.mono-t{font-family:var(--font-mono);fill:var(--teal);}
+  text.dim{fill:var(--muted);}
+  text.faint{fill:var(--faint);}
+
+  /* cards grid */
+  .grid{display:grid;gap:16px;margin:34px 0;}
+  .grid.c2{grid-template-columns:repeat(2,1fr);}
+  .grid.c3{grid-template-columns:repeat(3,1fr);}
+  .card{
+    background:linear-gradient(180deg, var(--surface), rgba(21,22,28,0.6));
+    border:1px solid var(--border);border-radius:15px;padding:24px 24px 26px;
+    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .card:hover{transform:translateY(-3px);border-color:#3a3d49;box-shadow:0 14px 40px rgba(0,0,0,0.35);}
+  .card .knob{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin:0 0 12px;}
+  .card h4{font-family:var(--font-display);font-weight:600;font-size:20px;margin:0 0 8px;color:var(--text);}
+  .card p{font-size:15.5px;color:var(--muted);margin:0;line-height:1.6;}
+  .card .pill{display:inline-block;font-family:var(--font-mono);font-size:11px;padding:3px 9px;border-radius:999px;margin-bottom:13px;border:1px solid var(--border);color:var(--muted);}
+  .card.amber .pill{color:var(--amber);border-color:var(--amber-line);background:var(--amber-soft);}
+  .card.teal .pill{color:var(--teal);border-color:var(--teal-line);background:var(--teal-soft);}
+
+  /* two-column compare */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:34px 0;}
+  .panel{border:1px solid var(--border);border-radius:16px;padding:26px 26px 22px;background:var(--surface);}
+  .panel.good{border-color:rgba(69,196,189,0.35);background:linear-gradient(180deg, rgba(69,196,189,0.06), var(--surface));}
+  .panel.hold{border-color:rgba(237,170,68,0.35);background:linear-gradient(180deg, rgba(237,170,68,0.06), var(--surface));}
+  .panel .head{font-family:var(--font-display);font-weight:700;font-size:20px;margin:0 0 6px;}
+  .panel.good .head{color:var(--teal-2);}
+  .panel.hold .head{color:var(--amber-2);}
+  .panel .headsub{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin:0 0 18px;letter-spacing:.04em;}
+  .panel ul{list-style:none;margin:0;padding:0;}
+  .panel li{position:relative;padding:9px 0 9px 30px;font-size:15.5px;line-height:1.5;border-top:1px solid var(--border-soft);}
+  .panel li:first-child{border-top:none;}
+  .panel li::before{position:absolute;left:0;top:9px;font-family:var(--font-mono);font-size:15px;}
+  .panel.good li::before{content:"+";color:var(--teal);}
+  .panel.hold li::before{content:"\2192";color:var(--amber);}
+
+  /* gets / does not get */
+  .ledger{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:30px 0;}
+  .ledger .col{border:1px solid var(--border);border-radius:16px;padding:24px;background:var(--surface);}
+  .ledger .col.yes{border-color:rgba(69,196,189,0.3);}
+  .ledger .col.no{border-color:rgba(227,115,94,0.28);}
+  .ledger h4{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 16px;}
+  .ledger .yes h4{color:var(--teal);}
+  .ledger .no h4{color:var(--danger);}
+  .ledger ul{list-style:none;margin:0;padding:0;}
+  .ledger li{padding:8px 0 8px 28px;position:relative;font-size:15.5px;line-height:1.45;}
+  .ledger .yes li::before{content:"\2713";position:absolute;left:0;color:var(--teal);font-family:var(--font-mono);}
+  .ledger .no li::before{content:"\2715";position:absolute;left:0;color:var(--danger);font-family:var(--font-mono);}
+
+  /* mcq */
+  .mcq{border:1px solid var(--border);border-radius:16px;padding:26px 26px 22px;margin:20px 0;background:linear-gradient(180deg, var(--surface), rgba(21,22,28,0.5));}
+  .mcq .q{font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.4;margin:0 0 6px;}
+  .mcq .qn{font-family:var(--font-mono);font-size:12px;color:var(--teal);letter-spacing:.14em;margin:0 0 12px;}
+  .mcq .opts{display:grid;gap:10px;margin:18px 0 0;}
+  .opt{
+    text-align:left;font-family:var(--font-body);font-size:16px;color:var(--text);
+    background:var(--surface-2);border:1px solid var(--border);border-radius:11px;
+    padding:13px 16px;cursor:pointer;transition:border-color .15s, background .15s, transform .1s;
+    display:flex;align-items:center;gap:13px;width:100%;
+  }
+  .opt .mark{font-family:var(--font-mono);font-size:12.5px;color:var(--faint);border:1px solid var(--border);border-radius:6px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+  .opt:hover:not(.locked){border-color:#3f424e;background:#21232b;}
+  .opt:hover:not(.locked) .mark{color:var(--text);border-color:#4a4d59;}
+  .opt.correct{border-color:var(--teal);background:rgba(69,196,189,0.10);}
+  .opt.correct .mark{color:#06231f;background:var(--teal);border-color:var(--teal);}
+  .opt.wrong{border-color:var(--danger);background:rgba(227,115,94,0.08);}
+  .opt.wrong .mark{color:#2a0f08;background:var(--danger);border-color:var(--danger);}
+  .opts.answered .opt{cursor:default;}
+  .feedback{
+    margin-top:16px;font-size:15px;line-height:1.6;color:var(--muted);
+    border-left:2px solid var(--teal);padding:4px 0 4px 16px;
+    max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease, opacity .3s ease, margin .3s;
+  }
+  .feedback.show{max-height:340px;opacity:1;margin-top:18px;}
+  .feedback b{color:var(--text);font-weight:600;}
+
+  /* next box */
+  .next{
+    margin:30px 0 10px;padding:34px;border-radius:18px;text-align:center;
+    background:linear-gradient(135deg, rgba(237,170,68,0.10), rgba(69,196,189,0.08));
+    border:1px solid var(--border);
+  }
+  .next .k{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin:0 0 12px;}
+  .next h3{margin:0 0 10px;}
+  .next p{color:var(--muted);max-width:54ch;margin:0 auto;}
+
+  footer{padding:48px 0 64px;border-top:1px solid var(--border-soft);margin-top:40px;}
+  footer p{font-family:var(--font-mono);font-size:12.5px;color:var(--faint);text-align:center;margin:0;letter-spacing:.04em;}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in-view{opacity:1;transform:none;}
+  .hero .eyebrow,.hero h1,.hero .sub,.hero .lead,.hero .toc{opacity:0;animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards;}
+  .hero h1{animation-delay:.08s;}
+  .hero .sub{animation-delay:.18s;}
+  .hero .lead{animation-delay:.28s;}
+  .hero .toc{animation-delay:.4s;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+
+  @media (max-width:760px){
+    body{font-size:17px;}
+    .toc ol{grid-template-columns:1fr;}
+    .grid.c2,.grid.c3,.compare,.ledger{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .reveal{opacity:1;transform:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span><b>Subagents</b> &nbsp;·&nbsp; working session</div>
+  <div class="brand">part 1 of 2 &nbsp;·&nbsp; the concept</div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Working session</p>
+    <h1>Sub<span class="em">agents</span></h1>
+    <p class="sub">How they work, what they are for, and when to reach for one.</p>
+    <p class="lead">By the end of this page you'll have a clear mental model of subagents: <b>what they really are under the hood</b>, the one rule that explains almost everything they do, how you configure them, and when they help versus when they get in your way. We'll keep it conceptual here, then open VS Code and watch it happen for real right after.</p>
+
+    <nav class="toc">
+      <h4>What we'll cover</h4>
+      <ol>
+        <li><a href="#s1">The one idea everything rests on</a></li>
+        <li><a href="#s2">How Claude's memory actually works</a></li>
+        <li><a href="#s3">What a subagent really is</a></li>
+        <li><a href="#s4">The one rule: the boundary</a></li>
+        <li><a href="#s5">What crosses the line</a></li>
+        <li><a href="#s6">The five things you configure</a></li>
+        <li><a href="#s7">Built-in versus custom</a></li>
+        <li><a href="#s8">When to use one, when not to</a></li>
+        <li><a href="#s9">Subagents versus skills</a></li>
+        <li><a href="#s10">A worked example</a></li>
+        <li><a href="#s11">The bigger picture</a></li>
+        <li><a href="#s12">Check your understanding</a></li>
+      </ol>
+    </nav>
+  </div>
+</header>
+
+<!-- 1 -->
+<section id="s1">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 01</p>
+    <h2 class="reveal">The one idea everything rests on</h2>
+    <p class="reveal">Let's start with the single idea the whole topic hangs off, in two sentences. <strong>A subagent is a second instance of Claude that runs in its own separate context window, does a chunk of work, and reports back a summary.</strong> You reach for one because a single long session slowly fills with clutter and starts to lose the thread.</p>
+    <p class="reveal">Hold onto those two sentences. Everything else here, the tool limits, running several at once, the autonomy controls, is just detail hanging off them.</p>
+    <div class="insight reveal">
+      <p class="tag">The core idea</p>
+      <p>Your context window is not infinite. A subagent is how you do heavy, noisy work somewhere else and bring back only what matters.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 02</p>
+    <h2 class="reveal">How Claude's memory actually works</h2>
+    <p class="reveal">Most explanations stop at "the context window fills up." If you understand the layer underneath, the rest is obvious, so let's go one level deeper.</p>
+    <p class="reveal">A language model has <strong>no memory between turns</strong>. It is stateless. The entire mind it has at any moment is whatever sits in its context window: the instructions, every earlier message, every file it read, every tool result, every dead end it explored. There is nothing else. Two things follow from that, and both matter.</p>
+    <p class="reveal"><strong>First, the window is finite.</strong> There's a hard ceiling on how much text fits, and a long session marches toward it. <strong>Second, and this is the part people miss, quality slips well before you hit that ceiling.</strong> The model's attention is a limited resource spread across every token in the window. When the window is short and focused, attention concentrates on what matters. As it fills with thousands of tokens of search output, file dumps, and reasoning you no longer care about, the signal you want gets diluted, and a decision made an hour ago is now buried far from where the model is reading. Answers get vaguer, earlier choices get forgotten, and code starts drifting from the patterns you set.</p>
+    <p class="reveal">A way to picture it: imagine holding a careful conversation in a room where every word anyone has ever said is still being shouted in the background. You can technically still hear, but you're working harder and missing things. <strong>A subagent sends the noisy work into a soundproof room next door</strong>, and only a short written summary comes back out.</p>
+  </div>
+  <div class="wrap wide">
+    <div class="diagram reveal">
+      <svg viewBox="0 0 960 380" role="img" aria-label="Comparison of a long session without subagents versus the same work with subagents">
+        <!-- Row A : without -->
+        <text x="0" y="26" class="mono-a" font-size="14" letter-spacing="2">WITHOUT SUBAGENTS</text>
+        <text x="0" y="48" class="faint" font-size="13" font-family="var(--font-body)">one long session, everything stays in the window</text>
+        <!-- track -->
+        <rect x="0" y="64" width="760" height="46" rx="8" class="d-card-2"/>
+        <!-- early signal -->
+        <rect x="6" y="70" width="60" height="34" rx="4" class="d-main-soft"/>
+        <rect x="70" y="70" width="60" height="34" rx="4" class="d-main-soft"/>
+        <!-- noise growing -->
+        <rect x="134" y="70" width="50" height="34" rx="4" class="d-noise"/>
+        <rect x="188" y="70" width="60" height="34" rx="4" class="d-noise"/>
+        <rect x="252" y="70" width="46" height="34" rx="4" class="d-noise"/>
+        <rect x="302" y="70" width="64" height="34" rx="4" class="d-noise"/>
+        <rect x="370" y="70" width="40" height="34" rx="4" class="d-noise"/>
+        <rect x="414" y="70" width="58" height="34" rx="4" class="d-noise"/>
+        <rect x="476" y="70" width="52" height="34" rx="4" class="d-noise"/>
+        <rect x="532" y="70" width="46" height="34" rx="4" class="d-noise"/>
+        <rect x="582" y="70" width="60" height="34" rx="4" class="d-noise"/>
+        <!-- buried signal sliver -->
+        <rect x="646" y="70" width="14" height="34" rx="3" class="d-main"/>
+        <rect x="664" y="70" width="54" height="34" rx="4" class="d-noise"/>
+        <rect x="722" y="70" width="32" height="34" rx="4" class="d-noise"/>
+        <!-- quality curve -->
+        <path d="M6 126 C 220 128, 430 150, 754 176" fill="none" class="d-line" stroke-width="2" stroke-dasharray="5 5"/>
+        <circle cx="6" cy="126" r="4" class="d-main"/>
+        <circle cx="754" cy="176" r="4" class="d-noise"/>
+        <text x="0" y="200" class="mono" font-size="12.5">response quality drifts down as the noise grows</text>
+        <text x="630" y="200" class="mono-a" font-size="12.5">signal, now buried</text>
+
+        <!-- Row B : with -->
+        <text x="0" y="262" class="mono-t" font-size="14" letter-spacing="2">WITH SUBAGENTS</text>
+        <text x="0" y="284" class="faint" font-size="13" font-family="var(--font-body)">noisy work happens elsewhere, only summaries return</text>
+        <rect x="0" y="300" width="760" height="46" rx="8" class="d-card-2"/>
+        <!-- lean: a few summary blocks -->
+        <rect x="6" y="306" width="58" height="34" rx="4" class="d-main-soft"/>
+        <rect x="70" y="306" width="46" height="34" rx="4" class="d-sub"/>
+        <rect x="190" y="306" width="46" height="34" rx="4" class="d-sub"/>
+        <rect x="360" y="306" width="46" height="34" rx="4" class="d-sub"/>
+        <rect x="540" y="306" width="46" height="34" rx="4" class="d-sub"/>
+        <!-- quality curve flat/high -->
+        <path d="M6 362 C 250 360, 520 362, 754 360" fill="none" class="d-sub-s" stroke-width="2" stroke-dasharray="5 5" opacity="0.7"/>
+        <circle cx="6" cy="362" r="4" class="d-sub"/>
+        <circle cx="754" cy="360" r="4" class="d-sub"/>
+        <text x="148" y="332" class="mono-t" font-size="12">summary</text>
+      </svg>
+      <p class="figcap"><b>Same amount of work, two outcomes.</b> Without subagents the window fills with noise and the useful signal gets buried. With subagents, the heavy work runs in separate windows and only small summaries (teal) come back, so the main thread stays lean and sharp.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 03</p>
+    <h2 class="reveal">What a subagent really is</h2>
+    <p class="reveal">This is the piece worth slowing down on, because the natural assumption is wrong. It's tempting to think of a subagent as "another part of the same conversation." It is not. <strong>It is a fresh, separate run of the model.</strong></p>
+    <p class="reveal">When the main agent decides to delegate, it spawns the subagent and a brand new context window is created for it. That window is sealed off, but it is <strong>not empty</strong>: the subagent gets its own instructions, the task description the main agent writes for it, and some basics like your project rules. What it does <strong>not</strong> get is the conversation history or the files the main thread already read. It starts fresh on the task itself.</p>
+    <p class="reveal">The subagent then runs its own loop, reading, searching, editing, running commands, entirely inside its own window. When it finishes, it sends back exactly one thing: <strong>a final result message.</strong> All of its messy intermediate work stays in its window and never enters the main conversation. The main agent reads that one message and carries on.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 04</p>
+    <h2 class="reveal">The one rule: the boundary</h2>
+    <p class="reveal">If you remember one picture from today, make it this one, because it explains almost every behaviour you'll ever see. <strong>A subagent has exactly one channel in and one channel out.</strong></p>
+  </div>
+  <div class="wrap wide">
+    <div class="diagram reveal">
+      <svg viewBox="0 0 960 430" role="img" aria-label="The subagent boundary: the task prompt goes in, a summary comes out, everything else stays sealed">
+        <defs>
+          <marker id="arrA" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto"><path d="M0 0 L9 5 L0 10 z" fill="var(--amber)"/></marker>
+          <marker id="arrT" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto"><path d="M0 0 L9 5 L0 10 z" fill="var(--teal)"/></marker>
+        </defs>
+
+        <!-- main window -->
+        <rect x="20" y="84" width="330" height="280" rx="16" class="d-card" stroke-width="1.5"/>
+        <text x="44" y="116" class="mono-a" font-size="12.5" letter-spacing="1.5">MAIN CONTEXT WINDOW</text>
+        <rect x="44" y="132" width="120" height="30" rx="15" class="d-main-soft" stroke="var(--amber)" stroke-width="1"/>
+        <text x="104" y="152" text-anchor="middle" class="mono-a" font-size="13">main agent</text>
+        <rect x="44" y="180" width="282" height="13" rx="6" class="d-card-2"/>
+        <rect x="44" y="202" width="248" height="13" rx="6" class="d-card-2"/>
+        <rect x="44" y="224" width="266" height="13" rx="6" class="d-card-2"/>
+        <text x="44" y="276" class="dim" font-size="13" font-family="var(--font-body)">your conversation,</text>
+        <text x="44" y="296" class="dim" font-size="13" font-family="var(--font-body)">your decisions,</text>
+        <text x="44" y="316" class="dim" font-size="13" font-family="var(--font-body)">the files you've opened</text>
+        <text x="44" y="344" class="faint" font-size="12" font-family="var(--font-body)">stays clean and focused</text>
+
+        <!-- sub window (dashed = sealed) -->
+        <rect x="610" y="84" width="330" height="280" rx="16" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="7 6"/>
+        <text x="634" y="116" class="mono-t" font-size="12.5" letter-spacing="1.5">SUBAGENT · SEALED WINDOW</text>
+        <rect x="634" y="132" width="110" height="30" rx="15" class="d-sub-soft" stroke="var(--teal)" stroke-width="1"/>
+        <text x="689" y="152" text-anchor="middle" class="mono-t" font-size="13">subagent</text>
+        <!-- its work -->
+        <rect x="634" y="184" width="282" height="26" rx="6" class="d-card-2"/>
+        <text x="648" y="201" class="dim" font-size="12.5" font-family="var(--font-body)">reads files</text>
+        <rect x="634" y="216" width="282" height="26" rx="6" class="d-card-2"/>
+        <text x="648" y="233" class="dim" font-size="12.5" font-family="var(--font-body)">searches the codebase</text>
+        <rect x="634" y="248" width="282" height="26" rx="6" class="d-card-2"/>
+        <text x="648" y="265" class="dim" font-size="12.5" font-family="var(--font-body)">runs commands</text>
+        <text x="634" y="312" class="mono-t" font-size="12">all of this stays inside</text>
+        <text x="634" y="332" class="faint" font-size="12" font-family="var(--font-body)">and never reaches the main thread</text>
+
+        <!-- channel in -->
+        <line x1="352" y1="170" x2="606" y2="170" stroke="var(--amber)" stroke-width="2" marker-end="url(#arrA)"/>
+        <text x="479" y="158" text-anchor="middle" class="mono-a" font-size="13.5">the task prompt</text>
+        <text x="479" y="190" text-anchor="middle" class="faint" font-size="12" font-family="var(--font-body)">the only briefing it gets</text>
+
+        <!-- channel out -->
+        <line x1="608" y1="282" x2="354" y2="282" stroke="var(--teal)" stroke-width="2" marker-end="url(#arrT)"/>
+        <text x="481" y="270" text-anchor="middle" class="mono-t" font-size="13.5">a summary</text>
+        <text x="481" y="302" text-anchor="middle" class="faint" font-size="12" font-family="var(--font-body)">the only thing that comes back</text>
+      </svg>
+      <p class="figcap">In: only the task prompt the main agent writes. Out: only the summary it returns. <b>Nothing else crosses the boundary.</b></p>
+    </div>
+  </div>
+  <div class="wrap">
+    <h3 class="reveal">What this one rule explains</h3>
+    <p class="reveal"><strong>Why a subagent "doesn't know" something you just discussed.</strong> The conversation never crossed the boundary. The only thing that reaches it is the prompt, so if it needs a file path, an error message, or an earlier decision, that has to be written into the prompt. Think of it like a contractor who just walked in the door and knows nothing about the project until you brief them.</p>
+    <p class="reveal"><strong>Why ten parallel subagents that each return a long report defeat the point.</strong> All ten reports come back across the "out" channel into your main window, and you've just refilled the clutter you were trying to avoid. The fix is to have them return tight summaries, not full transcripts.</p>
+    <p class="reveal"><strong>Why two subagents can't coordinate with each other mid-task.</strong> There's no channel between them, only back to the parent. When you do want workers that message each other, that's a separate feature we'll meet later called agent teams.</p>
+    <div class="insight reveal">
+      <p class="tag">The exception that proves the rule</p>
+      <p>A "fork" is a subagent that inherits the whole conversation instead of starting fresh, so it needs no briefing. Its own work still stays out of your main window. The default subagent is sealed and must be briefed; a fork comes pre-loaded.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 05</p>
+    <h2 class="reveal">What crosses the line</h2>
+    <p class="reveal">Since the boundary is the whole game, here is exactly what a subagent starts with and what it doesn't. Keep this in mind whenever you write a task for one.</p>
+    <div class="ledger reveal">
+      <div class="col yes">
+        <h4>It does start with</h4>
+        <ul>
+          <li>Its own instructions, the persona and rules you gave it</li>
+          <li>The task prompt the main agent writes</li>
+          <li>Your project's standing rules and standards</li>
+        </ul>
+      </div>
+      <div class="col no">
+        <h4>It does not get</h4>
+        <ul>
+          <li>The conversation you've had so far</li>
+          <li>The files Claude already opened in the main thread</li>
+          <li>What you were thinking but never wrote down</li>
+        </ul>
+      </div>
+    </div>
+    <p class="reveal muted">The practical takeaway: a good delegation prompt is specific. Name the files, paste the error, state the decision. The subagent can be brilliant, but only about what you actually told it.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 06</p>
+    <h2 class="reveal">The five things you configure</h2>
+    <p class="reveal">Once you have the boundary in your head, the settings stop feeling arbitrary. There are basically five dials on a subagent, and each one maps to a clear reason.</p>
+    <div class="grid c2 reveal">
+      <div class="card">
+        <p class="knob">01 · its instructions</p>
+        <h4>The specialist's brain</h4>
+        <p>The system prompt is where you write who it is, what to check, and how to report. This is how you get focused, consistent, expert behaviour instead of a generic helper.</p>
+      </div>
+      <div class="card">
+        <p class="knob">02 · tools</p>
+        <h4>What it can do, and safety</h4>
+        <p>You decide which tools it can touch. A reviewer with read-only tools literally cannot change your files, so the limit is both a focus and a safety guarantee.</p>
+      </div>
+      <div class="card">
+        <p class="knob">03 · model</p>
+        <h4>Cost versus power</h4>
+        <p>Point a "search the whole codebase" worker at a fast cheap model, and a hard reasoning task at a stronger one. You pay for power only where it earns its keep.</p>
+      </div>
+      <div class="card">
+        <p class="knob">04 · permissions</p>
+        <h4>How far it goes alone</h4>
+        <p>This is the autonomy dial: ask before everything, auto-accept edits, or run with fewer prompts. We'll spend a whole session on this one later.</p>
+      </div>
+      <div class="card" style="grid-column:1 / -1;">
+        <p class="knob">05 · context mode</p>
+        <h4>Sealed, or pre-loaded</h4>
+        <p>By default it starts fresh and sealed, which keeps things clean but means you must brief it. A fork instead inherits the whole conversation, so there's no briefing needed. Same trade-off we just covered, now as a setting you choose.</p>
+      </div>
+    </div>
+    <p class="reveal muted">Every dial shapes one of three things: what the specialist knows, what it can do, or what it costs.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 07</p>
+    <h2 class="reveal">Built-in versus custom</h2>
+    <p class="reveal">Here's the good news: you're already using subagents without setting any up. Claude Code ships with a few built in and reaches for them on its own. You'll see this live in the demo, when you ask a broad question and watch it quietly spin one up.</p>
+    <div class="grid c3 reveal">
+      <div class="card teal">
+        <span class="pill">built in</span>
+        <h4>Explore</h4>
+        <p>A fast, read-only worker for searching and understanding a codebase. Keeps all that search output out of your main window.</p>
+      </div>
+      <div class="card teal">
+        <span class="pill">built in</span>
+        <h4>Plan</h4>
+        <p>A read-only researcher that gathers context while Claude is forming a plan, before any code gets written.</p>
+      </div>
+      <div class="card teal">
+        <span class="pill">built in</span>
+        <h4>General-purpose</h4>
+        <p>The full toolkit, for multi-step jobs that need both exploring and acting. The do-anything worker.</p>
+      </div>
+    </div>
+    <h3 class="reveal">When to build your own</h3>
+    <p class="reveal">A custom subagent is something you make when you <strong>keep needing the same specialist with the same instructions</strong>. That repetition is the real signal. A simple rule of thumb: if you've set up the same kind of worker by hand three times, turn it into a custom subagent so you never do it again.</p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 08</p>
+    <h2 class="reveal">When to use one, when not to</h2>
+    <p class="reveal">This judgment is what separates using subagents well from spraying them everywhere. They are a tool with a cost, not a default.</p>
+    <div class="compare reveal">
+      <div class="panel good">
+        <p class="head">Reach for a subagent</p>
+        <p class="headsub">work that belongs in its own room</p>
+        <ul>
+          <li>It produces a pile of output you won't reread: tests, logs, docs, exploring a subsystem</li>
+          <li>You want a hard guardrail, like a strictly read-only investigation</li>
+          <li>The work is self-contained and a summary is all you need back</li>
+          <li>The same specialist task keeps coming up</li>
+          <li>Several independent investigations can run at the same time</li>
+        </ul>
+      </div>
+      <div class="panel hold">
+        <p class="head">Stay in the main thread</p>
+        <p class="headsub">work that needs to stay close</p>
+        <ul>
+          <li>The task needs constant back-and-forth and refining</li>
+          <li>Several steps all share the same heavy context</li>
+          <li>It's a quick, targeted edit, a subagent starts cold so it's slower here</li>
+          <li>It's a question about something already in your conversation</li>
+        </ul>
+      </div>
+    </div>
+    <p class="reveal muted">The honest trade-off: a subagent always starts from nothing and has to find its bearings. For small fast changes that makes it slower, not faster.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="s9">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 09</p>
+    <h2 class="reveal">Subagents versus skills</h2>
+    <p class="reveal">This is the question you'll naturally ask next: how is a subagent different from just giving Claude a reusable instruction, a skill? The whole answer is the context boundary.</p>
+  </div>
+  <div class="wrap wide">
+    <div class="diagram reveal">
+      <svg viewBox="0 0 960 250" role="img" aria-label="A skill runs inside the main context window; a subagent runs in a separate one">
+        <!-- skill -->
+        <text x="20" y="28" class="mono-a" font-size="13" letter-spacing="1.5">A SKILL</text>
+        <rect x="20" y="44" width="420" height="170" rx="14" class="d-card" stroke-width="1.5"/>
+        <text x="40" y="74" class="mono" font-size="12" letter-spacing="1">ONE WINDOW</text>
+        <rect x="40" y="88" width="120" height="28" rx="14" class="d-main-soft" stroke="var(--amber)" stroke-width="1"/>
+        <text x="100" y="107" text-anchor="middle" class="mono-a" font-size="12">main agent</text>
+        <rect x="176" y="88" width="240" height="28" rx="8" fill="rgba(237,170,68,0.16)" stroke="var(--amber)" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="296" y="107" text-anchor="middle" class="mono-a" font-size="12">+ skill instructions</text>
+        <text x="40" y="160" class="dim" font-size="13.5" font-family="var(--font-body)">Instructions are dropped straight into</text>
+        <text x="40" y="182" class="dim" font-size="13.5" font-family="var(--font-body)">the conversation you're already having.</text>
+
+        <!-- subagent -->
+        <text x="520" y="28" class="mono-t" font-size="13" letter-spacing="1.5">A SUBAGENT</text>
+        <rect x="520" y="44" width="200" height="170" rx="14" class="d-card" stroke-width="1.5"/>
+        <text x="540" y="74" class="mono" font-size="12" letter-spacing="1">MAIN WINDOW</text>
+        <rect x="540" y="92" width="120" height="28" rx="14" class="d-main-soft" stroke="var(--amber)" stroke-width="1"/>
+        <text x="600" y="111" text-anchor="middle" class="mono-a" font-size="12">main agent</text>
+
+        <rect x="752" y="44" width="188" height="170" rx="14" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="7 6"/>
+        <text x="772" y="74" class="mono-t" font-size="12" letter-spacing="1">SEPARATE WINDOW</text>
+        <rect x="772" y="92" width="120" height="28" rx="14" class="d-sub-soft" stroke="var(--teal)" stroke-width="1"/>
+        <text x="832" y="111" text-anchor="middle" class="mono-t" font-size="12">subagent</text>
+        <text x="772" y="160" class="dim" font-size="13.5" font-family="var(--font-body)">Work happens in</text>
+        <text x="772" y="182" class="dim" font-size="13.5" font-family="var(--font-body)">a window of its own.</text>
+        <!-- little connector -->
+        <line x1="722" y1="129" x2="750" y2="129" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      </svg>
+      <p class="figcap"><b>Same window or a separate one.</b> That single difference decides which tool you want.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <p class="reveal">So the rule is short. Want a reusable prompt that works on whatever is already in front of you? That's a <strong>skill</strong>. Want noisy or self-contained work done elsewhere with only a summary coming back? That's a <strong>subagent</strong>.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="s10">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 10</p>
+    <h2 class="reveal">A worked example</h2>
+    <p class="reveal">Let's tie every thread together with the one we'll build live: a <strong>code reviewer</strong>. It has read-only tools, so it can inspect but never touch your files. Its instructions say it's a senior reviewer, give it a checklist, and tell it to report findings by priority.</p>
+  </div>
+  <div class="wrap wide">
+    <div class="diagram reveal">
+      <svg viewBox="0 0 960 250" role="img" aria-label="The code reviewer flow: you finish a change, ask the reviewer, it reads the diff in its own window, you get a prioritized list back">
+        <defs>
+          <marker id="flow" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto"><path d="M0 0 L9 5 L0 10 z" fill="var(--faint)"/></marker>
+        </defs>
+        <!-- node 1 -->
+        <rect x="0" y="70" width="200" height="80" rx="13" class="d-card" stroke-width="1.5"/>
+        <text x="100" y="100" text-anchor="middle" class="mono" font-size="12">STEP 1</text>
+        <text x="100" y="124" text-anchor="middle" class="lbl" font-size="15">You finish a change</text>
+        <!-- node 2 -->
+        <rect x="253" y="70" width="200" height="80" rx="13" class="d-card" stroke-width="1.5"/>
+        <text x="353" y="100" text-anchor="middle" class="mono" font-size="12">STEP 2</text>
+        <text x="353" y="124" text-anchor="middle" class="lbl" font-size="15">You ask the reviewer</text>
+        <!-- node 3 sealed -->
+        <rect x="506" y="70" width="200" height="80" rx="13" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="7 6"/>
+        <text x="606" y="98" text-anchor="middle" class="mono-t" font-size="12">ITS OWN WINDOW</text>
+        <text x="606" y="120" text-anchor="middle" class="lbl" font-size="14">It reads the diff,</text>
+        <text x="606" y="138" text-anchor="middle" class="lbl" font-size="14">privately</text>
+        <!-- node 4 -->
+        <rect x="759" y="70" width="200" height="80" rx="13" class="d-card" stroke-width="1.5"/>
+        <text x="859" y="98" text-anchor="middle" class="mono-t" font-size="12">RESULT</text>
+        <text x="859" y="120" text-anchor="middle" class="lbl" font-size="14">A prioritized list</text>
+        <text x="859" y="138" text-anchor="middle" class="lbl" font-size="14">comes back</text>
+        <!-- arrows -->
+        <line x1="200" y1="110" x2="251" y2="110" stroke="var(--faint)" stroke-width="2" marker-end="url(#flow)"/>
+        <line x1="453" y1="110" x2="504" y2="110" stroke="var(--faint)" stroke-width="2" marker-end="url(#flow)"/>
+        <line x1="706" y1="110" x2="757" y2="110" stroke="var(--teal)" stroke-width="2" marker-end="url(#flow)"/>
+        <!-- note -->
+        <text x="0" y="206" class="mono" font-size="12.5">Your main session never fills with the full diff.</text>
+        <text x="0" y="228" class="mono-t" font-size="12.5">Read-only tools mean it can't change anything on its own.</text>
+      </svg>
+      <p class="figcap">One small example shows all of it: isolation, custom instructions, a tool limit, delegation, and a summary returning across the boundary.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <p class="reveal">When you finish a feature you simply say, "have the code reviewer look at my recent changes." It reads the diff in its own sealed window, runs its whole analysis there, and hands back one prioritized list. Your main session never fills with the full diff or the reviewer's reasoning, and because its tools are read-only you never worry it'll quietly "fix" something behind your back.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="s11">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 11</p>
+    <h2 class="reveal">The bigger picture</h2>
+    <p class="reveal">Subagents can run several at once, each in its own window, and Claude pulls the findings together. As your goals grow toward running things in parallel and more hands-off, two related ideas take over. It's worth knowing the difference so you don't mix them up, even though we'll only go deep on them in later sessions.</p>
+    <div class="grid c3 reveal">
+      <div class="card amber">
+        <span class="pill">today's focus</span>
+        <h4>Subagents</h4>
+        <p>Workers inside one session. The foundation everything else builds on, and where we'll start in the demo.</p>
+      </div>
+      <div class="card">
+        <span class="pill">later</span>
+        <h4>Background agents</h4>
+        <p>Many independent sessions running at once, which you watch and manage from one place.</p>
+      </div>
+      <div class="card">
+        <span class="pill">later</span>
+        <h4>Agent teams</h4>
+        <p>Separate sessions that can message each other, for work that needs real coordination between workers.</p>
+      </div>
+    </div>
+    <p class="reveal muted">Your goal of a main agent and helpers working in parallel on their own starts here, with subagents in one session, and grows into the other two as the work gets bigger.</p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="s12">
+  <div class="wrap">
+    <p class="sec-num reveal">Section 12</p>
+    <h2 class="reveal">Check your understanding</h2>
+    <p class="reveal">Five quick ones. Pick an answer and the reasoning appears underneath. No pressure, this is just to make the ideas stick before we go hands-on.</p>
+
+    <div class="mcq reveal" data-mcq>
+      <p class="qn">Question 1</p>
+      <p class="q">What is the main reason to use a subagent?</p>
+      <div class="opts">
+        <button class="opt" data-correct="false"><span class="mark">A</span><span>To make Claude reply faster</span></button>
+        <button class="opt" data-correct="true"><span class="mark">B</span><span>To keep the main session's context clean</span></button>
+        <button class="opt" data-correct="false"><span class="mark">C</span><span>To give Claude access to the internet</span></button>
+        <button class="opt" data-correct="false"><span class="mark">D</span><span>To lower the cost of every task</span></button>
+      </div>
+      <div class="feedback"><b>It's about protecting context.</b> A subagent does noisy work in its own window so the main thread stays lean and sharp. It isn't a speed trick, in fact a subagent starts cold and is often slower for small jobs, and running many of them can use more tokens, not fewer.</div>
+    </div>
+
+    <div class="mcq reveal" data-mcq>
+      <p class="qn">Question 2</p>
+      <p class="q">From your conversation, what is the only thing that reaches a subagent?</p>
+      <div class="opts">
+        <button class="opt" data-correct="false"><span class="mark">A</span><span>The full conversation history</span></button>
+        <button class="opt" data-correct="false"><span class="mark">B</span><span>The files already opened</span></button>
+        <button class="opt" data-correct="true"><span class="mark">C</span><span>The task prompt the main agent writes</span></button>
+        <button class="opt" data-correct="false"><span class="mark">D</span><span>The last message you typed</span></button>
+      </div>
+      <div class="feedback"><b>Only the task prompt crosses the boundary.</b> The subagent also has its own instructions and your project rules, but nothing from the conversation itself reaches it except what the main agent writes into the prompt. That's why you have to name files and paste errors explicitly.</div>
+    </div>
+
+    <div class="mcq reveal" data-mcq>
+      <p class="qn">Question 3</p>
+      <p class="q">Why can it backfire to run ten parallel subagents that each return a long, detailed report?</p>
+      <div class="opts">
+        <button class="opt" data-correct="false"><span class="mark">A</span><span>Subagents cannot run in parallel</span></button>
+        <button class="opt" data-correct="true"><span class="mark">B</span><span>The reports refill the context you cleared</span></button>
+        <button class="opt" data-correct="false"><span class="mark">C</span><span>Long reports are always more accurate</span></button>
+        <button class="opt" data-correct="false"><span class="mark">D</span><span>It uses no extra tokens at all</span></button>
+      </div>
+      <div class="feedback"><b>The summaries all land back in the main window.</b> If each one is long, you've refilled the exact clutter the subagents were supposed to keep out. The fix is to ask for tight summaries rather than full transcripts.</div>
+    </div>
+
+    <div class="mcq reveal" data-mcq>
+      <p class="qn">Question 4</p>
+      <p class="q">When is the main conversation the better choice over a subagent?</p>
+      <div class="opts">
+        <button class="opt" data-correct="false"><span class="mark">A</span><span>For parsing a huge log file</span></button>
+        <button class="opt" data-correct="false"><span class="mark">B</span><span>For a strictly read-only investigation</span></button>
+        <button class="opt" data-correct="true"><span class="mark">C</span><span>For a quick, targeted edit</span></button>
+        <button class="opt" data-correct="false"><span class="mark">D</span><span>For isolating noisy output</span></button>
+      </div>
+      <div class="feedback"><b>Quick edits belong in the main thread.</b> A subagent starts from nothing and spends time getting its bearings, so for a small fast change that cold start isn't worth it. The other three are exactly the cases where a subagent shines.</div>
+    </div>
+
+    <div class="mcq reveal" data-mcq>
+      <p class="qn">Question 5</p>
+      <p class="q">What is the key difference between a skill and a subagent?</p>
+      <div class="opts">
+        <button class="opt" data-correct="false"><span class="mark">A</span><span>A skill runs in a separate window</span></button>
+        <button class="opt" data-correct="true"><span class="mark">B</span><span>A skill runs inside the main conversation</span></button>
+        <button class="opt" data-correct="false"><span class="mark">C</span><span>A skill cannot contain instructions</span></button>
+        <button class="opt" data-correct="false"><span class="mark">D</span><span>A skill always uses a cheaper model</span></button>
+      </div>
+      <div class="feedback"><b>A skill stays in the same window.</b> It injects reusable instructions into the conversation you're already in. A subagent is the opposite: it does its work in a separate window and only the result comes back.</div>
+    </div>
+  </div>
+</section>
+
+<!-- wrap -->
+<section>
+  <div class="wrap">
+    <div class="next reveal">
+      <p class="k">That's the whole model</p>
+      <h3>Now let's see it for real</h3>
+      <p>You now have the mental model: the boundary, what crosses it, the dials you set, and when a subagent is the right call. Next we'll open VS Code, watch Claude spin up a subagent on its own, build the code reviewer together, and look at exactly what it knows and what it hands back.</p>
+    </div>
+  </div>
+  <footer>
+    <div class="wrap">
+      <p>Subagents &nbsp;·&nbsp; part 1, the concept &nbsp;·&nbsp; part 2 is the live VS Code walkthrough</p>
+    </div>
+  </footer>
+</section>
+
+<script>
+  // progress bar
+  var progress = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    progress.style.width = (scrolled * 100) + '%';
+  }
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // reveal on scroll
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // mcq
+  document.querySelectorAll('[data-mcq]').forEach(function(block){
+    var opts = block.querySelector('.opts');
+    var feedback = block.querySelector('.feedback');
+    block.querySelectorAll('.opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(opts.classList.contains('answered')) return;
+        opts.classList.add('answered');
+        block.querySelectorAll('.opt').forEach(function(b){
+          b.classList.add('locked');
+          if(b.getAttribute('data-correct') === 'true'){ b.classList.add('correct'); }
+        });
+        if(btn.getAttribute('data-correct') !== 'true'){ btn.classList.add('wrong'); }
+        feedback.classList.add('show');
+      });
+    });
+  });
+</script>
+</body>
+</html>
